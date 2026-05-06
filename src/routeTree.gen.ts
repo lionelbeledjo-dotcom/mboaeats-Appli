@@ -19,6 +19,7 @@ import { Route as LivreurRouteImport } from './routes/livreur'
 import { Route as FideliteRouteImport } from './routes/fidelite'
 import { Route as DevenirRestoRouteImport } from './routes/devenir-resto'
 import { Route as DevenirLivreurRouteImport } from './routes/devenir-livreur'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ConnexionRouteImport } from './routes/connexion'
 import { Route as ConfidentialiteRouteImport } from './routes/confidentialite'
 import { Route as CommandesRouteImport } from './routes/commandes'
@@ -84,6 +85,11 @@ const DevenirRestoRoute = DevenirRestoRouteImport.update({
 const DevenirLivreurRoute = DevenirLivreurRouteImport.update({
   id: '/devenir-livreur',
   path: '/devenir-livreur',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConnexionRoute = ConnexionRouteImport.update({
@@ -177,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/commandes': typeof CommandesRoute
   '/confidentialite': typeof ConfidentialiteRoute
   '/connexion': typeof ConnexionRoute
+  '/contact': typeof ContactRoute
   '/devenir-livreur': typeof DevenirLivreurRoute
   '/devenir-resto': typeof DevenirRestoRoute
   '/fidelite': typeof FideliteRoute
@@ -204,6 +211,7 @@ export interface FileRoutesByTo {
   '/commandes': typeof CommandesRoute
   '/confidentialite': typeof ConfidentialiteRoute
   '/connexion': typeof ConnexionRoute
+  '/contact': typeof ContactRoute
   '/devenir-livreur': typeof DevenirLivreurRoute
   '/devenir-resto': typeof DevenirRestoRoute
   '/fidelite': typeof FideliteRoute
@@ -233,6 +241,7 @@ export interface FileRoutesById {
   '/commandes': typeof CommandesRoute
   '/confidentialite': typeof ConfidentialiteRoute
   '/connexion': typeof ConnexionRoute
+  '/contact': typeof ContactRoute
   '/devenir-livreur': typeof DevenirLivreurRoute
   '/devenir-resto': typeof DevenirRestoRoute
   '/fidelite': typeof FideliteRoute
@@ -263,6 +272,7 @@ export interface FileRouteTypes {
     | '/commandes'
     | '/confidentialite'
     | '/connexion'
+    | '/contact'
     | '/devenir-livreur'
     | '/devenir-resto'
     | '/fidelite'
@@ -290,6 +300,7 @@ export interface FileRouteTypes {
     | '/commandes'
     | '/confidentialite'
     | '/connexion'
+    | '/contact'
     | '/devenir-livreur'
     | '/devenir-resto'
     | '/fidelite'
@@ -318,6 +329,7 @@ export interface FileRouteTypes {
     | '/commandes'
     | '/confidentialite'
     | '/connexion'
+    | '/contact'
     | '/devenir-livreur'
     | '/devenir-resto'
     | '/fidelite'
@@ -347,6 +359,7 @@ export interface RootRouteChildren {
   CommandesRoute: typeof CommandesRoute
   ConfidentialiteRoute: typeof ConfidentialiteRoute
   ConnexionRoute: typeof ConnexionRoute
+  ContactRoute: typeof ContactRoute
   DevenirLivreurRoute: typeof DevenirLivreurRoute
   DevenirRestoRoute: typeof DevenirRestoRoute
   FideliteRoute: typeof FideliteRoute
@@ -430,6 +443,13 @@ declare module '@tanstack/react-router' {
       path: '/devenir-livreur'
       fullPath: '/devenir-livreur'
       preLoaderRoute: typeof DevenirLivreurRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/connexion': {
@@ -587,6 +607,7 @@ const rootRouteChildren: RootRouteChildren = {
   CommandesRoute: CommandesRoute,
   ConfidentialiteRoute: ConfidentialiteRoute,
   ConnexionRoute: ConnexionRoute,
+  ContactRoute: ContactRoute,
   DevenirLivreurRoute: DevenirLivreurRoute,
   DevenirRestoRoute: DevenirRestoRoute,
   FideliteRoute: FideliteRoute,
