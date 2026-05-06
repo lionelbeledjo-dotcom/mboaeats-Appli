@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft, Smartphone, CreditCard, Banknote, Check, Loader2, ShieldCheck,
   Lock, ChevronRight, Webhook, MapPin, Tag, Crown, AlertCircle,
