@@ -232,16 +232,119 @@ function TableePage() {
         {/* Summary */}
         <section className="mt-8 rounded-3xl bg-gradient-primary p-6 text-primary-foreground shadow-glow">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
+            <div className="min-w-0">
               <p className="text-xs uppercase tracking-wider opacity-80">Tu paies pour</p>
-              <p className="font-display text-2xl font-bold">Sandra · Poulet DG</p>
-              <p className="text-sm opacity-90">3 500 FCFA · MTN MoMo · 691 ** ** 42</p>
+              <p className="font-display text-2xl font-bold truncate">{me?.name ?? "—"} · {me?.items[0]?.name ?? ""}</p>
+              <p className="text-sm opacity-90">
+                {myTotal.toLocaleString("fr-FR")} FCFA · MTN MoMo · 691 ** ** 42
+                {promo && <span className="ml-2 rounded-full bg-background/25 px-2 py-0.5 text-xs">−{promo.discount.toLocaleString("fr-FR")} F ({promo.code})</span>}
+              </p>
             </div>
-            <button className="rounded-full bg-background/20 px-6 py-3 text-sm font-bold backdrop-blur transition hover:bg-background/30">
-              Confirmer mon paiement
+            <button
+              type="button"
+              onClick={openPayment}
+              disabled={!me || me.paid}
+              className="rounded-full bg-background/20 px-6 py-3 text-sm font-bold backdrop-blur transition hover:bg-background/30 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {me?.paid ? "✓ Payé" : "Confirmer mon paiement"}
             </button>
           </div>
+
+          {/* Promo */}
+          <div className="mt-4 border-t border-primary-foreground/20 pt-4">
+            {promo ? (
+              <div className="flex items-center justify-between rounded-xl bg-background/15 px-3 py-2 text-xs">
+                <span className="font-semibold">✓ Code {promo.code} appliqué</span>
+                <button type="button" onClick={() => setPromo(null)} className="opacity-80 hover:opacity-100">Retirer</button>
+              </div>
+            ) : !promoOpen ? (
+              <button
+                type="button"
+                onClick={() => setPromoOpen(true)}
+                className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/40 bg-background/10 px-4 py-2 text-xs font-semibold backdrop-blur transition hover:bg-background/20"
+              >
+                <Tag className="h-3.5 w-3.5" /> Ajouter un code promo
+              </button>
+            ) : (
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  autoFocus
+                  value={promoCode}
+                  onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoErr(null); }}
+                  onKeyDown={(e) => { if (e.key === "Enter") applyPromo(); }}
+                  placeholder="MBOA10"
+                  className="flex-1 rounded-xl bg-background/20 px-3 py-2 text-sm uppercase tracking-wider text-primary-foreground placeholder:text-primary-foreground/60 outline-none focus:bg-background/30"
+                />
+                <div className="flex gap-2">
+                  <button type="button" onClick={applyPromo} className="rounded-xl bg-background px-4 py-2 text-xs font-bold text-foreground">Appliquer</button>
+                  <button type="button" onClick={() => { setPromoOpen(false); setPromoCode(""); setPromoErr(null); }} className="rounded-xl border border-primary-foreground/40 px-3 py-2 text-xs">Annuler</button>
+                </div>
+              </div>
+            )}
+            {promoErr && <p className="mt-2 text-xs font-semibold text-amber-200">{promoErr}</p>}
+          </div>
         </section>
+
+        {/* Modal paiement */}
+        {payOpen && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center" onClick={() => payStep !== "loading" && setPayOpen(false)}>
+            <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-t-3xl border border-border bg-card p-6 shadow-card sm:rounded-3xl animate-fade-up">
+              <div className="flex items-center justify-between">
+                <h3 className="font-display text-lg font-bold">Confirmer le paiement</h3>
+                <button onClick={() => payStep !== "loading" && setPayOpen(false)} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></button>
+              </div>
+
+              {payStep === "otp" && (
+                <>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Un code OTP a été envoyé au <span className="text-foreground font-medium">691 ** ** 42</span> via MTN MoMo.
+                  </p>
+                  <div className="mt-4 rounded-2xl border border-border bg-surface/60 p-4 text-sm">
+                    <div className="flex justify-between text-muted-foreground"><span>Ta part</span><span>{mySubtotal.toLocaleString("fr-FR")} F</span></div>
+                    {promo && <div className="flex justify-between text-primary"><span>Promo {promo.code}</span><span>−{promo.discount.toLocaleString("fr-FR")} F</span></div>}
+                    <div className="mt-1 flex justify-between font-display text-lg font-bold"><span>Total</span><span>{myTotal.toLocaleString("fr-FR")} F</span></div>
+                  </div>
+                  <input
+                    autoFocus
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={otp}
+                    onChange={(e) => { setOtp(e.target.value.replace(/\D/g, "")); setOtpErr(null); }}
+                    placeholder="• • • • • •"
+                    className="mt-4 w-full rounded-xl border border-border bg-background/50 px-4 py-3 text-center font-display text-2xl tracking-[0.5em] outline-none focus:border-primary"
+                  />
+                  {otpErr && <p className="mt-2 text-xs text-destructive">{otpErr}</p>}
+                  <button
+                    onClick={submitOtp}
+                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3 text-sm font-bold text-primary-foreground shadow-glow"
+                  >
+                    Valider le paiement
+                  </button>
+                  <p className="mt-3 flex items-center justify-center gap-2 text-[11px] text-muted-foreground">
+                    <ShieldCheck className="h-3 w-3 text-primary" /> Démo : saisis n'importe quel code à 4-6 chiffres
+                  </p>
+                </>
+              )}
+
+              {payStep === "loading" && (
+                <div className="flex flex-col items-center gap-3 py-10">
+                  <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                  <p className="text-sm text-muted-foreground">Confirmation en cours…</p>
+                </div>
+              )}
+
+              {payStep === "done" && (
+                <div className="flex flex-col items-center gap-3 py-8 text-center">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400">
+                    <Check className="h-7 w-7" />
+                  </div>
+                  <p className="font-display text-lg font-bold">Paiement confirmé</p>
+                  <p className="text-sm text-muted-foreground">Ta part de {myTotal.toLocaleString("fr-FR")} F a été réglée.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
