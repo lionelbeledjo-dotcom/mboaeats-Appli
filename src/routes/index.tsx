@@ -7,10 +7,7 @@ import {
 } from "lucide-react";
 
 import heroDish from "@/assets/hero-dish.jpg";
-import dishPouletDg from "@/assets/dish-poulet-dg.jpg";
-import dishEru from "@/assets/dish-eru.jpg";
-import dishPoisson from "@/assets/dish-poisson.jpg";
-import dishSuya from "@/assets/dish-suya.jpg";
+import { restaurants as realRestaurants } from "@/data/restaurants";
 
 export const Route = createFileRoute("/")({
   component: Index,
