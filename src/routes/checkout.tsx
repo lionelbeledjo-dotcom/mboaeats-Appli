@@ -80,7 +80,10 @@ function Checkout() {
             <ChooseMethod method={method} setMethod={setMethod} phone={phone} setPhone={setPhone} onPay={start} total={total} />
           )}
           {step === "ussd" && (
-            <UssdScreen method={method} phone={phone} pending={pending} seconds={seconds} total={total} onConfirm={confirm} />
+            <UssdScreen method={method} phone={phone} pending={pending} seconds={seconds} total={total} onConfirm={goToOtp} />
+          )}
+          {step === "otp" && (
+            <OtpScreen method={method} phone={phone} total={total} onConfirm={confirm} onBack={() => setStep("ussd")} />
           )}
           {step === "card" && <CardScreen total={total} onConfirm={confirm} />}
           {step === "success" && <SuccessScreen method={method} total={total} />}
