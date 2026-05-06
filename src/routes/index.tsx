@@ -7,7 +7,22 @@ import {
 } from "lucide-react";
 
 import heroDish from "@/assets/hero-dish.webp";
-import { restaurants as realRestaurants } from "@/data/restaurants";
+import { restaurants as realRestaurants, getRestaurant } from "@/data/restaurants";
+
+// Pre-cache decoded images so menu pages render instantly on hover/intent.
+const imageCache = new Set<string>();
+function prefetchRestaurantImages(restoId: string) {
+  const r = getRestaurant(restoId);
+  if (!r) return;
+  const urls = [r.cover, ...r.categories.flatMap((c) => c.dishes.map((d) => d.image))];
+  for (const url of urls) {
+    if (imageCache.has(url)) continue;
+    imageCache.add(url);
+    const img = new Image();
+    img.decoding = "async";
+    img.src = url;
+  }
+}
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -275,6 +290,10 @@ function Restaurants() {
             key={r.name}
             to="/restaurants/$restoId"
             params={{ restoId: r.slug }}
+            preload="intent"
+            onMouseEnter={() => prefetchRestaurantImages(r.slug)}
+            onTouchStart={() => prefetchRestaurantImages(r.slug)}
+            onFocus={() => prefetchRestaurantImages(r.slug)}
             className="group relative block overflow-hidden rounded-3xl border border-border bg-card shadow-card transition-all hover:-translate-y-1 hover:shadow-glow animate-fade-up"
             style={{ animationDelay: `${i * 80}ms` }}
           >
