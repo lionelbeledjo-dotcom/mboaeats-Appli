@@ -43,10 +43,10 @@
 :root {
   --radius: 1rem;
 
-  /* Bleu nuit profond */
-  --background: oklch(0.18 0.04 280);
-  --surface: oklch(0.22 0.045 280);
-  --surface-elevated: oklch(0.26 0.05 280);
+  /* Noir profond / bleu nuit */
+  --background: oklch(0.10 0.012 280);
+  --surface: oklch(0.16 0.018 280);
+  --surface-elevated: oklch(0.20 0.022 280);
   --foreground: oklch(0.98 0.01 80);
 
   --card: oklch(0.22 0.045 280);
