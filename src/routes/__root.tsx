@@ -113,6 +113,7 @@ function RootComponent() {
   return (
     <AuthGate>
       <Outlet />
+      {!hideDock && <CartFab />}
       {!hideDock && <BottomDock />}
       <Toaster position="top-right" richColors closeButton />
     </AuthGate>
