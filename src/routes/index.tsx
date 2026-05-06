@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 
 import { restaurants as realRestaurants, getRestaurant } from "@/data/restaurants";
+import MboaExpressAssistant from "@/components/MboaExpressAssistant";
 
 // Pre-cache decoded images so menu pages render instantly on hover/intent.
 const imageCache = new Set<string>();
@@ -65,6 +66,7 @@ function Index() {
         <TableeBanner />
         <Restaurants city={city} />
       </main>
+      <MboaExpressAssistant />
     </div>
   );
 }
