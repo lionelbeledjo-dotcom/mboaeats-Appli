@@ -1,5 +1,6 @@
 // Vrais restaurants & menus — Cameroun (Douala / Yaoundé).
 import dishEru from "@/assets/dish-eru.webp";
+import dishNdole from "@/assets/dish-ndole.webp";
 import dishPoisson from "@/assets/dish-poisson.webp";
 import dishPouletDg from "@/assets/dish-poulet-dg.webp";
 import dishSuya from "@/assets/dish-suya.webp";
@@ -45,7 +46,7 @@ const lePenjaDishes: Dish[] = [
     name: "Ndolé Royal aux gambas",
     description: "Ndolé gastronomique aux gambas sauvages, pâte d'arachide fraîche et miondo artisanal.",
     price: 6500,
-    image: dishEru,
+    image: dishNdole,
     popular: true,
     options: [tailleOptions, pimentOptions],
   },
@@ -72,7 +73,7 @@ const sagaAfricaDishes: Dish[] = [
     name: "Ndolé Royal",
     description: "Le classique de la maison : ndolé crémeux, crevettes et viande, plantains mûrs.",
     price: 5000,
-    image: dishEru,
+    image: dishNdole,
     popular: true,
     options: [tailleOptions, pimentOptions],
   },
@@ -99,7 +100,7 @@ const mamaBelloDishes: Dish[] = [
     name: "Ndolé complet",
     description: "Feuilles de ndolé, arachides, poisson fumé, viande de bœuf et plantain.",
     price: 3500,
-    image: dishEru,
+    image: dishNdole,
     popular: true,
     options: [tailleOptions, pimentOptions],
   },
@@ -127,7 +128,7 @@ const mamaDoualaDishes: Dish[] = [
     name: "Ndolé aux crevettes",
     description: "Ndolé maison crémeux aux crevettes fraîches, plantains et miondo.",
     price: 3000,
-    image: dishEru,
+    image: dishNdole,
     popular: true,
     options: [tailleOptions, pimentOptions],
   },
@@ -238,7 +239,7 @@ const braiserieWouriDishes: Dish[] = [
     name: "Ndolé maison aux crevettes",
     description: "Ndolé crémeux, crevettes du Wouri, viande braisée et plantain mûr.",
     price: 4500,
-    image: dishEru,
+    image: dishNdole,
     options: [tailleOptions],
   },
 ];
