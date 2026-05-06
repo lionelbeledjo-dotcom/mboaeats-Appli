@@ -32,9 +32,13 @@ function ProfilPage() {
       const raw = localStorage.getItem("mboa_demo_user");
       if (raw) setDemoUser(JSON.parse(raw));
     } catch {}
+    setSoundOn(isCartSoundEnabled());
+    const sync = () => setSoundOn(isCartSoundEnabled());
+    window.addEventListener(CART_SOUND_EVT, sync);
     supabase.auth.getUser().then(({ data }) => {
       if (data.user?.email) setAuthEmail(data.user.email);
     }).catch(() => {});
+    return () => window.removeEventListener(CART_SOUND_EVT, sync);
   }, []);
 
   const identifier = authEmail || demoUser?.identifier || "Invité";
