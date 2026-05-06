@@ -30,6 +30,7 @@ const categories = [
 
 const restaurants = [
   {
+    slug: "chez-mama-biya",
     name: "Chez Mama Biya",
     tag: "Cuisine traditionnelle",
     rating: 4.9,
@@ -39,7 +40,8 @@ const restaurants = [
     badge: "Top resto",
   },
   {
-    name: "Saveurs du Mboa",
+    slug: "le-foufou-royal",
+    name: "Le Foufou Royal",
     tag: "Spécialités Eru & Fufu",
     rating: 4.8,
     eta: "25-30 min",
@@ -48,6 +50,7 @@ const restaurants = [
     badge: "-15% ce soir",
   },
   {
+    slug: "chez-mama-biya",
     name: "Le Wouri Grill",
     tag: "Poisson braisé premium",
     rating: 4.9,
@@ -57,7 +60,8 @@ const restaurants = [
     badge: "Nouveau",
   },
   {
-    name: "Suya King",
+    slug: "suya-master",
+    name: "Suya Master",
     tag: "Brochettes & grillades",
     rating: 4.7,
     eta: "15-20 min",
@@ -277,9 +281,11 @@ function Restaurants() {
 
       <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {restaurants.map((r, i) => (
-          <article
+          <Link
             key={r.name}
-            className="group relative overflow-hidden rounded-3xl border border-border bg-card shadow-card transition-all hover:-translate-y-1 hover:shadow-glow animate-fade-up"
+            to="/restaurants/$restoId"
+            params={{ restoId: r.slug }}
+            className="group relative block overflow-hidden rounded-3xl border border-border bg-card shadow-card transition-all hover:-translate-y-1 hover:shadow-glow animate-fade-up"
             style={{ animationDelay: `${i * 80}ms` }}
           >
             <div className="relative aspect-[4/3] overflow-hidden">
@@ -294,12 +300,12 @@ function Restaurants() {
               <span className="absolute left-3 top-3 rounded-full bg-background/80 px-3 py-1 text-xs font-semibold backdrop-blur">
                 {r.badge}
               </span>
-              <button
-                aria-label="Ajouter au panier"
+              <span
+                aria-hidden
                 className="absolute bottom-3 right-3 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-glow opacity-0 transition-all group-hover:opacity-100 group-hover:translate-y-0 translate-y-2"
               >
                 <Plus className="h-5 w-5" />
-              </button>
+              </span>
             </div>
             <div className="p-4">
               <div className="flex items-start justify-between gap-2">
@@ -319,7 +325,7 @@ function Restaurants() {
                 <span className="font-semibold text-foreground">dès {r.price}</span>
               </div>
             </div>
-          </article>
+          </Link>
         ))}
       </div>
     </section>
