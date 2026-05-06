@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Star, Clock, MapPin, Flame } from "lucide-react";
 import { SmartBack } from "@/components/SmartBack";
-import { getRestaurant } from "@/data/restaurants";
+import { getRestaurant, type Restaurant } from "@/data/restaurants";
 
 export const Route = createFileRoute("/restaurants/$restoId")({
   loader: ({ params }) => {
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/restaurants/$restoId")({
 });
 
 function RestaurantPage() {
-  const { restaurant } = Route.useLoaderData();
+  const { restaurant } = Route.useLoaderData() as { restaurant: Restaurant };
 
   return (
     <div className="min-h-screen bg-background">

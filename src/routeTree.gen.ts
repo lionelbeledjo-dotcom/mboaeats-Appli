@@ -23,10 +23,12 @@ import { Route as AdressesRouteImport } from './routes/adresses'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as RestaurantsRestoIdRouteImport } from './routes/restaurants.$restoId'
 import { Route as AdminRestaurantsRouteImport } from './routes/admin.restaurants'
 import { Route as AdminLivreursRouteImport } from './routes/admin.livreurs'
 import { Route as AdminLitigesRouteImport } from './routes/admin.litiges'
 import { Route as AdminCommissionsRouteImport } from './routes/admin.commissions'
+import { Route as RestaurantsRestoIdPlatsPlatIdRouteImport } from './routes/restaurants.$restoId.plats.$platId'
 
 const TableeRoute = TableeRouteImport.update({
   id: '/tablee',
@@ -98,6 +100,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const RestaurantsRestoIdRoute = RestaurantsRestoIdRouteImport.update({
+  id: '/restaurants/$restoId',
+  path: '/restaurants/$restoId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRestaurantsRoute = AdminRestaurantsRouteImport.update({
   id: '/restaurants',
   path: '/restaurants',
@@ -118,6 +125,12 @@ const AdminCommissionsRoute = AdminCommissionsRouteImport.update({
   path: '/commissions',
   getParentRoute: () => AdminRoute,
 } as any)
+const RestaurantsRestoIdPlatsPlatIdRoute =
+  RestaurantsRestoIdPlatsPlatIdRouteImport.update({
+    id: '/plats/$platId',
+    path: '/plats/$platId',
+    getParentRoute: () => RestaurantsRestoIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -137,7 +150,9 @@ export interface FileRoutesByFullPath {
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
+  '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/admin/': typeof AdminIndexRoute
+  '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -156,7 +171,9 @@ export interface FileRoutesByTo {
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
+  '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/admin': typeof AdminIndexRoute
+  '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -177,7 +194,9 @@ export interface FileRoutesById {
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
+  '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/admin/': typeof AdminIndexRoute
+  '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -199,7 +218,9 @@ export interface FileRouteTypes {
     | '/admin/litiges'
     | '/admin/livreurs'
     | '/admin/restaurants'
+    | '/restaurants/$restoId'
     | '/admin/'
+    | '/restaurants/$restoId/plats/$platId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -218,7 +239,9 @@ export interface FileRouteTypes {
     | '/admin/litiges'
     | '/admin/livreurs'
     | '/admin/restaurants'
+    | '/restaurants/$restoId'
     | '/admin'
+    | '/restaurants/$restoId/plats/$platId'
   id:
     | '__root__'
     | '/'
@@ -238,7 +261,9 @@ export interface FileRouteTypes {
     | '/admin/litiges'
     | '/admin/livreurs'
     | '/admin/restaurants'
+    | '/restaurants/$restoId'
     | '/admin/'
+    | '/restaurants/$restoId/plats/$platId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -255,6 +280,7 @@ export interface RootRouteChildren {
   RestaurantRoute: typeof RestaurantRoute
   SuiviRoute: typeof SuiviRoute
   TableeRoute: typeof TableeRoute
+  RestaurantsRestoIdRoute: typeof RestaurantsRestoIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -357,6 +383,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/restaurants/$restoId': {
+      id: '/restaurants/$restoId'
+      path: '/restaurants/$restoId'
+      fullPath: '/restaurants/$restoId'
+      preLoaderRoute: typeof RestaurantsRestoIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/restaurants': {
       id: '/admin/restaurants'
       path: '/restaurants'
@@ -385,6 +418,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCommissionsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/restaurants/$restoId/plats/$platId': {
+      id: '/restaurants/$restoId/plats/$platId'
+      path: '/plats/$platId'
+      fullPath: '/restaurants/$restoId/plats/$platId'
+      preLoaderRoute: typeof RestaurantsRestoIdPlatsPlatIdRouteImport
+      parentRoute: typeof RestaurantsRestoIdRoute
+    }
   }
 }
 
@@ -406,6 +446,17 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface RestaurantsRestoIdRouteChildren {
+  RestaurantsRestoIdPlatsPlatIdRoute: typeof RestaurantsRestoIdPlatsPlatIdRoute
+}
+
+const RestaurantsRestoIdRouteChildren: RestaurantsRestoIdRouteChildren = {
+  RestaurantsRestoIdPlatsPlatIdRoute: RestaurantsRestoIdPlatsPlatIdRoute,
+}
+
+const RestaurantsRestoIdRouteWithChildren =
+  RestaurantsRestoIdRoute._addFileChildren(RestaurantsRestoIdRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
@@ -420,6 +471,7 @@ const rootRouteChildren: RootRouteChildren = {
   RestaurantRoute: RestaurantRoute,
   SuiviRoute: SuiviRoute,
   TableeRoute: TableeRoute,
+  RestaurantsRestoIdRoute: RestaurantsRestoIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

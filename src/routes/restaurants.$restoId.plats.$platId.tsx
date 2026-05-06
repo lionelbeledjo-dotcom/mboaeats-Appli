@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Flame, Minus, Plus, ShoppingCart, Star } from "lucide-react";
 import { SmartBack } from "@/components/SmartBack";
-import { getDish } from "@/data/restaurants";
+import { getDish, type Dish, type Restaurant } from "@/data/restaurants";
 
 export const Route = createFileRoute("/restaurants/$restoId/plats/$platId")({
   loader: ({ params }) => {
@@ -32,7 +32,7 @@ export const Route = createFileRoute("/restaurants/$restoId/plats/$platId")({
 });
 
 function DishPage() {
-  const { restaurant, dish } = Route.useLoaderData();
+  const { restaurant, dish } = Route.useLoaderData() as { restaurant: Restaurant; dish: Dish };
   const [qty, setQty] = useState(1);
   const [picked, setPicked] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {};
