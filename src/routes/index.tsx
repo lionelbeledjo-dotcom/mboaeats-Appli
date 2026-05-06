@@ -600,16 +600,37 @@ function Footer() {
             Le goût du Cameroun, livré chaud — partout, en moins de 30 min.
           </p>
         </div>
-        {[
-          { title: "Produit", links: ["Restaurants", "Tablée", "Mboa Gold", "Mboa AI"] },
-          { title: "Entreprise", links: ["À propos", "Carrières", "Presse", "Partenaires"] },
-          { title: "Aide", links: ["Centre d'aide", "Devenir livreur", "Devenir resto", "Contact"] },
-        ].map((col) => (
+        {([
+          { title: "Produit", links: [
+            { label: "Restaurants", to: "/" },
+            { label: "Tablée", to: "/tablee" },
+            { label: "Mboa Gold", to: "/fidelite" },
+            { label: "Mboa AI", to: "/mboa-ai" },
+          ]},
+          { title: "Entreprise", links: [
+            { label: "À propos", to: "/aide" },
+            { label: "Devenir livreur", to: "/devenir-livreur" },
+            { label: "Devenir resto", to: "/devenir-resto" },
+            { label: "Espace Admin", to: "/admin" },
+          ]},
+          { title: "Aide", links: [
+            { label: "Centre d'aide", to: "/aide" },
+            { label: "Suivi de commande", to: "/suivi" },
+            { label: "Confidentialité", to: "/confidentialite" },
+            { label: "Contact email", to: "mailto:lionelbrown2728@yahoo.fr", external: true },
+          ]},
+        ] as const).map((col) => (
           <div key={col.title}>
             <p className="text-sm font-semibold">{col.title}</p>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               {col.links.map((l) => (
-                <li key={l}><a href="#" className="hover:text-foreground transition">{l}</a></li>
+                <li key={l.label}>
+                  {"external" in l && l.external ? (
+                    <a href={l.to} className="hover:text-foreground transition">{l.label}</a>
+                  ) : (
+                    <Link to={l.to} className="hover:text-foreground transition">{l.label}</Link>
+                  )}
+                </li>
               ))}
             </ul>
           </div>

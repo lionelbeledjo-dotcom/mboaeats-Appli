@@ -15,6 +15,8 @@ import { Route as RestaurantRouteImport } from './routes/restaurant'
 import { Route as MboaAiRouteImport } from './routes/mboa-ai'
 import { Route as LivreurRouteImport } from './routes/livreur'
 import { Route as FideliteRouteImport } from './routes/fidelite'
+import { Route as DevenirRestoRouteImport } from './routes/devenir-resto'
+import { Route as DevenirLivreurRouteImport } from './routes/devenir-livreur'
 import { Route as ConnexionRouteImport } from './routes/connexion'
 import { Route as ConfidentialiteRouteImport } from './routes/confidentialite'
 import { Route as CheckoutRouteImport } from './routes/checkout'
@@ -58,6 +60,16 @@ const LivreurRoute = LivreurRouteImport.update({
 const FideliteRoute = FideliteRouteImport.update({
   id: '/fidelite',
   path: '/fidelite',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevenirRestoRoute = DevenirRestoRouteImport.update({
+  id: '/devenir-resto',
+  path: '/devenir-resto',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevenirLivreurRoute = DevenirLivreurRouteImport.update({
+  id: '/devenir-livreur',
+  path: '/devenir-livreur',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConnexionRoute = ConnexionRouteImport.update({
@@ -140,6 +152,8 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRoute
   '/confidentialite': typeof ConfidentialiteRoute
   '/connexion': typeof ConnexionRoute
+  '/devenir-livreur': typeof DevenirLivreurRoute
+  '/devenir-resto': typeof DevenirRestoRoute
   '/fidelite': typeof FideliteRoute
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
@@ -161,6 +175,8 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/confidentialite': typeof ConfidentialiteRoute
   '/connexion': typeof ConnexionRoute
+  '/devenir-livreur': typeof DevenirLivreurRoute
+  '/devenir-resto': typeof DevenirRestoRoute
   '/fidelite': typeof FideliteRoute
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
@@ -184,6 +200,8 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRoute
   '/confidentialite': typeof ConfidentialiteRoute
   '/connexion': typeof ConnexionRoute
+  '/devenir-livreur': typeof DevenirLivreurRoute
+  '/devenir-resto': typeof DevenirRestoRoute
   '/fidelite': typeof FideliteRoute
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
@@ -208,6 +226,8 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/confidentialite'
     | '/connexion'
+    | '/devenir-livreur'
+    | '/devenir-resto'
     | '/fidelite'
     | '/livreur'
     | '/mboa-ai'
@@ -229,6 +249,8 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/confidentialite'
     | '/connexion'
+    | '/devenir-livreur'
+    | '/devenir-resto'
     | '/fidelite'
     | '/livreur'
     | '/mboa-ai'
@@ -251,6 +273,8 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/confidentialite'
     | '/connexion'
+    | '/devenir-livreur'
+    | '/devenir-resto'
     | '/fidelite'
     | '/livreur'
     | '/mboa-ai'
@@ -274,6 +298,8 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRoute
   ConfidentialiteRoute: typeof ConfidentialiteRoute
   ConnexionRoute: typeof ConnexionRoute
+  DevenirLivreurRoute: typeof DevenirLivreurRoute
+  DevenirRestoRoute: typeof DevenirRestoRoute
   FideliteRoute: typeof FideliteRoute
   LivreurRoute: typeof LivreurRoute
   MboaAiRoute: typeof MboaAiRoute
@@ -325,6 +351,20 @@ declare module '@tanstack/react-router' {
       path: '/fidelite'
       fullPath: '/fidelite'
       preLoaderRoute: typeof FideliteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/devenir-resto': {
+      id: '/devenir-resto'
+      path: '/devenir-resto'
+      fullPath: '/devenir-resto'
+      preLoaderRoute: typeof DevenirRestoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/devenir-livreur': {
+      id: '/devenir-livreur'
+      path: '/devenir-livreur'
+      fullPath: '/devenir-livreur'
+      preLoaderRoute: typeof DevenirLivreurRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/connexion': {
@@ -465,6 +505,8 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRoute,
   ConfidentialiteRoute: ConfidentialiteRoute,
   ConnexionRoute: ConnexionRoute,
+  DevenirLivreurRoute: DevenirLivreurRoute,
+  DevenirRestoRoute: DevenirRestoRoute,
   FideliteRoute: FideliteRoute,
   LivreurRoute: LivreurRoute,
   MboaAiRoute: MboaAiRoute,
