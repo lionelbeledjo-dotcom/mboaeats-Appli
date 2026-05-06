@@ -4,6 +4,13 @@
 const KEY = "mboa_cart_sound";
 export const CART_SOUND_EVT = "mboa_cart_sound_changed";
 
+// Lightweight dev-only logger. Stripped in production builds (import.meta.env.DEV === false).
+const DEV =
+  typeof import.meta !== "undefined" && (import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV === true;
+function dlog(...args: unknown[]) {
+  if (DEV) console.log("[cart-sound]", ...args);
+}
+
 export function isCartSoundEnabled(): boolean {
   try {
     return localStorage.getItem(KEY) === "on";
