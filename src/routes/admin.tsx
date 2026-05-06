@@ -22,6 +22,7 @@ export const Route = createFileRoute("/admin")({
 const navItems = [
   { title: "Vue d'ensemble", url: "/admin", icon: LayoutDashboard, exact: true },
   { title: "Commissions", url: "/admin/commissions", icon: Coins },
+  { title: "Zones livraison", url: "/admin/zones", icon: MapPin },
   { title: "Restaurants", url: "/admin/restaurants", icon: Store },
   { title: "Livreurs", url: "/admin/livreurs", icon: Bike },
   { title: "Litiges", url: "/admin/litiges", icon: AlertTriangle, badge: 4 },
