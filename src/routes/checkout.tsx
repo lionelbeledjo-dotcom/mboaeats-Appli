@@ -34,8 +34,9 @@ function Checkout() {
   const { items: cartItems, subtotal } = useCart();
   const cart = cartItems.map((i: { name: string; qty: number; price: number }) => ({ name: i.name, qty: i.qty, price: i.price }));
   const [hasPass, setHasPass] = useState(false);
+  const [promo, setPromo] = useState<{ code: string; discount: number } | null>(null);
   const delivery = hasPass || subtotal === 0 ? 0 : 800;
-  const total = subtotal + delivery;
+  const total = Math.max(0, subtotal + delivery - (promo?.discount ?? 0));
 
   const [method, setMethod] = useState<Method>("momo");
   const [phone, setPhone] = useState("690 00 00 00");
