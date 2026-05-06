@@ -25,6 +25,7 @@ function ProfilPage() {
   const [signingOut, setSigningOut] = useState(false);
   const [demoUser, setDemoUser] = useState<DemoUser | null>(null);
   const [authEmail, setAuthEmail] = useState<string | null>(null);
+  const [soundOn, setSoundOn] = useState(false);
 
   useEffect(() => {
     try {
