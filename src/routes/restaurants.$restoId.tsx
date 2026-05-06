@@ -182,7 +182,26 @@ function RestaurantPage() {
                         />
                         <button
                           aria-label={`Ajouter ${dish.name} au panier`}
-                          onClick={(e) => e.preventDefault()}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            addToCart({
+                              id: `${dish.id}__default`,
+                              dishId: dish.id,
+                              restoId: restaurant.id,
+                              name: dish.name,
+                              price: dish.price,
+                              qty: 1,
+                              image: dish.image,
+                            });
+                            toast.success("L'article a été ajouté au panier !", {
+                              description: `1 × ${dish.name}`,
+                              action: {
+                                label: "Voir le panier",
+                                onClick: () => navigate({ to: "/checkout" }),
+                              },
+                            });
+                          }}
                           className="absolute -bottom-2 -right-2 flex h-9 w-9 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-glow transition-transform hover:scale-110 active:scale-95"
                         >
                           <Plus className="h-5 w-5" strokeWidth={2.6} />
