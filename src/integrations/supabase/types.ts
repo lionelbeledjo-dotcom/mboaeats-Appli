@@ -101,6 +101,90 @@ export type Database = {
         }
         Relationships: []
       }
+      mboapass_subscriptions: {
+        Row: {
+          amount_fcfa: number
+          created_at: string
+          ends_at: string
+          id: string
+          plan: string
+          starts_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_fcfa: number
+          created_at?: string
+          ends_at: string
+          id?: string
+          plan: string
+          starts_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_fcfa?: number
+          created_at?: string
+          ends_at?: string
+          id?: string
+          plan?: string
+          starts_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount_fcfa: number
+          created_at: string
+          id: string
+          metadata: Json
+          msisdn: string
+          otp_code: string | null
+          provider: string
+          provider_tx_id: string | null
+          purpose: string
+          reference: string
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount_fcfa: number
+          created_at?: string
+          id?: string
+          metadata?: Json
+          msisdn: string
+          otp_code?: string | null
+          provider: string
+          provider_tx_id?: string | null
+          purpose?: string
+          reference: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount_fcfa?: number
+          created_at?: string
+          id?: string
+          metadata?: Json
+          msisdn?: string
+          otp_code?: string | null
+          provider?: string
+          provider_tx_id?: string | null
+          purpose?: string
+          reference?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       platform_settings: {
         Row: {
           description: string | null
