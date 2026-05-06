@@ -19,6 +19,7 @@ import { Route as AdressesRouteImport } from './routes/adresses'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminCommissionsRouteImport } from './routes/admin.commissions'
 
 const TableeRoute = TableeRouteImport.update({
   id: '/tablee',
@@ -70,6 +71,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCommissionsRoute = AdminCommissionsRouteImport.update({
+  id: '/commissions',
+  path: '/commissions',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/mboa-ai': typeof MboaAiRoute
   '/suivi': typeof SuiviRoute
   '/tablee': typeof TableeRoute
+  '/admin/commissions': typeof AdminCommissionsRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
@@ -92,6 +99,7 @@ export interface FileRoutesByTo {
   '/mboa-ai': typeof MboaAiRoute
   '/suivi': typeof SuiviRoute
   '/tablee': typeof TableeRoute
+  '/admin/commissions': typeof AdminCommissionsRoute
   '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
@@ -105,6 +113,7 @@ export interface FileRoutesById {
   '/mboa-ai': typeof MboaAiRoute
   '/suivi': typeof SuiviRoute
   '/tablee': typeof TableeRoute
+  '/admin/commissions': typeof AdminCommissionsRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
@@ -119,6 +128,7 @@ export interface FileRouteTypes {
     | '/mboa-ai'
     | '/suivi'
     | '/tablee'
+    | '/admin/commissions'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -130,6 +140,7 @@ export interface FileRouteTypes {
     | '/mboa-ai'
     | '/suivi'
     | '/tablee'
+    | '/admin/commissions'
     | '/admin'
   id:
     | '__root__'
@@ -142,6 +153,7 @@ export interface FileRouteTypes {
     | '/mboa-ai'
     | '/suivi'
     | '/tablee'
+    | '/admin/commissions'
     | '/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -229,14 +241,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/commissions': {
+      id: '/admin/commissions'
+      path: '/commissions'
+      fullPath: '/admin/commissions'
+      preLoaderRoute: typeof AdminCommissionsRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
+  AdminCommissionsRoute: typeof AdminCommissionsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminCommissionsRoute: AdminCommissionsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
