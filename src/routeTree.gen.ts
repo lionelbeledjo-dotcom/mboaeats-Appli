@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TableeRouteImport } from './routes/tablee'
 import { Route as SuiviRouteImport } from './routes/suivi'
+import { Route as RestaurantRouteImport } from './routes/restaurant'
 import { Route as MboaAiRouteImport } from './routes/mboa-ai'
 import { Route as LivreurRouteImport } from './routes/livreur'
 import { Route as FideliteRouteImport } from './routes/fidelite'
@@ -32,6 +33,11 @@ const TableeRoute = TableeRouteImport.update({
 const SuiviRoute = SuiviRouteImport.update({
   id: '/suivi',
   path: '/suivi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RestaurantRoute = RestaurantRouteImport.update({
+  id: '/restaurant',
+  path: '/restaurant',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MboaAiRoute = MboaAiRouteImport.update({
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/fidelite': typeof FideliteRoute
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
+  '/restaurant': typeof RestaurantRoute
   '/suivi': typeof SuiviRoute
   '/tablee': typeof TableeRoute
   '/admin/commissions': typeof AdminCommissionsRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/fidelite': typeof FideliteRoute
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
+  '/restaurant': typeof RestaurantRoute
   '/suivi': typeof SuiviRoute
   '/tablee': typeof TableeRoute
   '/admin/commissions': typeof AdminCommissionsRoute
@@ -135,6 +143,7 @@ export interface FileRoutesById {
   '/fidelite': typeof FideliteRoute
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
+  '/restaurant': typeof RestaurantRoute
   '/suivi': typeof SuiviRoute
   '/tablee': typeof TableeRoute
   '/admin/commissions': typeof AdminCommissionsRoute
@@ -153,6 +162,7 @@ export interface FileRouteTypes {
     | '/fidelite'
     | '/livreur'
     | '/mboa-ai'
+    | '/restaurant'
     | '/suivi'
     | '/tablee'
     | '/admin/commissions'
@@ -168,6 +178,7 @@ export interface FileRouteTypes {
     | '/fidelite'
     | '/livreur'
     | '/mboa-ai'
+    | '/restaurant'
     | '/suivi'
     | '/tablee'
     | '/admin/commissions'
@@ -184,6 +195,7 @@ export interface FileRouteTypes {
     | '/fidelite'
     | '/livreur'
     | '/mboa-ai'
+    | '/restaurant'
     | '/suivi'
     | '/tablee'
     | '/admin/commissions'
@@ -201,6 +213,7 @@ export interface RootRouteChildren {
   FideliteRoute: typeof FideliteRoute
   LivreurRoute: typeof LivreurRoute
   MboaAiRoute: typeof MboaAiRoute
+  RestaurantRoute: typeof RestaurantRoute
   SuiviRoute: typeof SuiviRoute
   TableeRoute: typeof TableeRoute
 }
@@ -219,6 +232,13 @@ declare module '@tanstack/react-router' {
       path: '/suivi'
       fullPath: '/suivi'
       preLoaderRoute: typeof SuiviRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/restaurant': {
+      id: '/restaurant'
+      path: '/restaurant'
+      fullPath: '/restaurant'
+      preLoaderRoute: typeof RestaurantRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mboa-ai': {
@@ -334,6 +354,7 @@ const rootRouteChildren: RootRouteChildren = {
   FideliteRoute: FideliteRoute,
   LivreurRoute: LivreurRoute,
   MboaAiRoute: MboaAiRoute,
+  RestaurantRoute: RestaurantRoute,
   SuiviRoute: SuiviRoute,
   TableeRoute: TableeRoute,
 }
