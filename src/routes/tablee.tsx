@@ -45,8 +45,53 @@ function TableePage() {
   ]);
 
   const inviteLink = "https://mboa.eats/t/sandra-anniv";
-  const total = participants.reduce((s, p) => s + p.items.reduce((a, i) => a + i.price, 0), 0);
+  const totalRaw = participants.reduce((s, p) => s + p.items.reduce((a, i) => a + i.price, 0), 0);
   const paidCount = participants.filter((p) => p.paid).length;
+
+  // Promo + paiement perso
+  const [promo, setPromo] = useState<{ code: string; discount: number } | null>(null);
+  const [promoOpen, setPromoOpen] = useState(false);
+  const [promoCode, setPromoCode] = useState("");
+  const [promoErr, setPromoErr] = useState<string | null>(null);
+  const PROMOS: Record<string, number> = { MBOA10: 350, BIENVENUE: 1000, TABLEE: 500 };
+
+  const me = participants.find((p) => p.id === "1");
+  const mySubtotal = me ? me.items.reduce((a, i) => a + i.price, 0) : 0;
+  const myTotal = Math.max(0, mySubtotal - (promo?.discount ?? 0));
+  const total = totalRaw;
+
+  const [payOpen, setPayOpen] = useState(false);
+  const [payStep, setPayStep] = useState<"otp" | "loading" | "done">("otp");
+  const [otp, setOtp] = useState("");
+  const [otpErr, setOtpErr] = useState<string | null>(null);
+
+  const applyPromo = () => {
+    const k = promoCode.trim().toUpperCase();
+    if (!k) { setPromoErr("Saisis un code"); return; }
+    const d = PROMOS[k];
+    if (!d) { setPromoErr("Code promo invalide"); return; }
+    setPromo({ code: k, discount: d });
+    setPromoCode("");
+    setPromoErr(null);
+    setPromoOpen(false);
+  };
+
+  const openPayment = () => {
+    setPayStep("otp");
+    setOtp("");
+    setOtpErr(null);
+    setPayOpen(true);
+  };
+
+  const submitOtp = () => {
+    if (otp.length < 4) { setOtpErr("Code à 4-6 chiffres"); return; }
+    setPayStep("loading");
+    setTimeout(() => {
+      setPayStep("done");
+      setParticipants((p) => p.map((x) => (x.id === "1" ? { ...x, paid: true } : x)));
+      setTimeout(() => setPayOpen(false), 1400);
+    }, 1200);
+  };
 
   const copyLink = async () => {
     await navigator.clipboard.writeText(inviteLink);
