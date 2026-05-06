@@ -59,11 +59,11 @@ function ProfilPage() {
         <div className="mx-auto max-w-md px-4 py-5">
           <div className="flex items-center gap-3">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-primary text-xl font-bold text-primary-foreground shadow-glow">
-              LB
+              {initials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-display text-lg font-bold">Lionel Brown</p>
-              <p className="truncate text-xs text-muted-foreground">lionelbrown2728@yahoo.fr</p>
+              <p className="font-display text-lg font-bold capitalize">{displayName}</p>
+              <p className="truncate text-xs text-muted-foreground">{identifier}</p>
             </div>
             <Link to="/connexion" aria-label="Aller à la connexion" className="rounded-full border border-border bg-surface/60 p-2">
               <LogOut className="h-4 w-4" />
