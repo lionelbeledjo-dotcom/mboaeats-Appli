@@ -60,7 +60,14 @@ function Suivi() {
           <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" /> Accueil
           </Link>
-          <span className="font-display font-bold">Suivi <span className="text-gradient-primary">live</span></span>
+          <span className="font-display font-bold inline-flex items-center gap-2">
+            Suivi <span className="text-gradient-primary">live</span>
+            {livePos && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-400">
+                <Radio className="h-3 w-3 animate-pulse" /> GPS
+              </span>
+            )}
+          </span>
           <div className="w-16" />
         </div>
       </header>
