@@ -243,6 +243,21 @@ const braiserieWouriDishes: Dish[] = [
   },
 ];
 
+// ===== ENTRÉES (Le Penja) =====
+const entreesPenja: Dish[] = [
+  { id: "accras-macabo", name: "Accras de macabo", description: "Beignets croustillants de macabo râpé, cœur moelleux, sauce piment maison.", price: 2500, image: dishPouletDg, popular: true },
+  { id: "crevettes-kribi", name: "Entrée de crevettes de Kribi", description: "Crevettes sauvages de Kribi sautées à l'ail, gingembre et citron vert.", price: 4500, image: dishSuya, popular: true },
+  { id: "salade-avocat-ouest", name: "Salade d'avocat de l'Ouest", description: "Avocats fondants des Bamboutos, tomates, oignon rouge, vinaigrette à l'huile de palmiste.", price: 2800, image: dishEru },
+];
+
+// ===== KOKI & ACCOMPAGNEMENTS (Yaoundé) =====
+const accompagnementsYaounde: Dish[] = [
+  { id: "koki-haricots-rouges", name: "Koki de haricots rouges", description: "Pâte de haricots rouges cuite à la vapeur dans la feuille de bananier, huile de palme.", price: 2000, image: dishEru, popular: true },
+  { id: "miondo", name: "Miondo", description: "Bâtons de manioc fins fermentés, cuits à la feuille.", price: 800, image: dishEru },
+  { id: "macabo-rape", name: "Macabo râpé", description: "Macabo râpé cuit à la vapeur, beurre fondu et sel marin.", price: 1200, image: dishPouletDg },
+  { id: "alloco-yaounde", name: "Plantain mûr frit (Alloco)", description: "Plantain bien mûr frit, croustillant dehors, fondant dedans.", price: 1500, image: dishPouletDg },
+];
+
 export const restaurants: Restaurant[] = [
   {
     id: "la-braiserie-du-wouri",
@@ -270,6 +285,7 @@ export const restaurants: Restaurant[] = [
     cover: dishPoisson,
     badge: "Gastronomique",
     categories: [
+      { id: "entrees", label: "Entrées", dishes: entreesPenja },
       { id: "signatures", label: "Signatures du chef", dishes: lePenjaDishes.slice(0, 2) },
       { id: "mer", label: "Produits de la mer", dishes: lePenjaDishes.slice(2) },
     ],
@@ -329,7 +345,9 @@ export const restaurants: Restaurant[] = [
     badge: "Authentique",
     categories: [
       { id: "packs", label: "Packs signature", dishes: [goutDuPaysDishes[0]] },
-      { id: "grill", label: "Grillades & accompagnements", dishes: goutDuPaysDishes.slice(1) },
+      { id: "grill", label: "Grillades", dishes: goutDuPaysDishes.slice(1, 2) },
+      { id: "koki-accomp", label: "Koki & accompagnements", dishes: accompagnementsYaounde },
+      { id: "boissons", label: "Boissons & alloco", dishes: goutDuPaysDishes.slice(2) },
     ],
   },
   {
