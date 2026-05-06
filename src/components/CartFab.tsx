@@ -24,8 +24,9 @@ export function CartFab() {
       <div className="relative">
         <ShoppingBag className="h-5 w-5" aria-hidden="true" />
         <span
+          key={count}
           aria-hidden="true"
-          className="absolute -right-2 -top-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-background px-1 text-[10px] font-bold leading-none text-primary ring-2 ring-primary tabular-nums sm:h-[22px] sm:min-w-[22px] sm:text-[11px]"
+          className="absolute -right-2 -top-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-background px-1 text-[10px] font-bold leading-none text-primary ring-2 ring-primary tabular-nums animate-scale-in sm:h-[22px] sm:min-w-[22px] sm:text-[11px]"
         >
           {displayCount}
         </span>
