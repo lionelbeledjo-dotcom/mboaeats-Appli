@@ -23,6 +23,7 @@ const steps = [
 function Suivi() {
   const [progress, setProgress] = useState(0.62);
   const [active, setActive] = useState(2);
+  const [livePos, setLivePos] = useState<{ lat: number; lng: number } | null>(null);
   const eta = Math.max(1, Math.round(18 * (1 - progress)));
 
   useEffect(() => {
@@ -34,6 +35,22 @@ function Suivi() {
       });
     }, 1500);
     return () => clearInterval(t);
+  }, []);
+
+  // Realtime subscription to driver_locations (Lovable Cloud)
+  useEffect(() => {
+    const channel = supabase
+      .channel("driver-tracking")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "driver_locations" },
+        (payload) => {
+          const row = (payload.new ?? payload.old) as { lat?: number; lng?: number } | null;
+          if (row?.lat != null && row?.lng != null) setLivePos({ lat: row.lat, lng: row.lng });
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   return (
