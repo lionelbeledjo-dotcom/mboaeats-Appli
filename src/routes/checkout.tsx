@@ -16,7 +16,7 @@ export const Route = createFileRoute("/checkout")({
 });
 
 type Method = "momo" | "orange" | "card" | "cash";
-type Step = "choose" | "ussd" | "card" | "success";
+type Step = "choose" | "ussd" | "otp" | "card" | "success";
 
 const cart = [
   { name: "Ndolé poisson", qty: 1, price: 2500 },
