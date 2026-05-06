@@ -607,7 +607,7 @@ function Footer() {
             { label: "Centre d'aide", to: "/aide" },
             { label: "Suivi de commande", to: "/suivi" },
             { label: "Confidentialité", to: "/confidentialite" },
-            { label: "Contact email", to: "mailto:lionelbrown2728@yahoo.fr", external: true },
+            { label: "Contact", to: "/contact" },
           ]},
         ] as const).map((col) => (
           <div key={col.title}>
