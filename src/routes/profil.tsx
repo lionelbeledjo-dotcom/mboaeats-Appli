@@ -110,6 +110,32 @@ function ProfilPage() {
         </Section>
 
         <Section title="Préférences">
+          <li>
+            <button
+              type="button"
+              onClick={() => setCartSoundEnabled(!soundOn)}
+              aria-pressed={soundOn}
+              className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-surface/80"
+            >
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                {soundOn ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              </span>
+              <span className="flex-1 text-sm font-medium">
+                Son du panier
+                <span className="block text-[11px] font-normal text-muted-foreground">
+                  Bip discret à l'ajout / retrait
+                </span>
+              </span>
+              <span
+                className={`relative h-6 w-11 rounded-full transition ${soundOn ? "bg-primary" : "bg-muted"}`}
+                aria-hidden="true"
+              >
+                <span
+                  className={`absolute top-0.5 h-5 w-5 rounded-full bg-background shadow transition-transform ${soundOn ? "translate-x-[22px]" : "translate-x-0.5"}`}
+                />
+              </span>
+            </button>
+          </li>
           <Row to="/profil" icon={Bell} label="Notifications" />
           <Row to="/confidentialite" icon={Shield} label="Confidentialité & RGPD" />
           <Row to="/aide" icon={HelpCircle} label="Aide & support" />
