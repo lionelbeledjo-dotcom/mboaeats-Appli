@@ -34,8 +34,9 @@ function Checkout() {
   const { items: cartItems, subtotal } = useCart();
   const cart = cartItems.map((i: { name: string; qty: number; price: number }) => ({ name: i.name, qty: i.qty, price: i.price }));
   const [hasPass, setHasPass] = useState(false);
+  const [promo, setPromo] = useState<{ code: string; discount: number } | null>(null);
   const delivery = hasPass || subtotal === 0 ? 0 : 800;
-  const total = subtotal + delivery;
+  const total = Math.max(0, subtotal + delivery - (promo?.discount ?? 0));
 
   const [method, setMethod] = useState<Method>("momo");
   const [phone, setPhone] = useState("690 00 00 00");
@@ -162,7 +163,7 @@ function Checkout() {
           {step === "success" && <SuccessScreen method={method} total={total} />}
         </section>
 
-        <Summary cart={cart} subtotal={subtotal} delivery={delivery} total={total} hasPass={hasPass} landmark={landmark} />
+        <Summary cart={cart} subtotal={subtotal} delivery={delivery} total={total} hasPass={hasPass} landmark={landmark} promo={promo} setPromo={setPromo} />
       </main>
     </div>
   );
@@ -400,9 +401,31 @@ function SuccessScreen({ method, total }: { method: Method; total: number }) {
   );
 }
 
-function Summary({ cart, subtotal, delivery, total, hasPass, landmark }: {
+function Summary({ cart, subtotal, delivery, total, hasPass, landmark, promo, setPromo }: {
   cart: { name: string; qty: number; price: number }[]; subtotal: number; delivery: number; total: number; hasPass: boolean; landmark: string;
+  promo: { code: string; discount: number } | null;
+  setPromo: (p: { code: string; discount: number } | null) => void;
 }) {
+  const [open, setOpen] = useState(false);
+  const [code, setCode] = useState("");
+  const [err, setErr] = useState<string | null>(null);
+
+  const PROMOS: Record<string, number> = {
+    MBOA10: Math.round(subtotal * 0.1),
+    BIENVENUE: 1000,
+    LIVRAISON: delivery,
+  };
+
+  const apply = () => {
+    const k = code.trim().toUpperCase();
+    if (!k) { setErr("Saisis un code"); return; }
+    const discount = PROMOS[k];
+    if (!discount) { setErr("Code promo invalide"); return; }
+    setErr(null);
+    setPromo({ code: k, discount });
+    setCode("");
+  };
+
   return (
     <aside className="rounded-3xl border border-border bg-surface/60 p-5 h-fit md:sticky md:top-20">
       <h3 className="font-display text-lg font-bold">Ta commande</h3>
@@ -425,6 +448,12 @@ function Summary({ cart, subtotal, delivery, total, hasPass, landmark }: {
             <span>{delivery.toLocaleString("fr-FR")} F</span>
           )}
         </div>
+        {promo && (
+          <div className="flex justify-between text-primary">
+            <span>Promo {promo.code}</span>
+            <span>−{promo.discount.toLocaleString("fr-FR")} F</span>
+          </div>
+        )}
         <div className="flex justify-between font-display text-xl font-extrabold"><span>Total</span><span className="text-gradient-gold">{total.toLocaleString("fr-FR")} F</span></div>
       </div>
       {landmark && (
@@ -432,9 +461,44 @@ function Summary({ cart, subtotal, delivery, total, hasPass, landmark }: {
           📍 Repère : <span className="text-foreground">{landmark}</span>
         </p>
       )}
-      <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gold/40 bg-gold/5 py-2 text-xs font-semibold text-gold">
-        <Tag className="h-3 w-3" /> Ajouter un code promo
-      </button>
+      {promo ? (
+        <div className="mt-4 flex items-center justify-between rounded-xl border border-gold/40 bg-gold/5 px-3 py-2 text-xs">
+          <span className="font-semibold text-gold">✓ {promo.code} appliqué</span>
+          <button type="button" onClick={() => setPromo(null)} className="text-muted-foreground hover:text-foreground">Retirer</button>
+        </div>
+      ) : !open ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gold/40 bg-gold/5 py-2 text-xs font-semibold text-gold transition-colors hover:bg-gold/10"
+        >
+          <Tag className="h-3 w-3" /> Ajouter un code promo
+        </button>
+      ) : (
+        <div className="mt-4 space-y-2">
+          <div className="flex gap-2">
+            <input
+              autoFocus
+              value={code}
+              onChange={(e) => { setCode(e.target.value.toUpperCase()); setErr(null); }}
+              onKeyDown={(e) => { if (e.key === "Enter") apply(); }}
+              placeholder="MBOA10"
+              className="flex-1 rounded-xl border border-border bg-background/50 px-3 py-2 text-sm uppercase tracking-wider outline-none focus:border-primary"
+            />
+            <button
+              type="button"
+              onClick={apply}
+              className="rounded-xl bg-gradient-primary px-4 py-2 text-xs font-bold text-primary-foreground"
+            >
+              Appliquer
+            </button>
+          </div>
+          {err && <p className="text-[11px] text-destructive">{err}</p>}
+          <button type="button" onClick={() => { setOpen(false); setErr(null); setCode(""); }} className="text-[11px] text-muted-foreground hover:text-foreground">
+            Annuler
+          </button>
+        </div>
+      )}
     </aside>
   );
 }
