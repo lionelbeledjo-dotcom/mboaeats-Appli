@@ -290,6 +290,10 @@ function Restaurants() {
             key={r.name}
             to="/restaurants/$restoId"
             params={{ restoId: r.slug }}
+            preload="intent"
+            onMouseEnter={() => prefetchRestaurantImages(r.slug)}
+            onTouchStart={() => prefetchRestaurantImages(r.slug)}
+            onFocus={() => prefetchRestaurantImages(r.slug)}
             className="group relative block overflow-hidden rounded-3xl border border-border bg-card shadow-card transition-all hover:-translate-y-1 hover:shadow-glow animate-fade-up"
             style={{ animationDelay: `${i * 80}ms` }}
           >
