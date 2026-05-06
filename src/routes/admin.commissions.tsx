@@ -32,6 +32,8 @@ function Commissions() {
         </div>
       </div>
 
+      <CommissionConfig />
+
       <div className="grid gap-4 md:grid-cols-3">
         <Card label="Commissions encaissées" value="4 820 000" sub="FCFA · 7j" />
         <Card label="En attente" value="312 500" sub="FCFA · 18 commandes" />
