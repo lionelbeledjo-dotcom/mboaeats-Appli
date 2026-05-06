@@ -1,9 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft, Smartphone, CreditCard, Banknote, Check, Loader2, ShieldCheck,
-  Lock, ChevronRight, Webhook, Phone, MapPin, Tag,
+  Lock, ChevronRight, Webhook, MapPin, Tag, Crown, AlertCircle,
 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { supabase } from "@/integrations/supabase/client";
+import { initiatePayment, verifyPayment, getActiveMboaPass } from "@/server/payments.functions";
 
 export const Route = createFileRoute("/checkout")({
   component: Checkout,
@@ -24,17 +28,41 @@ const cart = [
   { name: "Bissap maison", qty: 2, price: 800 },
 ];
 
+const landmarkSchema = z.string().trim().min(8, "Décrivez un repère visible (≥ 8 caractères)").max(140);
+
 function Checkout() {
-  const subtotal = cart.reduce((s, i) => s + i.qty * i.price, 0);
-  const delivery = 800;
-  const total = subtotal + delivery;
   const navigate = useNavigate();
+  const initiate = useServerFn(initiatePayment);
+  const verify = useServerFn(verifyPayment);
+  const fetchPass = useServerFn(getActiveMboaPass);
+
+  const subtotal = cart.reduce((s, i) => s + i.qty * i.price, 0);
+  const [hasPass, setHasPass] = useState(false);
+  const delivery = hasPass ? 0 : 800;
+  const total = subtotal + delivery;
 
   const [method, setMethod] = useState<Method>("momo");
   const [phone, setPhone] = useState("690 00 00 00");
+  const [landmark, setLandmark] = useState("");
+  const [landmarkErr, setLandmarkErr] = useState<string | null>(null);
   const [step, setStep] = useState<Step>("choose");
+  const [reference, setReference] = useState<string | null>(null);
+  const [demoHint, setDemoHint] = useState<string | null>(null);
+  const [topError, setTopError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [seconds, setSeconds] = useState(20);
+
+  // Détection MboaPass (livraison gratuite)
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      try {
+        const r = await fetchPass({ data: { userId: user.id } });
+        setHasPass(!!r.active);
+      } catch { /* silencieux */ }
+    })();
+  }, [fetchPass]);
 
   useEffect(() => {
     if (step !== "ussd" || !pending) return;
@@ -43,17 +71,50 @@ function Checkout() {
     return () => clearTimeout(t);
   }, [step, pending, seconds]);
 
-  const start = () => {
+  const start = async () => {
+    setTopError(null);
+    const parsed = landmarkSchema.safeParse(landmark);
+    if (!parsed.success) {
+      setLandmarkErr(parsed.error.issues[0]?.message ?? "Repère requis");
+      return;
+    }
+    setLandmarkErr(null);
+
     if (method === "cash") return setStep("success");
     if (method === "card") return setStep("card");
-    setStep("ussd");
+
     setPending(true);
-    setSeconds(20);
+    try {
+      const cleanMsisdn = phone.replace(/\D/g, "");
+      const res = await initiate({
+        data: {
+          provider: method,
+          msisdn: `237${cleanMsisdn}`,
+          amount: total,
+          purpose: "order",
+          metadata: { landmark, cart: cart.map((c) => c.name) },
+        },
+      });
+      if (!res.ok) throw new Error(res.error ?? "Échec d'initiation");
+      setReference(res.reference);
+      setDemoHint(res.hint ?? null);
+      setStep("ussd");
+      setSeconds(20);
+    } catch (e) {
+      setPending(false);
+      setTopError(e instanceof Error ? e.message : "Erreur paiement");
+    }
   };
 
   const goToOtp = () => {
     setPending(false);
     setStep("otp");
+  };
+
+  const submitOtp = async (code: string) => {
+    if (!reference) throw new Error("Référence absente");
+    const r = await verify({ data: { reference, otp: code } });
+    if (!r.ok) throw new Error(r.error ?? "OTP invalide");
   };
 
   const confirm = () => {
@@ -76,28 +137,49 @@ function Checkout() {
 
       <main className="mx-auto grid max-w-5xl gap-6 px-4 py-6 md:grid-cols-[1.4fr_1fr] md:px-8">
         <section className="space-y-5">
+          {topError && (
+            <div className="flex items-start gap-2 rounded-2xl border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+              <AlertCircle className="mt-0.5 h-4 w-4" /> {topError}
+            </div>
+          )}
+          {hasPass && (
+            <div className="flex items-center gap-2 rounded-2xl border border-gold/40 bg-gold/10 p-3 text-sm">
+              <Crown className="h-4 w-4 text-gold" />
+              <span><strong className="text-gold">MboaPass actif</strong> — livraison offerte sur cette commande.</span>
+            </div>
+          )}
           {step === "choose" && (
-            <ChooseMethod method={method} setMethod={setMethod} phone={phone} setPhone={setPhone} onPay={start} total={total} />
+            <ChooseMethod
+              method={method} setMethod={setMethod}
+              phone={phone} setPhone={setPhone}
+              landmark={landmark} setLandmark={setLandmark} landmarkErr={landmarkErr}
+              onPay={start} total={total}
+            />
           )}
           {step === "ussd" && (
-            <UssdScreen method={method} phone={phone} pending={pending} seconds={seconds} total={total} onConfirm={goToOtp} />
+            <UssdScreen method={method} phone={phone} pending={pending} seconds={seconds} total={total} demoHint={demoHint} onConfirm={goToOtp} />
           )}
           {step === "otp" && (
-            <OtpScreen method={method} phone={phone} total={total} onConfirm={confirm} onBack={() => setStep("ussd")} />
+            <OtpScreen method={method} phone={phone} total={total} onSubmit={submitOtp} onSuccess={confirm} onBack={() => setStep("ussd")} demoHint={demoHint} />
           )}
           {step === "card" && <CardScreen total={total} onConfirm={confirm} />}
           {step === "success" && <SuccessScreen method={method} total={total} />}
         </section>
 
-        <Summary cart={cart} subtotal={subtotal} delivery={delivery} total={total} />
+        <Summary cart={cart} subtotal={subtotal} delivery={delivery} total={total} hasPass={hasPass} landmark={landmark} />
       </main>
     </div>
   );
 }
 
 function ChooseMethod({
-  method, setMethod, phone, setPhone, onPay, total,
-}: { method: Method; setMethod: (m: Method) => void; phone: string; setPhone: (s: string) => void; onPay: () => void; total: number }) {
+  method, setMethod, phone, setPhone, landmark, setLandmark, landmarkErr, onPay, total,
+}: {
+  method: Method; setMethod: (m: Method) => void;
+  phone: string; setPhone: (s: string) => void;
+  landmark: string; setLandmark: (s: string) => void; landmarkErr: string | null;
+  onPay: () => void; total: number;
+}) {
   return (
     <>
       <div className="rounded-3xl border border-border bg-surface/60 p-5">
@@ -105,8 +187,30 @@ function ChooseMethod({
           <MapPin className="h-4 w-4 text-primary" />
           <h2 className="font-display text-lg font-bold">Livraison à</h2>
         </div>
-        <p className="mt-1 text-sm">Akwa, Douala · Portail bleu derrière la pharmacie</p>
+        <p className="mt-1 text-sm">Akwa, Douala</p>
         <p className="mt-1 text-xs text-muted-foreground">Arrivée estimée : 25-30 min</p>
+
+        <label className="mt-4 block">
+          <span className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-primary">
+            <MapPin className="h-3 w-3" /> Point de repère visuel <span className="text-destructive">*</span>
+          </span>
+          <textarea
+            value={landmark}
+            onChange={(e) => setLandmark(e.target.value)}
+            placeholder="Ex: derrière la station Total, portail bleu en face de la pharmacie Jordan…"
+            rows={2}
+            maxLength={140}
+            className={`mt-2 w-full rounded-xl border bg-background/50 px-3 py-3 text-sm outline-none focus:border-primary ${
+              landmarkErr ? "border-destructive" : "border-border"
+            }`}
+          />
+          <div className="mt-1 flex justify-between text-[11px]">
+            <span className={landmarkErr ? "text-destructive" : "text-muted-foreground"}>
+              {landmarkErr ?? "Aide le livreur à te trouver rapidement (transmis à sa tournée)."}
+            </span>
+            <span className="text-muted-foreground">{landmark.length}/140</span>
+          </div>
+        </label>
       </div>
 
       <div className="rounded-3xl border border-border bg-surface/60 p-5">
@@ -130,7 +234,7 @@ function ChooseMethod({
               <input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" className="flex-1 bg-transparent px-2 py-2 text-base outline-none" />
             </div>
             <p className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
-              <ShieldCheck className="h-3 w-3 text-primary" /> Vous recevrez une notification USSD pour confirmer
+              <ShieldCheck className="h-3 w-3 text-primary" /> Tu recevras une notification + un code OTP par SMS pour confirmer
             </p>
           </div>
         )}
@@ -178,8 +282,8 @@ function PayOption({ id, current, setCurrent, title, subtitle, icon, badge }: {
   );
 }
 
-function UssdScreen({ method, phone, pending, seconds, total, onConfirm }: {
-  method: Method; phone: string; pending: boolean; seconds: number; total: number; onConfirm: () => void;
+function UssdScreen({ method, phone, pending, seconds, total, demoHint, onConfirm }: {
+  method: Method; phone: string; pending: boolean; seconds: number; total: number; demoHint: string | null; onConfirm: () => void;
 }) {
   const code = method === "momo" ? "*126#" : "#150*1#";
   const brand = method === "momo" ? "MTN MoMo" : "Orange Money";
@@ -190,15 +294,15 @@ function UssdScreen({ method, phone, pending, seconds, total, onConfirm }: {
           <Smartphone className="h-6 w-6 text-primary-foreground" />
         </div>
         <div>
-          <h2 className="font-display text-xl font-bold">Confirmez sur votre téléphone</h2>
+          <h2 className="font-display text-xl font-bold">Confirme sur ton téléphone</h2>
           <p className="text-xs text-muted-foreground">{brand} · +237 {phone}</p>
         </div>
       </div>
 
       <div className="mt-6 rounded-2xl border border-border bg-background/50 p-5">
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">Composez ou attendez la pop-up</p>
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">Compose ou attends la pop-up</p>
         <p className="mt-1 font-display text-3xl font-extrabold text-gradient-primary tracking-widest">{code}</p>
-        <p className="mt-3 text-sm">Confirmez le paiement de <span className="font-bold text-foreground">{total.toLocaleString("fr-FR")} FCFA</span> à <strong>MboaEats</strong>.</p>
+        <p className="mt-3 text-sm">Confirme le paiement de <span className="font-bold text-foreground">{total.toLocaleString("fr-FR")} FCFA</span> à <strong>MboaEats</strong>.</p>
       </div>
 
       <div className="mt-5 flex items-center gap-3 rounded-2xl border border-border bg-background/40 p-4">
@@ -207,7 +311,7 @@ function UssdScreen({ method, phone, pending, seconds, total, onConfirm }: {
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
             <div className="flex-1">
               <p className="text-sm font-semibold">En attente de la confirmation…</p>
-              <p className="text-xs text-muted-foreground">Webhook auto · Annule dans {seconds}s</p>
+              <p className="text-xs text-muted-foreground">Webhook auto · OTP dans {seconds}s</p>
             </div>
           </>
         ) : (
@@ -215,8 +319,14 @@ function UssdScreen({ method, phone, pending, seconds, total, onConfirm }: {
         )}
       </div>
 
+      {demoHint && (
+        <p className="mt-3 rounded-xl border border-amber-400/30 bg-amber-400/10 p-2 text-[11px] text-amber-200">
+          ⚙️ Mode démo — {demoHint}
+        </p>
+      )}
+
       <div className="mt-4 flex items-center gap-2 text-[11px] text-muted-foreground">
-        <Webhook className="h-3 w-3 text-primary" /> Confirmation automatique via API native MTN/Orange · Aucune saisie de PIN sur MboaEats
+        <Webhook className="h-3 w-3 text-primary" /> Confirmation via API native MTN/Orange · Aucune saisie de PIN sur MboaEats
       </div>
 
       <button onClick={onConfirm} className="mt-5 w-full rounded-2xl border border-emerald-500/40 bg-emerald-500/10 py-3 text-sm font-bold text-emerald-300 hover:bg-emerald-500/20">
@@ -284,7 +394,7 @@ function SuccessScreen({ method, total }: { method: Method; total: number }) {
       <h2 className="font-display text-2xl font-bold">{label} 🎉</h2>
       <p className="text-sm text-muted-foreground">
         {method === "cash"
-          ? `Vous paierez ${total.toLocaleString("fr-FR")} FCFA au livreur à l'arrivée.`
+          ? `Tu paieras ${total.toLocaleString("fr-FR")} FCFA au livreur à l'arrivée.`
           : `${total.toLocaleString("fr-FR")} FCFA débités · Reçu envoyé par SMS.`}
       </p>
       <Link to="/suivi" className="mt-3 rounded-2xl bg-gradient-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-glow">
@@ -294,13 +404,13 @@ function SuccessScreen({ method, total }: { method: Method; total: number }) {
   );
 }
 
-function Summary({ cart, subtotal, delivery, total }: {
-  cart: { name: string; qty: number; price: number }[]; subtotal: number; delivery: number; total: number;
+function Summary({ cart, subtotal, delivery, total, hasPass, landmark }: {
+  cart: { name: string; qty: number; price: number }[]; subtotal: number; delivery: number; total: number; hasPass: boolean; landmark: string;
 }) {
   return (
     <aside className="rounded-3xl border border-border bg-surface/60 p-5 h-fit md:sticky md:top-20">
-      <h3 className="font-display text-lg font-bold">Votre commande</h3>
-      <p className="text-xs text-muted-foreground">Chez Mama Biya · Akwa</p>
+      <h3 className="font-display text-lg font-bold">Ta commande</h3>
+      <p className="text-xs text-muted-foreground">Chez Mama Bello · Akwa</p>
       <ul className="mt-4 space-y-2 text-sm">
         {cart.map((i) => (
           <li key={i.name} className="flex justify-between">
@@ -311,9 +421,21 @@ function Summary({ cart, subtotal, delivery, total }: {
       </ul>
       <div className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
         <div className="flex justify-between text-muted-foreground"><span>Sous-total</span><span>{subtotal.toLocaleString("fr-FR")} F</span></div>
-        <div className="flex justify-between text-muted-foreground"><span>Livraison</span><span>{delivery.toLocaleString("fr-FR")} F</span></div>
+        <div className="flex justify-between text-muted-foreground">
+          <span>Livraison</span>
+          {hasPass ? (
+            <span className="font-bold text-gold">OFFERTE</span>
+          ) : (
+            <span>{delivery.toLocaleString("fr-FR")} F</span>
+          )}
+        </div>
         <div className="flex justify-between font-display text-xl font-extrabold"><span>Total</span><span className="text-gradient-gold">{total.toLocaleString("fr-FR")} F</span></div>
       </div>
+      {landmark && (
+        <p className="mt-3 rounded-xl border border-border bg-background/50 p-2 text-[11px] text-muted-foreground">
+          📍 Repère : <span className="text-foreground">{landmark}</span>
+        </p>
+      )}
       <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gold/40 bg-gold/5 py-2 text-xs font-semibold text-gold">
         <Tag className="h-3 w-3" /> Ajouter un code promo
       </button>
@@ -321,8 +443,10 @@ function Summary({ cart, subtotal, delivery, total }: {
   );
 }
 
-function OtpScreen({ method, phone, total, onConfirm, onBack }: {
-  method: Method; phone: string; total: number; onConfirm: () => void; onBack: () => void;
+function OtpScreen({ method, phone, total, onSubmit, onSuccess, onBack, demoHint }: {
+  method: Method; phone: string; total: number;
+  onSubmit: (code: string) => Promise<void>; onSuccess: () => void; onBack: () => void;
+  demoHint: string | null;
 }) {
   const brand = method === "momo" ? "MTN MoMo" : "Orange Money";
   const accent = method === "momo" ? "from-yellow-400 to-amber-500" : "from-orange-500 to-rose-500";
@@ -359,21 +483,21 @@ function OtpScreen({ method, phone, total, onConfirm, onBack }: {
     setDigits((d) => d.map((_, i) => arr[i] ?? ""));
   };
 
-  const submit = () => {
+  const submit = async () => {
     const code = digits.join("");
-    if (code.length < 6) { setError("Saisissez les 6 chiffres reçus par SMS."); return; }
+    if (code.length < 6) { setError("Saisis les 6 chiffres reçus par SMS."); return; }
     setVerifying(true);
     setError(null);
-    setTimeout(() => {
-      // Demo: code "000000" rejected to show error UI
-      if (code === "000000") {
-        setVerifying(false);
-        setError("Code OTP invalide. Vérifiez votre SMS et réessayez.");
-        setDigits(["", "", "", "", "", ""]);
-        return;
-      }
-      onConfirm();
-    }, 1400);
+    try {
+      await onSubmit(code);
+      onSuccess();
+    } catch (e) {
+      setVerifying(false);
+      setError(e instanceof Error ? e.message : "Code OTP invalide.");
+      setDigits(["", "", "", "", "", ""]);
+      const first = document.getElementById("otp-0") as HTMLInputElement | null;
+      first?.focus();
+    }
   };
 
   return (
@@ -389,7 +513,7 @@ function OtpScreen({ method, phone, total, onConfirm, onBack }: {
       </div>
 
       <p className="mt-5 text-sm text-muted-foreground">
-        Saisissez le code à 6 chiffres reçu par SMS pour confirmer le paiement de
+        Saisis le code à 6 chiffres reçu par SMS pour confirmer le paiement de
         <span className="ml-1 font-bold text-foreground">{total.toLocaleString("fr-FR")} FCFA</span>.
       </p>
 
@@ -416,6 +540,11 @@ function OtpScreen({ method, phone, total, onConfirm, onBack }: {
       </div>
 
       {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
+      {demoHint && (
+        <p className="mt-3 rounded-xl border border-amber-400/30 bg-amber-400/10 p-2 text-[11px] text-amber-200">
+          ⚙️ {demoHint}
+        </p>
+      )}
 
       <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
         <button onClick={onBack} className="hover:text-foreground">← Modifier le numéro</button>
