@@ -16,7 +16,9 @@ import { Route as LivreurRouteImport } from './routes/livreur'
 import { Route as FideliteRouteImport } from './routes/fidelite'
 import { Route as ConnexionRouteImport } from './routes/connexion'
 import { Route as AdressesRouteImport } from './routes/adresses'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 
 const TableeRoute = TableeRouteImport.update({
   id: '/tablee',
@@ -53,14 +55,25 @@ const AdressesRoute = AdressesRouteImport.update({
   path: '/adresses',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/adresses': typeof AdressesRoute
   '/connexion': typeof ConnexionRoute
   '/fidelite': typeof FideliteRoute
@@ -68,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/mboa-ai': typeof MboaAiRoute
   '/suivi': typeof SuiviRoute
   '/tablee': typeof TableeRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,10 +92,12 @@ export interface FileRoutesByTo {
   '/mboa-ai': typeof MboaAiRoute
   '/suivi': typeof SuiviRoute
   '/tablee': typeof TableeRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/adresses': typeof AdressesRoute
   '/connexion': typeof ConnexionRoute
   '/fidelite': typeof FideliteRoute
@@ -89,11 +105,13 @@ export interface FileRoutesById {
   '/mboa-ai': typeof MboaAiRoute
   '/suivi': typeof SuiviRoute
   '/tablee': typeof TableeRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/adresses'
     | '/connexion'
     | '/fidelite'
@@ -101,6 +119,7 @@ export interface FileRouteTypes {
     | '/mboa-ai'
     | '/suivi'
     | '/tablee'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,9 +130,11 @@ export interface FileRouteTypes {
     | '/mboa-ai'
     | '/suivi'
     | '/tablee'
+    | '/admin'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/adresses'
     | '/connexion'
     | '/fidelite'
@@ -121,10 +142,12 @@ export interface FileRouteTypes {
     | '/mboa-ai'
     | '/suivi'
     | '/tablee'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AdressesRoute: typeof AdressesRoute
   ConnexionRoute: typeof ConnexionRoute
   FideliteRoute: typeof FideliteRoute
@@ -185,6 +208,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdressesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -192,11 +222,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   AdressesRoute: AdressesRoute,
   ConnexionRoute: ConnexionRoute,
   FideliteRoute: FideliteRoute,
@@ -208,3 +256,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
