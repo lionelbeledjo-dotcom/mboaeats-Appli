@@ -39,6 +39,7 @@ export const Route = createFileRoute("/restaurants/$restoId/plats/$platId")({
 
 function DishPage() {
   const { restaurant, dish } = Route.useLoaderData() as { restaurant: Restaurant; dish: Dish };
+  const navigate = useNavigate();
   const [qty, setQty] = useState(1);
   const [picked, setPicked] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {};
