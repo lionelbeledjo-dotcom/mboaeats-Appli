@@ -1,8 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   Users, Copy, Check, Share2, Plus, Trash2, Crown, MessageCircle,
-  Smartphone, Clock, ArrowLeft, Sparkles, Tag, X, Loader2, ShieldCheck,
+  Smartphone, Clock, ArrowLeft, Sparkles, Tag,
 } from "lucide-react";
 
 export const Route = createFileRoute("/tablee")({
