@@ -30,16 +30,20 @@ function write(items: CartItem[]) {
   } catch {}
 }
 
+import { playCartSound } from "@/lib/cart-sound";
+
 export function addToCart(item: CartItem) {
   const items = read();
   const idx = items.findIndex((i) => i.id === item.id);
   if (idx >= 0) items[idx].qty += item.qty;
   else items.push(item);
   write(items);
+  playCartSound("add");
 }
 
 export function removeFromCart(id: string) {
   write(read().filter((i) => i.id !== id));
+  playCartSound("remove");
 }
 
 export function clearCart() {
