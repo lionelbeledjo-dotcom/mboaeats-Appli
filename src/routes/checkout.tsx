@@ -23,6 +23,8 @@ export const Route = createFileRoute("/checkout")({
 type Method = "momo" | "orange" | "card" | "cash";
 type Step = "choose" | "ussd" | "otp" | "card" | "success";
 
+const landmarkSchema = z.string().trim().min(8, "Décrivez un repère visible (≥ 8 caractères)").max(140);
+
 function Checkout() {
   const navigate = useNavigate();
   const initiate = useServerFn(initiatePayment);
