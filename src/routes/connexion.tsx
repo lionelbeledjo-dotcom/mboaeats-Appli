@@ -1,26 +1,33 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Phone, ShieldCheck, ArrowLeft, Loader2, Check } from "lucide-react";
+import { Phone, ShieldCheck, ArrowLeft, Loader2, Check, AlertCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/connexion")({
   component: Connexion,
   head: () => ({
     meta: [
       { title: "Connexion · MboaEats" },
-      { name: "description", content: "Connectez-vous en 5 secondes avec votre numéro Cameroun et un code OTP par SMS." },
+      { name: "description", content: "Connectez-vous en 5 secondes avec votre numéro Cameroun ou France et un code OTP par SMS." },
     ],
   }),
 });
 
 type Step = "phone" | "otp" | "done";
 
+const PREFIXES = [
+  { code: "+237", label: "🇨🇲 +237", min: 8 },
+  { code: "+33", label: "🇫🇷 +33", min: 9 },
+];
+
 function Connexion() {
   const [step, setStep] = useState<Step>("phone");
   const [prefix, setPrefix] = useState("+237");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
-  const [otp, setOtp] = useState(["", "", "", ""]);
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [resendIn, setResendIn] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
   const navigate = useNavigate();
 
@@ -30,12 +37,27 @@ function Connexion() {
     return () => clearTimeout(t);
   }, [resendIn]);
 
+  const fullPhone = () => `${prefix}${phone.replace(/\D/g, "")}`;
+
   const sendCode = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (phone.replace(/\D/g, "").length < 8) return;
+    setError(null);
+    const cur = PREFIXES.find((p) => p.code === prefix)!;
+    const digits = phone.replace(/\D/g, "");
+    if (digits.length < cur.min) {
+      setError(`Numéro trop court pour ${prefix}`);
+      return;
+    }
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 900));
+    const { error: err } = await supabase.auth.signInWithOtp({
+      phone: fullPhone(),
+      options: { channel: "sms" },
+    });
     setLoading(false);
+    if (err) {
+      setError(err.message || "Impossible d'envoyer le SMS. Vérifiez la configuration du fournisseur.");
+      return;
+    }
     setStep("otp");
     setResendIn(30);
     setTimeout(() => inputs.current[0]?.focus(), 50);
@@ -46,16 +68,33 @@ function Connexion() {
     const next = [...otp];
     next[i] = digit;
     setOtp(next);
-    if (digit && i < 3) inputs.current[i + 1]?.focus();
-    if (next.every((d) => d) && next.join("").length === 4) verify(next.join(""));
+    if (digit && i < 5) inputs.current[i + 1]?.focus();
+    if (next.every((d) => d) && next.join("").length === 6) verify(next.join(""));
   };
 
   const verify = async (code: string) => {
+    setError(null);
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 800));
+    const { error: err } = await supabase.auth.verifyOtp({
+      phone: fullPhone(),
+      token: code,
+      type: "sms",
+    });
     setLoading(false);
+    if (err) {
+      setError("Code invalide ou expiré.");
+      setOtp(["", "", "", "", "", ""]);
+      inputs.current[0]?.focus();
+      return;
+    }
     setStep("done");
-    setTimeout(() => navigate({ to: "/" }), 1400);
+    setTimeout(() => navigate({ to: "/" }), 1200);
+  };
+
+  const resend = async () => {
+    if (resendIn > 0) return;
+    setResendIn(30);
+    await supabase.auth.signInWithOtp({ phone: fullPhone(), options: { channel: "sms" } });
   };
 
   return (
@@ -72,7 +111,7 @@ function Connexion() {
             </div>
             <div>
               <h1 className="font-display text-2xl font-bold">Bienvenue au Mboa</h1>
-              <p className="text-sm text-muted-foreground">Connexion ultra-rapide en 5 secondes</p>
+              <p className="text-sm text-muted-foreground">Connexion SMS · Cameroun & France</p>
             </div>
           </div>
 
@@ -86,12 +125,13 @@ function Connexion() {
                   className="rounded-xl bg-surface px-3 py-3 text-sm font-semibold outline-none"
                   aria-label="Indicatif"
                 >
-                  <option value="+237">🇨🇲 +237</option>
-                  <option value="+33">🇫🇷 +33</option>
+                  {PREFIXES.map((p) => (
+                    <option key={p.code} value={p.code}>{p.label}</option>
+                  ))}
                 </select>
                 <input
                   inputMode="tel"
-                  placeholder="6 90 00 00 00"
+                  placeholder={prefix === "+33" ? "6 12 34 56 78" : "6 90 00 00 00"}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   className="flex-1 bg-transparent px-2 py-3 text-base outline-none placeholder:text-muted-foreground"
@@ -100,8 +140,15 @@ function Connexion() {
               </div>
               <p className="flex items-center gap-2 text-xs text-muted-foreground">
                 <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-                Compatible MTN, Orange, Camtel · Données chiffrées
+                MTN, Orange, Camtel, opérateurs FR · Données chiffrées
               </p>
+
+              {error && (
+                <div className="flex items-start gap-2 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
 
               <button
                 type="submit"
@@ -124,7 +171,7 @@ function Connexion() {
                 <p className="font-semibold">{prefix} {phone}</p>
               </div>
 
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center justify-between gap-2">
                 {otp.map((d, i) => (
                   <input
                     key={i}
@@ -136,7 +183,7 @@ function Connexion() {
                     onKeyDown={(e) => {
                       if (e.key === "Backspace" && !otp[i] && i > 0) inputs.current[i - 1]?.focus();
                     }}
-                    className="h-16 w-full rounded-2xl border border-border bg-background/60 text-center text-2xl font-bold outline-none transition focus:border-primary focus:shadow-glow"
+                    className="h-14 w-full rounded-2xl border border-border bg-background/60 text-center text-xl font-bold outline-none transition focus:border-primary focus:shadow-glow"
                   />
                 ))}
               </div>
@@ -147,16 +194,23 @@ function Connexion() {
                 </p>
               )}
 
+              {error && (
+                <div className="flex items-start gap-2 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
+
               <button
                 disabled={resendIn > 0}
-                onClick={() => setResendIn(30)}
+                onClick={resend}
                 className="w-full text-center text-sm text-muted-foreground hover:text-foreground disabled:opacity-60"
               >
                 {resendIn > 0 ? `Renvoyer le code dans ${resendIn}s` : "Renvoyer le code"}
               </button>
 
               <button
-                onClick={() => setStep("phone")}
+                onClick={() => { setStep("phone"); setOtp(["","","","","",""]); setError(null); }}
                 className="w-full text-center text-xs text-muted-foreground underline-offset-4 hover:underline"
               >
                 Modifier le numéro
