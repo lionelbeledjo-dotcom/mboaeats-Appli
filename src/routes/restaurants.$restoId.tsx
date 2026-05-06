@@ -37,6 +37,7 @@ export const Route = createFileRoute("/restaurants/$restoId")({
 
 function RestaurantPage() {
   const { restaurant } = Route.useLoaderData() as { restaurant: Restaurant };
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
