@@ -16,6 +16,7 @@ import { Route as MboaAiRouteImport } from './routes/mboa-ai'
 import { Route as LivreurRouteImport } from './routes/livreur'
 import { Route as FideliteRouteImport } from './routes/fidelite'
 import { Route as ConnexionRouteImport } from './routes/connexion'
+import { Route as ConfidentialiteRouteImport } from './routes/confidentialite'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as AideRouteImport } from './routes/aide'
 import { Route as AdressesRouteImport } from './routes/adresses'
@@ -60,6 +61,11 @@ const FideliteRoute = FideliteRouteImport.update({
 const ConnexionRoute = ConnexionRouteImport.update({
   id: '/connexion',
   path: '/connexion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfidentialiteRoute = ConfidentialiteRouteImport.update({
+  id: '/confidentialite',
+  path: '/confidentialite',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutRoute = CheckoutRouteImport.update({
@@ -119,6 +125,7 @@ export interface FileRoutesByFullPath {
   '/adresses': typeof AdressesRoute
   '/aide': typeof AideRoute
   '/checkout': typeof CheckoutRoute
+  '/confidentialite': typeof ConfidentialiteRoute
   '/connexion': typeof ConnexionRoute
   '/fidelite': typeof FideliteRoute
   '/livreur': typeof LivreurRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/adresses': typeof AdressesRoute
   '/aide': typeof AideRoute
   '/checkout': typeof CheckoutRoute
+  '/confidentialite': typeof ConfidentialiteRoute
   '/connexion': typeof ConnexionRoute
   '/fidelite': typeof FideliteRoute
   '/livreur': typeof LivreurRoute
@@ -157,6 +165,7 @@ export interface FileRoutesById {
   '/adresses': typeof AdressesRoute
   '/aide': typeof AideRoute
   '/checkout': typeof CheckoutRoute
+  '/confidentialite': typeof ConfidentialiteRoute
   '/connexion': typeof ConnexionRoute
   '/fidelite': typeof FideliteRoute
   '/livreur': typeof LivreurRoute
@@ -178,6 +187,7 @@ export interface FileRouteTypes {
     | '/adresses'
     | '/aide'
     | '/checkout'
+    | '/confidentialite'
     | '/connexion'
     | '/fidelite'
     | '/livreur'
@@ -196,6 +206,7 @@ export interface FileRouteTypes {
     | '/adresses'
     | '/aide'
     | '/checkout'
+    | '/confidentialite'
     | '/connexion'
     | '/fidelite'
     | '/livreur'
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/adresses'
     | '/aide'
     | '/checkout'
+    | '/confidentialite'
     | '/connexion'
     | '/fidelite'
     | '/livreur'
@@ -235,6 +247,7 @@ export interface RootRouteChildren {
   AdressesRoute: typeof AdressesRoute
   AideRoute: typeof AideRoute
   CheckoutRoute: typeof CheckoutRoute
+  ConfidentialiteRoute: typeof ConfidentialiteRoute
   ConnexionRoute: typeof ConnexionRoute
   FideliteRoute: typeof FideliteRoute
   LivreurRoute: typeof LivreurRoute
@@ -293,6 +306,13 @@ declare module '@tanstack/react-router' {
       path: '/connexion'
       fullPath: '/connexion'
       preLoaderRoute: typeof ConnexionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/confidentialite': {
+      id: '/confidentialite'
+      path: '/confidentialite'
+      fullPath: '/confidentialite'
+      preLoaderRoute: typeof ConfidentialiteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout': {
@@ -392,6 +412,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdressesRoute: AdressesRoute,
   AideRoute: AideRoute,
   CheckoutRoute: CheckoutRoute,
+  ConfidentialiteRoute: ConfidentialiteRoute,
   ConnexionRoute: ConnexionRoute,
   FideliteRoute: FideliteRoute,
   LivreurRoute: LivreurRoute,
