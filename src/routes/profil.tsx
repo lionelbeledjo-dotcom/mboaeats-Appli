@@ -86,9 +86,57 @@ function ProfilPage() {
           <Row to="/aide" icon={HelpCircle} label="Aide & support" />
         </Section>
 
+        {/* Logout button (UX pro, élégant) */}
+        <button
+          type="button"
+          onClick={() => setConfirm(true)}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-3.5 text-sm font-semibold text-destructive transition hover:bg-destructive/20 active:scale-[0.99]"
+        >
+          <LogOut className="h-4 w-4" />
+          Se déconnecter
+        </button>
+
         <p className="pt-2 text-center text-[11px] text-muted-foreground">
           MboaEats v1.0 · Fait avec ❤️ à Douala
         </p>
+
+        {confirm && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in"
+            onClick={() => !signingOut && setConfirm(false)}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm rounded-3xl border border-border bg-card p-6 shadow-2xl animate-scale-in"
+            >
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/15 text-2xl">
+                🍲
+              </div>
+              <h3 className="text-center font-display text-lg font-bold">
+                Voulez-vous vraiment nous quitter ?
+              </h3>
+              <p className="mt-1 text-center text-sm text-muted-foreground">
+                Votre Ndolé vous attendra !
+              </p>
+              <div className="mt-5 flex gap-2">
+                <button
+                  onClick={() => setConfirm(false)}
+                  disabled={signingOut}
+                  className="h-11 flex-1 rounded-full border border-border bg-background text-sm font-semibold"
+                >
+                  Rester
+                </button>
+                <button
+                  onClick={doLogout}
+                  disabled={signingOut}
+                  className="h-11 flex-[1.2] rounded-full bg-destructive text-sm font-semibold text-destructive-foreground disabled:opacity-60"
+                >
+                  {signingOut ? "Déconnexion…" : "Se déconnecter"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Discreet owner access — barely visible dot at the very bottom */}
         <div className="flex justify-center pt-6 pb-2 opacity-30 hover:opacity-100 transition-opacity">
