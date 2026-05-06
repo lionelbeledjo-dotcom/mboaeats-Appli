@@ -106,33 +106,9 @@ function Header({ city, setCity }: { city: string; setCity: (c: string) => void 
           </Link>
         </div>
 
-        {/* Desktop: city + nav + auth */}
-        <div className="hidden items-center gap-1 rounded-full border border-border bg-surface/60 px-3 py-1.5 md:flex">
-          <MapPin className="h-4 w-4 text-primary" />
-          <select
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            className="bg-transparent text-sm font-medium outline-none"
-            aria-label="Choisir une ville (desktop)"
-          >
-            {cities.map((c) => <option key={c} className="bg-surface">{c}</option>)}
-          </select>
-        </div>
+        {/* Desktop horizontal nav removed — app uses bottom dock (mobile-first PWA) */}
 
-        <nav className="hidden items-center gap-6 text-sm text-muted-foreground lg:flex">
-          <a href="#restos" className="hover:text-foreground transition">Restaurants</a>
-          <Link to="/tablee" className="hover:text-foreground transition">Tablée</Link>
-          <Link to="/mboa-ai" className="hover:text-foreground transition">Mboa AI</Link>
-          <Link to="/adresses" className="hover:text-foreground transition">Adresses</Link>
-          <Link to="/fidelite" className="hover:text-foreground transition">Fidélité</Link>
-          <Link to="/suivi" className="hover:text-foreground transition">Suivi</Link>
-          <Link to="/livreur" className="hover:text-foreground transition">Livreur</Link>
-          <Link to="/restaurant" className="hover:text-foreground transition">Resto</Link>
-          <Link to="/admin" className="hover:text-foreground transition">Admin</Link>
-          <Link to="/aide" className="hover:text-foreground transition">Aide</Link>
-        </nav>
-
-        <Link to="/connexion" className="hidden rounded-full bg-gradient-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:scale-105 md:inline-flex">
+        <Link to="/connexion" className="hidden rounded-full bg-gradient-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground shadow-glow md:inline-flex">
           Connexion
         </Link>
       </div>
