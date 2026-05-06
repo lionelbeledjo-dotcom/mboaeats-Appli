@@ -74,6 +74,16 @@ function ProfilPage() {
         <p className="pt-2 text-center text-[11px] text-muted-foreground">
           MboaEats v1.0 · Fait avec ❤️ à Douala
         </p>
+
+        {/* Discreet owner access — barely visible dot at the very bottom */}
+        <div className="flex justify-center pt-6 pb-2 opacity-30 hover:opacity-100 transition-opacity">
+          <Link
+            to="/admin-login"
+            aria-label="Administration"
+            title="Administration"
+            className="h-2 w-2 rounded-full bg-muted-foreground hover:bg-primary"
+          />
+        </div>
       </main>
     </div>
   );
