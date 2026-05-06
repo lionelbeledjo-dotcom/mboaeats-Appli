@@ -321,6 +321,68 @@ function Restaurants() {
   );
 }
 
+function ExclusiveFeatures() {
+  const features = [
+    {
+      to: "/tablee" as const,
+      tag: "Innovation majeure",
+      title: "Mode Tablée",
+      desc: "Commande groupée par lien WhatsApp. Chacun choisit son plat, chacun paie sa part en Mobile Money.",
+      icon: <Users className="h-6 w-6" />,
+      gradient: "from-orange-500/20 to-pink-500/20",
+    },
+    {
+      to: "/mboa-ai" as const,
+      tag: "Beta · IA locale",
+      title: "Mboa AI",
+      desc: "Recommandations selon l'heure, la météo de ta ville, ton budget et ton humeur.",
+      icon: <Brain className="h-6 w-6" />,
+      gradient: "from-amber-400/20 to-orange-500/20",
+    },
+    {
+      to: "/adresses" as const,
+      tag: "Adapté au Cameroun",
+      title: "Adresses flexibles",
+      desc: "PIN sur carte + point de repère libre. \"Portail bleu derrière la pharmacie\", on connaît.",
+      icon: <MapPin className="h-6 w-6" />,
+      gradient: "from-fuchsia-500/20 to-purple-500/20",
+    },
+  ];
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-16 md:px-8">
+      <div className="text-center">
+        <p className="text-sm font-semibold uppercase tracking-wider text-primary">Le « plus » MboaEats</p>
+        <h2 className="mt-2 font-display text-3xl font-bold sm:text-4xl">
+          Trois fonctionnalités <span className="text-gradient-gold">exclusives</span>
+        </h2>
+      </div>
+      <div className="mt-10 grid gap-5 md:grid-cols-3">
+        {features.map((f, i) => (
+          <Link
+            key={f.title}
+            to={f.to}
+            className="group relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-card transition-all hover:-translate-y-1 hover:border-primary/50 hover:shadow-glow animate-fade-up"
+            style={{ animationDelay: `${i * 80}ms` }}
+          >
+            <div className={`pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br ${f.gradient} blur-2xl transition-opacity opacity-50 group-hover:opacity-100`} />
+            <div className="relative">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-primary text-primary-foreground shadow-glow">
+                {f.icon}
+              </div>
+              <p className="mt-5 text-[10px] font-semibold uppercase tracking-wider text-gold">{f.tag}</p>
+              <h3 className="mt-1 font-display text-xl font-bold">{f.title}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">{f.desc}</p>
+              <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-primary group-hover:gap-2 transition-all">
+                Découvrir <ArrowRight className="h-4 w-4" />
+              </span>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function FeatureTablee() {
   return (
     <section id="tablee" className="relative overflow-hidden">
