@@ -16,7 +16,7 @@ export const Route = createFileRoute("/checkout")({
 });
 
 type Method = "momo" | "orange" | "card" | "cash";
-type Step = "choose" | "ussd" | "card" | "success";
+type Step = "choose" | "ussd" | "otp" | "card" | "success";
 
 const cart = [
   { name: "Ndolé poisson", qty: 1, price: 2500 },
@@ -38,7 +38,7 @@ function Checkout() {
 
   useEffect(() => {
     if (step !== "ussd" || !pending) return;
-    if (seconds <= 0) { confirm(); return; }
+    if (seconds <= 0) { goToOtp(); return; }
     const t = setTimeout(() => setSeconds((s) => s - 1), 1000);
     return () => clearTimeout(t);
   }, [step, pending, seconds]);
@@ -49,6 +49,11 @@ function Checkout() {
     setStep("ussd");
     setPending(true);
     setSeconds(20);
+  };
+
+  const goToOtp = () => {
+    setPending(false);
+    setStep("otp");
   };
 
   const confirm = () => {
@@ -75,7 +80,10 @@ function Checkout() {
             <ChooseMethod method={method} setMethod={setMethod} phone={phone} setPhone={setPhone} onPay={start} total={total} />
           )}
           {step === "ussd" && (
-            <UssdScreen method={method} phone={phone} pending={pending} seconds={seconds} total={total} onConfirm={confirm} />
+            <UssdScreen method={method} phone={phone} pending={pending} seconds={seconds} total={total} onConfirm={goToOtp} />
+          )}
+          {step === "otp" && (
+            <OtpScreen method={method} phone={phone} total={total} onConfirm={confirm} onBack={() => setStep("ussd")} />
           )}
           {step === "card" && <CardScreen total={total} onConfirm={confirm} />}
           {step === "success" && <SuccessScreen method={method} total={total} />}
@@ -212,7 +220,7 @@ function UssdScreen({ method, phone, pending, seconds, total, onConfirm }: {
       </div>
 
       <button onClick={onConfirm} className="mt-5 w-full rounded-2xl border border-emerald-500/40 bg-emerald-500/10 py-3 text-sm font-bold text-emerald-300 hover:bg-emerald-500/20">
-        J'ai confirmé sur mon téléphone
+        Saisir le code OTP reçu par SMS
       </button>
     </div>
   );
@@ -310,5 +318,126 @@ function Summary({ cart, subtotal, delivery, total }: {
         <Tag className="h-3 w-3" /> Ajouter un code promo
       </button>
     </aside>
+  );
+}
+
+function OtpScreen({ method, phone, total, onConfirm, onBack }: {
+  method: Method; phone: string; total: number; onConfirm: () => void; onBack: () => void;
+}) {
+  const brand = method === "momo" ? "MTN MoMo" : "Orange Money";
+  const accent = method === "momo" ? "from-yellow-400 to-amber-500" : "from-orange-500 to-rose-500";
+  const [digits, setDigits] = useState<string[]>(["", "", "", "", "", ""]);
+  const [error, setError] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState(false);
+  const [resend, setResend] = useState(30);
+
+  useEffect(() => {
+    if (resend <= 0) return;
+    const t = setTimeout(() => setResend((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resend]);
+
+  const setDigit = (i: number, v: string) => {
+    const clean = v.replace(/\D/g, "").slice(-1);
+    setError(null);
+    setDigits((d) => {
+      const next = [...d];
+      next[i] = clean;
+      return next;
+    });
+    if (clean) {
+      const nextEl = document.getElementById(`otp-${i + 1}`) as HTMLInputElement | null;
+      nextEl?.focus();
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const txt = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (!txt) return;
+    e.preventDefault();
+    const arr = txt.split("");
+    setDigits((d) => d.map((_, i) => arr[i] ?? ""));
+  };
+
+  const submit = () => {
+    const code = digits.join("");
+    if (code.length < 6) { setError("Saisissez les 6 chiffres reçus par SMS."); return; }
+    setVerifying(true);
+    setError(null);
+    setTimeout(() => {
+      // Demo: code "000000" rejected to show error UI
+      if (code === "000000") {
+        setVerifying(false);
+        setError("Code OTP invalide. Vérifiez votre SMS et réessayez.");
+        setDigits(["", "", "", "", "", ""]);
+        return;
+      }
+      onConfirm();
+    }, 1400);
+  };
+
+  return (
+    <div className="rounded-3xl border border-primary/40 bg-surface/60 p-6 shadow-glow animate-fade-up">
+      <div className="flex items-center gap-3">
+        <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${accent} shadow-glow`}>
+          <Smartphone className="h-6 w-6 text-white" />
+        </div>
+        <div>
+          <h2 className="font-display text-xl font-bold">Code OTP {brand}</h2>
+          <p className="text-xs text-muted-foreground">SMS envoyé au +237 {phone}</p>
+        </div>
+      </div>
+
+      <p className="mt-5 text-sm text-muted-foreground">
+        Saisissez le code à 6 chiffres reçu par SMS pour confirmer le paiement de
+        <span className="ml-1 font-bold text-foreground">{total.toLocaleString("fr-FR")} FCFA</span>.
+      </p>
+
+      <div className="mt-5 flex justify-between gap-2" onPaste={handlePaste}>
+        {digits.map((d, i) => (
+          <input
+            key={i}
+            id={`otp-${i}`}
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={1}
+            value={d}
+            onChange={(e) => setDigit(i, e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Backspace" && !digits[i] && i > 0) {
+                const prev = document.getElementById(`otp-${i - 1}`) as HTMLInputElement | null;
+                prev?.focus();
+              }
+            }}
+            aria-label={`Chiffre ${i + 1}`}
+            className="h-14 w-12 rounded-2xl border border-border bg-background text-center font-display text-2xl font-bold outline-none transition focus:border-primary focus:shadow-glow"
+          />
+        ))}
+      </div>
+
+      {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
+
+      <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+        <button onClick={onBack} className="hover:text-foreground">← Modifier le numéro</button>
+        {resend > 0 ? (
+          <span>Renvoyer le code dans {resend}s</span>
+        ) : (
+          <button onClick={() => setResend(30)} className="font-semibold text-primary hover:underline">Renvoyer le SMS</button>
+        )}
+      </div>
+
+      <button
+        onClick={submit}
+        disabled={verifying}
+        className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-4 font-bold text-primary-foreground shadow-glow transition-transform hover:scale-[1.01] disabled:opacity-60"
+      >
+        {verifying ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
+        {verifying ? "Vérification…" : "Confirmer le paiement"}
+      </button>
+
+      <div className="mt-4 flex items-center gap-2 text-[11px] text-muted-foreground">
+        <Lock className="h-3 w-3 text-primary" /> Code à usage unique · Expire après 5 minutes · Webhook officiel {brand}
+      </div>
+    </div>
   );
 }
