@@ -104,10 +104,14 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  const location = useLocation();
+  const path = location.pathname;
+  const hideDock =
+    PUBLIC_ROUTES.includes(path) || PUBLIC_PREFIXES.some((p) => path.startsWith(p));
   return (
-    <>
+    <AuthGate>
       <Outlet />
-      <BottomDock />
-    </>
+      {!hideDock && <BottomDock />}
+    </AuthGate>
   );
 }
