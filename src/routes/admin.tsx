@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Store, Bike, AlertTriangle, Coins, Settings, ArrowLeft,
-  TrendingUp, Users, ShieldCheck, Search, Star, Check, X, MoreHorizontal,
+  TrendingUp, Users, ShieldCheck, Search, Star, Check, X, MoreHorizontal, MapPin,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
