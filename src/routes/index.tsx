@@ -6,7 +6,7 @@ import {
   Utensils, Bike, Crown, Plus, Brain, Bell,
 } from "lucide-react";
 
-import heroDish from "@/assets/hero-dish.jpg";
+import heroDish from "@/assets/hero-dish.webp";
 import { restaurants as realRestaurants } from "@/data/restaurants";
 
 export const Route = createFileRoute("/")({

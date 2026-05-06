@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Flame, Minus, Plus, ShoppingCart, Star } from "lucide-react";
 import { SmartBack } from "@/components/SmartBack";
+import { DishSkeleton } from "@/components/Skeleton";
 import { getDish, type Dish, type Restaurant } from "@/data/restaurants";
 
 export const Route = createFileRoute("/restaurants/$restoId/plats/$platId")({
@@ -10,6 +11,9 @@ export const Route = createFileRoute("/restaurants/$restoId/plats/$platId")({
     if (!result) throw notFound();
     return result;
   },
+  staleTime: Infinity,
+  pendingMs: 100,
+  pendingComponent: DishSkeleton,
   head: ({ loaderData }) => ({
     meta: [
       {

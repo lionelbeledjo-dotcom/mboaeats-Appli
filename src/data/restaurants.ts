@@ -1,8 +1,8 @@
 // Vrais restaurants & menus — Cameroun (Douala / Yaoundé).
-import dishEru from "@/assets/dish-eru.jpg";
-import dishPoisson from "@/assets/dish-poisson.jpg";
-import dishPouletDg from "@/assets/dish-poulet-dg.jpg";
-import dishSuya from "@/assets/dish-suya.jpg";
+import dishEru from "@/assets/dish-eru.webp";
+import dishPoisson from "@/assets/dish-poisson.webp";
+import dishPouletDg from "@/assets/dish-poulet-dg.webp";
+import dishSuya from "@/assets/dish-suya.webp";
 
 export type Dish = {
   id: string;

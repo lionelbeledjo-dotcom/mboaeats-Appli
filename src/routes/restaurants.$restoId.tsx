@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Star, Clock, MapPin, Flame, Plus, Search, Heart } from "lucide-react";
 import { SmartBack } from "@/components/SmartBack";
+import { RestaurantSkeleton } from "@/components/Skeleton";
 import { getRestaurant, type Restaurant } from "@/data/restaurants";
 
 export const Route = createFileRoute("/restaurants/$restoId")({
@@ -9,6 +10,9 @@ export const Route = createFileRoute("/restaurants/$restoId")({
     if (!r) throw notFound();
     return { restaurant: r };
   },
+  staleTime: Infinity,
+  pendingMs: 100,
+  pendingComponent: RestaurantSkeleton,
   head: ({ loaderData }) => ({
     meta: [
       { title: `${loaderData?.restaurant.name ?? "Restaurant"} — MboaEats` },
