@@ -32,7 +32,7 @@ function Checkout() {
   const fetchPass = useServerFn(getActiveMboaPass);
 
   const { items: cartItems, subtotal } = useCart();
-  const cart = cartItems.map((i) => ({ name: i.name, qty: i.qty, price: i.price }));
+  const cart = cartItems.map((i: { name: string; qty: number; price: number }) => ({ name: i.name, qty: i.qty, price: i.price }));
   const [hasPass, setHasPass] = useState(false);
   const delivery = hasPass || subtotal === 0 ? 0 : 800;
   const total = subtotal + delivery;
@@ -88,7 +88,7 @@ function Checkout() {
           msisdn: `237${cleanMsisdn}`,
           amount: total,
           purpose: "order",
-          metadata: { landmark, cart: cart.map((c) => c.name) },
+          metadata: { landmark, cart: cart.map((c: { name: string }) => c.name) },
         },
       });
       if (!res.ok) throw new Error(res.error ?? "Échec d'initiation");
