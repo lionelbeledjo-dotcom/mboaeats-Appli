@@ -1,4 +1,5 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { BottomDock } from "@/components/BottomDock";
 
 import appCss from "../styles.css?url";
 
