@@ -175,7 +175,52 @@ const villageAkwaDishes: Dish[] = [
   },
 ];
 
+const braiserieWouriDishes: Dish[] = [
+  {
+    id: "maquereau-braise",
+    name: "Maquereau braisé du Wouri",
+    description: "Maquereau frais braisé au feu de bois, marinade ail-gingembre, alloco et piment.",
+    price: 4000,
+    image: dishPoisson,
+    popular: true,
+    spicy: true,
+    options: [pimentOptions],
+  },
+  {
+    id: "soya-boeuf-braiserie",
+    name: "Soya de bœuf à la braise",
+    description: "Brochettes de bœuf au yaji épicé, grillées sur charbon de bois, oignons crus.",
+    price: 2500,
+    image: dishSuya,
+    popular: true,
+    spicy: true,
+  },
+  {
+    id: "ndole-braiserie",
+    name: "Ndolé maison aux crevettes",
+    description: "Ndolé crémeux, crevettes du Wouri, viande braisée et plantain mûr.",
+    price: 4500,
+    image: dishEru,
+    options: [tailleOptions],
+  },
+];
+
 export const restaurants: Restaurant[] = [
+  {
+    id: "la-braiserie-du-wouri",
+    name: "La Braiserie du Wouri",
+    tagline: "Poissons & soya au feu de bois — Bonanjo, Douala",
+    city: "Douala",
+    neighborhood: "Bonanjo",
+    rating: 4.8,
+    eta: "20-30 min",
+    cover: dishPoisson,
+    badge: "Feu de bois",
+    categories: [
+      { id: "braise", label: "Spécialités braisées", dishes: braiserieWouriDishes.slice(0, 2) },
+      { id: "tradition", label: "Tradition camerounaise", dishes: braiserieWouriDishes.slice(2) },
+    ],
+  },
   {
     id: "le-penja",
     name: "Le Penja",
