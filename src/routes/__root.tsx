@@ -1,6 +1,7 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { BottomDock } from "@/components/BottomDock";
+import { CartFab } from "@/components/CartFab";
 import { Toaster } from "@/components/ui/sonner";
 
 const PUBLIC_ROUTES = ["/connexion", "/admin-login"];
@@ -112,6 +113,7 @@ function RootComponent() {
   return (
     <AuthGate>
       <Outlet />
+      {!hideDock && <CartFab />}
       {!hideDock && <BottomDock />}
       <Toaster position="top-right" richColors closeButton />
     </AuthGate>
