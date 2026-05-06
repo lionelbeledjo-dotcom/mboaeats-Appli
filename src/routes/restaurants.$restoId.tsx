@@ -1,8 +1,10 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { Star, Clock, MapPin, Flame, Plus, Search, Heart } from "lucide-react";
+import { toast } from "sonner";
 import { SmartBack } from "@/components/SmartBack";
 import { RestaurantSkeleton } from "@/components/Skeleton";
 import { getRestaurant, type Restaurant } from "@/data/restaurants";
+import { addToCart } from "@/hooks/use-cart";
 
 export const Route = createFileRoute("/restaurants/$restoId")({
   loader: ({ params }) => {
