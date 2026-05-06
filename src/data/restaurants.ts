@@ -285,6 +285,7 @@ export const restaurants: Restaurant[] = [
     cover: dishPoisson,
     badge: "Gastronomique",
     categories: [
+      { id: "entrees", label: "Entrées", dishes: entreesPenja },
       { id: "signatures", label: "Signatures du chef", dishes: lePenjaDishes.slice(0, 2) },
       { id: "mer", label: "Produits de la mer", dishes: lePenjaDishes.slice(2) },
     ],
