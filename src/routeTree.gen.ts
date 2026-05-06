@@ -19,6 +19,7 @@ import { Route as AdressesRouteImport } from './routes/adresses'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminRestaurantsRouteImport } from './routes/admin.restaurants'
 import { Route as AdminCommissionsRouteImport } from './routes/admin.commissions'
 
 const TableeRoute = TableeRouteImport.update({
@@ -71,6 +72,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminRestaurantsRoute = AdminRestaurantsRouteImport.update({
+  id: '/restaurants',
+  path: '/restaurants',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCommissionsRoute = AdminCommissionsRouteImport.update({
   id: '/commissions',
   path: '/commissions',
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/suivi': typeof SuiviRoute
   '/tablee': typeof TableeRoute
   '/admin/commissions': typeof AdminCommissionsRoute
+  '/admin/restaurants': typeof AdminRestaurantsRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
@@ -100,6 +107,7 @@ export interface FileRoutesByTo {
   '/suivi': typeof SuiviRoute
   '/tablee': typeof TableeRoute
   '/admin/commissions': typeof AdminCommissionsRoute
+  '/admin/restaurants': typeof AdminRestaurantsRoute
   '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
@@ -114,6 +122,7 @@ export interface FileRoutesById {
   '/suivi': typeof SuiviRoute
   '/tablee': typeof TableeRoute
   '/admin/commissions': typeof AdminCommissionsRoute
+  '/admin/restaurants': typeof AdminRestaurantsRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
@@ -129,6 +138,7 @@ export interface FileRouteTypes {
     | '/suivi'
     | '/tablee'
     | '/admin/commissions'
+    | '/admin/restaurants'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -141,6 +151,7 @@ export interface FileRouteTypes {
     | '/suivi'
     | '/tablee'
     | '/admin/commissions'
+    | '/admin/restaurants'
     | '/admin'
   id:
     | '__root__'
@@ -154,6 +165,7 @@ export interface FileRouteTypes {
     | '/suivi'
     | '/tablee'
     | '/admin/commissions'
+    | '/admin/restaurants'
     | '/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -241,6 +253,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/restaurants': {
+      id: '/admin/restaurants'
+      path: '/restaurants'
+      fullPath: '/admin/restaurants'
+      preLoaderRoute: typeof AdminRestaurantsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/commissions': {
       id: '/admin/commissions'
       path: '/commissions'
@@ -253,11 +272,13 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminCommissionsRoute: typeof AdminCommissionsRoute
+  AdminRestaurantsRoute: typeof AdminRestaurantsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminCommissionsRoute: AdminCommissionsRoute,
+  AdminRestaurantsRoute: AdminRestaurantsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
