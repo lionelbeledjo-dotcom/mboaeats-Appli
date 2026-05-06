@@ -27,10 +27,10 @@ export function BottomDock() {
   return (
     <>
       {/* spacer so content is not hidden under the dock */}
-      <div className="h-20 md:h-0" aria-hidden />
+      <div className="h-24" aria-hidden />
       <nav
         aria-label="Navigation principale"
-        className="fixed inset-x-0 bottom-0 z-50 md:hidden"
+        className="fixed inset-x-0 bottom-0 z-50"
       >
         <div className="mx-auto max-w-md px-3 pb-3 pt-2">
           <div className="rounded-3xl border border-border/60 bg-background/85 px-2 py-2 shadow-glow backdrop-blur-xl">
