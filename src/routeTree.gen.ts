@@ -26,6 +26,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as RestaurantsRestoIdRouteImport } from './routes/restaurants.$restoId'
+import { Route as AdminZonesRouteImport } from './routes/admin.zones'
 import { Route as AdminRestaurantsRouteImport } from './routes/admin.restaurants'
 import { Route as AdminLivreursRouteImport } from './routes/admin.livreurs'
 import { Route as AdminLitigesRouteImport } from './routes/admin.litiges'
@@ -117,6 +118,11 @@ const RestaurantsRestoIdRoute = RestaurantsRestoIdRouteImport.update({
   path: '/restaurants/$restoId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminZonesRoute = AdminZonesRouteImport.update({
+  id: '/zones',
+  path: '/zones',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminRestaurantsRoute = AdminRestaurantsRouteImport.update({
   id: '/restaurants',
   path: '/restaurants',
@@ -164,6 +170,7 @@ export interface FileRoutesByFullPath {
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
+  '/admin/zones': typeof AdminZonesRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/admin/': typeof AdminIndexRoute
   '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
@@ -187,6 +194,7 @@ export interface FileRoutesByTo {
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
+  '/admin/zones': typeof AdminZonesRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/admin': typeof AdminIndexRoute
   '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
@@ -212,6 +220,7 @@ export interface FileRoutesById {
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
+  '/admin/zones': typeof AdminZonesRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/admin/': typeof AdminIndexRoute
   '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
@@ -238,6 +247,7 @@ export interface FileRouteTypes {
     | '/admin/litiges'
     | '/admin/livreurs'
     | '/admin/restaurants'
+    | '/admin/zones'
     | '/restaurants/$restoId'
     | '/admin/'
     | '/restaurants/$restoId/plats/$platId'
@@ -261,6 +271,7 @@ export interface FileRouteTypes {
     | '/admin/litiges'
     | '/admin/livreurs'
     | '/admin/restaurants'
+    | '/admin/zones'
     | '/restaurants/$restoId'
     | '/admin'
     | '/restaurants/$restoId/plats/$platId'
@@ -285,6 +296,7 @@ export interface FileRouteTypes {
     | '/admin/litiges'
     | '/admin/livreurs'
     | '/admin/restaurants'
+    | '/admin/zones'
     | '/restaurants/$restoId'
     | '/admin/'
     | '/restaurants/$restoId/plats/$platId'
@@ -430,6 +442,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RestaurantsRestoIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/zones': {
+      id: '/admin/zones'
+      path: '/zones'
+      fullPath: '/admin/zones'
+      preLoaderRoute: typeof AdminZonesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/restaurants': {
       id: '/admin/restaurants'
       path: '/restaurants'
@@ -473,6 +492,7 @@ interface AdminRouteChildren {
   AdminLitigesRoute: typeof AdminLitigesRoute
   AdminLivreursRoute: typeof AdminLivreursRoute
   AdminRestaurantsRoute: typeof AdminRestaurantsRoute
+  AdminZonesRoute: typeof AdminZonesRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
@@ -481,6 +501,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminLitigesRoute: AdminLitigesRoute,
   AdminLivreursRoute: AdminLivreursRoute,
   AdminRestaurantsRoute: AdminRestaurantsRoute,
+  AdminZonesRoute: AdminZonesRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
