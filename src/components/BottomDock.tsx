@@ -38,7 +38,7 @@ export function BottomDock() {
               {items.map((it) => {
                 const active = it.exact ? path === it.to : path.startsWith(it.to);
                 const Icon = it.icon;
-                const isCenter = it.label === "Panier";
+                const isCenter = it.label === "Commandes";
                 return (
                   <li key={it.to} className="flex-1">
                     <Link
