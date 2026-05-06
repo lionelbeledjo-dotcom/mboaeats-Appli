@@ -220,7 +220,7 @@ function UssdScreen({ method, phone, pending, seconds, total, onConfirm }: {
       </div>
 
       <button onClick={onConfirm} className="mt-5 w-full rounded-2xl border border-emerald-500/40 bg-emerald-500/10 py-3 text-sm font-bold text-emerald-300 hover:bg-emerald-500/20">
-        J'ai confirmé sur mon téléphone
+        Saisir le code OTP reçu par SMS
       </button>
     </div>
   );
