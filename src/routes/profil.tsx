@@ -1,8 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   User, Crown, MapPin, CreditCard, Bell, Shield, HelpCircle,
   LogOut, ChevronRight, Heart, Bike, Store, Sparkles,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/profil")({
   head: () => ({
@@ -15,6 +17,19 @@ export const Route = createFileRoute("/profil")({
 });
 
 function ProfilPage() {
+  const navigate = useNavigate();
+  const [confirm, setConfirm] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+
+  const doLogout = async () => {
+    setSigningOut(true);
+    try { await supabase.auth.signOut(); } catch {}
+    try {
+      localStorage.removeItem("mboa_demo_user");
+      localStorage.removeItem("mboa_tastes");
+    } catch {}
+    navigate({ to: "/connexion", replace: true });
+  };
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="glass border-b border-border/40">
@@ -27,7 +42,7 @@ function ProfilPage() {
               <p className="font-display text-lg font-bold">Lionel Brown</p>
               <p className="truncate text-xs text-muted-foreground">lionelbrown2728@yahoo.fr</p>
             </div>
-            <Link to="/connexion" aria-label="Déconnexion" className="rounded-full border border-border bg-surface/60 p-2">
+            <Link to="/connexion" aria-label="Aller à la connexion" className="rounded-full border border-border bg-surface/60 p-2">
               <LogOut className="h-4 w-4" />
             </Link>
           </div>
