@@ -38,7 +38,7 @@ function Checkout() {
 
   useEffect(() => {
     if (step !== "ussd" || !pending) return;
-    if (seconds <= 0) { confirm(); return; }
+    if (seconds <= 0) { goToOtp(); return; }
     const t = setTimeout(() => setSeconds((s) => s - 1), 1000);
     return () => clearTimeout(t);
   }, [step, pending, seconds]);
@@ -49,6 +49,11 @@ function Checkout() {
     setStep("ussd");
     setPending(true);
     setSeconds(20);
+  };
+
+  const goToOtp = () => {
+    setPending(false);
+    setStep("otp");
   };
 
   const confirm = () => {
