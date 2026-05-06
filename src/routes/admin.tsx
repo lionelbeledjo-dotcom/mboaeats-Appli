@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Store, Bike, AlertTriangle, Coins, Settings, ArrowLeft,
-  TrendingUp, Users, ShieldCheck, Search, Star, Check, X, MoreHorizontal,
+  TrendingUp, Users, ShieldCheck, Search, Star, Check, X, MoreHorizontal, MapPin,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -22,6 +22,7 @@ export const Route = createFileRoute("/admin")({
 const navItems = [
   { title: "Vue d'ensemble", url: "/admin", icon: LayoutDashboard, exact: true },
   { title: "Commissions", url: "/admin/commissions", icon: Coins },
+  { title: "Zones livraison", url: "/admin/zones", icon: MapPin },
   { title: "Restaurants", url: "/admin/restaurants", icon: Store },
   { title: "Livreurs", url: "/admin/livreurs", icon: Bike },
   { title: "Litiges", url: "/admin/litiges", icon: AlertTriangle, badge: 4 },

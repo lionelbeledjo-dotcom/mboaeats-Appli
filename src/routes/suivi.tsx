@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Bike, Phone, MessageCircle, MapPin, Check, Clock, Flame, ArrowLeft, Star } from "lucide-react";
+import { Bike, Phone, MessageCircle, MapPin, Check, Clock, Flame, ArrowLeft, Star, Radio } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/suivi")({
   component: Suivi,
@@ -22,6 +23,7 @@ const steps = [
 function Suivi() {
   const [progress, setProgress] = useState(0.62);
   const [active, setActive] = useState(2);
+  const [livePos, setLivePos] = useState<{ lat: number; lng: number } | null>(null);
   const eta = Math.max(1, Math.round(18 * (1 - progress)));
 
   useEffect(() => {
@@ -35,6 +37,22 @@ function Suivi() {
     return () => clearInterval(t);
   }, []);
 
+  // Realtime subscription to driver_locations (Lovable Cloud)
+  useEffect(() => {
+    const channel = supabase
+      .channel("driver-tracking")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "driver_locations" },
+        (payload) => {
+          const row = (payload.new ?? payload.old) as { lat?: number; lng?: number } | null;
+          if (row?.lat != null && row?.lng != null) setLivePos({ lat: row.lat, lng: row.lng });
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 glass">
@@ -42,7 +60,14 @@ function Suivi() {
           <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" /> Accueil
           </Link>
-          <span className="font-display font-bold">Suivi <span className="text-gradient-primary">live</span></span>
+          <span className="font-display font-bold inline-flex items-center gap-2">
+            Suivi <span className="text-gradient-primary">live</span>
+            {livePos && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-400">
+                <Radio className="h-3 w-3 animate-pulse" /> GPS
+              </span>
+            )}
+          </span>
           <div className="w-16" />
         </div>
       </header>

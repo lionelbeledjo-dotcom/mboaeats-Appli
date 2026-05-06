@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Coins, Download, Filter } from "lucide-react";
+import { CommissionConfig } from "@/components/admin/CommissionConfig";
 
 export const Route = createFileRoute("/admin/commissions")({
   component: Commissions,
@@ -30,6 +31,8 @@ function Commissions() {
           </button>
         </div>
       </div>
+
+      <CommissionConfig />
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card label="Commissions encaissées" value="4 820 000" sub="FCFA · 7j" />
