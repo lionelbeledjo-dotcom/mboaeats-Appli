@@ -28,13 +28,13 @@ export const Route = createFileRoute("/")({
 const cities = ["Douala", "Yaoundé", "Bafoussam"];
 
 const categories = [
-  { label: "Ndolé", icon: "🥬" },
-  { label: "Poulet DG", icon: "🍗" },
-  { label: "Poisson braisé", icon: "🐟" },
-  { label: "Eru", icon: "🍲" },
-  { label: "Suya", icon: "🍢" },
-  { label: "Beignets", icon: "🥯" },
-  { label: "Jus naturels", icon: "🥤" },
+  { slug: "ndole", label: "Ndolé", icon: "🥬" },
+  { slug: "poulet-dg", label: "Poulet DG", icon: "🍗" },
+  { slug: "poisson", label: "Poisson braisé", icon: "🐟" },
+  { slug: "eru", label: "Eru", icon: "🍲" },
+  { slug: "suya", label: "Suya", icon: "🍢" },
+  { slug: "beignets", label: "Beignets", icon: "🥯" },
+  { slug: "jus", label: "Jus naturels", icon: "🥤" },
 ];
 
 const restaurants = realRestaurants.map((r) => {

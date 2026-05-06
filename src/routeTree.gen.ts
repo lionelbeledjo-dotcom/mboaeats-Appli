@@ -33,6 +33,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as RestaurantsRestoIdRouteImport } from './routes/restaurants.$restoId'
+import { Route as CategorieSlugRouteImport } from './routes/categorie.$slug'
 import { Route as AdminZonesRouteImport } from './routes/admin.zones'
 import { Route as AdminRestaurantsRouteImport } from './routes/admin.restaurants'
 import { Route as AdminLivreursRouteImport } from './routes/admin.livreurs'
@@ -160,6 +161,11 @@ const RestaurantsRestoIdRoute = RestaurantsRestoIdRouteImport.update({
   path: '/restaurants/$restoId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CategorieSlugRoute = CategorieSlugRouteImport.update({
+  id: '/categorie/$slug',
+  path: '/categorie/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminZonesRoute = AdminZonesRouteImport.update({
   id: '/zones',
   path: '/zones',
@@ -220,6 +226,7 @@ export interface FileRoutesByFullPath {
   '/admin/livreurs': typeof AdminLivreursRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
   '/admin/zones': typeof AdminZonesRoute
+  '/categorie/$slug': typeof CategorieSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/admin/': typeof AdminIndexRoute
   '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
@@ -251,6 +258,7 @@ export interface FileRoutesByTo {
   '/admin/livreurs': typeof AdminLivreursRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
   '/admin/zones': typeof AdminZonesRoute
+  '/categorie/$slug': typeof CategorieSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/admin': typeof AdminIndexRoute
   '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
@@ -284,6 +292,7 @@ export interface FileRoutesById {
   '/admin/livreurs': typeof AdminLivreursRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
   '/admin/zones': typeof AdminZonesRoute
+  '/categorie/$slug': typeof CategorieSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/admin/': typeof AdminIndexRoute
   '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
@@ -318,6 +327,7 @@ export interface FileRouteTypes {
     | '/admin/livreurs'
     | '/admin/restaurants'
     | '/admin/zones'
+    | '/categorie/$slug'
     | '/restaurants/$restoId'
     | '/admin/'
     | '/restaurants/$restoId/plats/$platId'
@@ -349,6 +359,7 @@ export interface FileRouteTypes {
     | '/admin/livreurs'
     | '/admin/restaurants'
     | '/admin/zones'
+    | '/categorie/$slug'
     | '/restaurants/$restoId'
     | '/admin'
     | '/restaurants/$restoId/plats/$platId'
@@ -381,6 +392,7 @@ export interface FileRouteTypes {
     | '/admin/livreurs'
     | '/admin/restaurants'
     | '/admin/zones'
+    | '/categorie/$slug'
     | '/restaurants/$restoId'
     | '/admin/'
     | '/restaurants/$restoId/plats/$platId'
@@ -409,6 +421,7 @@ export interface RootRouteChildren {
   RestaurantRoute: typeof RestaurantRoute
   SuiviRoute: typeof SuiviRoute
   TableeRoute: typeof TableeRoute
+  CategorieSlugRoute: typeof CategorieSlugRoute
   RestaurantsRestoIdRoute: typeof RestaurantsRestoIdRouteWithChildren
 }
 
@@ -582,6 +595,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RestaurantsRestoIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/categorie/$slug': {
+      id: '/categorie/$slug'
+      path: '/categorie/$slug'
+      fullPath: '/categorie/$slug'
+      preLoaderRoute: typeof CategorieSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/zones': {
       id: '/admin/zones'
       path: '/zones'
@@ -681,6 +701,7 @@ const rootRouteChildren: RootRouteChildren = {
   RestaurantRoute: RestaurantRoute,
   SuiviRoute: SuiviRoute,
   TableeRoute: TableeRoute,
+  CategorieSlugRoute: CategorieSlugRoute,
   RestaurantsRestoIdRoute: RestaurantsRestoIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
