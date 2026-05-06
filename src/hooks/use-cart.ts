@@ -46,22 +46,34 @@ export function clearCart() {
   write([]);
 }
 
+function subscribe(cb: () => void) {
+  window.addEventListener(EVT, cb);
+  window.addEventListener("storage", cb);
+  return () => {
+    window.removeEventListener(EVT, cb);
+    window.removeEventListener("storage", cb);
+  };
+}
+
+let cache: CartItem[] = [];
+let cacheKey = "";
+function getSnapshot(): CartItem[] {
+  const raw = typeof localStorage !== "undefined" ? localStorage.getItem(KEY) ?? "" : "";
+  if (raw !== cacheKey) {
+    cacheKey = raw;
+    cache = read();
+  }
+  return cache;
+}
+const emptySnap: CartItem[] = [];
+function getServerSnapshot(): CartItem[] {
+  return emptySnap;
+}
+
 export function useCart() {
-  const [items, setItems] = useState<CartItem[]>([]);
-
-  useEffect(() => {
-    setItems(read());
-    const sync = () => setItems(read());
-    window.addEventListener(EVT, sync);
-    window.addEventListener("storage", sync);
-    return () => {
-      window.removeEventListener(EVT, sync);
-      window.removeEventListener("storage", sync);
-    };
-  }, []);
-
-  const subtotal = items.reduce((s, i) => s + i.qty * i.price, 0);
-  const count = items.reduce((s, i) => s + i.qty, 0);
+  const items = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const subtotal = items.reduce((s: number, i: CartItem) => s + i.qty * i.price, 0);
+  const count = items.reduce((s: number, i: CartItem) => s + i.qty, 0);
 
   return {
     items,
@@ -72,3 +84,4 @@ export function useCart() {
     clear: useCallback(() => clearCart(), []),
   };
 }
+
