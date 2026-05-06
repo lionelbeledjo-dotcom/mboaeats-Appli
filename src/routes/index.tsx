@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   Search, MapPin, Star, Clock, Flame, Users, Sparkles,
   Smartphone, ShieldCheck, Zap, ArrowRight, ChevronRight,
-  Utensils, Bike, Crown, Plus, Brain,
+  Utensils, Bike, Crown, Plus, Brain, Bell,
 } from "lucide-react";
 
 import heroDish from "@/assets/hero-dish.jpg";
