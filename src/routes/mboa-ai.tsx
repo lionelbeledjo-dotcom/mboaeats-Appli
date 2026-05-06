@@ -79,11 +79,32 @@ function MboaAIPage() {
   const [mood, setMood] = useState("tired");
   const [budget, setBudget] = useState(3500);
   const [prompt, setPrompt] = useState("");
+  const [aiResults, setAiResults] = useState<Suggestion[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const hour = new Date().getHours();
   const timeLabel = hour < 11 ? "matin" : hour < 15 ? "midi" : hour < 19 ? "après-midi" : "soir";
 
-  const filtered = baseSuggestions.filter((s) => s.price <= budget);
+  const askAI = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await recommendDishes({
+        data: { prompt, mood, budget, city: "Douala", weather: "Pluie fine, 26°C", timeLabel },
+      });
+      setAiResults(res.suggestions);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erreur Mboa AI");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const list = aiResults
+    ? aiResults.map((s, i) => ({ ...s, img: fallbackImgs[i % fallbackImgs.length] }))
+    : baseSuggestions;
+  const filtered = list.filter((s) => s.price <= budget);
 
   return (
     <div className="min-h-screen bg-background">
