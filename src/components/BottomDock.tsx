@@ -1,13 +1,21 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { Home, Search, ShoppingCart, Users, User } from "lucide-react";
 
-const items = [
+type Item = {
+  to: "/" | "/mboa-ai" | "/checkout" | "/tablee" | "/fidelite";
+  label: string;
+  icon: typeof Home;
+  exact?: boolean;
+  badge?: number;
+};
+
+const items: Item[] = [
   { to: "/", label: "Accueil", icon: Home, exact: true },
   { to: "/mboa-ai", label: "Recherche", icon: Search },
   { to: "/checkout", label: "Panier", icon: ShoppingCart, badge: 2 },
   { to: "/tablee", label: "Tablée", icon: Users },
   { to: "/fidelite", label: "Profil", icon: User },
-] as const;
+];
 
 export function BottomDock() {
   const location = useLocation();
