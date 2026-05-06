@@ -11,21 +11,29 @@ export function CartFab() {
   if (count === 0) return null;
   if (HIDDEN.includes(pathname) || pathname.startsWith("/admin")) return null;
 
+  const displayCount = count > 99 ? "99+" : String(count);
+  const label = `Voir le panier, ${count} article${count > 1 ? "s" : ""}, total ${subtotal.toLocaleString("fr-FR")} francs CFA`;
+
   return (
     <Link
       to="/checkout"
-      aria-label={`Voir le panier (${count} article${count > 1 ? "s" : ""})`}
-      className="fixed bottom-28 right-4 z-50 flex items-center gap-2 rounded-full bg-gradient-primary px-4 py-3 text-primary-foreground shadow-glow transition-transform hover:scale-105 active:scale-95 md:bottom-6"
+      aria-label={label}
+      role="button"
+      className="fixed bottom-24 right-3 z-50 flex items-center gap-2 rounded-full bg-gradient-primary px-3 py-2.5 text-primary-foreground shadow-glow transition-transform hover:scale-105 active:scale-95 sm:bottom-28 sm:right-4 sm:px-4 sm:py-3 md:bottom-6"
     >
       <div className="relative">
-        <ShoppingBag className="h-5 w-5" />
-        <span className="absolute -right-2 -top-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-background px-1 text-[11px] font-bold text-primary ring-2 ring-primary">
-          {count}
+        <ShoppingBag className="h-5 w-5" aria-hidden="true" />
+        <span
+          aria-hidden="true"
+          className="absolute -right-2 -top-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-background px-1 text-[10px] font-bold leading-none text-primary ring-2 ring-primary tabular-nums sm:h-[22px] sm:min-w-[22px] sm:text-[11px]"
+        >
+          {displayCount}
         </span>
       </div>
-      <span className="text-xs font-bold">
+      <span className="text-[11px] font-bold tabular-nums sm:text-xs">
         {subtotal.toLocaleString("fr-FR")} FCFA
       </span>
+      <span className="sr-only">{label}</span>
     </Link>
   );
 }
