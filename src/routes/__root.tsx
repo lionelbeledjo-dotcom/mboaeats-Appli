@@ -1,5 +1,33 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { BottomDock } from "@/components/BottomDock";
+
+const PUBLIC_ROUTES = ["/connexion", "/admin-login"];
+const PUBLIC_PREFIXES = ["/admin"];
+
+function AuthGate({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const path = location.pathname;
+    const isPublic =
+      PUBLIC_ROUTES.includes(path) || PUBLIC_PREFIXES.some((p) => path.startsWith(p));
+    let logged = false;
+    try {
+      logged = !!localStorage.getItem("mboa_demo_user");
+    } catch {}
+    if (!logged && !isPublic) {
+      navigate({ to: "/connexion", replace: true });
+      return;
+    }
+    setReady(true);
+  }, [location.pathname, navigate]);
+
+  if (!ready) return null;
+  return <>{children}</>;
+}
 
 import appCss from "../styles.css?url";
 
@@ -76,10 +104,14 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  const location = useLocation();
+  const path = location.pathname;
+  const hideDock =
+    PUBLIC_ROUTES.includes(path) || PUBLIC_PREFIXES.some((p) => path.startsWith(p));
   return (
-    <>
+    <AuthGate>
       <Outlet />
-      <BottomDock />
-    </>
+      {!hideDock && <BottomDock />}
+    </AuthGate>
   );
 }
