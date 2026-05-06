@@ -93,21 +93,49 @@ const sagaAfricaDishes: Dish[] = [
   },
 ];
 
-const mamaDoualaDishes: Dish[] = [
+const mamaBelloDishes: Dish[] = [
   {
-    id: "ndole-crevettes",
-    name: "Ndolé aux crevettes",
-    description: "Ndolé maison crémeux aux crevettes fraîches, plantains et miondo.",
+    id: "ndole-complet",
+    name: "Ndolé complet",
+    description: "Feuilles de ndolé, arachides, poisson fumé, viande de bœuf et plantain.",
     price: 3500,
     image: dishEru,
     popular: true,
     options: [tailleOptions, pimentOptions],
   },
   {
-    id: "poulet-dg-complet",
-    name: "Poulet DG complet",
-    description: "Poulet sauté, plantains mûrs, carottes, haricots verts et poivron.",
-    price: 4200,
+    id: "poulet-dg",
+    name: "Poulet DG",
+    description: "Poulet sauté aux légumes, plantains dorés et épices camerounaises.",
+    price: 3500,
+    image: dishPouletDg,
+    popular: true,
+  },
+  {
+    id: "soya-braise",
+    name: "Soya braisé",
+    description: "Viande de soya mijotée dans une sauce épicée, accompagnée de plantain.",
+    price: 3500,
+    image: dishSuya,
+    spicy: true,
+  },
+];
+
+const mamaDoualaDishes: Dish[] = [
+  {
+    id: "ndole-crevettes",
+    name: "Ndolé aux crevettes",
+    description: "Ndolé maison crémeux aux crevettes fraîches, plantains et miondo.",
+    price: 3000,
+    image: dishEru,
+    popular: true,
+    options: [tailleOptions, pimentOptions],
+  },
+  {
+    id: "poulet-braise-alloco",
+    name: "Poulet braisé + Alloco",
+    description: "Demi-poulet braisé au feu de bois, alloco caramélisé et piment maison.",
+    price: 3000,
     image: dishPouletDg,
     popular: true,
   },
@@ -115,7 +143,7 @@ const mamaDoualaDishes: Dish[] = [
     id: "eru-garri",
     name: "Eru + Garri",
     description: "Eru du Sud-Ouest mijoté à l'huile de palme, accompagné de garri (water fufu).",
-    price: 3800,
+    price: 2500,
     image: dishEru,
   },
 ];
