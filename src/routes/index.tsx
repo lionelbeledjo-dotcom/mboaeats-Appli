@@ -1,9 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   Search, MapPin, Star, Clock, Flame, Users, Sparkles,
   Smartphone, ShieldCheck, Zap, ArrowRight, ChevronRight,
-  Utensils, Bike, Crown, Plus,
+  Utensils, Bike, Crown, Plus, Brain,
 } from "lucide-react";
 
 import heroDish from "@/assets/hero-dish.jpg";
@@ -111,9 +111,10 @@ function Header({ city, setCity }: { city: string; setCity: (c: string) => void 
 
         <nav className="hidden items-center gap-6 text-sm text-muted-foreground lg:flex">
           <a href="#restos" className="hover:text-foreground transition">Restaurants</a>
-          <a href="#tablee" className="hover:text-foreground transition">Tablée</a>
+          <Link to="/tablee" className="hover:text-foreground transition">Tablée</Link>
+          <Link to="/mboa-ai" className="hover:text-foreground transition">Mboa AI</Link>
+          <Link to="/adresses" className="hover:text-foreground transition">Adresses</Link>
           <a href="#fidelite" className="hover:text-foreground transition">Fidélité</a>
-          <a href="#app" className="hover:text-foreground transition">L'app</a>
         </nav>
 
         <button className="rounded-full bg-gradient-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:scale-105">
