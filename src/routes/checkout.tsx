@@ -163,7 +163,7 @@ function Checkout() {
           {step === "success" && <SuccessScreen method={method} total={total} />}
         </section>
 
-        <Summary cart={cart} subtotal={subtotal} delivery={delivery} total={total} hasPass={hasPass} landmark={landmark} />
+        <Summary cart={cart} subtotal={subtotal} delivery={delivery} total={total} hasPass={hasPass} landmark={landmark} promo={promo} setPromo={setPromo} />
       </main>
     </div>
   );
