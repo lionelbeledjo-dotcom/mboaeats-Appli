@@ -88,7 +88,7 @@ function Checkout() {
           msisdn: `237${cleanMsisdn}`,
           amount: total,
           purpose: "order",
-          metadata: { landmark, cart: cart.map((c) => c.name) },
+          metadata: { landmark, cart: cart.map((c: { name: string }) => c.name) },
         },
       });
       if (!res.ok) throw new Error(res.error ?? "Échec d'initiation");
