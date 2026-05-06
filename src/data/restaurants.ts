@@ -345,7 +345,9 @@ export const restaurants: Restaurant[] = [
     badge: "Authentique",
     categories: [
       { id: "packs", label: "Packs signature", dishes: [goutDuPaysDishes[0]] },
-      { id: "grill", label: "Grillades & accompagnements", dishes: goutDuPaysDishes.slice(1) },
+      { id: "grill", label: "Grillades", dishes: goutDuPaysDishes.slice(1, 2) },
+      { id: "koki-accomp", label: "Koki & accompagnements", dishes: accompagnementsYaounde },
+      { id: "boissons", label: "Boissons & alloco", dishes: goutDuPaysDishes.slice(2) },
     ],
   },
   {
