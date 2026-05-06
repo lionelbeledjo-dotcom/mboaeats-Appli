@@ -120,6 +120,7 @@ function Header({ city, setCity }: { city: string; setCity: (c: string) => void 
           <Link to="/livreur" className="hover:text-foreground transition">Livreur</Link>
           <Link to="/restaurant" className="hover:text-foreground transition">Resto</Link>
           <Link to="/admin" className="hover:text-foreground transition">Admin</Link>
+          <Link to="/aide" className="hover:text-foreground transition">Aide</Link>
         </nav>
 
         <Link to="/connexion" className="rounded-full bg-gradient-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:scale-105">
