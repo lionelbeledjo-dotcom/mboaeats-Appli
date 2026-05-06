@@ -55,6 +55,8 @@ function ProfilPage() {
           <Row to="/commandes" icon={Heart} label="Commandes & favoris" />
           <Row to="/adresses" icon={MapPin} label="Mes adresses" />
           <Row to="/checkout" icon={CreditCard} label="Moyens de paiement" />
+          <Row to="/mboapass" icon={Crown} label="MboaPass Premium" />
+          <Row to="/parrainage" icon={Sparkles} label="Parrainage (500 F offerts)" />
           <Row to="/fidelite" icon={Sparkles} label="Mboa Points & avantages" />
         </Section>
 
