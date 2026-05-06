@@ -2,7 +2,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { Home, Search, ShoppingCart, Users, User } from "lucide-react";
 
 type Item = {
-  to: "/" | "/mboa-ai" | "/checkout" | "/tablee" | "/fidelite";
+  to: "/" | "/recherche" | "/commandes" | "/tablee" | "/profil";
   label: string;
   icon: typeof Home;
   exact?: boolean;
@@ -11,10 +11,10 @@ type Item = {
 
 const items: Item[] = [
   { to: "/", label: "Accueil", icon: Home, exact: true },
-  { to: "/mboa-ai", label: "Recherche", icon: Search },
-  { to: "/checkout", label: "Panier", icon: ShoppingCart, badge: 2 },
+  { to: "/recherche", label: "Recherche", icon: Search },
+  { to: "/commandes", label: "Commandes", icon: ShoppingCart, badge: 1 },
   { to: "/tablee", label: "Tablée", icon: Users },
-  { to: "/fidelite", label: "Profil", icon: User },
+  { to: "/profil", label: "Profil", icon: User },
 ];
 
 export function BottomDock() {
@@ -38,7 +38,7 @@ export function BottomDock() {
               {items.map((it) => {
                 const active = it.exact ? path === it.to : path.startsWith(it.to);
                 const Icon = it.icon;
-                const isCenter = it.label === "Panier";
+                const isCenter = it.label === "Commandes";
                 return (
                   <li key={it.to} className="flex-1">
                     <Link

@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TableeRouteImport } from './routes/tablee'
 import { Route as SuiviRouteImport } from './routes/suivi'
 import { Route as RestaurantRouteImport } from './routes/restaurant'
+import { Route as RechercheRouteImport } from './routes/recherche'
+import { Route as ProfilRouteImport } from './routes/profil'
 import { Route as MboaAiRouteImport } from './routes/mboa-ai'
 import { Route as LivreurRouteImport } from './routes/livreur'
 import { Route as FideliteRouteImport } from './routes/fidelite'
@@ -19,6 +21,7 @@ import { Route as DevenirRestoRouteImport } from './routes/devenir-resto'
 import { Route as DevenirLivreurRouteImport } from './routes/devenir-livreur'
 import { Route as ConnexionRouteImport } from './routes/connexion'
 import { Route as ConfidentialiteRouteImport } from './routes/confidentialite'
+import { Route as CommandesRouteImport } from './routes/commandes'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as AideRouteImport } from './routes/aide'
 import { Route as AdressesRouteImport } from './routes/adresses'
@@ -46,6 +49,16 @@ const SuiviRoute = SuiviRouteImport.update({
 const RestaurantRoute = RestaurantRouteImport.update({
   id: '/restaurant',
   path: '/restaurant',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RechercheRoute = RechercheRouteImport.update({
+  id: '/recherche',
+  path: '/recherche',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfilRoute = ProfilRouteImport.update({
+  id: '/profil',
+  path: '/profil',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MboaAiRoute = MboaAiRouteImport.update({
@@ -81,6 +94,11 @@ const ConnexionRoute = ConnexionRouteImport.update({
 const ConfidentialiteRoute = ConfidentialiteRouteImport.update({
   id: '/confidentialite',
   path: '/confidentialite',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommandesRoute = CommandesRouteImport.update({
+  id: '/commandes',
+  path: '/commandes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutRoute = CheckoutRouteImport.update({
@@ -156,6 +174,7 @@ export interface FileRoutesByFullPath {
   '/adresses': typeof AdressesRoute
   '/aide': typeof AideRoute
   '/checkout': typeof CheckoutRoute
+  '/commandes': typeof CommandesRoute
   '/confidentialite': typeof ConfidentialiteRoute
   '/connexion': typeof ConnexionRoute
   '/devenir-livreur': typeof DevenirLivreurRoute
@@ -163,6 +182,8 @@ export interface FileRoutesByFullPath {
   '/fidelite': typeof FideliteRoute
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
+  '/profil': typeof ProfilRoute
+  '/recherche': typeof RechercheRoute
   '/restaurant': typeof RestaurantRoute
   '/suivi': typeof SuiviRoute
   '/tablee': typeof TableeRoute
@@ -180,6 +201,7 @@ export interface FileRoutesByTo {
   '/adresses': typeof AdressesRoute
   '/aide': typeof AideRoute
   '/checkout': typeof CheckoutRoute
+  '/commandes': typeof CommandesRoute
   '/confidentialite': typeof ConfidentialiteRoute
   '/connexion': typeof ConnexionRoute
   '/devenir-livreur': typeof DevenirLivreurRoute
@@ -187,6 +209,8 @@ export interface FileRoutesByTo {
   '/fidelite': typeof FideliteRoute
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
+  '/profil': typeof ProfilRoute
+  '/recherche': typeof RechercheRoute
   '/restaurant': typeof RestaurantRoute
   '/suivi': typeof SuiviRoute
   '/tablee': typeof TableeRoute
@@ -206,6 +230,7 @@ export interface FileRoutesById {
   '/adresses': typeof AdressesRoute
   '/aide': typeof AideRoute
   '/checkout': typeof CheckoutRoute
+  '/commandes': typeof CommandesRoute
   '/confidentialite': typeof ConfidentialiteRoute
   '/connexion': typeof ConnexionRoute
   '/devenir-livreur': typeof DevenirLivreurRoute
@@ -213,6 +238,8 @@ export interface FileRoutesById {
   '/fidelite': typeof FideliteRoute
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
+  '/profil': typeof ProfilRoute
+  '/recherche': typeof RechercheRoute
   '/restaurant': typeof RestaurantRoute
   '/suivi': typeof SuiviRoute
   '/tablee': typeof TableeRoute
@@ -233,6 +260,7 @@ export interface FileRouteTypes {
     | '/adresses'
     | '/aide'
     | '/checkout'
+    | '/commandes'
     | '/confidentialite'
     | '/connexion'
     | '/devenir-livreur'
@@ -240,6 +268,8 @@ export interface FileRouteTypes {
     | '/fidelite'
     | '/livreur'
     | '/mboa-ai'
+    | '/profil'
+    | '/recherche'
     | '/restaurant'
     | '/suivi'
     | '/tablee'
@@ -257,6 +287,7 @@ export interface FileRouteTypes {
     | '/adresses'
     | '/aide'
     | '/checkout'
+    | '/commandes'
     | '/confidentialite'
     | '/connexion'
     | '/devenir-livreur'
@@ -264,6 +295,8 @@ export interface FileRouteTypes {
     | '/fidelite'
     | '/livreur'
     | '/mboa-ai'
+    | '/profil'
+    | '/recherche'
     | '/restaurant'
     | '/suivi'
     | '/tablee'
@@ -282,6 +315,7 @@ export interface FileRouteTypes {
     | '/adresses'
     | '/aide'
     | '/checkout'
+    | '/commandes'
     | '/confidentialite'
     | '/connexion'
     | '/devenir-livreur'
@@ -289,6 +323,8 @@ export interface FileRouteTypes {
     | '/fidelite'
     | '/livreur'
     | '/mboa-ai'
+    | '/profil'
+    | '/recherche'
     | '/restaurant'
     | '/suivi'
     | '/tablee'
@@ -308,6 +344,7 @@ export interface RootRouteChildren {
   AdressesRoute: typeof AdressesRoute
   AideRoute: typeof AideRoute
   CheckoutRoute: typeof CheckoutRoute
+  CommandesRoute: typeof CommandesRoute
   ConfidentialiteRoute: typeof ConfidentialiteRoute
   ConnexionRoute: typeof ConnexionRoute
   DevenirLivreurRoute: typeof DevenirLivreurRoute
@@ -315,6 +352,8 @@ export interface RootRouteChildren {
   FideliteRoute: typeof FideliteRoute
   LivreurRoute: typeof LivreurRoute
   MboaAiRoute: typeof MboaAiRoute
+  ProfilRoute: typeof ProfilRoute
+  RechercheRoute: typeof RechercheRoute
   RestaurantRoute: typeof RestaurantRoute
   SuiviRoute: typeof SuiviRoute
   TableeRoute: typeof TableeRoute
@@ -342,6 +381,20 @@ declare module '@tanstack/react-router' {
       path: '/restaurant'
       fullPath: '/restaurant'
       preLoaderRoute: typeof RestaurantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recherche': {
+      id: '/recherche'
+      path: '/recherche'
+      fullPath: '/recherche'
+      preLoaderRoute: typeof RechercheRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profil': {
+      id: '/profil'
+      path: '/profil'
+      fullPath: '/profil'
+      preLoaderRoute: typeof ProfilRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mboa-ai': {
@@ -391,6 +444,13 @@ declare module '@tanstack/react-router' {
       path: '/confidentialite'
       fullPath: '/confidentialite'
       preLoaderRoute: typeof ConfidentialiteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/commandes': {
+      id: '/commandes'
+      path: '/commandes'
+      fullPath: '/commandes'
+      preLoaderRoute: typeof CommandesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout': {
@@ -524,6 +584,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdressesRoute: AdressesRoute,
   AideRoute: AideRoute,
   CheckoutRoute: CheckoutRoute,
+  CommandesRoute: CommandesRoute,
   ConfidentialiteRoute: ConfidentialiteRoute,
   ConnexionRoute: ConnexionRoute,
   DevenirLivreurRoute: DevenirLivreurRoute,
@@ -531,6 +592,8 @@ const rootRouteChildren: RootRouteChildren = {
   FideliteRoute: FideliteRoute,
   LivreurRoute: LivreurRoute,
   MboaAiRoute: MboaAiRoute,
+  ProfilRoute: ProfilRoute,
+  RechercheRoute: RechercheRoute,
   RestaurantRoute: RestaurantRoute,
   SuiviRoute: SuiviRoute,
   TableeRoute: TableeRoute,

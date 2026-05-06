@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   Search, MapPin, Star, Clock, Flame, Users, Sparkles,
   Smartphone, ShieldCheck, Zap, ArrowRight, ChevronRight,
-  Utensils, Bike, Crown, Plus, Brain,
+  Utensils, Bike, Crown, Plus, Brain, Bell,
 } from "lucide-react";
 
 import heroDish from "@/assets/hero-dish.jpg";
@@ -72,13 +72,33 @@ function Header({ city, setCity }: { city: string; setCity: (c: string) => void 
           </span>
         </a>
 
+        {/* Mobile: city pill + bell */}
+        <div className="flex items-center gap-2 md:hidden">
+          <label className="flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1.5 text-xs font-semibold text-primary">
+            <select
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className="bg-transparent outline-none"
+              aria-label="Choisir une ville"
+            >
+              {cities.map((c) => <option key={c} className="bg-surface text-foreground">{c}</option>)}
+            </select>
+            <MapPin className="h-3.5 w-3.5" />
+          </label>
+          <Link to="/profil" aria-label="Notifications" className="relative rounded-full border border-border bg-surface/60 p-2">
+            <Bell className="h-4 w-4" />
+            <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-accent ring-2 ring-background" />
+          </Link>
+        </div>
+
+        {/* Desktop: city + nav + auth */}
         <div className="hidden items-center gap-1 rounded-full border border-border bg-surface/60 px-3 py-1.5 md:flex">
           <MapPin className="h-4 w-4 text-primary" />
           <select
             value={city}
             onChange={(e) => setCity(e.target.value)}
             className="bg-transparent text-sm font-medium outline-none"
-            aria-label="Choisir une ville"
+            aria-label="Choisir une ville (desktop)"
           >
             {cities.map((c) => <option key={c} className="bg-surface">{c}</option>)}
           </select>
@@ -97,7 +117,7 @@ function Header({ city, setCity }: { city: string; setCity: (c: string) => void 
           <Link to="/aide" className="hover:text-foreground transition">Aide</Link>
         </nav>
 
-        <Link to="/connexion" className="rounded-full bg-gradient-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:scale-105">
+        <Link to="/connexion" className="hidden rounded-full bg-gradient-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:scale-105 md:inline-flex">
           Connexion
         </Link>
       </div>
