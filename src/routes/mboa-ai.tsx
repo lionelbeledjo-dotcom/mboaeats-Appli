@@ -217,7 +217,9 @@ function MboaAIPage() {
         <section className="mt-10">
           <div className="flex items-end justify-between">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-wider text-primary">Pour toi maintenant</p>
+              <p className="text-sm font-semibold uppercase tracking-wider text-primary">
+                {aiResults ? "Généré par Mboa AI" : "Pour toi maintenant"}
+              </p>
               <h2 className="mt-1 font-display text-2xl font-bold">{filtered.length} suggestions personnalisées</h2>
             </div>
           </div>
