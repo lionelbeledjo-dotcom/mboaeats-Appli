@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Coins, Download, Filter } from "lucide-react";
+import { CommissionConfig } from "@/components/admin/CommissionConfig";
 
 export const Route = createFileRoute("/admin/commissions")({
   component: Commissions,
