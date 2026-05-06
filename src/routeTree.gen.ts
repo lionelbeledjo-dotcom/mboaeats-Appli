@@ -32,6 +32,7 @@ import { Route as AdminLoginRouteImport } from './routes/admin-login'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as TableePaiementRouteImport } from './routes/tablee.paiement'
 import { Route as RestaurantsRestoIdRouteImport } from './routes/restaurants.$restoId'
 import { Route as CategorieSlugRouteImport } from './routes/categorie.$slug'
 import { Route as AdminZonesRouteImport } from './routes/admin.zones'
@@ -156,6 +157,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const TableePaiementRoute = TableePaiementRouteImport.update({
+  id: '/paiement',
+  path: '/paiement',
+  getParentRoute: () => TableeRoute,
+} as any)
 const RestaurantsRestoIdRoute = RestaurantsRestoIdRouteImport.update({
   id: '/restaurants/$restoId',
   path: '/restaurants/$restoId',
@@ -220,7 +226,7 @@ export interface FileRoutesByFullPath {
   '/recherche': typeof RechercheRoute
   '/restaurant': typeof RestaurantRoute
   '/suivi': typeof SuiviRoute
-  '/tablee': typeof TableeRoute
+  '/tablee': typeof TableeRouteWithChildren
   '/admin/commissions': typeof AdminCommissionsRoute
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
@@ -228,6 +234,7 @@ export interface FileRoutesByFullPath {
   '/admin/zones': typeof AdminZonesRoute
   '/categorie/$slug': typeof CategorieSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
+  '/tablee/paiement': typeof TableePaiementRoute
   '/admin/': typeof AdminIndexRoute
   '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
 }
@@ -252,7 +259,7 @@ export interface FileRoutesByTo {
   '/recherche': typeof RechercheRoute
   '/restaurant': typeof RestaurantRoute
   '/suivi': typeof SuiviRoute
-  '/tablee': typeof TableeRoute
+  '/tablee': typeof TableeRouteWithChildren
   '/admin/commissions': typeof AdminCommissionsRoute
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
@@ -260,6 +267,7 @@ export interface FileRoutesByTo {
   '/admin/zones': typeof AdminZonesRoute
   '/categorie/$slug': typeof CategorieSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
+  '/tablee/paiement': typeof TableePaiementRoute
   '/admin': typeof AdminIndexRoute
   '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
 }
@@ -286,7 +294,7 @@ export interface FileRoutesById {
   '/recherche': typeof RechercheRoute
   '/restaurant': typeof RestaurantRoute
   '/suivi': typeof SuiviRoute
-  '/tablee': typeof TableeRoute
+  '/tablee': typeof TableeRouteWithChildren
   '/admin/commissions': typeof AdminCommissionsRoute
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
@@ -294,6 +302,7 @@ export interface FileRoutesById {
   '/admin/zones': typeof AdminZonesRoute
   '/categorie/$slug': typeof CategorieSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
+  '/tablee/paiement': typeof TableePaiementRoute
   '/admin/': typeof AdminIndexRoute
   '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
 }
@@ -329,6 +338,7 @@ export interface FileRouteTypes {
     | '/admin/zones'
     | '/categorie/$slug'
     | '/restaurants/$restoId'
+    | '/tablee/paiement'
     | '/admin/'
     | '/restaurants/$restoId/plats/$platId'
   fileRoutesByTo: FileRoutesByTo
@@ -361,6 +371,7 @@ export interface FileRouteTypes {
     | '/admin/zones'
     | '/categorie/$slug'
     | '/restaurants/$restoId'
+    | '/tablee/paiement'
     | '/admin'
     | '/restaurants/$restoId/plats/$platId'
   id:
@@ -394,6 +405,7 @@ export interface FileRouteTypes {
     | '/admin/zones'
     | '/categorie/$slug'
     | '/restaurants/$restoId'
+    | '/tablee/paiement'
     | '/admin/'
     | '/restaurants/$restoId/plats/$platId'
   fileRoutesById: FileRoutesById
@@ -420,7 +432,7 @@ export interface RootRouteChildren {
   RechercheRoute: typeof RechercheRoute
   RestaurantRoute: typeof RestaurantRoute
   SuiviRoute: typeof SuiviRoute
-  TableeRoute: typeof TableeRoute
+  TableeRoute: typeof TableeRouteWithChildren
   CategorieSlugRoute: typeof CategorieSlugRoute
   RestaurantsRestoIdRoute: typeof RestaurantsRestoIdRouteWithChildren
 }
@@ -588,6 +600,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/tablee/paiement': {
+      id: '/tablee/paiement'
+      path: '/paiement'
+      fullPath: '/tablee/paiement'
+      preLoaderRoute: typeof TableePaiementRouteImport
+      parentRoute: typeof TableeRoute
+    }
     '/restaurants/$restoId': {
       id: '/restaurants/$restoId'
       path: '/restaurants/$restoId'
@@ -667,6 +686,17 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface TableeRouteChildren {
+  TableePaiementRoute: typeof TableePaiementRoute
+}
+
+const TableeRouteChildren: TableeRouteChildren = {
+  TableePaiementRoute: TableePaiementRoute,
+}
+
+const TableeRouteWithChildren =
+  TableeRoute._addFileChildren(TableeRouteChildren)
+
 interface RestaurantsRestoIdRouteChildren {
   RestaurantsRestoIdPlatsPlatIdRoute: typeof RestaurantsRestoIdPlatsPlatIdRoute
 }
@@ -700,7 +730,7 @@ const rootRouteChildren: RootRouteChildren = {
   RechercheRoute: RechercheRoute,
   RestaurantRoute: RestaurantRoute,
   SuiviRoute: SuiviRoute,
-  TableeRoute: TableeRoute,
+  TableeRoute: TableeRouteWithChildren,
   CategorieSlugRoute: CategorieSlugRoute,
   RestaurantsRestoIdRoute: RestaurantsRestoIdRouteWithChildren,
 }
