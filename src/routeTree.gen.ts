@@ -14,6 +14,8 @@ import { Route as SuiviRouteImport } from './routes/suivi'
 import { Route as RestaurantRouteImport } from './routes/restaurant'
 import { Route as RechercheRouteImport } from './routes/recherche'
 import { Route as ProfilRouteImport } from './routes/profil'
+import { Route as ParrainageRouteImport } from './routes/parrainage'
+import { Route as MboapassRouteImport } from './routes/mboapass'
 import { Route as MboaAiRouteImport } from './routes/mboa-ai'
 import { Route as LivreurRouteImport } from './routes/livreur'
 import { Route as FideliteRouteImport } from './routes/fidelite'
@@ -60,6 +62,16 @@ const RechercheRoute = RechercheRouteImport.update({
 const ProfilRoute = ProfilRouteImport.update({
   id: '/profil',
   path: '/profil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ParrainageRoute = ParrainageRouteImport.update({
+  id: '/parrainage',
+  path: '/parrainage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MboapassRoute = MboapassRouteImport.update({
+  id: '/mboapass',
+  path: '/mboapass',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MboaAiRoute = MboaAiRouteImport.update({
@@ -189,6 +201,8 @@ export interface FileRoutesByFullPath {
   '/fidelite': typeof FideliteRoute
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
+  '/mboapass': typeof MboapassRoute
+  '/parrainage': typeof ParrainageRoute
   '/profil': typeof ProfilRoute
   '/recherche': typeof RechercheRoute
   '/restaurant': typeof RestaurantRoute
@@ -217,6 +231,8 @@ export interface FileRoutesByTo {
   '/fidelite': typeof FideliteRoute
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
+  '/mboapass': typeof MboapassRoute
+  '/parrainage': typeof ParrainageRoute
   '/profil': typeof ProfilRoute
   '/recherche': typeof RechercheRoute
   '/restaurant': typeof RestaurantRoute
@@ -247,6 +263,8 @@ export interface FileRoutesById {
   '/fidelite': typeof FideliteRoute
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
+  '/mboapass': typeof MboapassRoute
+  '/parrainage': typeof ParrainageRoute
   '/profil': typeof ProfilRoute
   '/recherche': typeof RechercheRoute
   '/restaurant': typeof RestaurantRoute
@@ -278,6 +296,8 @@ export interface FileRouteTypes {
     | '/fidelite'
     | '/livreur'
     | '/mboa-ai'
+    | '/mboapass'
+    | '/parrainage'
     | '/profil'
     | '/recherche'
     | '/restaurant'
@@ -306,6 +326,8 @@ export interface FileRouteTypes {
     | '/fidelite'
     | '/livreur'
     | '/mboa-ai'
+    | '/mboapass'
+    | '/parrainage'
     | '/profil'
     | '/recherche'
     | '/restaurant'
@@ -335,6 +357,8 @@ export interface FileRouteTypes {
     | '/fidelite'
     | '/livreur'
     | '/mboa-ai'
+    | '/mboapass'
+    | '/parrainage'
     | '/profil'
     | '/recherche'
     | '/restaurant'
@@ -365,6 +389,8 @@ export interface RootRouteChildren {
   FideliteRoute: typeof FideliteRoute
   LivreurRoute: typeof LivreurRoute
   MboaAiRoute: typeof MboaAiRoute
+  MboapassRoute: typeof MboapassRoute
+  ParrainageRoute: typeof ParrainageRoute
   ProfilRoute: typeof ProfilRoute
   RechercheRoute: typeof RechercheRoute
   RestaurantRoute: typeof RestaurantRoute
@@ -408,6 +434,20 @@ declare module '@tanstack/react-router' {
       path: '/profil'
       fullPath: '/profil'
       preLoaderRoute: typeof ProfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parrainage': {
+      id: '/parrainage'
+      path: '/parrainage'
+      fullPath: '/parrainage'
+      preLoaderRoute: typeof ParrainageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mboapass': {
+      id: '/mboapass'
+      path: '/mboapass'
+      fullPath: '/mboapass'
+      preLoaderRoute: typeof MboapassRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mboa-ai': {
@@ -613,6 +653,8 @@ const rootRouteChildren: RootRouteChildren = {
   FideliteRoute: FideliteRoute,
   LivreurRoute: LivreurRoute,
   MboaAiRoute: MboaAiRoute,
+  MboapassRoute: MboapassRoute,
+  ParrainageRoute: ParrainageRoute,
   ProfilRoute: ProfilRoute,
   RechercheRoute: RechercheRoute,
   RestaurantRoute: RestaurantRoute,
