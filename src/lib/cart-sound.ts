@@ -21,22 +21,60 @@ export function setCartSoundEnabled(on: boolean) {
 }
 
 let ctx: AudioContext | null = null;
-function getCtx(): AudioContext | null {
+let unlocked = false;
+
+function createCtx(): AudioContext | null {
   if (typeof window === "undefined") return null;
   try {
-    if (!ctx) {
-      const Ctor =
-        (window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext })
-          .AudioContext ||
-        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (!Ctor) return null;
-      ctx = new Ctor();
-    }
-    if (ctx.state === "suspended") ctx.resume().catch(() => {});
+    const Ctor =
+      (window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext })
+        .AudioContext ||
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!Ctor) return null;
+    if (!ctx) ctx = new Ctor();
     return ctx;
   } catch {
     return null;
   }
+}
+
+function unlock() {
+  const ac = createCtx();
+  if (!ac) return;
+  try {
+    if (ac.state === "suspended") ac.resume().catch(() => {});
+    // Play a silent buffer — required on iOS Safari to unlock audio.
+    const buffer = ac.createBuffer(1, 1, 22050);
+    const src = ac.createBufferSource();
+    src.buffer = buffer;
+    src.connect(ac.destination);
+    src.start(0);
+    unlocked = true;
+    removeUnlockListeners();
+  } catch {}
+}
+
+function removeUnlockListeners() {
+  if (typeof window === "undefined") return;
+  window.removeEventListener("touchend", unlock);
+  window.removeEventListener("touchstart", unlock);
+  window.removeEventListener("click", unlock);
+  window.removeEventListener("keydown", unlock);
+}
+
+if (typeof window !== "undefined") {
+  window.addEventListener("touchend", unlock, { passive: true });
+  window.addEventListener("touchstart", unlock, { passive: true });
+  window.addEventListener("click", unlock);
+  window.addEventListener("keydown", unlock);
+}
+
+function getCtx(): AudioContext | null {
+  if (!unlocked) return null; // Wait for a real user gesture (iOS requirement)
+  const ac = createCtx();
+  if (!ac) return null;
+  if (ac.state === "suspended") ac.resume().catch(() => {});
+  return ac;
 }
 
 export function playCartSound(kind: "add" | "remove") {
