@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TableeRouteImport } from './routes/tablee'
 import { Route as MboaAiRouteImport } from './routes/mboa-ai'
+import { Route as ConnexionRouteImport } from './routes/connexion'
 import { Route as AdressesRouteImport } from './routes/adresses'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -22,6 +23,11 @@ const TableeRoute = TableeRouteImport.update({
 const MboaAiRoute = MboaAiRouteImport.update({
   id: '/mboa-ai',
   path: '/mboa-ai',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnexionRoute = ConnexionRouteImport.update({
+  id: '/connexion',
+  path: '/connexion',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdressesRoute = AdressesRouteImport.update({
@@ -38,12 +44,14 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/adresses': typeof AdressesRoute
+  '/connexion': typeof ConnexionRoute
   '/mboa-ai': typeof MboaAiRoute
   '/tablee': typeof TableeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/adresses': typeof AdressesRoute
+  '/connexion': typeof ConnexionRoute
   '/mboa-ai': typeof MboaAiRoute
   '/tablee': typeof TableeRoute
 }
@@ -51,20 +59,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/adresses': typeof AdressesRoute
+  '/connexion': typeof ConnexionRoute
   '/mboa-ai': typeof MboaAiRoute
   '/tablee': typeof TableeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/adresses' | '/mboa-ai' | '/tablee'
+  fullPaths: '/' | '/adresses' | '/connexion' | '/mboa-ai' | '/tablee'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/adresses' | '/mboa-ai' | '/tablee'
-  id: '__root__' | '/' | '/adresses' | '/mboa-ai' | '/tablee'
+  to: '/' | '/adresses' | '/connexion' | '/mboa-ai' | '/tablee'
+  id: '__root__' | '/' | '/adresses' | '/connexion' | '/mboa-ai' | '/tablee'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdressesRoute: typeof AdressesRoute
+  ConnexionRoute: typeof ConnexionRoute
   MboaAiRoute: typeof MboaAiRoute
   TableeRoute: typeof TableeRoute
 }
@@ -83,6 +93,13 @@ declare module '@tanstack/react-router' {
       path: '/mboa-ai'
       fullPath: '/mboa-ai'
       preLoaderRoute: typeof MboaAiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connexion': {
+      id: '/connexion'
+      path: '/connexion'
+      fullPath: '/connexion'
+      preLoaderRoute: typeof ConnexionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/adresses': {
@@ -105,6 +122,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdressesRoute: AdressesRoute,
+  ConnexionRoute: ConnexionRoute,
   MboaAiRoute: MboaAiRoute,
   TableeRoute: TableeRoute,
 }

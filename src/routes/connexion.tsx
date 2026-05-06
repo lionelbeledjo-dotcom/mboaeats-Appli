@@ -128,7 +128,7 @@ function Connexion() {
                 {otp.map((d, i) => (
                   <input
                     key={i}
-                    ref={(el) => (inputs.current[i] = el)}
+                    ref={(el) => { inputs.current[i] = el; }}
                     inputMode="numeric"
                     maxLength={1}
                     value={d}
