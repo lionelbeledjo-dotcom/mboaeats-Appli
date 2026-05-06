@@ -11,12 +11,19 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TableeRouteImport } from './routes/tablee'
 import { Route as SuiviRouteImport } from './routes/suivi'
+import { Route as RestaurantRouteImport } from './routes/restaurant'
 import { Route as MboaAiRouteImport } from './routes/mboa-ai'
 import { Route as LivreurRouteImport } from './routes/livreur'
 import { Route as FideliteRouteImport } from './routes/fidelite'
 import { Route as ConnexionRouteImport } from './routes/connexion'
 import { Route as AdressesRouteImport } from './routes/adresses'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminRestaurantsRouteImport } from './routes/admin.restaurants'
+import { Route as AdminLivreursRouteImport } from './routes/admin.livreurs'
+import { Route as AdminLitigesRouteImport } from './routes/admin.litiges'
+import { Route as AdminCommissionsRouteImport } from './routes/admin.commissions'
 
 const TableeRoute = TableeRouteImport.update({
   id: '/tablee',
@@ -26,6 +33,11 @@ const TableeRoute = TableeRouteImport.update({
 const SuiviRoute = SuiviRouteImport.update({
   id: '/suivi',
   path: '/suivi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RestaurantRoute = RestaurantRouteImport.update({
+  id: '/restaurant',
+  path: '/restaurant',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MboaAiRoute = MboaAiRouteImport.update({
@@ -53,21 +65,58 @@ const AdressesRoute = AdressesRouteImport.update({
   path: '/adresses',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminRestaurantsRoute = AdminRestaurantsRouteImport.update({
+  id: '/restaurants',
+  path: '/restaurants',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLivreursRoute = AdminLivreursRouteImport.update({
+  id: '/livreurs',
+  path: '/livreurs',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLitigesRoute = AdminLitigesRouteImport.update({
+  id: '/litiges',
+  path: '/litiges',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCommissionsRoute = AdminCommissionsRouteImport.update({
+  id: '/commissions',
+  path: '/commissions',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/adresses': typeof AdressesRoute
   '/connexion': typeof ConnexionRoute
   '/fidelite': typeof FideliteRoute
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
+  '/restaurant': typeof RestaurantRoute
   '/suivi': typeof SuiviRoute
   '/tablee': typeof TableeRoute
+  '/admin/commissions': typeof AdminCommissionsRoute
+  '/admin/litiges': typeof AdminLitigesRoute
+  '/admin/livreurs': typeof AdminLivreursRoute
+  '/admin/restaurants': typeof AdminRestaurantsRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -76,31 +125,51 @@ export interface FileRoutesByTo {
   '/fidelite': typeof FideliteRoute
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
+  '/restaurant': typeof RestaurantRoute
   '/suivi': typeof SuiviRoute
   '/tablee': typeof TableeRoute
+  '/admin/commissions': typeof AdminCommissionsRoute
+  '/admin/litiges': typeof AdminLitigesRoute
+  '/admin/livreurs': typeof AdminLivreursRoute
+  '/admin/restaurants': typeof AdminRestaurantsRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/adresses': typeof AdressesRoute
   '/connexion': typeof ConnexionRoute
   '/fidelite': typeof FideliteRoute
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
+  '/restaurant': typeof RestaurantRoute
   '/suivi': typeof SuiviRoute
   '/tablee': typeof TableeRoute
+  '/admin/commissions': typeof AdminCommissionsRoute
+  '/admin/litiges': typeof AdminLitigesRoute
+  '/admin/livreurs': typeof AdminLivreursRoute
+  '/admin/restaurants': typeof AdminRestaurantsRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/adresses'
     | '/connexion'
     | '/fidelite'
     | '/livreur'
     | '/mboa-ai'
+    | '/restaurant'
     | '/suivi'
     | '/tablee'
+    | '/admin/commissions'
+    | '/admin/litiges'
+    | '/admin/livreurs'
+    | '/admin/restaurants'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -109,27 +178,42 @@ export interface FileRouteTypes {
     | '/fidelite'
     | '/livreur'
     | '/mboa-ai'
+    | '/restaurant'
     | '/suivi'
     | '/tablee'
+    | '/admin/commissions'
+    | '/admin/litiges'
+    | '/admin/livreurs'
+    | '/admin/restaurants'
+    | '/admin'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/adresses'
     | '/connexion'
     | '/fidelite'
     | '/livreur'
     | '/mboa-ai'
+    | '/restaurant'
     | '/suivi'
     | '/tablee'
+    | '/admin/commissions'
+    | '/admin/litiges'
+    | '/admin/livreurs'
+    | '/admin/restaurants'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AdressesRoute: typeof AdressesRoute
   ConnexionRoute: typeof ConnexionRoute
   FideliteRoute: typeof FideliteRoute
   LivreurRoute: typeof LivreurRoute
   MboaAiRoute: typeof MboaAiRoute
+  RestaurantRoute: typeof RestaurantRoute
   SuiviRoute: typeof SuiviRoute
   TableeRoute: typeof TableeRoute
 }
@@ -148,6 +232,13 @@ declare module '@tanstack/react-router' {
       path: '/suivi'
       fullPath: '/suivi'
       preLoaderRoute: typeof SuiviRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/restaurant': {
+      id: '/restaurant'
+      path: '/restaurant'
+      fullPath: '/restaurant'
+      preLoaderRoute: typeof RestaurantRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mboa-ai': {
@@ -185,6 +276,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdressesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -192,16 +290,71 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/restaurants': {
+      id: '/admin/restaurants'
+      path: '/restaurants'
+      fullPath: '/admin/restaurants'
+      preLoaderRoute: typeof AdminRestaurantsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/livreurs': {
+      id: '/admin/livreurs'
+      path: '/livreurs'
+      fullPath: '/admin/livreurs'
+      preLoaderRoute: typeof AdminLivreursRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/litiges': {
+      id: '/admin/litiges'
+      path: '/litiges'
+      fullPath: '/admin/litiges'
+      preLoaderRoute: typeof AdminLitigesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/commissions': {
+      id: '/admin/commissions'
+      path: '/commissions'
+      fullPath: '/admin/commissions'
+      preLoaderRoute: typeof AdminCommissionsRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminCommissionsRoute: typeof AdminCommissionsRoute
+  AdminLitigesRoute: typeof AdminLitigesRoute
+  AdminLivreursRoute: typeof AdminLivreursRoute
+  AdminRestaurantsRoute: typeof AdminRestaurantsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminCommissionsRoute: AdminCommissionsRoute,
+  AdminLitigesRoute: AdminLitigesRoute,
+  AdminLivreursRoute: AdminLivreursRoute,
+  AdminRestaurantsRoute: AdminRestaurantsRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   AdressesRoute: AdressesRoute,
   ConnexionRoute: ConnexionRoute,
   FideliteRoute: FideliteRoute,
   LivreurRoute: LivreurRoute,
   MboaAiRoute: MboaAiRoute,
+  RestaurantRoute: RestaurantRoute,
   SuiviRoute: SuiviRoute,
   TableeRoute: TableeRoute,
 }
