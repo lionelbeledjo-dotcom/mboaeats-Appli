@@ -1,14 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import {
-  Sparkles, ArrowLeft, Send, Sun, CloudRain, Cloud, Wind, Wallet,
-  Zap, Coffee, Heart, Dumbbell, Brain, Smile, Star, Clock, Flame,
+  Sparkles, ArrowLeft, Send, CloudRain, Wind, Wallet,
+  Zap, Coffee, Heart, Dumbbell, Brain, Smile, Star, Clock, Flame, Loader2,
 } from "lucide-react";
 
 import dishPouletDg from "@/assets/dish-poulet-dg.jpg";
 import dishEru from "@/assets/dish-eru.jpg";
 import dishPoisson from "@/assets/dish-poisson.jpg";
 import dishSuya from "@/assets/dish-suya.jpg";
+import { recommendDishes, type Suggestion } from "@/server/mboa-ai.functions";
+
+const fallbackImgs = [dishPouletDg, dishPoisson, dishEru, dishSuya];
 
 export const Route = createFileRoute("/mboa-ai")({
   head: () => ({
