@@ -115,12 +115,13 @@ function Header({ city, setCity }: { city: string; setCity: (c: string) => void 
           <Link to="/tablee" className="hover:text-foreground transition">Tablée</Link>
           <Link to="/mboa-ai" className="hover:text-foreground transition">Mboa AI</Link>
           <Link to="/adresses" className="hover:text-foreground transition">Adresses</Link>
-          <a href="#fidelite" className="hover:text-foreground transition">Fidélité</a>
+          <Link to="/fidelite" className="hover:text-foreground transition">Fidélité</Link>
+          <Link to="/suivi" className="hover:text-foreground transition">Suivi</Link>
         </nav>
 
-        <button className="rounded-full bg-gradient-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:scale-105">
+        <Link to="/connexion" className="rounded-full bg-gradient-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:scale-105">
           Connexion
-        </button>
+        </Link>
       </div>
     </header>
   );
