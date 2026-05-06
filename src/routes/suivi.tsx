@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Bike, Phone, MessageCircle, MapPin, Check, Clock, Flame, ArrowLeft, Star } from "lucide-react";
+import { Bike, Phone, MessageCircle, MapPin, Check, Clock, Flame, ArrowLeft, Star, Radio } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/suivi")({
   component: Suivi,
