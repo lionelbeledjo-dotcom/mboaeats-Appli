@@ -22,6 +22,27 @@ function ProfilPage() {
   const navigate = useNavigate();
   const [confirm, setConfirm] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const [demoUser, setDemoUser] = useState<DemoUser | null>(null);
+  const [authEmail, setAuthEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("mboa_demo_user");
+      if (raw) setDemoUser(JSON.parse(raw));
+    } catch {}
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user?.email) setAuthEmail(data.user.email);
+    }).catch(() => {});
+  }, []);
+
+  const identifier = authEmail || demoUser?.identifier || "Invité";
+  const displayName =
+    authEmail
+      ? authEmail.split("@")[0]
+      : demoUser?.mode === "email" && demoUser.identifier
+        ? demoUser.identifier.split("@")[0]
+        : demoUser?.identifier || "Mon compte";
+  const initials = (displayName.match(/[a-zA-Z]/g) || ["U"]).slice(0, 2).join("").toUpperCase();
 
   const doLogout = async () => {
     setSigningOut(true);
