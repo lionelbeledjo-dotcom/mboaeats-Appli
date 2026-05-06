@@ -1,4 +1,5 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { BottomDock } from "@/components/BottomDock";
 
 import appCss from "../styles.css?url";
 
@@ -70,5 +71,10 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      <BottomDock />
+    </>
+  );
 }
