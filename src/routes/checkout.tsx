@@ -8,6 +8,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { initiatePayment, verifyPayment, getActiveMboaPass } from "@/server/payments.functions";
+import { useCart, clearCart } from "@/hooks/use-cart";
 
 export const Route = createFileRoute("/checkout")({
   component: Checkout,
@@ -22,12 +23,6 @@ export const Route = createFileRoute("/checkout")({
 type Method = "momo" | "orange" | "card" | "cash";
 type Step = "choose" | "ussd" | "otp" | "card" | "success";
 
-const cart = [
-  { name: "Ndolé poisson", qty: 1, price: 2500 },
-  { name: "Poulet DG", qty: 1, price: 3500 },
-  { name: "Bissap maison", qty: 2, price: 800 },
-];
-
 const landmarkSchema = z.string().trim().min(8, "Décrivez un repère visible (≥ 8 caractères)").max(140);
 
 function Checkout() {
@@ -36,9 +31,10 @@ function Checkout() {
   const verify = useServerFn(verifyPayment);
   const fetchPass = useServerFn(getActiveMboaPass);
 
-  const subtotal = cart.reduce((s, i) => s + i.qty * i.price, 0);
+  const { items: cartItems, subtotal } = useCart();
+  const cart = cartItems.map((i) => ({ name: i.name, qty: i.qty, price: i.price }));
   const [hasPass, setHasPass] = useState(false);
-  const delivery = hasPass ? 0 : 800;
+  const delivery = hasPass || subtotal === 0 ? 0 : 800;
   const total = subtotal + delivery;
 
   const [method, setMethod] = useState<Method>("momo");

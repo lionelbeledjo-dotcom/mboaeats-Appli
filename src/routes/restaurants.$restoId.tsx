@@ -1,8 +1,10 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { Star, Clock, MapPin, Flame, Plus, Search, Heart } from "lucide-react";
+import { toast } from "sonner";
 import { SmartBack } from "@/components/SmartBack";
 import { RestaurantSkeleton } from "@/components/Skeleton";
 import { getRestaurant, type Restaurant } from "@/data/restaurants";
+import { addToCart } from "@/hooks/use-cart";
 
 export const Route = createFileRoute("/restaurants/$restoId")({
   loader: ({ params }) => {
@@ -35,6 +37,7 @@ export const Route = createFileRoute("/restaurants/$restoId")({
 
 function RestaurantPage() {
   const { restaurant } = Route.useLoaderData() as { restaurant: Restaurant };
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
@@ -179,7 +182,26 @@ function RestaurantPage() {
                         />
                         <button
                           aria-label={`Ajouter ${dish.name} au panier`}
-                          onClick={(e) => e.preventDefault()}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            addToCart({
+                              id: `${dish.id}__default`,
+                              dishId: dish.id,
+                              restoId: restaurant.id,
+                              name: dish.name,
+                              price: dish.price,
+                              qty: 1,
+                              image: dish.image,
+                            });
+                            toast.success("L'article a été ajouté au panier !", {
+                              description: `1 × ${dish.name}`,
+                              action: {
+                                label: "Voir le panier",
+                                onClick: () => navigate({ to: "/checkout" }),
+                              },
+                            });
+                          }}
                           className="absolute -bottom-2 -right-2 flex h-9 w-9 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-glow transition-transform hover:scale-110 active:scale-95"
                         >
                           <Plus className="h-5 w-5" strokeWidth={2.6} />

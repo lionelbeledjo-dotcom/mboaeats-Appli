@@ -1,10 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   User, Crown, MapPin, CreditCard, Bell, Shield, HelpCircle,
   LogOut, ChevronRight, Heart, Bike, Store, Sparkles,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+
+type DemoUser = { mode?: "phone" | "email"; identifier?: string };
 
 export const Route = createFileRoute("/profil")({
   head: () => ({
@@ -20,6 +22,27 @@ function ProfilPage() {
   const navigate = useNavigate();
   const [confirm, setConfirm] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const [demoUser, setDemoUser] = useState<DemoUser | null>(null);
+  const [authEmail, setAuthEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("mboa_demo_user");
+      if (raw) setDemoUser(JSON.parse(raw));
+    } catch {}
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user?.email) setAuthEmail(data.user.email);
+    }).catch(() => {});
+  }, []);
+
+  const identifier = authEmail || demoUser?.identifier || "Invité";
+  const displayName =
+    authEmail
+      ? authEmail.split("@")[0]
+      : demoUser?.mode === "email" && demoUser.identifier
+        ? demoUser.identifier.split("@")[0]
+        : demoUser?.identifier || "Mon compte";
+  const initials = (displayName.match(/[a-zA-Z]/g) || ["U"]).slice(0, 2).join("").toUpperCase();
 
   const doLogout = async () => {
     setSigningOut(true);
@@ -36,11 +59,11 @@ function ProfilPage() {
         <div className="mx-auto max-w-md px-4 py-5">
           <div className="flex items-center gap-3">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-primary text-xl font-bold text-primary-foreground shadow-glow">
-              LB
+              {initials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-display text-lg font-bold">Lionel Brown</p>
-              <p className="truncate text-xs text-muted-foreground">lionelbrown2728@yahoo.fr</p>
+              <p className="font-display text-lg font-bold capitalize">{displayName}</p>
+              <p className="truncate text-xs text-muted-foreground">{identifier}</p>
             </div>
             <Link to="/connexion" aria-label="Aller à la connexion" className="rounded-full border border-border bg-surface/60 p-2">
               <LogOut className="h-4 w-4" />
