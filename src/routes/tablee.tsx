@@ -60,10 +60,7 @@ function TableePage() {
   const myTotal = Math.max(0, mySubtotal - (promo?.discount ?? 0));
   const total = totalRaw;
 
-  const [payOpen, setPayOpen] = useState(false);
-  const [payStep, setPayStep] = useState<"otp" | "loading" | "done">("otp");
-  const [otp, setOtp] = useState("");
-  const [otpErr, setOtpErr] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const applyPromo = () => {
     const k = promoCode.trim().toUpperCase();
@@ -77,20 +74,18 @@ function TableePage() {
   };
 
   const openPayment = () => {
-    setPayStep("otp");
-    setOtp("");
-    setOtpErr(null);
-    setPayOpen(true);
-  };
-
-  const submitOtp = () => {
-    if (otp.length < 4) { setOtpErr("Code à 4-6 chiffres"); return; }
-    setPayStep("loading");
-    setTimeout(() => {
-      setPayStep("done");
-      setParticipants((p) => p.map((x) => (x.id === "1" ? { ...x, paid: true } : x)));
-      setTimeout(() => setPayOpen(false), 1400);
-    }, 1200);
+    if (!me) return;
+    navigate({
+      to: "/tablee/paiement",
+      search: {
+        participant: me.name,
+        item: me.items[0]?.name ?? "",
+        amount: mySubtotal,
+        discount: promo?.discount ?? 0,
+        promo: promo?.code,
+        msisdn: "691 ** ** 42",
+      },
+    });
   };
 
   const copyLink = async () => {
