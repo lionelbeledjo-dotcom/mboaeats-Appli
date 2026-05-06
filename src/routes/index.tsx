@@ -129,13 +129,16 @@ function Categories() {
       </div>
       <div className="mt-3 -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {categories.map((c) => (
-          <button
-            key={c.label}
-            className="flex shrink-0 items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium hover:border-primary/50"
+          <Link
+            key={c.slug}
+            to="/categorie/$slug"
+            params={{ slug: c.slug }}
+            preload="intent"
+            className="flex shrink-0 items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium hover:border-primary/50 active:scale-95 transition-transform"
           >
             <span className="text-base">{c.icon}</span>
             <span>{c.label}</span>
-          </button>
+          </Link>
         ))}
       </div>
     </section>
