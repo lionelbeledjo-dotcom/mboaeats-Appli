@@ -1,14 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import {
-  Sparkles, ArrowLeft, Send, Sun, CloudRain, Cloud, Wind, Wallet,
-  Zap, Coffee, Heart, Dumbbell, Brain, Smile, Star, Clock, Flame,
+  Sparkles, ArrowLeft, Send, CloudRain, Wind, Wallet,
+  Zap, Coffee, Heart, Dumbbell, Brain, Smile, Star, Clock, Flame, Loader2,
 } from "lucide-react";
 
 import dishPouletDg from "@/assets/dish-poulet-dg.jpg";
 import dishEru from "@/assets/dish-eru.jpg";
 import dishPoisson from "@/assets/dish-poisson.jpg";
 import dishSuya from "@/assets/dish-suya.jpg";
+import { recommendDishes, type Suggestion } from "@/server/mboa-ai.functions";
+
+const fallbackImgs = [dishPouletDg, dishPoisson, dishEru, dishSuya];
 
 export const Route = createFileRoute("/mboa-ai")({
   head: () => ({
@@ -76,11 +79,32 @@ function MboaAIPage() {
   const [mood, setMood] = useState("tired");
   const [budget, setBudget] = useState(3500);
   const [prompt, setPrompt] = useState("");
+  const [aiResults, setAiResults] = useState<Suggestion[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const hour = new Date().getHours();
   const timeLabel = hour < 11 ? "matin" : hour < 15 ? "midi" : hour < 19 ? "après-midi" : "soir";
 
-  const filtered = baseSuggestions.filter((s) => s.price <= budget);
+  const askAI = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await recommendDishes({
+        data: { prompt, mood, budget, city: "Douala", weather: "Pluie fine, 26°C", timeLabel },
+      });
+      setAiResults(res.suggestions);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erreur Mboa AI");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const list = aiResults
+    ? aiResults.map((s, i) => ({ ...s, img: fallbackImgs[i % fallbackImgs.length] }))
+    : baseSuggestions;
+  const filtered = list.filter((s) => s.price <= budget);
 
   return (
     <div className="min-h-screen bg-background">
@@ -128,10 +152,16 @@ function MboaAIPage() {
                 placeholder="Ex : un plat épicé pas trop cher, je suis crevé après le boulot…"
                 className="flex-1 resize-none bg-transparent px-2 py-1.5 text-sm outline-none placeholder:text-muted-foreground"
               />
-              <button className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground shadow-glow transition-transform hover:scale-105">
-                <Send className="h-4 w-4" />
+              <button
+                onClick={askAI}
+                disabled={loading}
+                aria-label="Demander à Mboa AI"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground shadow-glow transition-transform hover:scale-105 disabled:opacity-60"
+              >
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </button>
             </div>
+            {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
 
             <p className="mt-5 text-sm font-semibold">Comment tu te sens ?</p>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -187,7 +217,9 @@ function MboaAIPage() {
         <section className="mt-10">
           <div className="flex items-end justify-between">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-wider text-primary">Pour toi maintenant</p>
+              <p className="text-sm font-semibold uppercase tracking-wider text-primary">
+                {aiResults ? "Généré par Mboa AI" : "Pour toi maintenant"}
+              </p>
               <h2 className="mt-1 font-display text-2xl font-bold">{filtered.length} suggestions personnalisées</h2>
             </div>
           </div>
