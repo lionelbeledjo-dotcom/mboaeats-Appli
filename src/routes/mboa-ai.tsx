@@ -152,10 +152,16 @@ function MboaAIPage() {
                 placeholder="Ex : un plat épicé pas trop cher, je suis crevé après le boulot…"
                 className="flex-1 resize-none bg-transparent px-2 py-1.5 text-sm outline-none placeholder:text-muted-foreground"
               />
-              <button className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground shadow-glow transition-transform hover:scale-105">
-                <Send className="h-4 w-4" />
+              <button
+                onClick={askAI}
+                disabled={loading}
+                aria-label="Demander à Mboa AI"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground shadow-glow transition-transform hover:scale-105 disabled:opacity-60"
+              >
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </button>
             </div>
+            {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
 
             <p className="mt-5 text-sm font-semibold">Comment tu te sens ?</p>
             <div className="mt-3 flex flex-wrap gap-2">
