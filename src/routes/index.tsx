@@ -7,10 +7,7 @@ import {
 } from "lucide-react";
 
 import heroDish from "@/assets/hero-dish.jpg";
-import dishPouletDg from "@/assets/dish-poulet-dg.jpg";
-import dishEru from "@/assets/dish-eru.jpg";
-import dishPoisson from "@/assets/dish-poisson.jpg";
-import dishSuya from "@/assets/dish-suya.jpg";
+import { restaurants as realRestaurants } from "@/data/restaurants";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -28,48 +25,21 @@ const categories = [
   { label: "Jus naturels", icon: "🥤" },
 ];
 
-const restaurants = [
-  {
-    slug: "chez-mama-biya",
-    name: "Chez Mama Biya",
-    tag: "Cuisine traditionnelle",
-    rating: 4.9,
-    eta: "20-25 min",
-    price: "2 500 FCFA",
-    img: dishPouletDg,
-    badge: "Top resto",
-  },
-  {
-    slug: "le-foufou-royal",
-    name: "Le Foufou Royal",
-    tag: "Spécialités Eru & Fufu",
-    rating: 4.8,
-    eta: "25-30 min",
-    price: "1 800 FCFA",
-    img: dishEru,
-    badge: "-15% ce soir",
-  },
-  {
-    slug: "chez-mama-biya",
-    name: "Le Wouri Grill",
-    tag: "Poisson braisé premium",
-    rating: 4.9,
-    eta: "30-35 min",
-    price: "3 200 FCFA",
-    img: dishPoisson,
-    badge: "Nouveau",
-  },
-  {
-    slug: "suya-master",
-    name: "Suya Master",
-    tag: "Brochettes & grillades",
-    rating: 4.7,
-    eta: "15-20 min",
-    price: "1 500 FCFA",
-    img: dishSuya,
-    badge: "Express",
-  },
-];
+const restaurants = realRestaurants.map((r) => {
+  const minPrice = Math.min(
+    ...r.categories.flatMap((c) => c.dishes.map((d) => d.price))
+  );
+  return {
+    slug: r.id,
+    name: r.name,
+    tag: r.tagline.split("—")[0].trim(),
+    rating: r.rating,
+    eta: r.eta,
+    price: `${minPrice.toLocaleString("fr-FR")} FCFA`,
+    img: r.cover,
+    badge: r.badge ?? r.neighborhood,
+  };
+});
 
 function Index() {
   const [city, setCity] = useState("Douala");
