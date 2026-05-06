@@ -14,15 +14,10 @@ export function SmartBack({ backTo, backParams, crumbs }: Props) {
   const router = useRouter();
 
   const handleBack = () => {
-    // If we have a real previous entry inside the SPA, use it.
-    // Otherwise fall back to the hierarchical parent route.
-    const canGoBack =
-      typeof window !== "undefined" && window.history.length > 1 && document.referrer !== "";
-    if (canGoBack) {
-      router.history.back();
-    } else {
-      router.navigate({ to: backTo as never, params: backParams as never });
-    }
+    // Hierarchical back: always return to the parent route declared by
+    // the page (e.g. dish → restaurant menu), not the previous browser
+    // entry which may be the homepage or an unrelated screen.
+    router.navigate({ to: backTo as never, params: backParams as never });
   };
 
   return (
