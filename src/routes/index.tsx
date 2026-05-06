@@ -76,6 +76,7 @@ function Index() {
       <Hero />
       <Categories />
       <Restaurants />
+      <ExclusiveFeatures />
       <FeatureTablee />
       <Loyalty />
       <DownloadCta />
