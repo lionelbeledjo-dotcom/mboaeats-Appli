@@ -421,6 +421,13 @@ function FeatureTablee() {
                   </div>
                 ))}
               </div>
+
+              <Link
+                to="/tablee"
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-gradient-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:scale-105"
+              >
+                Ouvrir une tablée <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
 
             <div className="relative">
