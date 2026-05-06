@@ -1,6 +1,7 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { BottomDock } from "@/components/BottomDock";
+import { Toaster } from "@/components/ui/sonner";
 
 const PUBLIC_ROUTES = ["/connexion", "/admin-login"];
 const PUBLIC_PREFIXES = ["/admin"];
