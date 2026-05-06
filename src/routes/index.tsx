@@ -611,7 +611,7 @@ function Footer() {
       </div>
       <div className="border-t border-border">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-5 text-xs text-muted-foreground md:flex-row md:px-8">
-          <p>© 2026 MboaEats Cameroun · Fait avec ❤️ à Douala</p>
+          <p>© 2026 MboaEats Cameroun · Fait avec ❤️ à Douala · <Link to="/confidentialite" className="hover:text-foreground underline">Confidentialité & RGPD</Link></p>
           <p>MTN MoMo · Orange Money · Visa · Cash</p>
         </div>
       </div>
