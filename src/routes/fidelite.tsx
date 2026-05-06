@@ -13,8 +13,9 @@ export const Route = createFileRoute("/fidelite")({
 
 const tiers = [
   { name: "Pistache", icon: "🥜", from: 0, perks: ["Livraison standard", "Promos hebdo"], color: "from-emerald-400/30 to-emerald-600/10" },
-  { name: "Chef Ndolé", icon: "👨‍🍳", from: 1500, perks: ["Livraison -50%", "Plat surprise offert /mois", "Support prioritaire"], color: "from-orange-400/30 to-primary/10" },
-  { name: "Roi du Mboa", icon: "👑", from: 5000, perks: ["Livraison illimitée", "Accès Tablée VIP", "Cadeaux partenaires", "Concierge culinaire"], color: "from-yellow-400/30 to-gold/10" },
+  { name: "Soya Boy", icon: "🍢", from: 800, perks: ["-15% sur le Soya", "Livraison réduite", "Accès promos flash"], color: "from-amber-400/30 to-amber-600/10" },
+  { name: "Chef Ndolé", icon: "👨‍🍳", from: 2500, perks: ["Livraison -50%", "Plat surprise offert /mois", "Support prioritaire"], color: "from-orange-400/30 to-primary/10" },
+  { name: "Roi du Mboa", icon: "👑", from: 6000, perks: ["Livraison illimitée", "Accès Tablée VIP", "Cadeaux partenaires", "Concierge culinaire"], color: "from-yellow-400/30 to-gold/10" },
 ];
 
 const quests = [
@@ -24,10 +25,11 @@ const quests = [
 ];
 
 function Fidelite() {
-  const points = 1820;
+  // Niveau Soya Boy → Chef Ndolé : 62% de progression
   const currentTier = tiers[1];
   const nextTier = tiers[2];
-  const pct = Math.min(100, ((points - currentTier.from) / (nextTier.from - currentTier.from)) * 100);
+  const pct = 62;
+  const points = Math.round(currentTier.from + (pct / 100) * (nextTier.from - currentTier.from));
 
   return (
     <div className="min-h-screen bg-background text-foreground">
