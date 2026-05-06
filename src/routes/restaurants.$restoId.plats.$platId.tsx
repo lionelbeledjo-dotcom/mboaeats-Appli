@@ -166,16 +166,37 @@ function DishPage() {
       {/* Sticky CTA */}
       <div className="fixed inset-x-0 bottom-24 z-40 px-4 md:bottom-6">
         <div className="mx-auto max-w-2xl">
-          <Link
-            to="/checkout"
-            className="flex items-center justify-between rounded-full bg-gradient-primary px-6 py-4 text-sm font-bold text-primary-foreground shadow-glow"
+          <button
+            type="button"
+            onClick={() => {
+              const unit = total / qty;
+              const optKey = Object.entries(picked).map(([k, v]) => `${k}:${v}`).join("|");
+              addToCart({
+                id: `${dish.id}__${optKey}`,
+                dishId: dish.id,
+                restoId: restaurant.id,
+                name: dish.name,
+                price: unit,
+                qty,
+                image: dish.image,
+                options: picked,
+              });
+              toast.success("L'article a été ajouté au panier !", {
+                description: `${qty} × ${dish.name}`,
+                action: {
+                  label: "Voir le panier",
+                  onClick: () => navigate({ to: "/checkout" }),
+                },
+              });
+            }}
+            className="flex w-full items-center justify-between rounded-full bg-gradient-primary px-6 py-4 text-sm font-bold text-primary-foreground shadow-glow transition active:scale-[0.98]"
           >
             <span className="flex items-center gap-2">
               <ShoppingCart className="h-4 w-4" />
               Ajouter au panier
             </span>
             <span>{total.toLocaleString("fr-FR")} FCFA</span>
-          </Link>
+          </button>
         </div>
       </div>
     </div>
