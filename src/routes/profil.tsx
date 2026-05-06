@@ -2,9 +2,10 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   User, Crown, MapPin, CreditCard, Bell, Shield, HelpCircle,
-  LogOut, ChevronRight, Heart, Bike, Store, Sparkles,
+  LogOut, ChevronRight, Heart, Bike, Store, Sparkles, Volume2, VolumeX,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { isCartSoundEnabled, setCartSoundEnabled, CART_SOUND_EVT } from "@/lib/cart-sound";
 
 type DemoUser = { mode?: "phone" | "email"; identifier?: string };
 
