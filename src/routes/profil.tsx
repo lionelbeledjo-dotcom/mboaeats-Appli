@@ -1,10 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   User, Crown, MapPin, CreditCard, Bell, Shield, HelpCircle,
   LogOut, ChevronRight, Heart, Bike, Store, Sparkles,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+
+type DemoUser = { mode?: "phone" | "email"; identifier?: string };
 
 export const Route = createFileRoute("/profil")({
   head: () => ({
