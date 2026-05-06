@@ -5,10 +5,10 @@ import {
   Zap, Coffee, Heart, Dumbbell, Brain, Smile, Star, Clock, Flame, Loader2,
 } from "lucide-react";
 
-import dishPouletDg from "@/assets/dish-poulet-dg.jpg";
-import dishEru from "@/assets/dish-eru.jpg";
-import dishPoisson from "@/assets/dish-poisson.jpg";
-import dishSuya from "@/assets/dish-suya.jpg";
+import dishPouletDg from "@/assets/dish-poulet-dg.webp";
+import dishEru from "@/assets/dish-eru.webp";
+import dishPoisson from "@/assets/dish-poisson.webp";
+import dishSuya from "@/assets/dish-suya.webp";
 import { recommendDishes, type Suggestion } from "@/server/mboa-ai.functions";
 
 const fallbackImgs = [dishPouletDg, dishPoisson, dishEru, dishSuya];
