@@ -1,0 +1,17 @@
+{
+  "name": "MboaEats — Livraison Premium",
+  "short_name": "MboaEats",
+  "description": "Livraison de repas haut standing au Cameroun. Mobile Money, mode Tablée, Mboa AI.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1A1A2E",
+  "theme_color": "#1A1A2E",
+  "lang": "fr",
+  "categories": ["food", "lifestyle", "shopping"],
+  "icons": [
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
