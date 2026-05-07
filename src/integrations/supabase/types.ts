@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      addresses: {
+        Row: {
+          city: string
+          created_at: string
+          id: string
+          is_default: boolean | null
+          label: string
+          lat: number | null
+          line: string
+          lng: number | null
+          neighborhood: string | null
+          user_id: string
+        }
+        Insert: {
+          city: string
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          label?: string
+          lat?: number | null
+          line: string
+          lng?: number | null
+          neighborhood?: string | null
+          user_id: string
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          label?: string
+          lat?: number | null
+          line?: string
+          lng?: number | null
+          neighborhood?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       commissions: {
         Row: {
           category: string
@@ -37,6 +76,44 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      delivery_offers: {
+        Row: {
+          driver_id: string
+          expires_at: string
+          id: string
+          offered_at: string
+          order_id: string
+          responded_at: string | null
+          status: Database["public"]["Enums"]["delivery_offer_status"]
+        }
+        Insert: {
+          driver_id: string
+          expires_at?: string
+          id?: string
+          offered_at?: string
+          order_id: string
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["delivery_offer_status"]
+        }
+        Update: {
+          driver_id?: string
+          expires_at?: string
+          id?: string
+          offered_at?: string
+          order_id?: string
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["delivery_offer_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_offers_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       delivery_zones: {
         Row: {
@@ -71,6 +148,136 @@ export type Database = {
         }
         Relationships: []
       }
+      dish_option_values: {
+        Row: {
+          id: string
+          label: string
+          option_id: string
+          price_delta: number
+          sort_order: number | null
+        }
+        Insert: {
+          id?: string
+          label: string
+          option_id: string
+          price_delta?: number
+          sort_order?: number | null
+        }
+        Update: {
+          id?: string
+          label?: string
+          option_id?: string
+          price_delta?: number
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dish_option_values_option_id_fkey"
+            columns: ["option_id"]
+            isOneToOne: false
+            referencedRelation: "dish_options"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dish_options: {
+        Row: {
+          dish_id: string
+          id: string
+          name: string
+          required: boolean | null
+          selection_type: string
+          sort_order: number | null
+        }
+        Insert: {
+          dish_id: string
+          id?: string
+          name: string
+          required?: boolean | null
+          selection_type?: string
+          sort_order?: number | null
+        }
+        Update: {
+          dish_id?: string
+          id?: string
+          name?: string
+          required?: boolean | null
+          selection_type?: string
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dish_options_dish_id_fkey"
+            columns: ["dish_id"]
+            isOneToOne: false
+            referencedRelation: "dishes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dishes: {
+        Row: {
+          allergens: string[] | null
+          category_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_available: boolean | null
+          is_popular: boolean | null
+          name: string
+          price: number
+          restaurant_id: string
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          allergens?: string[] | null
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          is_popular?: boolean | null
+          name: string
+          price: number
+          restaurant_id: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          allergens?: string[] | null
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          is_popular?: boolean | null
+          name?: string
+          price?: number
+          restaurant_id?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dishes_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "menu_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dishes_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       driver_locations: {
         Row: {
           driver_id: string
@@ -98,6 +305,27 @@ export type Database = {
           speed?: number | null
           status?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      loyalty_points: {
+        Row: {
+          level: string
+          points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          level?: string
+          points?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          level?: string
+          points?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -136,6 +364,217 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      menu_categories: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          restaurant_id: string
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          restaurant_id: string
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          restaurant_id?: string
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_categories_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_events: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          event_type: string
+          id: string
+          order_id: string
+          payload: Json | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          event_type: string
+          id?: string
+          order_id: string
+          payload?: Json | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          event_type?: string
+          id?: string
+          order_id?: string
+          payload?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_items: {
+        Row: {
+          dish_id: string | null
+          id: string
+          line_total: number
+          name: string
+          options: Json | null
+          order_id: string
+          qty: number
+          unit_price: number
+        }
+        Insert: {
+          dish_id?: string | null
+          id?: string
+          line_total: number
+          name: string
+          options?: Json | null
+          order_id: string
+          qty?: number
+          unit_price: number
+        }
+        Update: {
+          dish_id?: string | null
+          id?: string
+          line_total?: number
+          name?: string
+          options?: Json | null
+          order_id?: string
+          qty?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_dish_id_fkey"
+            columns: ["dish_id"]
+            isOneToOne: false
+            referencedRelation: "dishes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          accepted_at: string | null
+          address_id: string | null
+          cancelled_at: string | null
+          created_at: string
+          delivered_at: string | null
+          delivery_address: Json | null
+          delivery_fee: number
+          driver_id: string | null
+          eta_minutes: number | null
+          id: string
+          notes: string | null
+          paid_at: string | null
+          payment_id: string | null
+          picked_up_at: string | null
+          promo_code: string | null
+          promo_discount: number
+          ready_at: string | null
+          reference: string
+          restaurant_id: string
+          status: Database["public"]["Enums"]["order_status"]
+          subtotal: number
+          total: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          address_id?: string | null
+          cancelled_at?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          delivery_address?: Json | null
+          delivery_fee?: number
+          driver_id?: string | null
+          eta_minutes?: number | null
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          payment_id?: string | null
+          picked_up_at?: string | null
+          promo_code?: string | null
+          promo_discount?: number
+          ready_at?: string | null
+          reference?: string
+          restaurant_id: string
+          status?: Database["public"]["Enums"]["order_status"]
+          subtotal?: number
+          total?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          address_id?: string | null
+          cancelled_at?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          delivery_address?: Json | null
+          delivery_fee?: number
+          driver_id?: string | null
+          eta_minutes?: number | null
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          payment_id?: string | null
+          picked_up_at?: string | null
+          promo_code?: string | null
+          promo_discount?: number
+          ready_at?: string | null
+          reference?: string
+          restaurant_id?: string
+          status?: Database["public"]["Enums"]["order_status"]
+          subtotal?: number
+          total?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_address_id_fkey"
+            columns: ["address_id"]
+            isOneToOne: false
+            referencedRelation: "addresses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payments: {
         Row: {
@@ -236,6 +675,171 @@ export type Database = {
         }
         Relationships: []
       }
+      promos: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          max_uses: number | null
+          min_order: number | null
+          uses_count: number | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          discount_type?: string
+          discount_value: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          min_order?: number | null
+          uses_count?: number | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          min_order?: number | null
+          uses_count?: number | null
+        }
+        Relationships: []
+      }
+      restaurant_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          order_id: string | null
+          rating: number
+          restaurant_id: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          rating: number
+          restaurant_id: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          rating?: number
+          restaurant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurant_reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restaurant_reviews_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      restaurants: {
+        Row: {
+          address: string | null
+          city: string
+          cover_url: string | null
+          created_at: string
+          cuisine: string
+          delivery_fee: number | null
+          eta_max: number | null
+          eta_min: number | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          is_open: boolean | null
+          lat: number | null
+          lng: number | null
+          min_order: number | null
+          name: string
+          neighborhood: string | null
+          opening_hours: Json | null
+          owner_id: string | null
+          rating: number | null
+          reviews_count: number | null
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city: string
+          cover_url?: string | null
+          created_at?: string
+          cuisine: string
+          delivery_fee?: number | null
+          eta_max?: number | null
+          eta_min?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          is_open?: boolean | null
+          lat?: number | null
+          lng?: number | null
+          min_order?: number | null
+          name: string
+          neighborhood?: string | null
+          opening_hours?: Json | null
+          owner_id?: string | null
+          rating?: number | null
+          reviews_count?: number | null
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string
+          cover_url?: string | null
+          created_at?: string
+          cuisine?: string
+          delivery_fee?: number | null
+          eta_max?: number | null
+          eta_min?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          is_open?: boolean | null
+          lat?: number | null
+          lng?: number | null
+          min_order?: number | null
+          name?: string
+          neighborhood?: string | null
+          opening_hours?: Json | null
+          owner_id?: string | null
+          rating?: number | null
+          reviews_count?: number | null
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -272,7 +876,20 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "restaurateur" | "livreur" | "client"
+      app_role: "admin" | "restaurateur" | "livreur" | "client" | "restaurant"
+      delivery_offer_status: "proposed" | "accepted" | "declined" | "expired"
+      order_status:
+        | "draft"
+        | "pending_payment"
+        | "paid"
+        | "accepted"
+        | "preparing"
+        | "ready"
+        | "picked_up"
+        | "delivering"
+        | "delivered"
+        | "cancelled"
+        | "refunded"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -400,7 +1017,21 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "restaurateur", "livreur", "client"],
+      app_role: ["admin", "restaurateur", "livreur", "client", "restaurant"],
+      delivery_offer_status: ["proposed", "accepted", "declined", "expired"],
+      order_status: [
+        "draft",
+        "pending_payment",
+        "paid",
+        "accepted",
+        "preparing",
+        "ready",
+        "picked_up",
+        "delivering",
+        "delivered",
+        "cancelled",
+        "refunded",
+      ],
     },
   },
 } as const
