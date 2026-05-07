@@ -55,7 +55,7 @@ function FavorisPage() {
     <div className="min-h-screen bg-background pb-24">
       <header className="sticky top-0 z-40 glass border-b border-border/40">
         <div className="mx-auto flex max-w-md items-center gap-3 px-4 py-3">
-          <SmartBack backTo="/profil" />
+          <SmartBack backTo="/profil" crumbs={[{ label: "Profil", to: "/profil" }, { label: "Favoris" }]} />
           <h1 className="font-display text-lg font-bold">Mes favoris</h1>
         </div>
       </header>
