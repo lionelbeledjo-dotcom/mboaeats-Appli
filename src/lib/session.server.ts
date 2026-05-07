@@ -7,6 +7,9 @@ export type MboaSession = {
   channel?: "sms" | "whatsapp" | "email";
   phone?: string;
   loggedAt?: number;
+  // Numéro lié à l'OTP en cours (verrouille la vérification)
+  pendingPhone?: string;
+  pendingPhoneAt?: number;
 };
 
 export function getMboaSession() {
