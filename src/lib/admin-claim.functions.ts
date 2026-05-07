@@ -7,20 +7,30 @@ const ADMIN_PHONE_ALLOWLIST = ["+33660061723", "33660061723"];
 
 function normalize(p: string | null | undefined) {
   if (!p) return "";
-  return p.replace(/\s|-/g, "");
+  const digits = p.replace(/\D/g, "");
+  return digits ? `+${digits}` : "";
+}
+
+async function getVerifiedUserPhone(userId: string, claims: unknown) {
+  const claimPhone = normalize((claims as any)?.phone ?? "");
+  if (claimPhone) return claimPhone;
+
+  const { data, error } = await supabaseAdmin.auth.admin.getUserById(userId);
+  if (error) throw new Error(error.message);
+  const user = data.user;
+  return normalize(user?.phone || (user?.user_metadata as any)?.phone || "");
+}
+
+function isAllowedAdminPhone(phone: string) {
+  return ADMIN_PHONE_ALLOWLIST.some((p) => normalize(p) === normalize(phone));
 }
 
 export const claimAdminByPhone = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { userId, claims } = context;
-    const phone = normalize((claims as any)?.phone ?? "");
-    const withPlus = phone.startsWith("+") ? phone : `+${phone}`;
-
-    const allowed = ADMIN_PHONE_ALLOWLIST.some(
-      (p) => normalize(p) === phone || normalize(p) === withPlus
-    );
-    if (!allowed) {
+    const phone = await getVerifiedUserPhone(userId, claims);
+    if (!isAllowedAdminPhone(phone)) {
       throw new Error("Ce numéro n'est pas autorisé à devenir administrateur.");
     }
 
@@ -36,11 +46,8 @@ export const checkAdminEligibility = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { userId, claims, supabase } = context;
-    const phone = normalize((claims as any)?.phone ?? "");
-    const withPlus = phone.startsWith("+") ? phone : `+${phone}`;
-    const eligible = ADMIN_PHONE_ALLOWLIST.some(
-      (p) => normalize(p) === phone || normalize(p) === withPlus
-    );
+    const phone = await getVerifiedUserPhone(userId, claims);
+    const eligible = isAllowedAdminPhone(phone);
 
     const { data } = await supabase
       .from("user_roles")
