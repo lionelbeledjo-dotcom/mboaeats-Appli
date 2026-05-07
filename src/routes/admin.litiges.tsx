@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { listAllDisputes, resolveDispute } from "@/server/admin.functions";
+import { ErrorState } from "@/components/admin/ErrorState";
 
 export const Route = createFileRoute("/admin/litiges")({
   head: () => ({ meta: [{ title: "Litiges · Admin MboaEats" }, { name: "robots", content: "noindex,nofollow" }] }),
