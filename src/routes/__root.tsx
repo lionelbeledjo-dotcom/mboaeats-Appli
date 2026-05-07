@@ -6,7 +6,7 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { Toaster } from "@/components/ui/sonner";
 import { useSessionUser } from "@/hooks/useSessionUser";
 
-const PUBLIC_ROUTES = ["/connexion", "/admin-login"];
+const PUBLIC_ROUTES = ["/connexion", "/admin-login", "/healthcheck"];
 const PUBLIC_PREFIXES = ["/admin"];
 
 function AuthGate({ children }: { children: React.ReactNode }) {
