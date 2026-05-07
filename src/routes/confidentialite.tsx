@@ -44,7 +44,7 @@ function PrivacyPage() {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 border-b border-border/40 bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto flex items-center gap-4 px-4 py-4">
-          <Link to="/" className="rounded-full p-2 hover:bg-muted">
+          <Link to="/profil" className="rounded-full p-2 hover:bg-muted">
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div>
