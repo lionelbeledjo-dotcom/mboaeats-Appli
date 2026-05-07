@@ -51,7 +51,6 @@ function Checkout() {
   const [landmarkErr, setLandmarkErr] = useState<string | null>(null);
   const [step, setStep] = useState<Step>("choose");
   const [reference, setReference] = useState<string | null>(null);
-  const [demoHint, setDemoHint] = useState<string | null>(null);
   const [topError, setTopError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [seconds, setSeconds] = useState(20);
@@ -130,7 +129,6 @@ function Checkout() {
       });
       if (!res.ok) throw new Error(res.error ?? "Échec d'initiation");
       setReference(res.reference);
-      setDemoHint(res.hint ?? null);
       setStep("ussd");
       setSeconds(20);
     } catch (e) {
