@@ -7,7 +7,8 @@ const ADMIN_PHONE_ALLOWLIST = ["+33660061723", "33660061723"];
 
 function normalize(p: string | null | undefined) {
   if (!p) return "";
-  const digits = p.replace(/\D/g, "");
+  const rawDigits = p.replace(/\D/g, "");
+  const digits = rawDigits.startsWith("00") ? rawDigits.slice(2) : rawDigits;
   return digits ? `+${digits}` : "";
 }
 
