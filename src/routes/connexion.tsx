@@ -111,33 +111,52 @@ function Connexion() {
   const sendCode = async () => {
     setError(null);
     setLoading(true);
-    // Simulation : aucun envoi réel. Code de test universel : 123456
-    await new Promise((r) => setTimeout(r, 500));
-    setLoading(false);
-    setStep("otp");
+    try {
+      if (mode === "phone" && channel === "sms") {
+        const fullPhone = `${country.dial}${phone.replace(/\D/g, "")}`;
+        await sendOtpFn({ data: { phone: fullPhone } });
+        setStep("otp");
+      } else {
+        // Autres canaux (WhatsApp, email) — non encore branchés
+        setError("Ce canal n'est pas encore disponible. Choisissez SMS.");
+      }
+    } catch (err: any) {
+      setError(err?.message ?? "Échec de l'envoi du code");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const submitCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (code.trim() !== DEMO_CODE) {
-      setError("Code invalide. Utilisez 123456 pour les tests.");
+    if (!/^\d{6}$/.test(code.trim())) {
+      setError("Saisissez les 6 chiffres du code.");
       return;
     }
     setLoading(true);
     try {
-      localStorage.setItem(
-        "mboa_demo_user",
-        JSON.stringify({
-          mode,
-          identifier: mode === "phone" ? `${country.dial}${phone}` : email,
-          channel,
-          loggedAt: Date.now(),
-        })
-      );
-    } catch {}
-    await new Promise((r) => setTimeout(r, 200));
-    navigate({ to: "/" });
+      if (mode === "phone" && channel === "sms") {
+        const fullPhone = `${country.dial}${phone.replace(/\D/g, "")}`;
+        await verifyOtpFn({ data: { phone: fullPhone, code: code.trim() } });
+      }
+      try {
+        localStorage.setItem(
+          "mboa_demo_user",
+          JSON.stringify({
+            mode,
+            identifier: mode === "phone" ? `${country.dial}${phone}` : email,
+            channel,
+            loggedAt: Date.now(),
+          })
+        );
+      } catch {}
+      navigate({ to: "/" });
+    } catch (err: any) {
+      setError(err?.message ?? "Code invalide");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
