@@ -136,16 +136,17 @@ export const setDefaultAddress = createServerFn({ method: "POST" })
   });
 
 // ─── Fidélité ────────────────────────────────────────────────────────────────
-const TIERS = [
+type Tier = { name: string; from: number };
+const TIERS: Tier[] = [
   { name: "Pistache", from: 0 },
   { name: "Soya Boy", from: 800 },
   { name: "Chef Ndolé", from: 2500 },
   { name: "Roi du Mboa", from: 6000 },
-] as const;
+];
 
 function tierFor(points: number) {
-  let current = TIERS[0];
-  let next = TIERS[1];
+  let current: Tier = TIERS[0];
+  let next: Tier = TIERS[1];
   for (let i = 0; i < TIERS.length; i++) {
     if (points >= TIERS[i].from) {
       current = TIERS[i];
