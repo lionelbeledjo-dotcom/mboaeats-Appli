@@ -15,6 +15,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RestaurantRouteImport } from './routes/restaurant'
 import { Route as RechercheRouteImport } from './routes/recherche'
 import { Route as ProfilRouteImport } from './routes/profil'
+import { Route as PreferencesRouteImport } from './routes/preferences'
 import { Route as ParrainageRouteImport } from './routes/parrainage'
 import { Route as MboapassRouteImport } from './routes/mboapass'
 import { Route as MboaAiRouteImport } from './routes/mboa-ai'
@@ -75,6 +76,11 @@ const RechercheRoute = RechercheRouteImport.update({
 const ProfilRoute = ProfilRouteImport.update({
   id: '/profil',
   path: '/profil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PreferencesRoute = PreferencesRouteImport.update({
+  id: '/preferences',
+  path: '/preferences',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ParrainageRoute = ParrainageRouteImport.update({
@@ -253,6 +259,7 @@ export interface FileRoutesByFullPath {
   '/mboa-ai': typeof MboaAiRoute
   '/mboapass': typeof MboapassRoute
   '/parrainage': typeof ParrainageRoute
+  '/preferences': typeof PreferencesRoute
   '/profil': typeof ProfilRoute
   '/recherche': typeof RechercheRoute
   '/restaurant': typeof RestaurantRoute
@@ -291,6 +298,7 @@ export interface FileRoutesByTo {
   '/mboa-ai': typeof MboaAiRoute
   '/mboapass': typeof MboapassRoute
   '/parrainage': typeof ParrainageRoute
+  '/preferences': typeof PreferencesRoute
   '/profil': typeof ProfilRoute
   '/recherche': typeof RechercheRoute
   '/restaurant': typeof RestaurantRoute
@@ -331,6 +339,7 @@ export interface FileRoutesById {
   '/mboa-ai': typeof MboaAiRoute
   '/mboapass': typeof MboapassRoute
   '/parrainage': typeof ParrainageRoute
+  '/preferences': typeof PreferencesRoute
   '/profil': typeof ProfilRoute
   '/recherche': typeof RechercheRoute
   '/restaurant': typeof RestaurantRoute
@@ -372,6 +381,7 @@ export interface FileRouteTypes {
     | '/mboa-ai'
     | '/mboapass'
     | '/parrainage'
+    | '/preferences'
     | '/profil'
     | '/recherche'
     | '/restaurant'
@@ -410,6 +420,7 @@ export interface FileRouteTypes {
     | '/mboa-ai'
     | '/mboapass'
     | '/parrainage'
+    | '/preferences'
     | '/profil'
     | '/recherche'
     | '/restaurant'
@@ -449,6 +460,7 @@ export interface FileRouteTypes {
     | '/mboa-ai'
     | '/mboapass'
     | '/parrainage'
+    | '/preferences'
     | '/profil'
     | '/recherche'
     | '/restaurant'
@@ -489,6 +501,7 @@ export interface RootRouteChildren {
   MboaAiRoute: typeof MboaAiRoute
   MboapassRoute: typeof MboapassRoute
   ParrainageRoute: typeof ParrainageRoute
+  PreferencesRoute: typeof PreferencesRoute
   ProfilRoute: typeof ProfilRoute
   RechercheRoute: typeof RechercheRoute
   RestaurantRoute: typeof RestaurantRoute
@@ -543,6 +556,13 @@ declare module '@tanstack/react-router' {
       path: '/profil'
       fullPath: '/profil'
       preLoaderRoute: typeof ProfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/preferences': {
+      id: '/preferences'
+      path: '/preferences'
+      fullPath: '/preferences'
+      preLoaderRoute: typeof PreferencesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/parrainage': {
@@ -836,6 +856,7 @@ const rootRouteChildren: RootRouteChildren = {
   MboaAiRoute: MboaAiRoute,
   MboapassRoute: MboapassRoute,
   ParrainageRoute: ParrainageRoute,
+  PreferencesRoute: PreferencesRoute,
   ProfilRoute: ProfilRoute,
   RechercheRoute: RechercheRoute,
   RestaurantRoute: RestaurantRoute,
