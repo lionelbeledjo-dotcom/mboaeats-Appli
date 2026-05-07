@@ -63,21 +63,29 @@ function TableePage() {
 
   const navigate = useNavigate();
 
-  // Au retour de /tablee/paiement, marquer "moi" comme payé
+  // Au retour de /tablee/paiement, vérifier que le total OTP correspond au total actuel
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem("tablee:lastPaid");
       if (!raw) return;
-      const data = JSON.parse(raw) as { participant?: string; at?: number };
-      if (!data?.at || Date.now() - data.at > 5 * 60 * 1000) {
-        sessionStorage.removeItem("tablee:lastPaid");
+      sessionStorage.removeItem("tablee:lastPaid");
+      const data = JSON.parse(raw) as { amount?: number; at?: number };
+      if (!data?.at || Date.now() - data.at > 5 * 60 * 1000) return;
+
+      const currentTotal = Math.max(0, mySubtotal - (promo?.discount ?? 0));
+      const otpTotal = data.amount ?? -1;
+
+      if (otpTotal !== currentTotal) {
+        // Total désynchronisé (promo modifiée pendant l'OTP) → refus
+        setMismatch({ otpTotal, currentTotal });
         return;
       }
+
       setParticipants((list) =>
         list.map((p) => (p.id === "1" ? { ...p, paid: true } : p)),
       );
-      sessionStorage.removeItem("tablee:lastPaid");
     } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const applyPromo = () => {
