@@ -2,11 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   Store, Star, CheckCircle2, PauseCircle, Loader2, Search,
-  MapPin, Utensils, ShieldCheck, ShieldOff, Filter,
+  MapPin, Utensils, ShieldCheck, ShieldOff, Filter, Eye, X,
+  Phone, User, FileCheck2, FileX2, Hash, Image as ImageIcon, Clock,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { listAllRestaurants, setRestaurantActive } from "@/server/admin.functions";
+import { listAllRestaurants, setRestaurantActive, getRestaurantDetails } from "@/server/admin.functions";
 
 export const Route = createFileRoute("/admin/restaurants")({
   head: () => ({ meta: [{ title: "Restaurants · Admin MboaEats" }, { name: "robots", content: "noindex,nofollow" }] }),
@@ -21,13 +22,38 @@ type Resto = {
 
 type StatusFilter = "all" | "active" | "suspended";
 
+type Details = {
+  restaurant: Record<string, any>;
+  owner: { full_name: string | null; phone: string | null; city: string | null } | null;
+  stats: { dishes: number; orders: number };
+} | null;
+
 function Restaurants() {
   const fetchAll = useServerFn(listAllRestaurants);
   const setActive = useServerFn(setRestaurantActive);
+  const fetchDetails = useServerFn(getRestaurantDetails);
   const [list, setList] = useState<Resto[] | null>(null);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<StatusFilter>("all");
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [details, setDetails] = useState<Details>(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+
+  const openDetails = async (id: string) => {
+    setOpenId(id);
+    setDetails(null);
+    setDetailsLoading(true);
+    try {
+      const d = await fetchDetails({ data: { id } });
+      setDetails(d as Details);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erreur");
+      setOpenId(null);
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
 
   const reload = () =>
     fetchAll()
