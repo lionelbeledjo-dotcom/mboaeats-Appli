@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AdminLoginForm } from "@/components/admin/AdminLoginForm";
 
-export const Route = createFileRoute("/admin/login")({
+export const Route = createFileRoute("/admin_/login")({
   component: AdminLoginForm,
   head: () => ({
     meta: [
