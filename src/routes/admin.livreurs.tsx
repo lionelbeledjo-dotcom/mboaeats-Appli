@@ -4,6 +4,7 @@ import { Bike, Phone, MapPin, Loader2, Power, PowerOff, Search, CheckCircle2, Ci
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { listAllDrivers, setDriverStatus, setDriverActive } from "@/server/admin.functions";
+import { ErrorState } from "@/components/admin/ErrorState";
 
 export const Route = createFileRoute("/admin/livreurs")({
   head: () => ({ meta: [{ title: "Livreurs · Admin MboaEats" }, { name: "robots", content: "noindex,nofollow" }] }),
@@ -26,8 +27,14 @@ function Livreurs() {
   const [filter, setFilter] = useState<Filter>("all");
   const [q, setQ] = useState("");
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const reload = () => fetchAll().then((r) => setList(r.drivers as Driver[])).catch(() => setList([]));
+  const reload = () => {
+    setError(null);
+    return fetchAll()
+      .then((r) => setList(r.drivers as Driver[]))
+      .catch((e) => { setList([]); setError(e instanceof Error ? e.message : "Erreur réseau"); });
+  };
 
   useEffect(() => {
     reload();
@@ -119,7 +126,8 @@ function Livreurs() {
         ))}
       </div>
 
-      {!list && <div className="flex justify-center p-16"><Loader2 className="h-5 w-5 animate-spin" /></div>}
+      {error && <ErrorState message={error} onRetry={reload} />}
+      {!list && !error && <div className="flex justify-center p-16"><Loader2 className="h-5 w-5 animate-spin" /></div>}
 
       <div className="overflow-hidden rounded-3xl border border-border bg-surface/60">
         <table className="w-full text-sm">

@@ -4,6 +4,7 @@ import { TrendingUp, Coins, Store, Bike, AlertTriangle, Users, ArrowUpRight, Loa
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { getAdminOverview } from "@/server/admin.functions";
+import { ErrorState } from "@/components/admin/ErrorState";
 
 export const Route = createFileRoute("/admin/")({
   head: () => ({ meta: [{ title: "Console Admin · MboaEats" }, { name: "robots", content: "noindex,nofollow" }] }),
@@ -16,9 +17,17 @@ function Overview() {
   const fetchStats = useServerFn(getAdminOverview);
   const [stats, setStats] = useState<Stats | null>(null);
   const [events, setEvents] = useState<{ tag: string; text: string; time: string; color: string }[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = () => {
+    setError(null);
+    return fetchStats()
+      .then(setStats)
+      .catch((e) => { setStats(null); setError(e instanceof Error ? e.message : "Erreur réseau"); });
+  };
 
   useEffect(() => {
-    fetchStats().then(setStats).catch(() => setStats(null));
+    load();
     const ch = supabase
       .channel("admin-feed")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, (p) => {
@@ -30,9 +39,14 @@ function Overview() {
         setEvents((s) => [{ tag: "Litige", text: d.reason ?? "Nouveau litige", time: "à l'instant", color: "bg-red-500/15 text-red-400" }, ...s].slice(0, 8));
       })
       .subscribe();
-    const t = setInterval(() => fetchStats().then(setStats).catch(() => {}), 30_000);
+    const t = setInterval(load, 30_000);
     return () => { supabase.removeChannel(ch); clearInterval(t); };
-  }, [fetchStats]);
+    // eslint-disable-next-line
+  }, []);
+
+  if (error) {
+    return <div className="mx-auto max-w-7xl p-6"><ErrorState message={error} onRetry={load} /></div>;
+  }
 
   if (!stats) {
     return <div className="flex items-center justify-center p-16 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin" /></div>;

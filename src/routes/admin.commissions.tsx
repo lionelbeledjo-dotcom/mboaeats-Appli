@@ -2,8 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Coins, Download, Loader2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
+import { supabase } from "@/integrations/supabase/client";
 import { CommissionConfig } from "@/components/admin/CommissionConfig";
 import { getCommissionsReport } from "@/server/admin.functions";
+import { ErrorState } from "@/components/admin/ErrorState";
 
 export const Route = createFileRoute("/admin/commissions")({
   head: () => ({ meta: [{ title: "Commissions · Admin MboaEats" }, { name: "robots", content: "noindex,nofollow" }] }),
@@ -15,10 +17,25 @@ type Report = Awaited<ReturnType<typeof getCommissionsReport>>;
 function Commissions() {
   const fetchReport = useServerFn(getCommissionsReport);
   const [report, setReport] = useState<Report | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const reload = () => {
+    setError(null);
+    return fetchReport()
+      .then(setReport)
+      .catch((e) => { setReport(null); setError(e instanceof Error ? e.message : "Erreur réseau"); });
+  };
 
   useEffect(() => {
-    fetchReport().then(setReport).catch(() => setReport(null));
-  }, [fetchReport]);
+    reload();
+    const ch = supabase
+      .channel("admin-commissions")
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => reload())
+      .subscribe();
+    const t = setInterval(reload, 60_000);
+    return () => { supabase.removeChannel(ch); clearInterval(t); };
+    // eslint-disable-next-line
+  }, []);
 
   const exportCsv = () => {
     if (!report) return;
@@ -47,7 +64,9 @@ function Commissions() {
 
       <CommissionConfig />
 
-      {!report ? (
+      {error ? (
+        <ErrorState message={error} onRetry={reload} />
+      ) : !report ? (
         <div className="flex justify-center p-16"><Loader2 className="h-5 w-5 animate-spin" /></div>
       ) : (
         <>

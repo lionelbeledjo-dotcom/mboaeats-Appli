@@ -10,6 +10,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { listAllRestaurants, setRestaurantActive, getRestaurantDetails, updateRestaurantLocation } from "@/server/admin.functions";
 import RestaurantMap from "@/components/admin/RestaurantMap";
+import { supabase } from "@/integrations/supabase/client";
+import { ErrorState } from "@/components/admin/ErrorState";
 
 export const Route = createFileRoute("/admin/restaurants")({
   head: () => ({ meta: [{ title: "Restaurants · Admin MboaEats" }, { name: "robots", content: "noindex,nofollow" }] }),
@@ -41,6 +43,7 @@ function Restaurants() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [details, setDetails] = useState<Details>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const openDetails = async (id: string) => {
     setOpenId(id);
@@ -57,12 +60,22 @@ function Restaurants() {
     }
   };
 
-  const reload = () =>
-    fetchAll()
+  const reload = () => {
+    setError(null);
+    return fetchAll()
       .then((r) => setList(r.restaurants as Resto[]))
-      .catch(() => setList([]));
+      .catch((e) => { setList([]); setError(e instanceof Error ? e.message : "Erreur réseau"); });
+  };
 
-  useEffect(() => { reload(); /* eslint-disable-next-line */ }, []);
+  useEffect(() => {
+    reload();
+    const ch = supabase
+      .channel("admin-restaurants")
+      .on("postgres_changes", { event: "*", schema: "public", table: "restaurants" }, () => reload())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+    // eslint-disable-next-line
+  }, []);
 
   const updateStatus = async (r: Resto, next: boolean) => {
     const verb = next ? "Approuver" : "Désactiver";
@@ -170,8 +183,11 @@ function Restaurants() {
         ))}
       </div>
 
+      {/* Error */}
+      {error && <ErrorState message={error} onRetry={reload} />}
+
       {/* Loading */}
-      {!list && (
+      {!list && !error && (
         <div className="flex justify-center p-16">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>

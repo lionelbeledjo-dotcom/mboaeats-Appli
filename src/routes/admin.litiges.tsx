@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { listAllDisputes, resolveDispute } from "@/server/admin.functions";
+import { ErrorState } from "@/components/admin/ErrorState";
 
 export const Route = createFileRoute("/admin/litiges")({
   head: () => ({ meta: [{ title: "Litiges · Admin MboaEats" }, { name: "robots", content: "noindex,nofollow" }] }),
@@ -30,8 +31,14 @@ function Litiges() {
   const fetchAll = useServerFn(listAllDisputes);
   const doResolve = useServerFn(resolveDispute);
   const [items, setItems] = useState<Dispute[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const reload = () => fetchAll().then((r) => setItems(r.disputes as unknown as Dispute[])).catch(() => setItems([]));
+  const reload = () => {
+    setError(null);
+    return fetchAll()
+      .then((r) => setItems(r.disputes as unknown as Dispute[]))
+      .catch((e) => { setItems([]); setError(e instanceof Error ? e.message : "Erreur réseau"); });
+  };
   useEffect(() => {
     reload();
     const ch = supabase
@@ -61,7 +68,8 @@ function Litiges() {
         <p className="text-sm text-muted-foreground">Réclamations clients à traiter en temps réel</p>
       </div>
 
-      {!items && <div className="flex justify-center p-16"><Loader2 className="h-5 w-5 animate-spin" /></div>}
+      {error && <ErrorState message={error} onRetry={reload} />}
+      {!items && !error && <div className="flex justify-center p-16"><Loader2 className="h-5 w-5 animate-spin" /></div>}
 
       <div className="grid gap-4 md:grid-cols-2">
         {open.map((it) => {
