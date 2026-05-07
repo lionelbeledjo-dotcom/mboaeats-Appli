@@ -49,6 +49,9 @@ function TableePage() {
   const [restaurant] = useState("Chez Mama Biya");
   const [copied, setCopied] = useState(false);
   const [mismatch, setMismatch] = useState<{ otpTotal: number; currentTotal: number } | null>(null);
+  const [history, setHistory] = useState<PaymentEntry[]>([
+    { id: "h-eric", participantId: "2", participantName: "Eric", amount: 4200, ref: "MBE-A1B2C3", at: Date.now() - 1000 * 60 * 12, status: "paid" },
+  ]);
   const [participants, setParticipants] = useState<Participant[]>([
     { id: "1", name: "Sandra (toi)", initial: "S", color: colors[0], items: [{ name: "Poulet DG", price: 3500 }], paid: false },
     { id: "2", name: "Eric", initial: "E", color: colors[1], items: [{ name: "Poisson braisé", price: 4200 }], paid: true },
