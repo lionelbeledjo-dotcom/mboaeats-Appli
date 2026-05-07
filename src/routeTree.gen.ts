@@ -48,6 +48,8 @@ import { Route as AdminCommissionsRouteImport } from './routes/admin.commissions
 import { Route as ApiPublicCampayWebhookRouteImport } from './routes/api/public/campay-webhook'
 import { Route as RestaurantsRestoIdPlatsPlatIdRouteImport } from './routes/restaurants.$restoId.plats.$platId'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
+import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 
 const TableeRoute = TableeRouteImport.update({
   id: '/tablee',
@@ -246,6 +248,16 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
+  id: '/lovable/email/auth/webhook',
+  path: '/lovable/email/auth/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
+  id: '/lovable/email/auth/preview',
+  path: '/lovable/email/auth/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -285,6 +297,8 @@ export interface FileRoutesByFullPath {
   '/tablee/paiement': typeof TableePaiementRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/campay-webhook': typeof ApiPublicCampayWebhookRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
 }
@@ -325,6 +339,8 @@ export interface FileRoutesByTo {
   '/tablee/paiement': typeof TableePaiementRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/campay-webhook': typeof ApiPublicCampayWebhookRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
 }
@@ -367,6 +383,8 @@ export interface FileRoutesById {
   '/tablee/paiement': typeof TableePaiementRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/campay-webhook': typeof ApiPublicCampayWebhookRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
 }
@@ -410,6 +428,8 @@ export interface FileRouteTypes {
     | '/tablee/paiement'
     | '/admin/'
     | '/api/public/campay-webhook'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
     | '/restaurants/$restoId/plats/$platId'
   fileRoutesByTo: FileRoutesByTo
@@ -450,6 +470,8 @@ export interface FileRouteTypes {
     | '/tablee/paiement'
     | '/admin'
     | '/api/public/campay-webhook'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
     | '/restaurants/$restoId/plats/$platId'
   id:
@@ -491,6 +513,8 @@ export interface FileRouteTypes {
     | '/tablee/paiement'
     | '/admin/'
     | '/api/public/campay-webhook'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
     | '/restaurants/$restoId/plats/$platId'
   fileRoutesById: FileRoutesById
@@ -525,6 +549,8 @@ export interface RootRouteChildren {
   RSlugRoute: typeof RSlugRoute
   RestaurantsRestoIdRoute: typeof RestaurantsRestoIdRouteWithChildren
   ApiPublicCampayWebhookRoute: typeof ApiPublicCampayWebhookRoute
+  LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
+  LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
 }
 
@@ -803,6 +829,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lovable/email/auth/webhook': {
+      id: '/lovable/email/auth/webhook'
+      path: '/lovable/email/auth/webhook'
+      fullPath: '/lovable/email/auth/webhook'
+      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/auth/preview': {
+      id: '/lovable/email/auth/preview'
+      path: '/lovable/email/auth/preview'
+      fullPath: '/lovable/email/auth/preview'
+      preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -888,6 +928,8 @@ const rootRouteChildren: RootRouteChildren = {
   RSlugRoute: RSlugRoute,
   RestaurantsRestoIdRoute: RestaurantsRestoIdRouteWithChildren,
   ApiPublicCampayWebhookRoute: ApiPublicCampayWebhookRoute,
+  LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
+  LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
 }
 export const routeTree = rootRouteImport
