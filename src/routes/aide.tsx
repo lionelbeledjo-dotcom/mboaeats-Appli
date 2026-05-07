@@ -148,12 +148,6 @@ function Aide() {
           </div>
 
           <a
-            href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("Demande de support MboaEats")}`}
-            className="group rounded-3xl border border-gold/40 bg-gold/5 p-5 transition hover:border-gold hover:shadow-glow"
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-gold">
-              <Mail className="h-5 w-5 text-gold-foreground" />
-
           <a
             href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("Demande de support MboaEats")}`}
             className="group rounded-3xl border border-gold/40 bg-gold/5 p-5 transition hover:border-gold hover:shadow-glow"
