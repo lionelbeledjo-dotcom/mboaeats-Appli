@@ -24,17 +24,17 @@ export const Route = createFileRoute("/admin")({
       // server-side before returning data, so no privileged data leaks even
       // if this gate is somehow bypassed in the browser.
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw redirect({ to: "/admin-login" });
+      if (!user) throw redirect({ to: "/admin/login" });
       const { data: role } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
         .eq("role", "admin")
         .maybeSingle();
-      if (!role) throw redirect({ to: "/admin-login" });
+      if (!role) throw redirect({ to: "/admin/login" });
     } catch (err) {
       if (isRedirect(err)) throw err;
-      throw redirect({ to: "/admin-login" });
+      throw redirect({ to: "/admin/login" });
     }
   },
   component: AdminLayout,
@@ -140,7 +140,7 @@ function AdminLayout() {
                 </div>
               ) : (
                 <Link
-                  to="/admin-login"
+                  to="/admin/login"
                   className="flex items-center gap-2 rounded-full border border-destructive/40 bg-destructive/10 px-3 py-1.5 hover:bg-destructive/20"
                   title="Vous n'êtes pas admin"
                 >
@@ -167,7 +167,7 @@ function AdminSidebar() {
 
   const handleLogout = async () => {
     try { await supabase.auth.signOut({ scope: "global" }); } catch {}
-    navigate({ to: "/admin-login", replace: true });
+    navigate({ to: "/admin/login", replace: true });
   };
 
   const isActive = (item: typeof navItems[number]) =>

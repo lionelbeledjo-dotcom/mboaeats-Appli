@@ -2,7 +2,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { ShoppingBag } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 
-const HIDDEN = ["/connexion", "/admin-login", "/checkout"];
+const HIDDEN = ["/connexion", "/admin/login", "/checkout"];
 
 export function CartFab() {
   const { count, subtotal } = useCart();
