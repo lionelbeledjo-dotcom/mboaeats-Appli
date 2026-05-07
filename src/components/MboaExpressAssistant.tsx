@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Bike, Send, X, Sparkles, Loader2, Mail } from "lucide-react";
 import { recommendDishes, type Suggestion } from "@/server/mboa-ai.functions";
+import { useSessionUser } from "@/hooks/useSessionUser";
 
 type Msg = {
   role: "assistant" | "user";
@@ -8,19 +9,14 @@ type Msg = {
   suggestions?: Suggestion[];
 };
 
-function getFirstName(): string {
-  try {
-    const raw = localStorage.getItem("mboa_demo_user");
-    if (raw) {
-      const u = JSON.parse(raw);
-      const id: string = u.identifier || "";
-      if (u.mode === "email" && id.includes("@")) {
-        const local = id.split("@")[0].replace(/[._-]+/g, " ").trim();
-        const first = local.split(" ")[0];
-        return first.charAt(0).toUpperCase() + first.slice(1);
-      }
-    }
-  } catch {}
+function deriveFirstName(user: { mode?: string; identifier?: string } | null): string {
+  if (!user?.identifier) return "ami";
+  const id = user.identifier;
+  if (user.mode === "email" && id.includes("@")) {
+    const local = id.split("@")[0].replace(/[._-]+/g, " ").trim();
+    const first = local.split(" ")[0];
+    return first.charAt(0).toUpperCase() + first.slice(1);
+  }
   return "ami";
 }
 
@@ -44,7 +40,8 @@ export default function MboaExpressAssistant() {
   const [pulse, setPulse] = useState(true);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const firstName = useMemo(getFirstName, []);
+  const { user } = useSessionUser();
+  const firstName = useMemo(() => deriveFirstName(user), [user]);
   const [messages, setMessages] = useState<Msg[]>([
     {
       role: "assistant",
