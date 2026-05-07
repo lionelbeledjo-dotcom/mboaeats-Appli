@@ -48,11 +48,25 @@ function Overview() {
         <p className="text-sm text-muted-foreground">Activité MboaEats · Cameroun · 7 derniers jours</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Kpi label="Commandes en attente" value={(stats as any).ordersPending?.toString() ?? "0"} icon={<Clock className="h-4 w-4 text-primary" />} accent="primary" hint={`${stats.ordersCount} sur 7j · ${stats.delivered} livrées`} />
+        <Kpi label="Litiges ouverts" value={stats.disputesOpen.toString()} icon={<AlertTriangle className="h-4 w-4 text-red-400" />} accent="red" hint={`${stats.disputesAmount.toLocaleString("fr-FR")} F en jeu`} />
+        <Kpi label="Restos actifs" value={`${stats.restosActive}/${stats.restosTotal}`} icon={<Store className="h-4 w-4 text-gold" />} accent="gold" hint="Partenaires en ligne" />
+        <Kpi label="Livreurs en ligne" value={`${stats.driversOnline}/${stats.driversTotal}`} icon={<Bike className="h-4 w-4 text-primary" />} hint="Disponibles maintenant" />
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <Shortcut to="/admin/litiges" icon={AlertTriangle} label="Litiges" sub="Traiter & résoudre" badge={stats.disputesOpen || undefined} accent="red" />
+        <Shortcut to="/admin/restaurants" icon={Store} label="Restaurants" sub="Activer / suspendre" />
+        <Shortcut to="/admin/livreurs" icon={Bike} label="Livreurs" sub="Suivi & flotte" />
+        <Shortcut to="/admin/commissions" icon={Coins} label="Commissions" sub="Taux & rapport" accent="gold" />
+        <Shortcut to="/admin/zones" icon={MapPin} label="Zones livraison" sub="Tarifs & ETA" />
+        <Shortcut to="/admin/parametres" icon={Settings} label="Paramètres" sub="Plateforme & admins" accent="primary" />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
         <Kpi label="GMV (7j)" value={`${(stats.gmv / 1000).toFixed(1)}K FCFA`} icon={<TrendingUp className="h-4 w-4 text-primary" />} accent="primary" />
-        <Kpi label="Commandes" value={stats.ordersCount.toString()} icon={<Users className="h-4 w-4 text-primary" />} />
-        <Kpi label="Restos actifs" value={`${stats.restosActive}/${stats.restosTotal}`} icon={<Store className="h-4 w-4 text-gold" />} accent="gold" />
-        <Kpi label="Litiges ouverts" value={stats.disputesOpen.toString()} icon={<AlertTriangle className="h-4 w-4 text-red-400" />} accent="red" />
+        <Kpi label="Total commandes (7j)" value={stats.ordersCount.toString()} icon={<Users className="h-4 w-4 text-primary" />} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
