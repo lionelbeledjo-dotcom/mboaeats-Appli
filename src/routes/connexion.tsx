@@ -140,17 +140,8 @@ function Connexion() {
         const fullPhone = `${country.dial}${phone.replace(/\D/g, "")}`;
         await verifyOtpFn({ data: { phone: fullPhone, code: code.trim() } });
       }
-      try {
-        localStorage.setItem(
-          "mboa_demo_user",
-          JSON.stringify({
-            mode,
-            identifier: mode === "phone" ? `${country.dial}${phone}` : email,
-            channel,
-            loggedAt: Date.now(),
-          })
-        );
-      } catch {}
+      const { invalidateSessionCache } = await import("@/hooks/useSessionUser");
+      invalidateSessionCache();
       navigate({ to: "/" });
     } catch (err: any) {
       setError(err?.message ?? "Code invalide");
