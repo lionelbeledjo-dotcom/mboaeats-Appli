@@ -1,8 +1,31 @@
 import { createRouter, useRouter } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { routeTree } from "./routeTree.gen";
 
 function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
+
+  useEffect(() => {
+    // Log toujours en console (dev + prod) pour faciliter le debug
+    console.error("[Router error boundary]", error);
+  }, [error]);
+
+  const goHome = () => {
+    try {
+      reset();
+    } catch {
+      /* ignore */
+    }
+    if (typeof window !== "undefined") {
+      window.location.href = "/";
+    }
+  };
+
+  const fullReload = () => {
+    if (typeof window !== "undefined") {
+      window.location.reload();
+    }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
