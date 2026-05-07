@@ -14,8 +14,9 @@ function hashCode(phone: string, code: string) {
 
 function normalizePhone(phone: string) {
   const trimmed = phone.trim();
-  const digits = trimmed.replace(/\D/g, "");
-  const normalized = trimmed.startsWith("+") ? `+${digits}` : `+${digits}`;
+  const rawDigits = trimmed.replace(/\D/g, "");
+  const digits = rawDigits.startsWith("00") ? rawDigits.slice(2) : rawDigits;
+  const normalized = `+${digits}`;
   if (!/^\+\d{6,15}$/.test(normalized)) throw new Error("Numéro invalide");
   return normalized;
 }
