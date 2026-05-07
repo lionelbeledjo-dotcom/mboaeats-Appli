@@ -8,6 +8,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { initiatePayment, verifyPayment, getActiveMboaPass } from "@/server/payments.functions";
+import { createOrder, markOrderPaid } from "@/server/marketplace.functions";
 import { useCart, clearCart } from "@/hooks/use-cart";
 
 export const Route = createFileRoute("/checkout")({
@@ -30,9 +31,15 @@ function Checkout() {
   const initiate = useServerFn(initiatePayment);
   const verify = useServerFn(verifyPayment);
   const fetchPass = useServerFn(getActiveMboaPass);
+  const createOrderFn = useServerFn(createOrder);
+  const markPaidFn = useServerFn(markOrderPaid);
 
   const { items: cartItems, subtotal } = useCart();
-  const cart = cartItems.map((i: { name: string; qty: number; price: number }) => ({ name: i.name, qty: i.qty, price: i.price }));
+  const cart = cartItems.map((i) => ({ name: i.name, qty: i.qty, price: i.price }));
+  // Items provenant de la base (préfixés "db__") → vraie commande live
+  const dbItems = cartItems.filter((i) => i.id.startsWith("db__"));
+  const isLiveOrder = dbItems.length > 0;
+  const liveRestoId = dbItems[0]?.restoId ?? null;
   const [hasPass, setHasPass] = useState(false);
   const [promo, setPromo] = useState<{ code: string; discount: number } | null>(null);
   const delivery = hasPass || subtotal === 0 ? 0 : 800;
@@ -48,6 +55,7 @@ function Checkout() {
   const [topError, setTopError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [seconds, setSeconds] = useState(20);
+  const [liveOrderId, setLiveOrderId] = useState<string | null>(null);
 
   // Détection MboaPass (livraison gratuite)
   useEffect(() => {
@@ -68,6 +76,27 @@ function Checkout() {
     return () => clearTimeout(t);
   }, [step, pending, seconds]);
 
+  const ensureLiveOrder = async (): Promise<string | null> => {
+    if (!isLiveOrder || !liveRestoId) return null;
+    if (liveOrderId) return liveOrderId;
+    const res = await createOrderFn({
+      data: {
+        restaurant_id: liveRestoId,
+        items: dbItems.map((i) => ({
+          dish_id: i.dishId,
+          name: i.name,
+          qty: i.qty,
+          unit_price: i.price,
+        })),
+        delivery_address: { line: landmark, city: "Douala" },
+        promo_code: promo?.code,
+        notes: landmark,
+      },
+    });
+    setLiveOrderId(res.order.id);
+    return res.order.id;
+  };
+
   const start = async () => {
     setTopError(null);
     const parsed = landmarkSchema.safeParse(landmark);
@@ -76,6 +105,13 @@ function Checkout() {
       return;
     }
     setLandmarkErr(null);
+
+    try {
+      await ensureLiveOrder();
+    } catch (e) {
+      setTopError(e instanceof Error ? e.message : "Impossible de créer la commande");
+      return;
+    }
 
     if (method === "cash") return setStep("success");
     if (method === "card") return setStep("card");
@@ -89,7 +125,7 @@ function Checkout() {
           msisdn: `237${cleanMsisdn}`,
           amount: total,
           purpose: "order",
-          metadata: { landmark, cart: cart.map((c: { name: string }) => c.name) },
+          metadata: { landmark, cart: cart.map((c) => c.name) },
         },
       });
       if (!res.ok) throw new Error(res.error ?? "Échec d'initiation");
@@ -114,9 +150,22 @@ function Checkout() {
     if (!r.ok) throw new Error(r.error ?? "OTP invalide");
   };
 
-  const confirm = () => {
+  const confirm = async () => {
     setPending(false);
     setStep("success");
+    try {
+      const orderId = liveOrderId ?? (await ensureLiveOrder());
+      if (orderId) {
+        await markPaidFn({
+          data: { order_id: orderId, payment_reference: reference ?? `MBE-${Date.now()}` },
+        });
+        clearCart();
+        setTimeout(() => navigate({ to: "/suivi/$orderId", params: { orderId } }), 1500);
+        return;
+      }
+    } catch {
+      /* fallback */
+    }
     setTimeout(() => navigate({ to: "/suivi" }), 1800);
   };
 

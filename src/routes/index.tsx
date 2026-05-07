@@ -108,13 +108,21 @@ function Header({ city, setCity }: { city: string; setCity: (c: string) => void 
 
 function SearchBar() {
   return (
-    <Link
-      to="/recherche"
-      className="mt-4 flex items-center gap-2 rounded-2xl border border-border bg-surface/80 px-4 py-3 shadow-card"
-    >
-      <Search className="h-5 w-5 text-muted-foreground" />
-      <span className="text-sm text-muted-foreground">Plat, restaurant, quartier…</span>
-    </Link>
+    <div className="mt-4 flex items-center gap-2">
+      <Link
+        to="/recherche"
+        className="flex flex-1 items-center gap-2 rounded-2xl border border-border bg-surface/80 px-4 py-3 shadow-card"
+      >
+        <Search className="h-5 w-5 text-muted-foreground" />
+        <span className="text-sm text-muted-foreground">Plat, restaurant, quartier…</span>
+      </Link>
+      <Link
+        to="/decouvrir"
+        className="rounded-2xl border border-primary/40 bg-primary/10 px-3 py-3 text-xs font-bold uppercase text-primary"
+      >
+        Live
+      </Link>
+    </div>
   );
 }
 
