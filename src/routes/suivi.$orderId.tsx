@@ -55,7 +55,7 @@ type OrderItem = {
 
 function SuiviPage() {
   const data = Route.useLoaderData() as {
-    order: Record<string, unknown> & { id: string; status: string; subtotal: number; delivery_fee: number; promo_code: string | null; promo_discount: number; total: number; eta_minutes: number | null; paid_at: string | null; delivered_at: string | null; reference: string; restaurant?: { name?: string } | null; delivery_address?: { line?: string; city?: string } | null };
+    order: Record<string, unknown> & { id: string; restaurant_id: string; status: string; subtotal: number; delivery_fee: number; promo_code: string | null; promo_discount: number; total: number; eta_minutes: number | null; paid_at: string | null; delivered_at: string | null; reference: string; restaurant?: { name?: string } | null; delivery_address?: { line?: string; city?: string } | null };
     items: OrderItem[];
   };
   const { order: live, events } = useRealtimeOrder(data.order.id);
