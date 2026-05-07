@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Package, Clock, CheckCircle2, ChevronRight, MapPin, LogIn } from "lucide-react";
+import { Package, CheckCircle2, ChevronRight, MapPin, LogIn } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyOrders } from "@/server/marketplace.functions";
 import { RowSkeleton, EmptyState } from "@/components/ui/feedback";
@@ -8,7 +8,7 @@ import { RowSkeleton, EmptyState } from "@/components/ui/feedback";
 export const Route = createFileRoute("/commandes")({
   head: () => ({
     meta: [
-      { title: "Mes commandes — MboaEats" },
+      { title: "Mes Commandes — MboaEats" },
       { name: "description", content: "Historique et suivi de vos commandes." },
     ],
   }),
@@ -74,7 +74,7 @@ function CommandesPage() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 glass border-b border-border/40">
         <div className="mx-auto max-w-md px-4 py-4">
-          <h1 className="font-display text-xl font-bold">Mes commandes</h1>
+          <h1 className="font-display text-xl font-bold">Mes Commandes</h1>
           <div className="mt-3 flex gap-2">
             {[
               { k: "all", l: "Toutes" },
@@ -171,8 +171,12 @@ function StatusBadge({ status }: { status: string }) {
   if (status === "cancelled" || status === "refunded")
     return <span className="rounded-full bg-muted px-2 py-1 text-[10px] font-bold">{statusLabel(status)}</span>;
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-1 text-[10px] font-bold text-primary">
-      <Clock className="h-3 w-3 animate-pulse" /> {statusLabel(status)}
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-2 py-1 text-[10px] font-bold text-primary">
+      <span className="relative flex h-2 w-2" aria-hidden="true">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/70" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+      </span>
+      {statusLabel(status)}
     </span>
   );
 }

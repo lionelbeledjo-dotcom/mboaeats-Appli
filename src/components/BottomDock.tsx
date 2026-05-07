@@ -1,7 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { Home, ShoppingBag, Users, User, Package } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
-import { countActiveOrders } from "@/data/orders";
+import { useActiveOrdersCount } from "@/hooks/use-active-orders";
 
 type Item = {
   to: "/" | "/commandes" | "/checkout" | "/tablee" | "/profil";
@@ -12,7 +12,7 @@ type Item = {
 
 const items: Item[] = [
   { to: "/", label: "Accueil", icon: Home, exact: true },
-  { to: "/commandes", label: "Commandes", icon: Package },
+  { to: "/commandes", label: "Mes Commandes", icon: Package },
   { to: "/checkout", label: "Panier", icon: ShoppingBag },
   { to: "/tablee", label: "Tablée", icon: Users },
   { to: "/profil", label: "Profil", icon: User },
@@ -22,7 +22,7 @@ export function BottomDock() {
   const location = useLocation();
   const path = location.pathname;
   const { count } = useCart();
-  const activeOrders = countActiveOrders();
+  const activeOrders = useActiveOrdersCount();
 
   if (/^\/(admin|restaurant|livreur)/.test(path)) return null;
 
@@ -40,10 +40,10 @@ export function BottomDock() {
                 const badge =
                   it.label === "Panier"
                     ? count
-                    : it.label === "Commandes"
+                    : it.label === "Mes Commandes"
                       ? activeOrders
                       : 0;
-                const badgePulse = it.label === "Commandes" && activeOrders > 0;
+                const badgePulse = it.label === "Mes Commandes" && activeOrders > 0;
 
                 return (
                   <li key={it.to} className="flex-1">
@@ -52,8 +52,8 @@ export function BottomDock() {
                       aria-label={
                         it.label === "Panier" && count > 0
                           ? `Panier, ${count} article${count > 1 ? "s" : ""}`
-                          : it.label === "Commandes" && activeOrders > 0
-                            ? `Commandes, ${activeOrders} en cours`
+                          : it.label === "Mes Commandes" && activeOrders > 0
+                            ? `Mes Commandes, ${activeOrders} en cours`
                             : it.label
                       }
                       className="group relative flex flex-col items-center gap-1 rounded-2xl px-1 py-1.5"
