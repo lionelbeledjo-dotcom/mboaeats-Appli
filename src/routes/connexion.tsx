@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Flame, ShieldCheck, Loader2, Check, AlertCircle, Mail, Phone, MessageCircle, Send, ChevronDown } from "lucide-react";
 import { sendOtp, verifyOtp } from "@/lib/otp.functions";
+import { claimAdminByPhone, checkAdminEligibility } from "@/lib/admin-claim.functions";
 
 export const Route = createFileRoute("/connexion")({
   component: Connexion,
@@ -63,6 +64,8 @@ function Connexion() {
   const navigate = useNavigate();
   const sendOtpFn = useServerFn(sendOtp);
   const verifyOtpFn = useServerFn(verifyOtp);
+  const checkAdminFn = useServerFn(checkAdminEligibility);
+  const claimAdminFn = useServerFn(claimAdminByPhone);
   const [mode, setMode] = useState<Mode>("phone");
   const [step, setStep] = useState<Step>("identify");
 
@@ -151,6 +154,22 @@ function Connexion() {
       }
       const { invalidateSessionCache } = await import("@/hooks/useSessionUser");
       invalidateSessionCache();
+
+      // Vérifier si ce compte est éligible à devenir admin
+      try {
+        const status = await checkAdminFn();
+        if (status.isAdmin) {
+          navigate({ to: "/admin" });
+          return;
+        }
+        if (status.eligible) {
+          await claimAdminFn();
+          navigate({ to: "/admin" });
+          return;
+        }
+      } catch {
+        // ignore — utilisateur normal
+      }
       navigate({ to: "/" });
     } catch (err: any) {
       setError(err?.message ?? "Code invalide");
