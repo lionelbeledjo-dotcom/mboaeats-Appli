@@ -135,14 +135,51 @@ function Overview() {
   );
 }
 
-function Kpi({ label, value, icon, accent }: { label: string; value: string; icon: React.ReactNode; accent?: "primary" | "gold" | "red" }) {
+function Kpi({ label, value, icon, accent, hint }: { label: string; value: string; icon: React.ReactNode; accent?: "primary" | "gold" | "red"; hint?: string }) {
   return (
     <div className="rounded-3xl border border-border bg-surface/60 p-5">
       <div className="flex items-center justify-between">
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-background">{icon}</div>
       </div>
       <p className="mt-4 text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
-      <p className={`mt-1 font-display text-2xl font-extrabold ${accent === "gold" ? "text-gradient-gold" : accent === "primary" ? "text-gradient-primary" : ""}`}>{value}</p>
+      <p className={`mt-1 font-display text-2xl font-extrabold ${accent === "gold" ? "text-gradient-gold" : accent === "primary" ? "text-gradient-primary" : accent === "red" ? "text-red-400" : ""}`}>{value}</p>
+      {hint && <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>}
     </div>
+  );
+}
+
+function Shortcut({
+  to, icon: Icon, label, sub, badge, accent,
+}: {
+  to: string; icon: typeof Store; label: string; sub: string; badge?: number;
+  accent?: "primary" | "gold" | "red";
+}) {
+  const ring =
+    accent === "red" ? "border-red-500/30 hover:border-red-500/60"
+    : accent === "gold" ? "border-gold/30 hover:border-gold/60"
+    : accent === "primary" ? "border-primary/40 hover:border-primary/70"
+    : "border-border hover:border-primary/40";
+  const iconColor =
+    accent === "red" ? "text-red-400"
+    : accent === "gold" ? "text-gold"
+    : "text-primary";
+  return (
+    <Link
+      to={to}
+      className={`group flex items-center gap-3 rounded-2xl border ${ring} bg-surface/60 p-4 transition hover:shadow-glow`}
+    >
+      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-background">
+        <Icon className={`h-5 w-5 ${iconColor}`} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-bold">{label}</p>
+        <p className="truncate text-[11px] text-muted-foreground">{sub}</p>
+      </div>
+      {badge ? (
+        <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] font-bold text-red-400">{badge}</span>
+      ) : (
+        <ChevronRight className="h-4 w-4 text-muted-foreground transition group-hover:translate-x-0.5" />
+      )}
+    </Link>
   );
 }
