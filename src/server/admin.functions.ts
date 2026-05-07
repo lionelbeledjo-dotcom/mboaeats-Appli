@@ -124,6 +124,66 @@ export const listAllDrivers = createServerFn({ method: "GET" })
     return { drivers };
   });
 
+export const setDriverStatus = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d) =>
+    z.object({
+      driver_id: z.string().uuid(),
+      status: z.enum(["available", "busy", "offline"]),
+    }).parse(d)
+  )
+  .handler(async ({ data }) => {
+    // Upsert driver_locations.status (préserve lat/lng si déjà présent)
+    const { data: existing } = await supabaseAdmin
+      .from("driver_locations")
+      .select("driver_id, lat, lng")
+      .eq("driver_id", data.driver_id)
+      .maybeSingle();
+    if (existing) {
+      const { error } = await supabaseAdmin
+        .from("driver_locations")
+        .update({ status: data.status, updated_at: new Date().toISOString() })
+        .eq("driver_id", data.driver_id);
+      if (error) throw new Error(error.message);
+    } else {
+      const { error } = await supabaseAdmin
+        .from("driver_locations")
+        .insert({ driver_id: data.driver_id, status: data.status, lat: 0, lng: 0 });
+      if (error) throw new Error(error.message);
+    }
+    return { ok: true };
+  });
+
+export const setDriverActive = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d) =>
+    z.object({ driver_id: z.string().uuid(), active: z.boolean() }).parse(d)
+  )
+  .handler(async ({ data }) => {
+    if (data.active) {
+      // Réactiver : s'assurer que le rôle 'livreur' est présent + status 'available'
+      await supabaseAdmin
+        .from("user_roles")
+        .upsert({ user_id: data.driver_id, role: "livreur" as never }, { onConflict: "user_id,role" });
+      await supabaseAdmin
+        .from("driver_locations")
+        .update({ status: "available", updated_at: new Date().toISOString() })
+        .eq("driver_id", data.driver_id);
+    } else {
+      // Désactiver : retirer le rôle livreur + passer offline
+      await supabaseAdmin
+        .from("user_roles")
+        .delete()
+        .eq("user_id", data.driver_id)
+        .eq("role", "livreur" as never);
+      await supabaseAdmin
+        .from("driver_locations")
+        .update({ status: "offline", updated_at: new Date().toISOString() })
+        .eq("driver_id", data.driver_id);
+    }
+    return { ok: true };
+  });
+
 export const listAllDisputes = createServerFn({ method: "GET" })
   .middleware([requireAdmin])
   .handler(async ({ context }) => {
