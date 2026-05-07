@@ -44,6 +44,7 @@ import { Route as AdminRestaurantsRouteImport } from './routes/admin.restaurants
 import { Route as AdminLivreursRouteImport } from './routes/admin.livreurs'
 import { Route as AdminLitigesRouteImport } from './routes/admin.litiges'
 import { Route as AdminCommissionsRouteImport } from './routes/admin.commissions'
+import { Route as ApiPublicCampayWebhookRouteImport } from './routes/api/public/campay-webhook'
 import { Route as RestaurantsRestoIdPlatsPlatIdRouteImport } from './routes/restaurants.$restoId.plats.$platId'
 
 const TableeRoute = TableeRouteImport.update({
@@ -221,6 +222,11 @@ const AdminCommissionsRoute = AdminCommissionsRouteImport.update({
   path: '/commissions',
   getParentRoute: () => AdminRoute,
 } as any)
+const ApiPublicCampayWebhookRoute = ApiPublicCampayWebhookRouteImport.update({
+  id: '/api/public/campay-webhook',
+  path: '/api/public/campay-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RestaurantsRestoIdPlatsPlatIdRoute =
   RestaurantsRestoIdPlatsPlatIdRouteImport.update({
     id: '/plats/$platId',
@@ -264,6 +270,7 @@ export interface FileRoutesByFullPath {
   '/suivi/$orderId': typeof SuiviOrderIdRoute
   '/tablee/paiement': typeof TableePaiementRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/campay-webhook': typeof ApiPublicCampayWebhookRoute
   '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
 }
 export interface FileRoutesByTo {
@@ -301,6 +308,7 @@ export interface FileRoutesByTo {
   '/suivi/$orderId': typeof SuiviOrderIdRoute
   '/tablee/paiement': typeof TableePaiementRoute
   '/admin': typeof AdminIndexRoute
+  '/api/public/campay-webhook': typeof ApiPublicCampayWebhookRoute
   '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
 }
 export interface FileRoutesById {
@@ -340,6 +348,7 @@ export interface FileRoutesById {
   '/suivi/$orderId': typeof SuiviOrderIdRoute
   '/tablee/paiement': typeof TableePaiementRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/campay-webhook': typeof ApiPublicCampayWebhookRoute
   '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
 }
 export interface FileRouteTypes {
@@ -380,6 +389,7 @@ export interface FileRouteTypes {
     | '/suivi/$orderId'
     | '/tablee/paiement'
     | '/admin/'
+    | '/api/public/campay-webhook'
     | '/restaurants/$restoId/plats/$platId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -417,6 +427,7 @@ export interface FileRouteTypes {
     | '/suivi/$orderId'
     | '/tablee/paiement'
     | '/admin'
+    | '/api/public/campay-webhook'
     | '/restaurants/$restoId/plats/$platId'
   id:
     | '__root__'
@@ -455,6 +466,7 @@ export interface FileRouteTypes {
     | '/suivi/$orderId'
     | '/tablee/paiement'
     | '/admin/'
+    | '/api/public/campay-webhook'
     | '/restaurants/$restoId/plats/$platId'
   fileRoutesById: FileRoutesById
 }
@@ -486,6 +498,7 @@ export interface RootRouteChildren {
   CategorieSlugRoute: typeof CategorieSlugRoute
   RSlugRoute: typeof RSlugRoute
   RestaurantsRestoIdRoute: typeof RestaurantsRestoIdRouteWithChildren
+  ApiPublicCampayWebhookRoute: typeof ApiPublicCampayWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -735,6 +748,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCommissionsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/api/public/campay-webhook': {
+      id: '/api/public/campay-webhook'
+      path: '/api/public/campay-webhook'
+      fullPath: '/api/public/campay-webhook'
+      preLoaderRoute: typeof ApiPublicCampayWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/restaurants/$restoId/plats/$platId': {
       id: '/restaurants/$restoId/plats/$platId'
       path: '/plats/$platId'
@@ -825,6 +845,7 @@ const rootRouteChildren: RootRouteChildren = {
   CategorieSlugRoute: CategorieSlugRoute,
   RSlugRoute: RSlugRoute,
   RestaurantsRestoIdRoute: RestaurantsRestoIdRouteWithChildren,
+  ApiPublicCampayWebhookRoute: ApiPublicCampayWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
