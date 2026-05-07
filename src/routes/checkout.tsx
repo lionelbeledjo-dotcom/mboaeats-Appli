@@ -641,11 +641,6 @@ function OtpScreen({ method, phone, total, onSubmit, onSuccess, onBack }: {
       </div>
 
       {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
-      {demoHint && (
-        <p className="mt-3 rounded-xl border border-amber-400/30 bg-amber-400/10 p-2 text-[11px] text-amber-200">
-          ⚙️ {demoHint}
-        </p>
-      )}
 
       <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
         <button onClick={onBack} className="hover:text-foreground">← Modifier le numéro</button>
