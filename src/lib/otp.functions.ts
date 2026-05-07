@@ -70,6 +70,13 @@ export const sendOtp = createServerFn({ method: "POST" })
       .insert({ phone, code_hash, expires_at });
     if (error) throw new Error("Impossible d'enregistrer le code");
 
+    // Verrouille la session sur ce numéro : seul ce numéro pourra valider l'OTP
+    const session = await getMboaSession();
+    await session.update({
+      pendingPhone: phone,
+      pendingPhoneAt: Date.now(),
+    });
+
     await sendSms(phone, `MboaEats : votre code de vérification est ${code}. Valable 5 min. Ne le partagez avec personne.`);
 
     return { ok: true, expiresIn: OTP_TTL_SECONDS };
@@ -79,6 +86,17 @@ export const verifyOtp = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ phone: z.string(), code: z.string().regex(/^\d{6}$/) }).parse(d))
   .handler(async ({ data }) => {
     const phone = normalizePhone(data.phone);
+
+    // Vérifie que le numéro correspond à celui pour lequel l'OTP a été demandé
+    const session = await getMboaSession();
+    const pending = session.data.pendingPhone;
+    if (!pending) {
+      throw new Error("Aucune demande de code en cours. Demandez un nouveau code.");
+    }
+    if (pending !== phone) {
+      throw new Error("Ce code ne correspond pas au numéro utilisé pour la demande.");
+    }
+
     const code_hash = hashCode(phone, data.code);
 
     const { data: rows } = await supabaseAdmin
@@ -111,13 +129,14 @@ export const verifyOtp = createServerFn({ method: "POST" })
       .update({ consumed_at: new Date().toISOString() })
       .eq("id", row.id);
 
-    const session = await getMboaSession();
     await session.update({
       mode: "phone",
       identifier: phone,
       phone,
       channel: "sms",
       loggedAt: Date.now(),
+      pendingPhone: undefined,
+      pendingPhoneAt: undefined,
     });
 
     return { ok: true, phone };
