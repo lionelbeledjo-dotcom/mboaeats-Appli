@@ -127,10 +127,18 @@ function AdminSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link to="/admin" className="flex items-center gap-2">
+                  <Link to="/admin/parametres" className="flex items-center gap-2">
                     <Settings className="h-4 w-4" />
                     {!collapsed && <span>Paramètres</span>}
                   </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <button type="button" onClick={handleLogout} className="flex w-full items-center gap-2 text-destructive">
+                    <LogOut className="h-4 w-4" />
+                    {!collapsed && <span>Se déconnecter</span>}
+                  </button>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
