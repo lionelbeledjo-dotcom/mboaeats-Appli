@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Home, ShoppingBag, Users, User, Package } from "lucide-react";
+import { Home, ShoppingBag, Users, User, Package, AlertCircle } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { useActiveOrdersCount } from "@/hooks/use-active-orders";
 
@@ -22,7 +22,7 @@ export function BottomDock() {
   const location = useLocation();
   const path = location.pathname;
   const { count } = useCart();
-  const { count: activeOrders, loading: activeOrdersLoading } = useActiveOrdersCount();
+  const { count: activeOrders, loading: activeOrdersLoading, error: activeOrdersError } = useActiveOrdersCount();
 
   if (/^\/(admin|restaurant|livreur)/.test(path)) return null;
 
@@ -74,7 +74,16 @@ export function BottomDock() {
                         }
                       >
                         <Icon className={isCenter ? "h-5 w-5" : "h-[18px] w-[18px]"} strokeWidth={active ? 2.4 : 2} />
-                        {it.label === "Mes Commandes" && activeOrdersLoading ? (
+                        {it.label === "Mes Commandes" && activeOrdersError ? (
+                          <span
+                            role="img"
+                            aria-label="Connexion temps réel indisponible"
+                            title="Mises à jour en temps réel indisponibles"
+                            className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-destructive-foreground ring-2 ring-background"
+                          >
+                            <AlertCircle className="h-2.5 w-2.5" strokeWidth={3} />
+                          </span>
+                        ) : it.label === "Mes Commandes" && activeOrdersLoading ? (
                           <span
                             aria-label="Chargement"
                             className="absolute -right-1 -top-1 h-4 w-4 animate-pulse rounded-full bg-muted ring-2 ring-background"
