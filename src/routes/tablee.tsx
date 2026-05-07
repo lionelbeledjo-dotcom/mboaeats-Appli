@@ -37,6 +37,7 @@ function TableePage() {
   const [name] = useState("Anniv' de Sandra");
   const [restaurant] = useState("Chez Mama Biya");
   const [copied, setCopied] = useState(false);
+  const [mismatch, setMismatch] = useState<{ otpTotal: number; currentTotal: number } | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([
     { id: "1", name: "Sandra (toi)", initial: "S", color: colors[0], items: [{ name: "Poulet DG", price: 3500 }], paid: false },
     { id: "2", name: "Eric", initial: "E", color: colors[1], items: [{ name: "Poisson braisé", price: 4200 }], paid: true },
