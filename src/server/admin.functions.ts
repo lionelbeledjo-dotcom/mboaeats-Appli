@@ -141,11 +141,29 @@ export const listAllDisputes = createServerFn({ method: "GET" })
     await assertAdmin(context.supabase, context.userId);
     const { data, error } = await supabaseAdmin
       .from("disputes")
-      .select("*, orders(reference, total), restaurants(name)")
+      .select("*")
       .order("created_at", { ascending: false })
       .limit(200);
     if (error) throw new Error(error.message);
-    return { disputes: data ?? [] };
+    // Hydrate orders + restaurants manually (pas de FK déclarée)
+    const orderIds = Array.from(new Set((data ?? []).map((d) => d.order_id).filter(Boolean)));
+    const restoIds = Array.from(new Set((data ?? []).map((d) => d.restaurant_id).filter(Boolean) as string[]));
+    const [{ data: orders }, { data: restos }] = await Promise.all([
+      orderIds.length
+        ? supabaseAdmin.from("orders").select("id, reference, total").in("id", orderIds)
+        : Promise.resolve({ data: [] }),
+      restoIds.length
+        ? supabaseAdmin.from("restaurants").select("id, name").in("id", restoIds)
+        : Promise.resolve({ data: [] }),
+    ]);
+    const oMap = new Map((orders ?? []).map((o) => [o.id, o]));
+    const rMap = new Map((restos ?? []).map((r) => [r.id, r]));
+    const enriched = (data ?? []).map((d) => ({
+      ...d,
+      orders: oMap.get(d.order_id) ?? null,
+      restaurants: d.restaurant_id ? rMap.get(d.restaurant_id) ?? null : null,
+    }));
+    return { disputes: enriched };
   });
 
 export const resolveDispute = createServerFn({ method: "POST" })
