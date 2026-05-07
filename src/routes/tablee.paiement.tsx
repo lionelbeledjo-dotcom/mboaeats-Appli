@@ -79,7 +79,7 @@ function TableePaiement() {
       try {
         sessionStorage.setItem(
           "tablee:lastPaid",
-          JSON.stringify({ participant, amount: total, at: at.getTime() }),
+          JSON.stringify({ participant, amount: total, at: at.getTime(), ref, promo: promo ?? null, discount, msisdn }),
         );
       } catch {}
       setTimeout(() => navigate({ to: "/tablee" }), 4500);
