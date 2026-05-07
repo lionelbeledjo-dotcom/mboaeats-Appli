@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Search, MapPin, Star, Clock, Flame, Bell, ChevronRight, Plus, Users, ArrowRight,
 } from "lucide-react";
 
 import { restaurants as realRestaurants, getRestaurant } from "@/data/restaurants";
 import MboaExpressAssistant from "@/components/MboaExpressAssistant";
+import QuickLogin from "@/components/QuickLogin";
 
 // Pre-cache decoded images so menu pages render instantly on hover/intent.
 const imageCache = new Set<string>();
@@ -64,12 +65,20 @@ const restaurants = realRestaurants.map((r) => {
 
 function Index() {
   const [city, setCity] = useState("Douala");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    try {
+      setIsLoggedIn(!!localStorage.getItem("mboa_demo_user"));
+    } catch {}
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header city={city} setCity={setCity} />
       <main className="mx-auto max-w-md px-4 pb-4">
         <SearchBar />
+        {!isLoggedIn && <div className="mt-4"><QuickLogin /></div>}
         <Categories />
         <TableeBanner />
         <Restaurants city={city} />
