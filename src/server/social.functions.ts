@@ -75,12 +75,9 @@ export const submitReview = createServerFn({ method: "POST" })
 
 export const listReviews = createServerFn({ method: "GET" })
   .inputValidator((d) => z.object({ restaurantId: z.string().uuid() }).parse(d))
-  .handler(async ({ data, context }) => {
-    // Use authenticated client if available; reviews are public-read anyway
-    const { supabase } = context as { supabase?: { from: (t: string) => unknown } };
+  .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const client = (supabase as typeof supabaseAdmin) ?? supabaseAdmin;
-    const { data: rows, error } = await client
+    const { data: rows, error } = await supabaseAdmin
       .from("restaurant_reviews")
       .select("id, rating, comment, created_at")
       .eq("restaurant_id", data.restaurantId)
