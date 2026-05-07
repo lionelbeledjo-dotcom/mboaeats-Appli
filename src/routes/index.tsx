@@ -65,12 +65,20 @@ const restaurants = realRestaurants.map((r) => {
 
 function Index() {
   const [city, setCity] = useState("Douala");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    try {
+      setIsLoggedIn(!!localStorage.getItem("mboa_demo_user"));
+    } catch {}
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header city={city} setCity={setCity} />
       <main className="mx-auto max-w-md px-4 pb-4">
         <SearchBar />
+        {!isLoggedIn && <div className="mt-4"><QuickLogin /></div>}
         <Categories />
         <TableeBanner />
         <Restaurants city={city} />
