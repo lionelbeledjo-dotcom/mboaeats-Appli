@@ -185,7 +185,7 @@ export const Route = createFileRoute("/aide/$category")({
 });
 
 function CategoryPage() {
-  const { cat } = Route.useLoaderData();
+  const { cat } = Route.useLoaderData() as { cat: Cat };
   const [open, setOpen] = useState<number | null>(0);
   const Icon = cat.icon;
 
