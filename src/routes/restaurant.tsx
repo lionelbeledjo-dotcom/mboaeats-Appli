@@ -1,322 +1,981 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  ArrowLeft, Store, Bell, TrendingUp, Coins, Clock, Check, X,
-  Search, ChefHat, Power, Star, ShoppingBag,
+  ArrowLeft, ChefHat, Power, Loader2, Bell, Plus, Trash2, Pencil,
+  Check, X, Clock, ShoppingBag, Coins, TrendingUp, Store,
 } from "lucide-react";
+import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  getMyRestaurant,
+  updateMyRestaurant,
+  listRestaurantOrders,
+  updateOrderStatus,
+  getRestaurantMenu,
+  upsertCategory,
+  deleteCategory,
+  upsertDish,
+  deleteDish,
+  getRestaurantStats,
+  createMyRestaurant,
+} from "@/server/restaurant.functions";
 
 export const Route = createFileRoute("/restaurant")({
   component: RestaurantSpace,
   head: () => ({
     meta: [
       { title: "Espace Restaurant · MboaEats" },
-      { name: "description", content: "Gérez votre menu, vos commandes entrantes et vos statistiques de ventes." },
+      {
+        name: "description",
+        content:
+          "Gérez votre menu, vos commandes entrantes en temps réel et vos statistiques.",
+      },
     ],
   }),
 });
 
-type Tab = "commandes" | "menu" | "stats";
+type Resto = {
+  id: string;
+  name: string;
+  cuisine: string;
+  city: string;
+  neighborhood: string | null;
+  is_open: boolean | null;
+  delivery_fee: number | null;
+  eta_min: number | null;
+  eta_max: number | null;
+};
+
+type Tab = "commandes" | "menu" | "stats" | "profil";
 
 function RestaurantSpace() {
+  const fetchResto = useServerFn(getMyRestaurant);
+  const updateResto = useServerFn(updateMyRestaurant);
+  const createResto = useServerFn(createMyRestaurant);
+
+  const [authReady, setAuthReady] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
+  const [resto, setResto] = useState<Resto | null>(null);
+  const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>("commandes");
-  const [open, setOpen] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setSignedIn(!!data.user);
+      setAuthReady(true);
+    });
+  }, []);
+
+  const reload = useCallback(async () => {
+    setLoading(true);
+    try {
+      const r = await fetchResto();
+      setResto(r.restaurant as Resto | null);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchResto]);
+
+  useEffect(() => {
+    if (signedIn) reload();
+  }, [signedIn, reload]);
+
+  const toggleOpen = async () => {
+    if (!resto) return;
+    const next = !resto.is_open;
+    setResto({ ...resto, is_open: next });
+    try {
+      await updateResto({ data: { id: resto.id, is_open: next } });
+      toast.success(next ? "Restaurant ouvert" : "Restaurant fermé");
+    } catch (e) {
+      setResto({ ...resto, is_open: !next });
+      toast.error("Action impossible");
+    }
+  };
+
+  if (!authReady || loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!signedIn) {
+    return (
+      <CenterCard>
+        <h1 className="font-display text-2xl font-bold">Espace Restaurant</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Connecte-toi pour gérer ton restaurant.
+        </p>
+        <Link
+          to="/connexion"
+          className="mt-5 inline-flex rounded-2xl bg-gradient-primary px-5 py-3 text-sm font-bold text-primary-foreground"
+        >
+          Se connecter
+        </Link>
+      </CenterCard>
+    );
+  }
+
+  if (!resto) {
+    return (
+      <Onboarding
+        onCreated={async (data) => {
+          await createResto({ data });
+          toast.success("Restaurant créé !");
+          await reload();
+        }}
+      />
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20">
-      <header className="sticky top-0 z-40 glass">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:px-8">
-          <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="h-4 w-4" /> Site
+    <div className="min-h-screen bg-background pb-20">
+      <header className="sticky top-0 z-40 glass border-b border-border/40">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 md:px-8">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" /> Site
           </Link>
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-primary shadow-glow">
+          <div className="flex min-w-0 items-center gap-2">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-primary shadow-glow">
               <ChefHat className="h-5 w-5 text-primary-foreground" />
             </div>
-            <div>
-              <p className="font-display text-sm font-bold leading-none">Chez Mama Biya</p>
-              <p className="mt-1 text-[11px] text-muted-foreground">Akwa, Douala · ★ 4.9</p>
+            <div className="min-w-0">
+              <p className="truncate font-display text-sm font-bold leading-none">
+                {resto.name}
+              </p>
+              <p className="mt-1 truncate text-[11px] text-muted-foreground">
+                {resto.neighborhood ?? resto.city} · {resto.cuisine}
+              </p>
             </div>
           </div>
           <button
-            onClick={() => setOpen(!open)}
-            className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition border ${
-              open ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-400" : "border-border bg-surface text-muted-foreground"
+            onClick={toggleOpen}
+            className={`flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-bold transition ${
+              resto.is_open
+                ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-400"
+                : "border-border bg-surface text-muted-foreground"
             }`}
           >
-            <Power className="h-3.5 w-3.5" /> {open ? "Ouvert" : "Fermé"}
+            <Power className="h-3.5 w-3.5" />
+            {resto.is_open ? "Ouvert" : "Fermé"}
           </button>
         </div>
+
+        <nav className="mx-auto flex max-w-6xl gap-1 px-4 pb-2 md:px-8">
+          {(
+            [
+              ["commandes", "Commandes", Bell],
+              ["menu", "Menu", ChefHat],
+              ["stats", "Stats", TrendingUp],
+              ["profil", "Profil", Store],
+            ] as const
+          ).map(([k, label, Icon]) => {
+            const active = tab === k;
+            return (
+              <button
+                key={k}
+                onClick={() => setTab(k)}
+                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
+                  active
+                    ? "bg-primary/15 text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {label}
+              </button>
+            );
+          })}
+        </nav>
       </header>
 
-      <div className="mx-auto max-w-6xl px-4 pt-5 md:px-8">
-        <div className="grid gap-3 sm:grid-cols-4">
-          <Kpi label="CA du jour" value="186 400" sub="FCFA" icon={<Coins className="h-4 w-4 text-gold" />} accent="gold" />
-          <Kpi label="Commandes" value="42" sub="aujourd'hui" icon={<ShoppingBag className="h-4 w-4 text-primary" />} />
-          <Kpi label="Note clients" value="4.9" sub="sur 124 avis" icon={<Star className="h-4 w-4 text-gold" />} />
-          <Kpi label="Temps prépa" value="14 min" sub="moyen" icon={<Clock className="h-4 w-4 text-primary" />} />
-        </div>
-      </div>
-
-      <nav className="sticky top-[64px] z-30 mx-auto mt-4 flex max-w-6xl gap-2 px-4 md:px-8">
-        {(["commandes", "menu", "stats"] as Tab[]).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`flex-1 rounded-2xl px-4 py-2.5 text-sm font-semibold capitalize transition ${
-              tab === t ? "bg-gradient-primary text-primary-foreground shadow-glow"
-                : "border border-border bg-surface/60 text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {t}
-          </button>
-        ))}
-      </nav>
-
-      <main className="mx-auto max-w-6xl px-4 pt-5 md:px-8">
-        {tab === "commandes" && <Commandes />}
-        {tab === "menu" && <Menu />}
-        {tab === "stats" && <Stats />}
+      <main className="mx-auto max-w-6xl px-4 py-5 md:px-8">
+        {tab === "commandes" && <OrdersPanel restoId={resto.id} />}
+        {tab === "menu" && <MenuPanel restoId={resto.id} />}
+        {tab === "stats" && <StatsPanel restoId={resto.id} />}
+        {tab === "profil" && <ProfilePanel resto={resto} onSaved={reload} />}
       </main>
     </div>
   );
 }
 
-function Kpi({ label, value, sub, icon, accent }: { label: string; value: string; sub: string; icon: React.ReactNode; accent?: "gold" }) {
+function CenterCard({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface/60 p-4">
-      <div className="flex items-center justify-between">
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-background">{icon}</div>
-        <TrendingUp className="h-3 w-3 text-emerald-400" />
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <div className="w-full max-w-md rounded-3xl border border-border bg-surface/60 p-6 text-center">
+        {children}
       </div>
-      <p className="mt-3 text-[11px] uppercase tracking-wider text-muted-foreground">{label}</p>
-      <p className={`mt-1 font-display text-2xl font-extrabold ${accent === "gold" ? "text-gradient-gold" : ""}`}>{value}</p>
-      <p className="text-[11px] text-muted-foreground">{sub}</p>
     </div>
   );
 }
 
-const initialOrders = [
-  { id: "MBE-2841", client: "Sandra K.", items: ["1 Ndolé poisson", "1 Bissap"], total: 3500, time: "À l'instant", status: "new" as const },
-  { id: "MBE-2840", client: "Eric N.", items: ["2 Poulet DG"], total: 5800, time: "il y a 4 min", status: "preparing" as const },
-  { id: "MBE-2839", client: "Christelle M.", items: ["1 Eru Fufu", "1 Beignet"], total: 2900, time: "il y a 9 min", status: "ready" as const },
-];
-
-function Commandes() {
-  const [orders, setOrders] = useState(initialOrders);
-  const advance = (id: string) => setOrders((o) =>
-    o.map((x) => x.id === id ? {
-      ...x,
-      status: x.status === "new" ? "preparing" : x.status === "preparing" ? "ready" : "ready",
-    } : x)
-  );
-  const reject = (id: string) => setOrders((o) => o.filter((x) => x.id !== id));
+function Onboarding({
+  onCreated,
+}: {
+  onCreated: (d: { name: string; cuisine: string; city: string; neighborhood?: string }) => Promise<void>;
+}) {
+  const [name, setName] = useState("");
+  const [cuisine, setCuisine] = useState("Camerounais");
+  const [city, setCity] = useState("Douala");
+  const [neighborhood, setNeighborhood] = useState("");
+  const [saving, setSaving] = useState(false);
 
   return (
-    <div className="grid gap-4 md:grid-cols-3">
-      {(["new", "preparing", "ready"] as const).map((col) => {
-        const list = orders.filter((o) => o.status === col);
-        const meta = col === "new" ? { label: "Nouvelles", color: "text-primary", dot: "bg-primary" } :
-          col === "preparing" ? { label: "En préparation", color: "text-gold", dot: "bg-gold" } :
-          { label: "Prêtes à livrer", color: "text-emerald-400", dot: "bg-emerald-400" };
-        return (
-          <div key={col} className="rounded-3xl border border-border bg-surface/40 p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className={`h-2 w-2 rounded-full ${meta.dot} animate-pulse`} />
-                <h3 className={`font-display text-sm font-bold uppercase tracking-wider ${meta.color}`}>{meta.label}</h3>
-              </div>
-              <span className="text-xs text-muted-foreground">{list.length}</span>
-            </div>
-
-            <div className="mt-3 space-y-3">
-              {list.map((o) => (
-                <div key={o.id} className="rounded-2xl border border-border bg-background/50 p-3">
-                  <div className="flex items-center justify-between">
-                    <p className="font-mono text-xs text-muted-foreground">#{o.id}</p>
-                    <p className="text-xs text-muted-foreground">{o.time}</p>
-                  </div>
-                  <p className="mt-1 text-sm font-semibold">{o.client}</p>
-                  <ul className="mt-2 space-y-0.5 text-xs text-muted-foreground">
-                    {o.items.map((it) => <li key={it}>· {it}</li>)}
-                  </ul>
-                  <p className="mt-2 font-bold text-gradient-gold">{o.total.toLocaleString("fr-FR")} FCFA</p>
-
-                  <div className="mt-3 flex gap-2">
-                    {col === "new" && (
-                      <>
-                        <button onClick={() => reject(o.id)} className="flex-1 rounded-xl border border-border bg-background py-2 text-xs font-semibold hover:bg-surface">
-                          <X className="mx-auto h-3.5 w-3.5" />
-                        </button>
-                        <button onClick={() => advance(o.id)} className="flex-[2] rounded-xl bg-gradient-primary py-2 text-xs font-bold text-primary-foreground">
-                          Accepter · Préparer
-                        </button>
-                      </>
-                    )}
-                    {col === "preparing" && (
-                      <button onClick={() => advance(o.id)} className="w-full rounded-xl border border-emerald-500/40 bg-emerald-500/10 py-2 text-xs font-bold text-emerald-300">
-                        <Check className="mr-1 inline h-3.5 w-3.5" /> Marquer prête
-                      </button>
-                    )}
-                    {col === "ready" && (
-                      <button className="w-full rounded-xl border border-gold/40 bg-gold/10 py-2 text-xs font-bold text-gold">
-                        <Bell className="mr-1 inline h-3.5 w-3.5" /> Appeler livreur
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-              {list.length === 0 && (
-                <div className="rounded-2xl border border-dashed border-border py-8 text-center text-xs text-muted-foreground">
-                  Aucune commande
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-const initialMenu = [
-  { name: "Ndolé poisson", price: 2500, cat: "Plats", available: true, sales: 142 },
-  { name: "Poulet DG", price: 3500, cat: "Plats", available: true, sales: 128 },
-  { name: "Eru Fufu", price: 2200, cat: "Plats", available: true, sales: 96 },
-  { name: "Poisson braisé", price: 4000, cat: "Grillades", available: false, sales: 84 },
-  { name: "Brochettes Suya", price: 1500, cat: "Grillades", available: true, sales: 72 },
-  { name: "Bissap maison", price: 800, cat: "Boissons", available: true, sales: 210 },
-  { name: "Beignets soufflés", price: 500, cat: "Snacks", available: true, sales: 188 },
-];
-
-function Menu() {
-  const [items, setItems] = useState(initialMenu);
-  const [q, setQ] = useState("");
-  const toggle = (name: string) => setItems((s) => s.map((i) => i.name === name ? { ...i, available: !i.available } : i));
-  const filtered = items.filter((i) => i.name.toLowerCase().includes(q.toLowerCase()));
-
-  return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex flex-1 items-center gap-2 rounded-2xl border border-border bg-surface/60 px-3 py-2">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher un plat…" className="flex-1 bg-transparent text-sm outline-none" />
+    <CenterCard>
+      <h1 className="font-display text-2xl font-bold">Crée ton restaurant</h1>
+      <p className="mt-2 text-sm text-muted-foreground">
+        En quelques secondes pour commencer à recevoir des commandes.
+      </p>
+      <form
+        className="mt-5 space-y-3 text-left"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          if (!name.trim()) return;
+          setSaving(true);
+          try {
+            await onCreated({
+              name: name.trim(),
+              cuisine,
+              city,
+              neighborhood: neighborhood.trim() || undefined,
+            });
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Erreur");
+          } finally {
+            setSaving(false);
+          }
+        }}
+      >
+        <Field label="Nom" value={name} onChange={setName} placeholder="Chez Mama Bello" />
+        <Field label="Cuisine" value={cuisine} onChange={setCuisine} />
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Ville" value={city} onChange={setCity} />
+          <Field label="Quartier" value={neighborhood} onChange={setNeighborhood} placeholder="Akwa" />
         </div>
-        <button className="rounded-2xl bg-gradient-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-glow">
-          + Ajouter un plat
+        <button
+          disabled={saving}
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3 font-bold text-primary-foreground shadow-glow disabled:opacity-50"
+        >
+          {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+          Créer mon restaurant
+        </button>
+      </form>
+    </CenterCard>
+  );
+}
+
+function Field({
+  label,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  type?: string;
+}) {
+  return (
+    <label className="block">
+      <span className="text-xs font-semibold text-muted-foreground">{label}</span>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="mt-1 w-full rounded-xl border border-border bg-background/50 px-3 py-2.5 text-sm outline-none focus:border-primary"
+      />
+    </label>
+  );
+}
+
+// ─── Commandes ──────────────────────────────────────────────────────────────
+type Order = {
+  id: string;
+  reference: string;
+  status: string;
+  total: number;
+  subtotal: number;
+  delivery_fee: number;
+  eta_minutes: number | null;
+  created_at: string;
+  paid_at: string | null;
+  accepted_at: string | null;
+  ready_at: string | null;
+  picked_up_at: string | null;
+  delivered_at: string | null;
+  delivery_address: { line?: string; city?: string } | null;
+  notes: string | null;
+  items: { id: string; name: string; qty: number; unit_price: number; line_total: number }[];
+};
+
+function OrdersPanel({ restoId }: { restoId: string }) {
+  const list = useServerFn(listRestaurantOrders);
+  const update = useServerFn(updateOrderStatus);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<"active" | "all">("active");
+
+  const reload = useCallback(async () => {
+    setLoading(true);
+    try {
+      const r = await list({ data: { restaurant_id: restoId } });
+      setOrders((r.orders as unknown as Order[]) ?? []);
+    } finally {
+      setLoading(false);
+    }
+  }, [list, restoId]);
+
+  useEffect(() => {
+    reload();
+    const ch = supabase
+      .channel(`resto-${restoId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "orders", filter: `restaurant_id=eq.${restoId}` },
+        () => {
+          reload();
+          if ("Notification" in window && Notification.permission === "granted") {
+            new Notification("Nouvelle activité", { body: "Une commande vient d'être mise à jour" });
+          }
+        }
+      )
+      .subscribe();
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [restoId, reload]);
+
+  const visible = filter === "active"
+    ? orders.filter((o) => !["delivered", "cancelled"].includes(o.status))
+    : orders;
+
+  const setStatus = async (id: string, status: "accepted" | "preparing" | "ready" | "cancelled") => {
+    setOrders((cur) => cur.map((o) => (o.id === id ? { ...o, status } : o)));
+    try {
+      await update({ data: { order_id: id, status } });
+      toast.success(`Commande ${status}`);
+    } catch (e) {
+      toast.error("Mise à jour impossible");
+      reload();
+    }
+  };
+
+  return (
+    <div>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="font-display text-xl font-bold">Commandes</h2>
+        <div className="flex gap-1 rounded-xl border border-border bg-surface/60 p-1">
+          {(["active", "all"] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`rounded-lg px-3 py-1 text-xs font-semibold ${
+                filter === f ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+              }`}
+            >
+              {f === "active" ? "Actives" : "Toutes"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {loading ? (
+        <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
+      ) : visible.length === 0 ? (
+        <p className="rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
+          Aucune commande pour le moment.
+        </p>
+      ) : (
+        <ul className="grid gap-3 md:grid-cols-2">
+          {visible.map((o) => (
+            <li key={o.id} className="rounded-2xl border border-border bg-card p-4">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="font-display text-sm font-bold">{o.reference}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {new Date(o.created_at).toLocaleTimeString("fr-FR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                    {" · "}
+                    {o.delivery_address?.line ?? "Adresse non renseignée"}
+                  </p>
+                </div>
+                <StatusBadge status={o.status} />
+              </div>
+
+              <ul className="mt-3 space-y-1 text-xs">
+                {o.items.map((it) => (
+                  <li key={it.id} className="flex justify-between">
+                    <span>
+                      <span className="text-muted-foreground">{it.qty}×</span> {it.name}
+                    </span>
+                    <span>{it.line_total.toLocaleString("fr-FR")} F</span>
+                  </li>
+                ))}
+              </ul>
+              {o.notes && (
+                <p className="mt-2 rounded-lg border border-border bg-background/50 p-2 text-[11px] text-muted-foreground">
+                  📝 {o.notes}
+                </p>
+              )}
+
+              <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
+                <span className="text-xs text-muted-foreground">Total</span>
+                <span className="font-display text-base font-bold text-primary">
+                  {o.total.toLocaleString("fr-FR")} F
+                </span>
+              </div>
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                {o.status === "paid" && (
+                  <>
+                    <ActionBtn onClick={() => setStatus(o.id, "accepted")} icon={Check} variant="primary">
+                      Accepter
+                    </ActionBtn>
+                    <ActionBtn onClick={() => setStatus(o.id, "cancelled")} icon={X} variant="danger">
+                      Refuser
+                    </ActionBtn>
+                  </>
+                )}
+                {o.status === "accepted" && (
+                  <ActionBtn onClick={() => setStatus(o.id, "preparing")} icon={ChefHat} variant="primary">
+                    En préparation
+                  </ActionBtn>
+                )}
+                {o.status === "preparing" && (
+                  <ActionBtn onClick={() => setStatus(o.id, "ready")} icon={ShoppingBag} variant="primary">
+                    Prêt à enlever
+                  </ActionBtn>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const map: Record<string, { label: string; cls: string }> = {
+    pending_payment: { label: "Paiement", cls: "bg-amber-500/15 text-amber-400" },
+    paid: { label: "Nouveau", cls: "bg-primary/15 text-primary" },
+    accepted: { label: "Acceptée", cls: "bg-blue-500/15 text-blue-400" },
+    preparing: { label: "Préparation", cls: "bg-purple-500/15 text-purple-400" },
+    ready: { label: "Prête", cls: "bg-emerald-500/15 text-emerald-400" },
+    picked_up: { label: "Enlevée", cls: "bg-emerald-500/15 text-emerald-400" },
+    delivering: { label: "En route", cls: "bg-emerald-500/15 text-emerald-400" },
+    delivered: { label: "Livrée", cls: "bg-muted text-muted-foreground" },
+    cancelled: { label: "Annulée", cls: "bg-destructive/15 text-destructive" },
+  };
+  const m = map[status] ?? { label: status, cls: "bg-muted text-muted-foreground" };
+  return (
+    <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase ${m.cls}`}>
+      {m.label}
+    </span>
+  );
+}
+
+function ActionBtn({
+  children,
+  onClick,
+  icon: Icon,
+  variant,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  icon: React.ComponentType<{ className?: string }>;
+  variant: "primary" | "danger";
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`inline-flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-bold transition ${
+        variant === "primary"
+          ? "bg-gradient-primary text-primary-foreground shadow-glow hover:scale-[1.02]"
+          : "border border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20"
+      }`}
+    >
+      <Icon className="h-3.5 w-3.5" />
+      {children}
+    </button>
+  );
+}
+
+// ─── Menu ───────────────────────────────────────────────────────────────────
+type Cat = { id: string; name: string; sort_order: number | null };
+type Dish = {
+  id: string;
+  category_id: string | null;
+  name: string;
+  description: string | null;
+  price: number;
+  image_url: string | null;
+  is_available: boolean | null;
+  is_popular: boolean | null;
+};
+
+function MenuPanel({ restoId }: { restoId: string }) {
+  const fetchMenu = useServerFn(getRestaurantMenu);
+  const saveCat = useServerFn(upsertCategory);
+  const removeCat = useServerFn(deleteCategory);
+  const saveDish = useServerFn(upsertDish);
+  const removeDish = useServerFn(deleteDish);
+
+  const [cats, setCats] = useState<Cat[]>([]);
+  const [dishes, setDishes] = useState<Dish[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState<Partial<Dish> | null>(null);
+  const [editingCat, setEditingCat] = useState<Partial<Cat> | null>(null);
+
+  const reload = useCallback(async () => {
+    setLoading(true);
+    try {
+      const r = await fetchMenu({ data: { restaurant_id: restoId } });
+      setCats(r.categories as Cat[]);
+      setDishes(r.dishes as Dish[]);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchMenu, restoId]);
+
+  useEffect(() => { reload(); }, [reload]);
+
+  const grouped = useMemo(() => {
+    const m = new Map<string, Dish[]>();
+    for (const d of dishes) {
+      const k = d.category_id ?? "_";
+      if (!m.has(k)) m.set(k, []);
+      m.get(k)!.push(d);
+    }
+    return m;
+  }, [dishes]);
+
+  if (loading) return <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />;
+
+  return (
+    <div>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <h2 className="font-display text-xl font-bold">Menu</h2>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setEditingCat({ name: "" })}
+            className="inline-flex items-center gap-1 rounded-xl border border-border bg-surface px-3 py-1.5 text-xs font-bold hover:border-primary/40"
+          >
+            <Plus className="h-3.5 w-3.5" /> Catégorie
+          </button>
+          <button
+            onClick={() => setEditing({ name: "", price: 0, is_available: true })}
+            className="inline-flex items-center gap-1 rounded-xl bg-gradient-primary px-3 py-1.5 text-xs font-bold text-primary-foreground shadow-glow"
+          >
+            <Plus className="h-3.5 w-3.5" /> Nouveau plat
+          </button>
+        </div>
+      </div>
+
+      {cats.length === 0 && dishes.length === 0 && (
+        <p className="rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
+          Crée ta première catégorie puis ajoute tes plats.
+        </p>
+      )}
+
+      <div className="space-y-6">
+        {cats.map((cat) => (
+          <section key={cat.id}>
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="font-display text-base font-bold">{cat.name}</h3>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => setEditingCat(cat)}
+                  className="rounded-lg p-1.5 text-muted-foreground hover:bg-surface hover:text-foreground"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!confirm("Supprimer cette catégorie ?")) return;
+                    await removeCat({ data: { id: cat.id } });
+                    toast.success("Catégorie supprimée");
+                    reload();
+                  }}
+                  className="rounded-lg p-1.5 text-destructive hover:bg-destructive/10"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+            <ul className="grid gap-2 md:grid-cols-2">
+              {(grouped.get(cat.id) ?? []).map((d) => (
+                <DishRow key={d.id} dish={d} onEdit={() => setEditing(d)} onDelete={async () => {
+                  if (!confirm(`Supprimer ${d.name} ?`)) return;
+                  await removeDish({ data: { id: d.id } });
+                  toast.success("Plat supprimé");
+                  reload();
+                }} />
+              ))}
+            </ul>
+          </section>
+        ))}
+        {(grouped.get("_") ?? []).length > 0 && (
+          <section>
+            <h3 className="mb-2 font-display text-base font-bold text-muted-foreground">
+              Sans catégorie
+            </h3>
+            <ul className="grid gap-2 md:grid-cols-2">
+              {(grouped.get("_") ?? []).map((d) => (
+                <DishRow key={d.id} dish={d} onEdit={() => setEditing(d)} onDelete={async () => {
+                  await removeDish({ data: { id: d.id } });
+                  reload();
+                }} />
+              ))}
+            </ul>
+          </section>
+        )}
+      </div>
+
+      {editing && (
+        <DishModal
+          initial={editing}
+          categories={cats}
+          onClose={() => setEditing(null)}
+          onSave={async (d) => {
+            await saveDish({
+              data: {
+                id: d.id,
+                restaurant_id: restoId,
+                category_id: d.category_id ?? null,
+                name: d.name!,
+                description: d.description ?? null,
+                price: d.price ?? 0,
+                image_url: d.image_url || undefined,
+                is_available: d.is_available ?? true,
+                is_popular: d.is_popular ?? false,
+              },
+            });
+            toast.success(d.id ? "Plat mis à jour" : "Plat créé");
+            setEditing(null);
+            reload();
+          }}
+        />
+      )}
+
+      {editingCat && (
+        <CategoryModal
+          initial={editingCat}
+          onClose={() => setEditingCat(null)}
+          onSave={async (c) => {
+            await saveCat({
+              data: {
+                id: c.id,
+                restaurant_id: restoId,
+                name: c.name!,
+                sort_order: c.sort_order ?? 0,
+              },
+            });
+            toast.success(c.id ? "Catégorie mise à jour" : "Catégorie créée");
+            setEditingCat(null);
+            reload();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function DishRow({
+  dish, onEdit, onDelete,
+}: {
+  dish: Dish; onEdit: () => void; onDelete: () => void;
+}) {
+  return (
+    <li className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3">
+      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-surface">
+        {dish.image_url && (
+          <img src={dish.image_url} alt={dish.name} className="h-full w-full object-cover" loading="lazy" />
+        )}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <p className="truncate text-sm font-semibold">{dish.name}</p>
+          {!dish.is_available && (
+            <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+              Indispo
+            </span>
+          )}
+        </div>
+        <p className="text-xs text-primary">{dish.price.toLocaleString("fr-FR")} F</p>
+      </div>
+      <button onClick={onEdit} className="rounded-lg p-1.5 text-muted-foreground hover:bg-surface hover:text-foreground">
+        <Pencil className="h-4 w-4" />
+      </button>
+      <button onClick={onDelete} className="rounded-lg p-1.5 text-destructive hover:bg-destructive/10">
+        <Trash2 className="h-4 w-4" />
+      </button>
+    </li>
+  );
+}
+
+function DishModal({
+  initial, categories, onClose, onSave,
+}: {
+  initial: Partial<Dish>;
+  categories: Cat[];
+  onClose: () => void;
+  onSave: (d: Partial<Dish>) => Promise<void>;
+}) {
+  const [d, setD] = useState<Partial<Dish>>(initial);
+  const [saving, setSaving] = useState(false);
+
+  return (
+    <Modal onClose={onClose} title={initial.id ? "Modifier le plat" : "Nouveau plat"}>
+      <div className="space-y-3">
+        <Field label="Nom" value={d.name ?? ""} onChange={(v) => setD({ ...d, name: v })} />
+        <label className="block">
+          <span className="text-xs font-semibold text-muted-foreground">Description</span>
+          <textarea
+            value={d.description ?? ""}
+            onChange={(e) => setD({ ...d, description: e.target.value })}
+            rows={2}
+            className="mt-1 w-full rounded-xl border border-border bg-background/50 px-3 py-2 text-sm outline-none focus:border-primary"
+          />
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <Field
+            label="Prix (FCFA)"
+            type="number"
+            value={String(d.price ?? 0)}
+            onChange={(v) => setD({ ...d, price: parseInt(v || "0", 10) })}
+          />
+          <label className="block">
+            <span className="text-xs font-semibold text-muted-foreground">Catégorie</span>
+            <select
+              value={d.category_id ?? ""}
+              onChange={(e) => setD({ ...d, category_id: e.target.value || null })}
+              className="mt-1 w-full rounded-xl border border-border bg-background/50 px-3 py-2.5 text-sm outline-none focus:border-primary"
+            >
+              <option value="">— Aucune —</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <Field
+          label="URL de l'image"
+          value={d.image_url ?? ""}
+          onChange={(v) => setD({ ...d, image_url: v })}
+          placeholder="https://…"
+        />
+        <div className="flex gap-4 text-xs">
+          <label className="inline-flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={d.is_available ?? true}
+              onChange={(e) => setD({ ...d, is_available: e.target.checked })}
+            />
+            Disponible
+          </label>
+          <label className="inline-flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={d.is_popular ?? false}
+              onChange={(e) => setD({ ...d, is_popular: e.target.checked })}
+            />
+            Plat populaire
+          </label>
+        </div>
+      </div>
+      <div className="mt-5 flex justify-end gap-2">
+        <button onClick={onClose} className="rounded-xl border border-border px-4 py-2 text-xs font-bold">
+          Annuler
+        </button>
+        <button
+          disabled={saving || !d.name?.trim()}
+          onClick={async () => {
+            setSaving(true);
+            try { await onSave(d); } catch (e) { toast.error(e instanceof Error ? e.message : "Erreur"); }
+            finally { setSaving(false); }
+          }}
+          className="inline-flex items-center gap-1 rounded-xl bg-gradient-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-glow disabled:opacity-50"
+        >
+          {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+          Enregistrer
         </button>
       </div>
+    </Modal>
+  );
+}
 
-      <div className="overflow-hidden rounded-3xl border border-border bg-surface/60">
-        <table className="w-full text-sm">
-          <thead className="bg-background/40 text-xs uppercase tracking-wider text-muted-foreground">
-            <tr>
-              <th className="p-4 text-left">Plat</th>
-              <th className="p-4 text-left">Catégorie</th>
-              <th className="p-4 text-right">Prix</th>
-              <th className="p-4 text-right">Ventes (7j)</th>
-              <th className="p-4 text-center">Disponible</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {filtered.map((i) => (
-              <tr key={i.name} className="hover:bg-background/40">
-                <td className="p-4 font-semibold">{i.name}</td>
-                <td className="p-4 text-muted-foreground">{i.cat}</td>
-                <td className="p-4 text-right">{i.price.toLocaleString("fr-FR")} F</td>
-                <td className="p-4 text-right">{i.sales}</td>
-                <td className="p-4 text-center">
-                  <button
-                    onClick={() => toggle(i.name)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${i.available ? "bg-gradient-primary shadow-glow" : "bg-surface border border-border"}`}
-                    aria-label={i.available ? "Désactiver" : "Activer"}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${i.available ? "translate-x-6" : "translate-x-1"}`} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+function CategoryModal({
+  initial, onClose, onSave,
+}: {
+  initial: Partial<Cat>;
+  onClose: () => void;
+  onSave: (c: Partial<Cat>) => Promise<void>;
+}) {
+  const [c, setC] = useState<Partial<Cat>>(initial);
+  const [saving, setSaving] = useState(false);
+  return (
+    <Modal onClose={onClose} title={initial.id ? "Modifier la catégorie" : "Nouvelle catégorie"}>
+      <Field label="Nom" value={c.name ?? ""} onChange={(v) => setC({ ...c, name: v })} placeholder="Entrées" />
+      <div className="mt-5 flex justify-end gap-2">
+        <button onClick={onClose} className="rounded-xl border border-border px-4 py-2 text-xs font-bold">Annuler</button>
+        <button
+          disabled={saving || !c.name?.trim()}
+          onClick={async () => { setSaving(true); try { await onSave(c); } finally { setSaving(false); } }}
+          className="inline-flex items-center gap-1 rounded-xl bg-gradient-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-glow disabled:opacity-50"
+        >
+          {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+          Enregistrer
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
+function Modal({ children, onClose, title }: { children: React.ReactNode; onClose: () => void; title: string }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur md:items-center" onClick={onClose}>
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-lg rounded-3xl border border-border bg-card p-5 shadow-glow animate-fade-up"
+      >
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="font-display text-lg font-bold">{title}</h3>
+          <button onClick={onClose} className="rounded-lg p-1.5 text-muted-foreground hover:bg-surface">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        {children}
       </div>
     </div>
   );
 }
 
-function Stats() {
-  const week = [
-    { d: "Lun", v: 142 }, { d: "Mar", v: 168 }, { d: "Mer", v: 134 },
-    { d: "Jeu", v: 196 }, { d: "Ven", v: 224 }, { d: "Sam", v: 268 }, { d: "Dim", v: 186 },
+// ─── Stats ──────────────────────────────────────────────────────────────────
+function StatsPanel({ restoId }: { restoId: string }) {
+  const fetchStats = useServerFn(getRestaurantStats);
+  const [s, setS] = useState<{
+    ordersCount: number;
+    deliveredCount: number;
+    inProgress: number;
+    revenue: number;
+    avgTicket: number;
+  } | null>(null);
+
+  useEffect(() => {
+    fetchStats({ data: { restaurant_id: restoId } }).then(setS);
+  }, [fetchStats, restoId]);
+
+  if (!s) return <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />;
+
+  const cards = [
+    { icon: ShoppingBag, label: "Commandes (7j)", value: s.ordersCount },
+    { icon: Check, label: "Livrées", value: s.deliveredCount },
+    { icon: Clock, label: "En cours", value: s.inProgress },
+    { icon: Coins, label: "CA (7j)", value: `${s.revenue.toLocaleString("fr-FR")} F` },
+    { icon: TrendingUp, label: "Ticket moyen", value: `${s.avgTicket.toLocaleString("fr-FR")} F` },
   ];
-  const max = Math.max(...week.map((d) => d.v));
 
   return (
-    <div className="space-y-5">
-      <div className="rounded-3xl border border-border bg-surface/60 p-5">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">Commandes cette semaine</p>
-            <p className="mt-1 font-display text-3xl font-extrabold">1 318</p>
+    <div>
+      <h2 className="mb-4 font-display text-xl font-bold">Statistiques</h2>
+      <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+        {cards.map((c) => (
+          <div key={c.label} className="rounded-2xl border border-border bg-card p-4">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <c.icon className="h-3.5 w-3.5" /> {c.label}
+            </div>
+            <p className="mt-2 font-display text-2xl font-bold">{c.value}</p>
           </div>
-          <span className="flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-1 text-xs font-bold text-emerald-400">
-            <TrendingUp className="h-3 w-3" /> +14% vs S-1
-          </span>
-        </div>
-        <div className="mt-6 flex h-44 items-end gap-3">
-          {week.map((d, i) => {
-            const h = (d.v / max) * 100;
-            const today = i === 5;
-            return (
-              <div key={d.d} className="flex flex-1 flex-col items-center gap-2">
-                <div className="flex w-full flex-1 items-end">
-                  <div className={`w-full rounded-t-xl ${today ? "bg-gradient-to-t from-primary to-gold shadow-glow" : "bg-primary/30"}`} style={{ height: `${h}%` }} />
-                </div>
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{d.d}</span>
-              </div>
-            );
-          })}
-        </div>
+        ))}
       </div>
+    </div>
+  );
+}
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-3xl border border-border bg-surface/60 p-5">
-          <h3 className="font-display text-lg font-bold">Top plats</h3>
-          <ul className="mt-4 space-y-3">
-            {[
-              { name: "Bissap maison", v: 210 },
-              { name: "Beignets soufflés", v: 188 },
-              { name: "Ndolé poisson", v: 142 },
-              { name: "Poulet DG", v: 128 },
-            ].map((p) => (
-              <li key={p.name}>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-semibold">{p.name}</span>
-                  <span className="text-muted-foreground">{p.v}</span>
-                </div>
-                <div className="mt-1 h-2 overflow-hidden rounded-full bg-background">
-                  <div className="h-full rounded-full bg-gradient-to-r from-primary to-gold" style={{ width: `${(p.v / 210) * 100}%` }} />
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
+// ─── Profil ─────────────────────────────────────────────────────────────────
+function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void }) {
+  const update = useServerFn(updateMyRestaurant);
+  const [form, setForm] = useState({
+    name: resto.name,
+    cuisine: resto.cuisine,
+    neighborhood: resto.neighborhood ?? "",
+    eta_min: resto.eta_min ?? 20,
+    eta_max: resto.eta_max ?? 40,
+    delivery_fee: resto.delivery_fee ?? 0,
+  });
+  const [saving, setSaving] = useState(false);
 
-        <div className="rounded-3xl border border-border bg-surface/60 p-5">
-          <h3 className="font-display text-lg font-bold">Heures de pointe</h3>
-          <div className="mt-4 grid grid-cols-12 gap-1.5">
-            {Array.from({ length: 12 }).map((_, h) => {
-              const v = [10, 6, 4, 18, 38, 62, 28, 22, 36, 78, 52, 24][h];
-              return (
-                <div key={h} className="flex flex-col items-center gap-1">
-                  <div className="flex h-24 w-full items-end overflow-hidden rounded-md bg-background">
-                    <div className="w-full bg-gradient-to-t from-primary to-gold" style={{ height: `${v}%` }} />
-                  </div>
-                  <span className="text-[9px] text-muted-foreground">{10 + h}h</span>
-                </div>
-              );
-            })}
-          </div>
-          <p className="mt-3 text-xs text-muted-foreground">Pic principal : 19h-20h · Renforcer la cuisine</p>
+  return (
+    <div className="max-w-xl">
+      <h2 className="mb-4 font-display text-xl font-bold">Profil restaurant</h2>
+      <div className="space-y-3 rounded-2xl border border-border bg-card p-5">
+        <Field label="Nom" value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
+        <Field label="Cuisine" value={form.cuisine} onChange={(v) => setForm({ ...form, cuisine: v })} />
+        <Field label="Quartier" value={form.neighborhood} onChange={(v) => setForm({ ...form, neighborhood: v })} />
+        <div className="grid grid-cols-3 gap-3">
+          <Field
+            label="ETA min"
+            type="number"
+            value={String(form.eta_min)}
+            onChange={(v) => setForm({ ...form, eta_min: parseInt(v || "0", 10) })}
+          />
+          <Field
+            label="ETA max"
+            type="number"
+            value={String(form.eta_max)}
+            onChange={(v) => setForm({ ...form, eta_max: parseInt(v || "0", 10) })}
+          />
+          <Field
+            label="Livraison F"
+            type="number"
+            value={String(form.delivery_fee)}
+            onChange={(v) => setForm({ ...form, delivery_fee: parseInt(v || "0", 10) })}
+          />
         </div>
+        <button
+          disabled={saving}
+          onClick={async () => {
+            setSaving(true);
+            try {
+              await update({
+                data: {
+                  id: resto.id,
+                  name: form.name,
+                  cuisine: form.cuisine,
+                  neighborhood: form.neighborhood || null,
+                  eta_min: form.eta_min,
+                  eta_max: form.eta_max,
+                  delivery_fee: form.delivery_fee,
+                },
+              });
+              toast.success("Profil enregistré");
+              onSaved();
+            } catch (e) {
+              toast.error(e instanceof Error ? e.message : "Erreur");
+            } finally {
+              setSaving(false);
+            }
+          }}
+          className="mt-2 inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-glow disabled:opacity-50"
+        >
+          {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+          Enregistrer
+        </button>
       </div>
     </div>
   );
