@@ -69,8 +69,8 @@ function Fidelite() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 glass">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 md:px-8">
-          <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="h-4 w-4" /> Accueil
+          <Link to="/profil" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="h-4 w-4" /> Mon compte
           </Link>
           <span className="font-display font-bold">Mboa <span className="text-gradient-gold">Points</span></span>
           <div className="w-16" />
