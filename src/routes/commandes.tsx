@@ -1,8 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Package, CheckCircle2, ChevronRight, MapPin, LogIn } from "lucide-react";
+import { Package, CheckCircle2, ChevronRight, MapPin, LogIn, RotateCcw, Loader2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { getMyOrders } from "@/server/marketplace.functions";
+import { getMyOrders, getOrder } from "@/server/marketplace.functions";
+import { addToCart } from "@/hooks/use-cart";
 import { RowSkeleton, EmptyState } from "@/components/ui/feedback";
 
 export const Route = createFileRoute("/commandes")({
