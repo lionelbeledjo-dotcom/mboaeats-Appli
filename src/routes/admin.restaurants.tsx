@@ -189,6 +189,19 @@ function Restaurants() {
             </span>
           </button>
         ))}
+        <div className="ml-auto flex items-center gap-2 pr-2">
+          <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+          <select
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            className="rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-semibold outline-none"
+          >
+            <option value="all">Toutes les villes</option>
+            {cities.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Error */}
