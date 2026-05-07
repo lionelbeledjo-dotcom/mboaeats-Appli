@@ -108,7 +108,12 @@ function CommandesPage() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 glass border-b border-border/40">
         <div className="mx-auto max-w-md px-4 py-4">
-          <h1 className="font-display text-xl font-bold">Mes Commandes</h1>
+          <div className="flex items-center gap-3">
+            <Link to="/profil" aria-label="Retour" className="rounded-full border border-border bg-surface/60 p-2">
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+            <h1 className="font-display text-xl font-bold">Mes Commandes</h1>
+          </div>
           <div className="mt-3 flex gap-2">
             {[
               { k: "all", l: "Toutes" },
