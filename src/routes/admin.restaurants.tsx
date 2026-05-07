@@ -8,6 +8,7 @@ import {
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { listAllRestaurants, setRestaurantActive, getRestaurantDetails } from "@/server/admin.functions";
+import RestaurantMap from "@/components/admin/RestaurantMap";
 
 export const Route = createFileRoute("/admin/restaurants")({
   head: () => ({ meta: [{ title: "Restaurants · Admin MboaEats" }, { name: "robots", content: "noindex,nofollow" }] }),
@@ -387,6 +388,23 @@ function DetailsModal({ loading, details, onClose }: { loading: boolean; details
                 <Row icon={Hash} label="Latitude" value={r.lat ?? "—"} />
                 <Row icon={Hash} label="Longitude" value={r.lng ?? "—"} />
               </div>
+              {hasGeo ? (
+                <div className="mt-3">
+                  <RestaurantMap lat={Number(r.lat)} lng={Number(r.lng)} name={r.name} />
+                  <a
+                    href={`https://www.openstreetmap.org/?mlat=${r.lat}&mlon=${r.lng}#map=18/${r.lat}/${r.lng}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-2 inline-block text-xs text-primary hover:underline"
+                  >
+                    Ouvrir dans OpenStreetMap ↗
+                  </a>
+                </div>
+              ) : (
+                <p className="mt-3 rounded-xl border border-dashed border-border bg-background/30 p-4 text-center text-xs text-muted-foreground">
+                  Aucune géolocalisation enregistrée pour ce restaurant.
+                </p>
+              )}
             </div>
 
             {/* Métriques opérationnelles */}
