@@ -150,11 +150,8 @@ function Livreur() {
     };
   }, [online, signedIn, sendLocation]);
 
-  const activeMission = useMemo(
-    () => mine.find((m) => ["picked_up", "delivering"].includes(m.status)) ?? mine.find((m) => m.driver_assigned_open(m)) ?? null,
-    [mine]
-  );
-  // safer: just find non-final
+  // active mission = anything not finalised
+
   const currentMission = useMemo(
     () => mine.find((m) => !["delivered", "cancelled"].includes(m.status)) ?? null,
     [mine]
