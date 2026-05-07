@@ -203,8 +203,11 @@ function ProfilPage() {
           <Row to="/fidelite" icon={Sparkles} label="Mboa Points & avantages" />
         </Section>
 
-        {/* Espace administrateur retiré du profil client pour des raisons de sécurité.
-            L'accès admin se fait uniquement via /admin/login. */}
+        {isAdmin && (
+          <Section title="Administration">
+            <Row to="/admin" icon={ShieldCheck} label="Espace Super Admin" />
+          </Section>
+        )}
 
         <Section title="Pour les pros">
           <Row to="/devenir-livreur" icon={Bike} label="Devenir livreur" />
