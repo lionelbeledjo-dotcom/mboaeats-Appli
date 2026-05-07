@@ -40,6 +40,7 @@ import { Route as SuiviOrderIdRouteImport } from './routes/suivi.$orderId'
 import { Route as RestaurantsRestoIdRouteImport } from './routes/restaurants.$restoId'
 import { Route as RSlugRouteImport } from './routes/r.$slug'
 import { Route as CategorieSlugRouteImport } from './routes/categorie.$slug'
+import { Route as AideCategoryRouteImport } from './routes/aide.$category'
 import { Route as AdminZonesRouteImport } from './routes/admin.zones'
 import { Route as AdminRestaurantsRouteImport } from './routes/admin.restaurants'
 import { Route as AdminParametresRouteImport } from './routes/admin.parametres'
@@ -207,6 +208,11 @@ const CategorieSlugRoute = CategorieSlugRouteImport.update({
   path: '/categorie/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AideCategoryRoute = AideCategoryRouteImport.update({
+  id: '/$category',
+  path: '/$category',
+  getParentRoute: () => AideRoute,
+} as any)
 const AdminZonesRoute = AdminZonesRouteImport.update({
   id: '/zones',
   path: '/zones',
@@ -270,7 +276,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/admin-login': typeof AdminLoginRoute
   '/adresses': typeof AdressesRoute
-  '/aide': typeof AideRoute
+  '/aide': typeof AideRouteWithChildren
   '/checkout': typeof CheckoutRoute
   '/commandes': typeof CommandesRoute
   '/confidentialite': typeof ConfidentialiteRoute
@@ -297,6 +303,7 @@ export interface FileRoutesByFullPath {
   '/admin/parametres': typeof AdminParametresRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
   '/admin/zones': typeof AdminZonesRoute
+  '/aide/$category': typeof AideCategoryRoute
   '/categorie/$slug': typeof CategorieSlugRoute
   '/r/$slug': typeof RSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
@@ -313,7 +320,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin-login': typeof AdminLoginRoute
   '/adresses': typeof AdressesRoute
-  '/aide': typeof AideRoute
+  '/aide': typeof AideRouteWithChildren
   '/checkout': typeof CheckoutRoute
   '/commandes': typeof CommandesRoute
   '/confidentialite': typeof ConfidentialiteRoute
@@ -340,6 +347,7 @@ export interface FileRoutesByTo {
   '/admin/parametres': typeof AdminParametresRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
   '/admin/zones': typeof AdminZonesRoute
+  '/aide/$category': typeof AideCategoryRoute
   '/categorie/$slug': typeof CategorieSlugRoute
   '/r/$slug': typeof RSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
@@ -358,7 +366,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/admin-login': typeof AdminLoginRoute
   '/adresses': typeof AdressesRoute
-  '/aide': typeof AideRoute
+  '/aide': typeof AideRouteWithChildren
   '/checkout': typeof CheckoutRoute
   '/commandes': typeof CommandesRoute
   '/confidentialite': typeof ConfidentialiteRoute
@@ -385,6 +393,7 @@ export interface FileRoutesById {
   '/admin/parametres': typeof AdminParametresRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
   '/admin/zones': typeof AdminZonesRoute
+  '/aide/$category': typeof AideCategoryRoute
   '/categorie/$slug': typeof CategorieSlugRoute
   '/r/$slug': typeof RSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
@@ -431,6 +440,7 @@ export interface FileRouteTypes {
     | '/admin/parametres'
     | '/admin/restaurants'
     | '/admin/zones'
+    | '/aide/$category'
     | '/categorie/$slug'
     | '/r/$slug'
     | '/restaurants/$restoId'
@@ -474,6 +484,7 @@ export interface FileRouteTypes {
     | '/admin/parametres'
     | '/admin/restaurants'
     | '/admin/zones'
+    | '/aide/$category'
     | '/categorie/$slug'
     | '/r/$slug'
     | '/restaurants/$restoId'
@@ -518,6 +529,7 @@ export interface FileRouteTypes {
     | '/admin/parametres'
     | '/admin/restaurants'
     | '/admin/zones'
+    | '/aide/$category'
     | '/categorie/$slug'
     | '/r/$slug'
     | '/restaurants/$restoId'
@@ -536,7 +548,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
   AdressesRoute: typeof AdressesRoute
-  AideRoute: typeof AideRoute
+  AideRoute: typeof AideRouteWithChildren
   CheckoutRoute: typeof CheckoutRoute
   CommandesRoute: typeof CommandesRoute
   ConfidentialiteRoute: typeof ConfidentialiteRoute
@@ -785,6 +797,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategorieSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/aide/$category': {
+      id: '/aide/$category'
+      path: '/$category'
+      fullPath: '/aide/$category'
+      preLoaderRoute: typeof AideCategoryRouteImport
+      parentRoute: typeof AideRoute
+    }
     '/admin/zones': {
       id: '/admin/zones'
       path: '/zones'
@@ -887,6 +906,16 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface AideRouteChildren {
+  AideCategoryRoute: typeof AideCategoryRoute
+}
+
+const AideRouteChildren: AideRouteChildren = {
+  AideCategoryRoute: AideCategoryRoute,
+}
+
+const AideRouteWithChildren = AideRoute._addFileChildren(AideRouteChildren)
+
 interface SuiviRouteChildren {
   SuiviOrderIdRoute: typeof SuiviOrderIdRoute
 }
@@ -924,7 +953,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
   AdressesRoute: AdressesRoute,
-  AideRoute: AideRoute,
+  AideRoute: AideRouteWithChildren,
   CheckoutRoute: CheckoutRoute,
   CommandesRoute: CommandesRoute,
   ConfidentialiteRoute: ConfidentialiteRoute,

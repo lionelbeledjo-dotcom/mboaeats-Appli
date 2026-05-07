@@ -16,14 +16,15 @@ export const Route = createFileRoute("/aide")({
 });
 
 const SUPPORT_EMAIL = "lionelbrown2728@yahoo.fr";
-const SUPPORT_PHONE = "+237 6 90 00 00 00";
-const WHATSAPP = "237690000000";
+const SUPPORT_PHONE = "+33 6 60 06 17 23";
+const SUPPORT_PHONE_INTL = "+33660061723";
+const WHATSAPP = "33660061723";
 
 const categories = [
-  { icon: CreditCard, label: "Paiement", color: "from-primary/20 to-primary/5" },
-  { icon: Bike, label: "Livraison", color: "from-gold/20 to-gold/5" },
-  { icon: Utensils, label: "Commande", color: "from-emerald-500/20 to-emerald-500/5" },
-  { icon: ShieldCheck, label: "Compte & sécurité", color: "from-blue-500/20 to-blue-500/5" },
+  { slug: "paiement", icon: CreditCard, label: "Paiement", color: "from-primary/20 to-primary/5" },
+  { slug: "livraison", icon: Bike, label: "Livraison", color: "from-gold/20 to-gold/5" },
+  { slug: "commande", icon: Utensils, label: "Commande", color: "from-emerald-500/20 to-emerald-500/5" },
+  { slug: "compte-securite", icon: ShieldCheck, label: "Compte & sécurité", color: "from-blue-500/20 to-blue-500/5" },
 ];
 
 const faqs = [
@@ -98,10 +99,16 @@ function Aide() {
           <h2 className="font-display text-xl font-bold">Parcourez par catégorie</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {categories.map((c) => (
-              <button key={c.label} className={`rounded-2xl border border-border bg-gradient-to-br ${c.color} p-5 text-left transition hover:border-primary/40 hover:shadow-glow`}>
+              <Link
+                key={c.slug}
+                to="/aide/$category"
+                params={{ category: c.slug }}
+                className={`rounded-2xl border border-border bg-gradient-to-br ${c.color} p-5 text-left transition hover:border-primary/40 hover:shadow-glow`}
+              >
                 <c.icon className="h-6 w-6" />
                 <p className="mt-3 font-display font-bold">{c.label}</p>
-              </button>
+                <p className="mt-1 text-xs text-muted-foreground">Voir les guides →</p>
+              </Link>
             ))}
           </div>
         </section>
@@ -121,17 +128,24 @@ function Aide() {
             <p className="mt-3 text-sm font-semibold text-emerald-300 group-hover:underline">Démarrer une conversation →</p>
           </a>
 
-          <a
-            href={`tel:${SUPPORT_PHONE.replace(/\s/g, "")}`}
-            className="group rounded-3xl border border-border bg-surface/60 p-5 transition hover:border-primary hover:shadow-glow"
-          >
+          <div className="group rounded-3xl border border-border bg-surface/60 p-5 transition hover:border-primary hover:shadow-glow">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-primary shadow-glow">
               <Phone className="h-5 w-5 text-primary-foreground" />
             </div>
             <h3 className="mt-3 font-display font-bold">Appel direct</h3>
             <p className="text-xs text-muted-foreground">7j/7 · 8h-22h</p>
-            <p className="mt-3 text-sm font-semibold group-hover:text-primary">{SUPPORT_PHONE}</p>
-          </a>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <a href={`tel:${SUPPORT_PHONE_INTL}`} className="text-sm font-semibold hover:text-primary">{SUPPORT_PHONE}</a>
+              <a
+                href={`https://wa.me/${WHATSAPP}`}
+                target="_blank" rel="noreferrer"
+                className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-1 text-[11px] font-semibold text-emerald-300 hover:bg-emerald-500/25"
+                aria-label="WhatsApp"
+              >
+                <MessageCircle className="h-3 w-3" /> WhatsApp
+              </a>
+            </div>
+          </div>
 
           <a
             href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("Demande de support MboaEats")}`}
