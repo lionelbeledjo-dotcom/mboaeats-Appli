@@ -4,6 +4,7 @@ import { TrendingUp, Coins, Store, Bike, AlertTriangle, Users, ArrowUpRight, Loa
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { getAdminOverview } from "@/server/admin.functions";
+import { ErrorState } from "@/components/admin/ErrorState";
 
 export const Route = createFileRoute("/admin/")({
   head: () => ({ meta: [{ title: "Console Admin · MboaEats" }, { name: "robots", content: "noindex,nofollow" }] }),
