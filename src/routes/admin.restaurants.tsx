@@ -39,6 +39,7 @@ function Restaurants() {
   const [list, setList] = useState<Resto[] | null>(null);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<StatusFilter>("all");
+  const [city, setCity] = useState<string>("all");
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [details, setDetails] = useState<Details>(null);
