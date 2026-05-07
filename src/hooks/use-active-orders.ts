@@ -38,14 +38,43 @@ export function useActiveOrdersCount() {
       }
     };
 
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    const setupRealtime = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !alive) return;
+      if (channel) {
+        supabase.removeChannel(channel);
+        channel = null;
+      }
+      channel = supabase
+        .channel(`orders-active-${user.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "orders",
+            filter: `user_id=eq.${user.id}`,
+          },
+          () => refresh(),
+        )
+        .subscribe();
+    };
+
     refresh();
-    const interval = window.setInterval(refresh, 30_000);
-    const { data: sub } = supabase.auth.onAuthStateChange(() => refresh());
+    setupRealtime();
+    const interval = window.setInterval(refresh, 60_000);
+    const { data: sub } = supabase.auth.onAuthStateChange(() => {
+      refresh();
+      setupRealtime();
+    });
 
     return () => {
       alive = false;
       window.clearInterval(interval);
       sub.subscription.unsubscribe();
+      if (channel) supabase.removeChannel(channel);
     };
   }, []);
 
