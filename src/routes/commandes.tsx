@@ -171,8 +171,12 @@ function StatusBadge({ status }: { status: string }) {
   if (status === "cancelled" || status === "refunded")
     return <span className="rounded-full bg-muted px-2 py-1 text-[10px] font-bold">{statusLabel(status)}</span>;
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-1 text-[10px] font-bold text-primary">
-      <Clock className="h-3 w-3 animate-pulse" /> {statusLabel(status)}
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-2 py-1 text-[10px] font-bold text-primary">
+      <span className="relative flex h-2 w-2" aria-hidden="true">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/70" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+      </span>
+      {statusLabel(status)}
     </span>
   );
 }
