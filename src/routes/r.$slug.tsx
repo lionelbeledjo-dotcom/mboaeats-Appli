@@ -111,12 +111,15 @@ function RestoLivePage() {
           <div className="h-full w-full bg-gradient-to-br from-primary/30 to-accent/10" />
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-background" />
-        <Link
-          to="/decouvrir"
-          className="absolute left-4 top-4 inline-flex items-center gap-1 rounded-full border border-white/30 bg-black/40 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" /> Retour
-        </Link>
+        <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
+          <Link
+            to="/decouvrir"
+            className="inline-flex items-center gap-1 rounded-full border border-white/30 bg-black/40 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" /> Retour
+          </Link>
+          <FavoriteButton restaurantId={resto.id} />
+        </div>
       </div>
 
       <main className="mx-auto -mt-12 max-w-3xl px-4">
