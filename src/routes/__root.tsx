@@ -2,6 +2,7 @@ import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation, useNa
 import { useEffect, useState } from "react";
 import { BottomDock } from "@/components/BottomDock";
 import { CartFab } from "@/components/CartFab";
+import { NotificationBell } from "@/components/NotificationBell";
 import { Toaster } from "@/components/ui/sonner";
 
 const PUBLIC_ROUTES = ["/connexion", "/admin-login"];
@@ -113,6 +114,11 @@ function RootComponent() {
   return (
     <AuthGate>
       <Outlet />
+      {!hideDock && (
+        <div className="fixed right-3 top-3 z-50 sm:right-4 sm:top-4">
+          <NotificationBell />
+        </div>
+      )}
       {!hideDock && <CartFab />}
       {!hideDock && <BottomDock />}
       <Toaster position="top-right" richColors closeButton />
