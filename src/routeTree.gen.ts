@@ -21,6 +21,7 @@ import { Route as LivreurRouteImport } from './routes/livreur'
 import { Route as FideliteRouteImport } from './routes/fidelite'
 import { Route as DevenirRestoRouteImport } from './routes/devenir-resto'
 import { Route as DevenirLivreurRouteImport } from './routes/devenir-livreur'
+import { Route as DecouvrirRouteImport } from './routes/decouvrir'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ConnexionRouteImport } from './routes/connexion'
 import { Route as ConfidentialiteRouteImport } from './routes/confidentialite'
@@ -35,6 +36,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TableePaiementRouteImport } from './routes/tablee.paiement'
 import { Route as SuiviOrderIdRouteImport } from './routes/suivi.$orderId'
 import { Route as RestaurantsRestoIdRouteImport } from './routes/restaurants.$restoId'
+import { Route as RSlugRouteImport } from './routes/r.$slug'
 import { Route as CategorieSlugRouteImport } from './routes/categorie.$slug'
 import { Route as AdminZonesRouteImport } from './routes/admin.zones'
 import { Route as AdminRestaurantsRouteImport } from './routes/admin.restaurants'
@@ -101,6 +103,11 @@ const DevenirRestoRoute = DevenirRestoRouteImport.update({
 const DevenirLivreurRoute = DevenirLivreurRouteImport.update({
   id: '/devenir-livreur',
   path: '/devenir-livreur',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DecouvrirRoute = DecouvrirRouteImport.update({
+  id: '/decouvrir',
+  path: '/decouvrir',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -173,6 +180,11 @@ const RestaurantsRestoIdRoute = RestaurantsRestoIdRouteImport.update({
   path: '/restaurants/$restoId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RSlugRoute = RSlugRouteImport.update({
+  id: '/r/$slug',
+  path: '/r/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CategorieSlugRoute = CategorieSlugRouteImport.update({
   id: '/categorie/$slug',
   path: '/categorie/$slug',
@@ -221,6 +233,7 @@ export interface FileRoutesByFullPath {
   '/confidentialite': typeof ConfidentialiteRoute
   '/connexion': typeof ConnexionRoute
   '/contact': typeof ContactRoute
+  '/decouvrir': typeof DecouvrirRoute
   '/devenir-livreur': typeof DevenirLivreurRoute
   '/devenir-resto': typeof DevenirRestoRoute
   '/fidelite': typeof FideliteRoute
@@ -239,6 +252,7 @@ export interface FileRoutesByFullPath {
   '/admin/restaurants': typeof AdminRestaurantsRoute
   '/admin/zones': typeof AdminZonesRoute
   '/categorie/$slug': typeof CategorieSlugRoute
+  '/r/$slug': typeof RSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
   '/tablee/paiement': typeof TableePaiementRoute
@@ -255,6 +269,7 @@ export interface FileRoutesByTo {
   '/confidentialite': typeof ConfidentialiteRoute
   '/connexion': typeof ConnexionRoute
   '/contact': typeof ContactRoute
+  '/decouvrir': typeof DecouvrirRoute
   '/devenir-livreur': typeof DevenirLivreurRoute
   '/devenir-resto': typeof DevenirRestoRoute
   '/fidelite': typeof FideliteRoute
@@ -273,6 +288,7 @@ export interface FileRoutesByTo {
   '/admin/restaurants': typeof AdminRestaurantsRoute
   '/admin/zones': typeof AdminZonesRoute
   '/categorie/$slug': typeof CategorieSlugRoute
+  '/r/$slug': typeof RSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
   '/tablee/paiement': typeof TableePaiementRoute
@@ -291,6 +307,7 @@ export interface FileRoutesById {
   '/confidentialite': typeof ConfidentialiteRoute
   '/connexion': typeof ConnexionRoute
   '/contact': typeof ContactRoute
+  '/decouvrir': typeof DecouvrirRoute
   '/devenir-livreur': typeof DevenirLivreurRoute
   '/devenir-resto': typeof DevenirRestoRoute
   '/fidelite': typeof FideliteRoute
@@ -309,6 +326,7 @@ export interface FileRoutesById {
   '/admin/restaurants': typeof AdminRestaurantsRoute
   '/admin/zones': typeof AdminZonesRoute
   '/categorie/$slug': typeof CategorieSlugRoute
+  '/r/$slug': typeof RSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
   '/tablee/paiement': typeof TableePaiementRoute
@@ -328,6 +346,7 @@ export interface FileRouteTypes {
     | '/confidentialite'
     | '/connexion'
     | '/contact'
+    | '/decouvrir'
     | '/devenir-livreur'
     | '/devenir-resto'
     | '/fidelite'
@@ -346,6 +365,7 @@ export interface FileRouteTypes {
     | '/admin/restaurants'
     | '/admin/zones'
     | '/categorie/$slug'
+    | '/r/$slug'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
     | '/tablee/paiement'
@@ -362,6 +382,7 @@ export interface FileRouteTypes {
     | '/confidentialite'
     | '/connexion'
     | '/contact'
+    | '/decouvrir'
     | '/devenir-livreur'
     | '/devenir-resto'
     | '/fidelite'
@@ -380,6 +401,7 @@ export interface FileRouteTypes {
     | '/admin/restaurants'
     | '/admin/zones'
     | '/categorie/$slug'
+    | '/r/$slug'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
     | '/tablee/paiement'
@@ -397,6 +419,7 @@ export interface FileRouteTypes {
     | '/confidentialite'
     | '/connexion'
     | '/contact'
+    | '/decouvrir'
     | '/devenir-livreur'
     | '/devenir-resto'
     | '/fidelite'
@@ -415,6 +438,7 @@ export interface FileRouteTypes {
     | '/admin/restaurants'
     | '/admin/zones'
     | '/categorie/$slug'
+    | '/r/$slug'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
     | '/tablee/paiement'
@@ -433,6 +457,7 @@ export interface RootRouteChildren {
   ConfidentialiteRoute: typeof ConfidentialiteRoute
   ConnexionRoute: typeof ConnexionRoute
   ContactRoute: typeof ContactRoute
+  DecouvrirRoute: typeof DecouvrirRoute
   DevenirLivreurRoute: typeof DevenirLivreurRoute
   DevenirRestoRoute: typeof DevenirRestoRoute
   FideliteRoute: typeof FideliteRoute
@@ -446,6 +471,7 @@ export interface RootRouteChildren {
   SuiviRoute: typeof SuiviRouteWithChildren
   TableeRoute: typeof TableeRouteWithChildren
   CategorieSlugRoute: typeof CategorieSlugRoute
+  RSlugRoute: typeof RSlugRoute
   RestaurantsRestoIdRoute: typeof RestaurantsRestoIdRouteWithChildren
 }
 
@@ -533,6 +559,13 @@ declare module '@tanstack/react-router' {
       path: '/devenir-livreur'
       fullPath: '/devenir-livreur'
       preLoaderRoute: typeof DevenirLivreurRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/decouvrir': {
+      id: '/decouvrir'
+      path: '/decouvrir'
+      fullPath: '/decouvrir'
+      preLoaderRoute: typeof DecouvrirRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -631,6 +664,13 @@ declare module '@tanstack/react-router' {
       path: '/restaurants/$restoId'
       fullPath: '/restaurants/$restoId'
       preLoaderRoute: typeof RestaurantsRestoIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/r/$slug': {
+      id: '/r/$slug'
+      path: '/r/$slug'
+      fullPath: '/r/$slug'
+      preLoaderRoute: typeof RSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/categorie/$slug': {
@@ -748,6 +788,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConfidentialiteRoute: ConfidentialiteRoute,
   ConnexionRoute: ConnexionRoute,
   ContactRoute: ContactRoute,
+  DecouvrirRoute: DecouvrirRoute,
   DevenirLivreurRoute: DevenirLivreurRoute,
   DevenirRestoRoute: DevenirRestoRoute,
   FideliteRoute: FideliteRoute,
@@ -761,6 +802,7 @@ const rootRouteChildren: RootRouteChildren = {
   SuiviRoute: SuiviRouteWithChildren,
   TableeRoute: TableeRouteWithChildren,
   CategorieSlugRoute: CategorieSlugRoute,
+  RSlugRoute: RSlugRoute,
   RestaurantsRestoIdRoute: RestaurantsRestoIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport

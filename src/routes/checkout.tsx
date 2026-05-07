@@ -8,6 +8,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { initiatePayment, verifyPayment, getActiveMboaPass } from "@/server/payments.functions";
+import { createOrder, markOrderPaid } from "@/server/marketplace.functions";
 import { useCart, clearCart } from "@/hooks/use-cart";
 
 export const Route = createFileRoute("/checkout")({
