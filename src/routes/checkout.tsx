@@ -201,10 +201,10 @@ function Checkout() {
             />
           )}
           {step === "ussd" && (
-            <UssdScreen method={method} phone={phone} pending={pending} seconds={seconds} total={total} demoHint={demoHint} onConfirm={goToOtp} />
+            <UssdScreen method={method} phone={phone} pending={pending} seconds={seconds} total={total} onConfirm={goToOtp} />
           )}
           {step === "otp" && (
-            <OtpScreen method={method} phone={phone} total={total} onSubmit={submitOtp} onSuccess={confirm} onBack={() => setStep("ussd")} demoHint={demoHint} />
+            <OtpScreen method={method} phone={phone} total={total} onSubmit={submitOtp} onSuccess={confirm} onBack={() => setStep("ussd")} />
           )}
           {step === "card" && <CardScreen total={total} onConfirm={confirm} />}
           {step === "success" && <SuccessScreen method={method} total={total} />}
@@ -326,8 +326,8 @@ function PayOption({ id, current, setCurrent, title, subtitle, icon, badge }: {
   );
 }
 
-function UssdScreen({ method, phone, pending, seconds, total, demoHint, onConfirm }: {
-  method: Method; phone: string; pending: boolean; seconds: number; total: number; demoHint: string | null; onConfirm: () => void;
+function UssdScreen({ method, phone, pending, seconds, total, onConfirm }: {
+  method: Method; phone: string; pending: boolean; seconds: number; total: number; onConfirm: () => void;
 }) {
   const code = method === "momo" ? "*126#" : "#150*1#";
   const brand = method === "momo" ? "MTN MoMo" : "Orange Money";
@@ -363,11 +363,6 @@ function UssdScreen({ method, phone, pending, seconds, total, demoHint, onConfir
         )}
       </div>
 
-      {demoHint && (
-        <p className="mt-3 rounded-xl border border-amber-400/30 bg-amber-400/10 p-2 text-[11px] text-amber-200">
-          ⚙️ Mode démo — {demoHint}
-        </p>
-      )}
 
       <div className="mt-4 flex items-center gap-2 text-[11px] text-muted-foreground">
         <Webhook className="h-3 w-3 text-primary" /> Confirmation via API native MTN/Orange · Aucune saisie de PIN sur MboaEats
@@ -550,10 +545,9 @@ function Summary({ cart, subtotal, delivery, total, hasPass, landmark, promo, se
   );
 }
 
-function OtpScreen({ method, phone, total, onSubmit, onSuccess, onBack, demoHint }: {
+function OtpScreen({ method, phone, total, onSubmit, onSuccess, onBack }: {
   method: Method; phone: string; total: number;
   onSubmit: (code: string) => Promise<void>; onSuccess: () => void; onBack: () => void;
-  demoHint: string | null;
 }) {
   const brand = method === "momo" ? "MTN MoMo" : "Orange Money";
   const accent = method === "momo" ? "from-yellow-400 to-amber-500" : "from-orange-500 to-rose-500";
