@@ -88,12 +88,15 @@ export const listAllDrivers = createServerFn({ method: "GET" })
       .select("driver_id, status, lat, lng, updated_at");
     // Joindre profils + agrégats
     const ids = (locs ?? []).map((l) => l.driver_id);
-    const [{ data: profiles }, { data: orders }] = await Promise.all([
-      supabaseAdmin.from("profiles").select("user_id, full_name, phone, city").in("user_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]),
-      supabaseAdmin.from("orders").select("driver_id, status, delivery_fee, delivered_at").in("driver_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]),
+    const safeIds = ids.length ? ids : ["00000000-0000-0000-0000-000000000000"];
+    const [{ data: profiles }, { data: orders }, { data: roles }] = await Promise.all([
+      supabaseAdmin.from("profiles").select("user_id, full_name, phone, city").in("user_id", safeIds),
+      supabaseAdmin.from("orders").select("driver_id, status, delivery_fee, delivered_at").in("driver_id", safeIds),
+      supabaseAdmin.from("user_roles").select("user_id, role").in("user_id", safeIds).eq("role", "livreur" as never),
     ]);
 
     const profMap = new Map((profiles ?? []).map((p) => [p.user_id, p]));
+    const activeSet = new Set((roles ?? []).map((r) => r.user_id));
     const stats: Record<string, { courses: number; earned: number }> = {};
     const since = new Date(); since.setDate(since.getDate() - 7);
     for (const o of orders ?? []) {
@@ -114,6 +117,7 @@ export const listAllDrivers = createServerFn({ method: "GET" })
         phone: p?.phone ?? null,
         city: p?.city ?? null,
         status: l.status,
+        is_active: activeSet.has(l.driver_id),
         lat: l.lat,
         lng: l.lng,
         updated_at: l.updated_at,
