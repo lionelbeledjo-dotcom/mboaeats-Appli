@@ -34,6 +34,7 @@ function ProfilPage() {
   const [form, setForm] = useState({ full_name: "", phone: "", city: "Douala" });
   const [saving, setSaving] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const authed = authedSb || !!sessionUser?.identifier;
 
