@@ -24,6 +24,17 @@ type Participant = {
   paid: boolean;
 };
 
+type PaymentEntry = {
+  id: string;
+  participantId: string;
+  participantName: string;
+  amount: number;
+  ref: string;
+  at: number;
+  status: "paid" | "failed";
+  promo?: string | null;
+};
+
 const colors = [
   "from-orange-500 to-pink-500",
   "from-amber-400 to-orange-500",
