@@ -40,10 +40,10 @@ export function BottomDock() {
                 const badge =
                   it.label === "Panier"
                     ? count
-                    : it.label === "Commandes"
+                    : it.label === "Mes Commandes"
                       ? activeOrders
                       : 0;
-                const badgePulse = it.label === "Commandes" && activeOrders > 0;
+                const badgePulse = it.label === "Mes Commandes" && activeOrders > 0;
 
                 return (
                   <li key={it.to} className="flex-1">
@@ -52,8 +52,8 @@ export function BottomDock() {
                       aria-label={
                         it.label === "Panier" && count > 0
                           ? `Panier, ${count} article${count > 1 ? "s" : ""}`
-                          : it.label === "Commandes" && activeOrders > 0
-                            ? `Commandes, ${activeOrders} en cours`
+                          : it.label === "Mes Commandes" && activeOrders > 0
+                            ? `Mes Commandes, ${activeOrders} en cours`
                             : it.label
                       }
                       className="group relative flex flex-col items-center gap-1 rounded-2xl px-1 py-1.5"
