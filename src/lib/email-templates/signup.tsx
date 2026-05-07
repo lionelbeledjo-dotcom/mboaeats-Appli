@@ -1,16 +1,8 @@
 import * as React from 'react'
-
 import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Link,
-  Preview,
-  Text,
+  Body, Button, Container, Head, Heading, Html, Img, Link, Preview, Section, Text,
 } from '@react-email/components'
+import { LOGO_URL, SUPPORT_EMAIL, styles } from './_brand'
 
 interface SignupEmailProps {
   siteName: string
@@ -19,37 +11,32 @@ interface SignupEmailProps {
   confirmationUrl: string
 }
 
-export const SignupEmail = ({
-  siteName,
-  siteUrl,
-  recipient,
-  confirmationUrl,
-}: SignupEmailProps) => (
-  <Html lang="en" dir="ltr">
+export const SignupEmail = ({ siteName, siteUrl, recipient, confirmationUrl }: SignupEmailProps) => (
+  <Html lang="fr" dir="ltr">
     <Head />
-    <Preview>Confirm your email for {siteName}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Heading style={h1}>Confirm your email</Heading>
-        <Text style={text}>
-          Thanks for signing up for{' '}
-          <Link href={siteUrl} style={link}>
-            <strong>{siteName}</strong>
-          </Link>
-          !
-        </Text>
-        <Text style={text}>
-          Please confirm your email address (
-          <Link href={`mailto:${recipient}`} style={link}>
-            {recipient}
-          </Link>
-          ) by clicking the button below:
-        </Text>
-        <Button style={button} href={confirmationUrl}>
-          Verify Email
-        </Button>
-        <Text style={footer}>
-          If you didn't create an account, you can safely ignore this email.
+    <Preview>Confirmez votre adresse email pour {siteName}</Preview>
+    <Body style={styles.main}>
+      <Container style={styles.container}>
+        <Section style={styles.header}>
+          <Img src={LOGO_URL} alt={siteName} width={56} height={56} style={styles.logo} />
+          <Text style={styles.brandName}>{siteName}</Text>
+        </Section>
+        <Section style={styles.card}>
+          <Heading style={styles.h1}>Bienvenue sur {siteName} 🍲</Heading>
+          <Text style={styles.text}>
+            Merci de rejoindre <Link href={siteUrl} style={styles.link}>{siteName}</Link> !
+            Confirmez votre adresse <strong>{recipient}</strong> pour commencer à commander vos plats préférés.
+          </Text>
+          <Section style={{ textAlign: 'center', margin: '8px 0 24px' }}>
+            <Button style={styles.button} href={confirmationUrl}>Confirmer mon email</Button>
+          </Section>
+          <Text style={{ ...styles.text, fontSize: '13px', margin: 0 }}>
+            Si vous n'êtes pas à l'origine de cette inscription, ignorez simplement cet email.
+          </Text>
+        </Section>
+        <Text style={styles.footer}>
+          Besoin d'aide ? <Link href={`mailto:${SUPPORT_EMAIL}`} style={styles.link}>{SUPPORT_EMAIL}</Link><br />
+          © {new Date().getFullYear()} {siteName} — Le goût du Mboa, livré chez vous.
         </Text>
       </Container>
     </Body>
@@ -57,28 +44,3 @@ export const SignupEmail = ({
 )
 
 export default SignupEmail
-
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
-}
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const link = { color: 'inherit', textDecoration: 'underline' }
-const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
-  textDecoration: 'none',
-}
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
