@@ -4,14 +4,11 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 // ───────────────────────────────────────────────────────────────────────────
 // MboaEats — Paiements MTN MoMo & Orange Money via Campay (agrégateur CM)
-//
-// Mode LIVE si CAMPAY_USERNAME + CAMPAY_PASSWORD sont définis.
-// Sinon → mode démo (OTP attendu = 123456).
+// Mode LIVE uniquement. CAMPAY_USERNAME + CAMPAY_PASSWORD sont requis.
 // Webhook: /api/public/campay-webhook (signé via CAMPAY_WEBHOOK_KEY)
-// Doc Campay: https://documenter.getpostman.com/view/2391374/T1LV8PVA
 // ───────────────────────────────────────────────────────────────────────────
 
-const CAMPAY_BASE = process.env.CAMPAY_BASE_URL || "https://demo.campay.net/api";
+const CAMPAY_BASE = process.env.CAMPAY_BASE_URL || "https://campay.net/api";
 
 const InitiateSchema = z.object({
   provider: z.enum(["momo", "orange"]),
