@@ -488,3 +488,22 @@ function DetailsModal({ loading, details, onClose, onSaved }: { loading: boolean
                 </p>
               )}
             </div>
+
+            {/* Métriques opérationnelles */}
+            <div>
+              <h3 className="mb-2 text-sm font-bold">Opérations</h3>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Row icon={Clock} label="ETA livraison" value={`${r.eta_min ?? "—"}–${r.eta_max ?? "—"} min`} />
+                <Row icon={Utensils} label="Frais de livraison" value={`${r.delivery_fee ?? 0} FCFA`} />
+                <Row icon={Hash} label="Min. commande" value={`${r.min_order ?? 0} FCFA`} />
+                <Row icon={Star} label="Note" value={`${r.rating ?? "—"} (${r.reviews_count ?? 0} avis)`} />
+                <Row icon={Hash} label="Slug" value={r.slug} />
+                <Row icon={Hash} label="Commandes total" value={details?.stats.orders ?? 0} />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
