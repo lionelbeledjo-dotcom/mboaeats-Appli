@@ -43,6 +43,7 @@ import { Route as RestaurantsRestoIdRouteImport } from './routes/restaurants.$re
 import { Route as RSlugRouteImport } from './routes/r.$slug'
 import { Route as CategorieSlugRouteImport } from './routes/categorie.$slug'
 import { Route as AideCategoryRouteImport } from './routes/aide.$category'
+import { Route as AdminLoginRouteImport } from './routes/admin_.login'
 import { Route as AdminZonesRouteImport } from './routes/admin.zones'
 import { Route as AdminRestaurantsRouteImport } from './routes/admin.restaurants'
 import { Route as AdminParametresRouteImport } from './routes/admin.parametres'
@@ -225,6 +226,11 @@ const AideCategoryRoute = AideCategoryRouteImport.update({
   path: '/$category',
   getParentRoute: () => AideRoute,
 } as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin_/login',
+  path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminZonesRoute = AdminZonesRouteImport.update({
   id: '/zones',
   path: '/zones',
@@ -317,6 +323,7 @@ export interface FileRoutesByFullPath {
   '/admin/parametres': typeof AdminParametresRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
   '/admin/zones': typeof AdminZonesRoute
+  '/admin/login': typeof AdminLoginRoute
   '/aide/$category': typeof AideCategoryRoute
   '/categorie/$slug': typeof CategorieSlugRoute
   '/r/$slug': typeof RSlugRoute
@@ -363,6 +370,7 @@ export interface FileRoutesByTo {
   '/admin/parametres': typeof AdminParametresRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
   '/admin/zones': typeof AdminZonesRoute
+  '/admin/login': typeof AdminLoginRoute
   '/aide/$category': typeof AideCategoryRoute
   '/categorie/$slug': typeof CategorieSlugRoute
   '/r/$slug': typeof RSlugRoute
@@ -411,6 +419,7 @@ export interface FileRoutesById {
   '/admin/parametres': typeof AdminParametresRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
   '/admin/zones': typeof AdminZonesRoute
+  '/admin_/login': typeof AdminLoginRoute
   '/aide/$category': typeof AideCategoryRoute
   '/categorie/$slug': typeof CategorieSlugRoute
   '/r/$slug': typeof RSlugRoute
@@ -460,6 +469,7 @@ export interface FileRouteTypes {
     | '/admin/parametres'
     | '/admin/restaurants'
     | '/admin/zones'
+    | '/admin/login'
     | '/aide/$category'
     | '/categorie/$slug'
     | '/r/$slug'
@@ -506,6 +516,7 @@ export interface FileRouteTypes {
     | '/admin/parametres'
     | '/admin/restaurants'
     | '/admin/zones'
+    | '/admin/login'
     | '/aide/$category'
     | '/categorie/$slug'
     | '/r/$slug'
@@ -553,6 +564,7 @@ export interface FileRouteTypes {
     | '/admin/parametres'
     | '/admin/restaurants'
     | '/admin/zones'
+    | '/admin_/login'
     | '/aide/$category'
     | '/categorie/$slug'
     | '/r/$slug'
@@ -595,6 +607,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SuiviRoute: typeof SuiviRouteWithChildren
   TableeRoute: typeof TableeRouteWithChildren
+  AdminLoginRoute: typeof AdminLoginRoute
   CategorieSlugRoute: typeof CategorieSlugRoute
   RSlugRoute: typeof RSlugRoute
   RestaurantsRestoIdRoute: typeof RestaurantsRestoIdRouteWithChildren
@@ -844,6 +857,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AideCategoryRouteImport
       parentRoute: typeof AideRoute
     }
+    '/admin_/login': {
+      id: '/admin_/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/zones': {
       id: '/admin/zones'
       path: '/zones'
@@ -1016,6 +1036,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SuiviRoute: SuiviRouteWithChildren,
   TableeRoute: TableeRouteWithChildren,
+  AdminLoginRoute: AdminLoginRoute,
   CategorieSlugRoute: CategorieSlugRoute,
   RSlugRoute: RSlugRoute,
   RestaurantsRestoIdRoute: RestaurantsRestoIdRouteWithChildren,
