@@ -22,7 +22,7 @@ export function BottomDock() {
   const location = useLocation();
   const path = location.pathname;
   const { count } = useCart();
-  const { count: activeOrders, loading: activeOrdersLoading } = useActiveOrdersCount();
+  const { count: activeOrders, loading: activeOrdersLoading, error: activeOrdersError } = useActiveOrdersCount();
 
   if (/^\/(admin|restaurant|livreur)/.test(path)) return null;
 
