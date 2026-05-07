@@ -1,4 +1,5 @@
 import { useSession } from "@tanstack/react-start/server";
+import { createHash } from "crypto";
 
 export type MboaSession = {
   mode?: "phone" | "email";
@@ -9,10 +10,10 @@ export type MboaSession = {
 };
 
 export function getMboaSession() {
-  const password = process.env.SESSION_SECRET;
-  if (!password || password.length < 32) {
-    throw new Error("SESSION_SECRET manquant ou trop court (32+ caractères requis)");
-  }
+  const raw = process.env.SESSION_SECRET;
+  if (!raw) throw new Error("SESSION_SECRET manquant");
+  // Dérive une clé 64 chars (256 bits hex) à partir du secret fourni
+  const password = createHash("sha256").update(raw).digest("hex");
   return useSession<MboaSession>({
     password,
     name: "mboa_session",
