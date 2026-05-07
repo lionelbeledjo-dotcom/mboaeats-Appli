@@ -24,6 +24,17 @@ type Participant = {
   paid: boolean;
 };
 
+type PaymentEntry = {
+  id: string;
+  participantId: string;
+  participantName: string;
+  amount: number;
+  ref: string;
+  at: number;
+  status: "paid" | "failed";
+  promo?: string | null;
+};
+
 const colors = [
   "from-orange-500 to-pink-500",
   "from-amber-400 to-orange-500",
@@ -38,6 +49,9 @@ function TableePage() {
   const [restaurant] = useState("Chez Mama Biya");
   const [copied, setCopied] = useState(false);
   const [mismatch, setMismatch] = useState<{ otpTotal: number; currentTotal: number } | null>(null);
+  const [history, setHistory] = useState<PaymentEntry[]>([
+    { id: "h-eric", participantId: "2", participantName: "Eric", amount: 4200, ref: "MBE-A1B2C3", at: Date.now() - 1000 * 60 * 12, status: "paid" },
+  ]);
   const [participants, setParticipants] = useState<Participant[]>([
     { id: "1", name: "Sandra (toi)", initial: "S", color: colors[0], items: [{ name: "Poulet DG", price: 3500 }], paid: false },
     { id: "2", name: "Eric", initial: "E", color: colors[1], items: [{ name: "Poisson braisé", price: 4200 }], paid: true },
@@ -69,21 +83,27 @@ function TableePage() {
       const raw = sessionStorage.getItem("tablee:lastPaid");
       if (!raw) return;
       sessionStorage.removeItem("tablee:lastPaid");
-      const data = JSON.parse(raw) as { amount?: number; at?: number };
+      const data = JSON.parse(raw) as { amount?: number; at?: number; ref?: string; promo?: string | null };
       if (!data?.at || Date.now() - data.at > 5 * 60 * 1000) return;
 
       const currentTotal = Math.max(0, mySubtotal - (promo?.discount ?? 0));
       const otpTotal = data.amount ?? -1;
+      const ref = data.ref ?? "MBE-" + Math.random().toString(36).slice(2, 8).toUpperCase();
 
       if (otpTotal !== currentTotal) {
-        // Total désynchronisé (promo modifiée pendant l'OTP) → refus
         setMismatch({ otpTotal, currentTotal });
+        setHistory((h) => [
+          { id: ref, participantId: "1", participantName: "Sandra (toi)", amount: otpTotal, ref, at: data.at!, status: "failed", promo: data.promo ?? null },
+          ...h,
+        ]);
         return;
       }
 
-      setParticipants((list) =>
-        list.map((p) => (p.id === "1" ? { ...p, paid: true } : p)),
-      );
+      setParticipants((list) => list.map((p) => (p.id === "1" ? { ...p, paid: true } : p)));
+      setHistory((h) => [
+        { id: ref, participantId: "1", participantName: "Sandra (toi)", amount: otpTotal, ref, at: data.at!, status: "paid", promo: data.promo ?? null },
+        ...h,
+      ]);
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -318,6 +338,70 @@ function TableePage() {
               </div>
             )}
             {promoErr && <p className="mt-2 text-xs font-semibold text-amber-200">{promoErr}</p>}
+          </div>
+        </section>
+
+        {/* Historique des paiements */}
+        <section className="mt-8">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-xl font-bold">Historique des paiements</h2>
+            <span className="text-xs text-muted-foreground">{history.length} transaction{history.length > 1 ? "s" : ""}</span>
+          </div>
+
+          <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-card shadow-card">
+            {history.length === 0 ? (
+              <p className="px-4 py-8 text-center text-sm text-muted-foreground">Aucun paiement enregistré pour le moment.</p>
+            ) : (
+              <ul className="divide-y divide-border">
+                {history.map((h) => {
+                  const p = participants.find((x) => x.id === h.participantId);
+                  const ok = h.status === "paid";
+                  return (
+                    <li key={h.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
+                      <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${p?.color ?? "from-zinc-500 to-zinc-700"} text-sm font-bold text-white`}>
+                        {p?.initial ?? h.participantName.charAt(0)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-semibold">{h.participantName}</p>
+                          <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${ok ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"}`}>
+                            {ok ? <><Check className="h-3 w-3" /> Payé</> : "Échec"}
+                          </span>
+                          {h.promo && <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">Promo {h.promo}</span>}
+                        </div>
+                        <p className="mt-0.5 font-mono text-[11px] text-muted-foreground">
+                          {h.ref} · {new Date(h.at).toLocaleString("fr-FR")}
+                        </p>
+                      </div>
+                      <p className={`font-display text-base font-bold ${ok ? "" : "text-muted-foreground line-through"}`}>
+                        {h.amount.toLocaleString("fr-FR")} F
+                      </p>
+                    </li>
+                  );
+                })}
+
+                {/* Participants en attente (non encore payés et sans entrée d'historique) */}
+                {participants
+                  .filter((p) => !p.paid && !history.some((h) => h.participantId === p.id))
+                  .map((p) => (
+                    <li key={`pending-${p.id}`} className="flex flex-wrap items-center gap-3 px-4 py-3 opacity-80">
+                      <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${p.color} text-sm font-bold text-white`}>
+                        {p.initial}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-semibold">{p.name}</p>
+                          <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-400">En attente</span>
+                        </div>
+                        <p className="mt-0.5 text-[11px] text-muted-foreground">Aucune transaction</p>
+                      </div>
+                      <p className="font-display text-base font-bold text-muted-foreground">
+                        {p.items.reduce((a, i) => a + i.price, 0).toLocaleString("fr-FR")} F
+                      </p>
+                    </li>
+                  ))}
+              </ul>
+            )}
           </div>
         </section>
 
