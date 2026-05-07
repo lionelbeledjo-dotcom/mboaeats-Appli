@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Home, ShoppingBag, Users, User, Package } from "lucide-react";
+import { Home, ShoppingBag, Users, User, Package, AlertCircle } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { useActiveOrdersCount } from "@/hooks/use-active-orders";
 
