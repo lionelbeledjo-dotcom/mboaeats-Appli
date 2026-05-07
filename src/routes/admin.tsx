@@ -46,7 +46,8 @@ function AdminLayout() {
 
   useEffect(() => {
     let alive = true;
-    (async () => {
+
+    const refresh = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         if (alive) setAdminInfo({ isAdmin: false, email: null });
@@ -59,8 +60,26 @@ function AdminLayout() {
         .eq("role", "admin")
         .maybeSingle();
       if (alive) setAdminInfo({ isAdmin: !!role, email: user.email ?? null });
-    })();
-    return () => { alive = false; };
+    };
+
+    refresh();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (
+        event === "SIGNED_IN" ||
+        event === "SIGNED_OUT" ||
+        event === "TOKEN_REFRESHED" ||
+        event === "USER_UPDATED"
+      ) {
+        setAdminInfo(null);
+        refresh();
+      }
+    });
+
+    return () => {
+      alive = false;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   const isAdmin = adminInfo?.isAdmin ?? false;
