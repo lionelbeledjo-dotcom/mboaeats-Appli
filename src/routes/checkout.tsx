@@ -76,6 +76,27 @@ function Checkout() {
     return () => clearTimeout(t);
   }, [step, pending, seconds]);
 
+  const ensureLiveOrder = async (): Promise<string | null> => {
+    if (!isLiveOrder || !liveRestoId) return null;
+    if (liveOrderId) return liveOrderId;
+    const res = await createOrderFn({
+      data: {
+        restaurant_id: liveRestoId,
+        items: dbItems.map((i) => ({
+          dish_id: i.dishId,
+          name: i.name,
+          qty: i.qty,
+          unit_price: i.price,
+        })),
+        delivery_address: { line: landmark, city: "Douala" },
+        promo_code: promo?.code,
+        notes: landmark,
+      },
+    });
+    setLiveOrderId(res.order.id);
+    return res.order.id;
+  };
+
   const start = async () => {
     setTopError(null);
     const parsed = landmarkSchema.safeParse(landmark);
@@ -84,6 +105,13 @@ function Checkout() {
       return;
     }
     setLandmarkErr(null);
+
+    try {
+      await ensureLiveOrder();
+    } catch (e) {
+      setTopError(e instanceof Error ? e.message : "Impossible de créer la commande");
+      return;
+    }
 
     if (method === "cash") return setStep("success");
     if (method === "card") return setStep("card");
@@ -97,7 +125,7 @@ function Checkout() {
           msisdn: `237${cleanMsisdn}`,
           amount: total,
           purpose: "order",
-          metadata: { landmark, cart: cart.map((c: { name: string }) => c.name) },
+          metadata: { landmark, cart: cart.map((c) => c.name) },
         },
       });
       if (!res.ok) throw new Error(res.error ?? "Échec d'initiation");
@@ -122,9 +150,22 @@ function Checkout() {
     if (!r.ok) throw new Error(r.error ?? "OTP invalide");
   };
 
-  const confirm = () => {
+  const confirm = async () => {
     setPending(false);
     setStep("success");
+    try {
+      const orderId = liveOrderId ?? (await ensureLiveOrder());
+      if (orderId) {
+        await markPaidFn({
+          data: { order_id: orderId, payment_reference: reference ?? `MBE-${Date.now()}` },
+        });
+        clearCart();
+        setTimeout(() => navigate({ to: "/suivi/$orderId", params: { orderId } }), 1500);
+        return;
+      }
+    } catch {
+      /* fallback */
+    }
     setTimeout(() => navigate({ to: "/suivi" }), 1800);
   };
 
