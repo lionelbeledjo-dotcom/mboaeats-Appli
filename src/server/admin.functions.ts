@@ -101,6 +101,24 @@ export const getRestaurantDetails = createServerFn({ method: "GET" })
     return { restaurant: resto, owner, stats: { dishes: dishesCount ?? 0, orders: ordersCount ?? 0 } };
   });
 
+export const updateRestaurantLocation = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d) =>
+    z.object({
+      id: z.string().uuid(),
+      lat: z.number().min(-90).max(90),
+      lng: z.number().min(-180).max(180),
+    }).parse(d)
+  )
+  .handler(async ({ data }) => {
+    const { error } = await supabaseAdmin
+      .from("restaurants")
+      .update({ lat: data.lat, lng: data.lng })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 export const setRestaurantActive = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d) => z.object({ id: z.string().uuid(), is_active: z.boolean() }).parse(d))
