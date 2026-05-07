@@ -129,6 +129,32 @@ export const verifyOtp = createServerFn({ method: "POST" })
       .update({ consumed_at: new Date().toISOString() })
       .eq("id", row.id);
 
+    // ─── Crée / retrouve un utilisateur Supabase Auth lié à ce téléphone ─────
+    // On utilise un email synthétique stable pour pouvoir générer un magic link
+    // et ouvrir une vraie session côté client (les RLS s'appuient sur auth.uid()).
+    const sanitized = phone.replace(/[^\d]/g, "");
+    const syntheticEmail = `phone-${sanitized}@phone.mboaeats.local`;
+
+    // 1) Créer l'utilisateur s'il n'existe pas (idempotent — ignore l'erreur "déjà existant")
+    await supabaseAdmin.auth.admin.createUser({
+      email: syntheticEmail,
+      phone,
+      email_confirm: true,
+      phone_confirm: true,
+      user_metadata: { phone, login_method: "otp_sms" },
+    }).catch(() => undefined);
+
+    // 2) Générer un magic link admin pour récupérer un hashed_token utilisable côté client
+    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+      type: "magiclink",
+      email: syntheticEmail,
+    });
+    if (linkError || !linkData?.properties?.hashed_token) {
+      console.error("generateLink error", linkError);
+      throw new Error("Impossible d'ouvrir la session. Réessayez.");
+    }
+
+    // Met à jour la session cookie côté serveur
     await session.update({
       mode: "phone",
       identifier: phone,
@@ -139,5 +165,12 @@ export const verifyOtp = createServerFn({ method: "POST" })
       pendingPhoneAt: undefined,
     });
 
-    return { ok: true, phone };
+    return {
+      ok: true,
+      phone,
+      auth: {
+        email: syntheticEmail,
+        token_hash: linkData.properties.hashed_token,
+      },
+    };
   });
