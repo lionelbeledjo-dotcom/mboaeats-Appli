@@ -99,10 +99,16 @@ function Aide() {
           <h2 className="font-display text-xl font-bold">Parcourez par catégorie</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {categories.map((c) => (
-              <button key={c.label} className={`rounded-2xl border border-border bg-gradient-to-br ${c.color} p-5 text-left transition hover:border-primary/40 hover:shadow-glow`}>
+              <Link
+                key={c.slug}
+                to="/aide/$category"
+                params={{ category: c.slug }}
+                className={`rounded-2xl border border-border bg-gradient-to-br ${c.color} p-5 text-left transition hover:border-primary/40 hover:shadow-glow`}
+              >
                 <c.icon className="h-6 w-6" />
                 <p className="mt-3 font-display font-bold">{c.label}</p>
-              </button>
+                <p className="mt-1 text-xs text-muted-foreground">Voir les guides →</p>
+              </Link>
             ))}
           </div>
         </section>
