@@ -39,6 +39,8 @@ function StatusIcon({ status }: { status: Status }) {
   return <XCircle className="h-5 w-5 text-destructive" />;
 }
 
+const REFRESH_INTERVAL_MS = 10_000;
+
 function HealthcheckPage() {
   const [backend, setBackend] = useState<Check>({ name: "Backend (DB)", status: "loading" });
   const [auth, setAuth] = useState<Check>({ name: "Authentification", status: "loading" });
@@ -46,14 +48,32 @@ function HealthcheckPage() {
   const [routes, setRoutes] = useState<Check[]>(
     CRITICAL_ROUTES.map((r) => ({ name: r, status: "loading" }))
   );
+  const [lastChecked, setLastChecked] = useState<Date | null>(null);
+  const [nowTick, setNowTick] = useState(Date.now());
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [running, setRunning] = useState(false);
+  const cancelRef = useRef<() => void>(() => {});
 
-  useEffect(() => {
+  const runChecks = useCallback(() => {
+    cancelRef.current();
     let cancelled = false;
+    setRunning(true);
 
-    // Backend DB ping
+    let pending = 3 + CRITICAL_ROUTES.length;
+    const done = () => {
+      pending -= 1;
+      if (pending <= 0 && !cancelled) {
+        setRunning(false);
+        setLastChecked(new Date());
+      }
+    };
+
     (async () => {
       const t0 = performance.now();
-      const { error } = await supabase.from("restaurants").select("id", { head: true, count: "exact" }).limit(1);
+      const { error } = await supabase
+        .from("restaurants")
+        .select("id", { head: true, count: "exact" })
+        .limit(1);
       if (cancelled) return;
       const ms = Math.round(performance.now() - t0);
       setBackend({
@@ -62,9 +82,9 @@ function HealthcheckPage() {
         detail: error?.message,
         ms,
       });
+      done();
     })();
 
-    // Auth
     (async () => {
       const t0 = performance.now();
       const { data, error } = await supabase.auth.getSession();
@@ -76,26 +96,31 @@ function HealthcheckPage() {
         detail: error?.message ?? (data.session ? "Session active" : "Anonyme"),
         ms,
       });
+      done();
     })();
 
-    // Realtime
     const t0 = performance.now();
     const channel = supabase.channel("healthcheck-" + Date.now());
+    let realtimeSettled = false;
+    const settleRealtime = (next: Check) => {
+      if (realtimeSettled || cancelled) return;
+      realtimeSettled = true;
+      setRealtime(next);
+      done();
+    };
     const timeout = setTimeout(() => {
-      if (!cancelled) {
-        setRealtime({
-          name: "Temps réel (Realtime)",
-          status: "error",
-          detail: "Timeout après 8s",
-        });
-      }
+      settleRealtime({
+        name: "Temps réel (Realtime)",
+        status: "error",
+        detail: "Timeout après 8s",
+      });
     }, 8000);
 
     channel.subscribe((status) => {
       if (cancelled) return;
       if (status === "SUBSCRIBED") {
         clearTimeout(timeout);
-        setRealtime({
+        settleRealtime({
           name: "Temps réel (Realtime)",
           status: "ok",
           detail: "Connecté",
@@ -103,7 +128,7 @@ function HealthcheckPage() {
         });
       } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
         clearTimeout(timeout);
-        setRealtime({
+        settleRealtime({
           name: "Temps réel (Realtime)",
           status: "error",
           detail: status,
@@ -111,7 +136,6 @@ function HealthcheckPage() {
       }
     });
 
-    // Critical routes (HEAD requests)
     CRITICAL_ROUTES.forEach((path, idx) => {
       const start = performance.now();
       fetch(path, { method: "HEAD", credentials: "same-origin" })
@@ -128,6 +152,7 @@ function HealthcheckPage() {
             };
             return next;
           });
+          done();
         })
         .catch((err) => {
           if (cancelled) return;
@@ -136,14 +161,31 @@ function HealthcheckPage() {
             next[idx] = { name: path, status: "error", detail: err.message };
             return next;
           });
+          done();
         });
     });
 
-    return () => {
+    cancelRef.current = () => {
       cancelled = true;
       clearTimeout(timeout);
       supabase.removeChannel(channel);
     };
+  }, []);
+
+  useEffect(() => {
+    runChecks();
+    return () => cancelRef.current();
+  }, [runChecks]);
+
+  useEffect(() => {
+    if (!autoRefresh) return;
+    const id = setInterval(runChecks, REFRESH_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [autoRefresh, runChecks]);
+
+  useEffect(() => {
+    const id = setInterval(() => setNowTick(Date.now()), 1000);
+    return () => clearInterval(id);
   }, []);
 
   const allChecks = [backend, auth, realtime, ...routes];
@@ -151,13 +193,41 @@ function HealthcheckPage() {
   const allLoading = allChecks.every((c) => c.status === "loading");
   const allOk = allChecks.every((c) => c.status === "ok");
 
+  const lastCheckedLabel = lastChecked
+    ? formatRelative(lastChecked, nowTick)
+    : "jamais";
+
   return (
     <div className="container max-w-2xl py-8 px-4 mb-24">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">État du système</h1>
-        <p className="text-sm text-muted-foreground">
-          Vérification en temps réel du backend, de la connexion temps réel et des routes critiques.
-        </p>
+      <div className="mb-6 flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold mb-2">État du système</h1>
+          <p className="text-sm text-muted-foreground">
+            Vérification en temps réel du backend, de la connexion temps réel et des routes critiques.
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={runChecks} disabled={running} className="shrink-0">
+          <RefreshCw className={`h-4 w-4 mr-2 ${running ? "animate-spin" : ""}`} />
+          Rafraîchir
+        </Button>
+      </div>
+
+      <div className="mb-4 flex items-center justify-between gap-3 text-xs text-muted-foreground flex-wrap">
+        <div className="flex items-center gap-2">
+          <span className={`inline-block h-2 w-2 rounded-full ${running ? "bg-primary animate-pulse" : "bg-muted-foreground/40"}`} />
+          <span>
+            Dernière vérification : <span className="font-medium text-foreground">{lastCheckedLabel}</span>
+          </span>
+        </div>
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={autoRefresh}
+            onChange={(e) => setAutoRefresh(e.target.checked)}
+            className="h-3.5 w-3.5 accent-primary"
+          />
+          Rafraîchissement auto (10s)
+        </label>
       </div>
 
       <div
