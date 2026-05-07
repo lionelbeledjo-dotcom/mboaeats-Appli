@@ -83,21 +83,27 @@ function TableePage() {
       const raw = sessionStorage.getItem("tablee:lastPaid");
       if (!raw) return;
       sessionStorage.removeItem("tablee:lastPaid");
-      const data = JSON.parse(raw) as { amount?: number; at?: number };
+      const data = JSON.parse(raw) as { amount?: number; at?: number; ref?: string; promo?: string | null };
       if (!data?.at || Date.now() - data.at > 5 * 60 * 1000) return;
 
       const currentTotal = Math.max(0, mySubtotal - (promo?.discount ?? 0));
       const otpTotal = data.amount ?? -1;
+      const ref = data.ref ?? "MBE-" + Math.random().toString(36).slice(2, 8).toUpperCase();
 
       if (otpTotal !== currentTotal) {
-        // Total désynchronisé (promo modifiée pendant l'OTP) → refus
         setMismatch({ otpTotal, currentTotal });
+        setHistory((h) => [
+          { id: ref, participantId: "1", participantName: "Sandra (toi)", amount: otpTotal, ref, at: data.at!, status: "failed", promo: data.promo ?? null },
+          ...h,
+        ]);
         return;
       }
 
-      setParticipants((list) =>
-        list.map((p) => (p.id === "1" ? { ...p, paid: true } : p)),
-      );
+      setParticipants((list) => list.map((p) => (p.id === "1" ? { ...p, paid: true } : p)));
+      setHistory((h) => [
+        { id: ref, participantId: "1", participantName: "Sandra (toi)", amount: otpTotal, ref, at: data.at!, status: "paid", promo: data.promo ?? null },
+        ...h,
+      ]);
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
