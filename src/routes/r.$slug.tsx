@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { getRestaurantBySlug } from "@/server/marketplace.functions";
 import { addToCart, useCart } from "@/hooks/use-cart";
+import { FavoriteButton } from "@/components/FavoriteButton";
 
 export const Route = createFileRoute("/r/$slug")({
   component: RestoLivePage,
