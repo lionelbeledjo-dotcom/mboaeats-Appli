@@ -1,7 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { Home, ShoppingBag, Users, User, Package } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
-import { countActiveOrders } from "@/data/orders";
+import { useActiveOrdersCount } from "@/hooks/use-active-orders";
 
 type Item = {
   to: "/" | "/commandes" | "/checkout" | "/tablee" | "/profil";
@@ -12,7 +12,7 @@ type Item = {
 
 const items: Item[] = [
   { to: "/", label: "Accueil", icon: Home, exact: true },
-  { to: "/commandes", label: "Commandes", icon: Package },
+  { to: "/commandes", label: "Mes Commandes", icon: Package },
   { to: "/checkout", label: "Panier", icon: ShoppingBag },
   { to: "/tablee", label: "Tablée", icon: Users },
   { to: "/profil", label: "Profil", icon: User },
