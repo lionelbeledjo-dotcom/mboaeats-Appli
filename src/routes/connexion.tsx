@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Flame, ShieldCheck, Loader2, Check, AlertCircle, Mail, Phone, MessageCircle, Send, ChevronDown } from "lucide-react";
 import { sendOtp, verifyOtp } from "@/lib/otp.functions";
+import { claimAdminByPhone, checkAdminEligibility } from "@/lib/admin-claim.functions";
 
 export const Route = createFileRoute("/connexion")({
   component: Connexion,
