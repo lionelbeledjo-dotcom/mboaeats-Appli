@@ -126,7 +126,8 @@ function Livreurs() {
         ))}
       </div>
 
-      {!list && <div className="flex justify-center p-16"><Loader2 className="h-5 w-5 animate-spin" /></div>}
+      {error && <ErrorState message={error} onRetry={reload} />}
+      {!list && !error && <div className="flex justify-center p-16"><Loader2 className="h-5 w-5 animate-spin" /></div>}
 
       <div className="overflow-hidden rounded-3xl border border-border bg-surface/60">
         <table className="w-full text-sm">
