@@ -391,7 +391,14 @@ function Connexion() {
           )}
         </div>
 
-        <p className="mt-6 text-center text-[11px] text-muted-foreground">
+        <a
+          href="/admin-login"
+          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full border border-primary/40 bg-primary/5 px-4 py-2.5 text-xs font-semibold text-primary hover:bg-primary/10"
+        >
+          <ShieldCheck className="h-3.5 w-3.5" /> Accès Administrateur
+        </a>
+
+        <p className="mt-4 text-center text-[11px] text-muted-foreground">
           Support : <a className="text-primary hover:underline" href="mailto:lionelbrown2728@yahoo.fr">lionelbrown2728@yahoo.fr</a>
         </p>
       </div>
