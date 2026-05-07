@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { listAllDisputes, resolveDispute } from "@/server/admin.functions";
 
 export const Route = createFileRoute("/admin/litiges")({
+  head: () => ({ meta: [{ title: "Litiges · Admin MboaEats" }, { name: "robots", content: "noindex,nofollow" }] }),
   component: Litiges,
 });
 
