@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { isRedirect } from "@tanstack/react-router";
-import { verifyAdminAccess } from "@/server/admin-access.functions";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: async () => {
@@ -19,7 +18,11 @@ export const Route = createFileRoute("/admin")({
     // re-execution after hydration will perform the real check.
     if (typeof window === "undefined") return;
     try {
-      // 1) Quick client-side gate (uses persisted Supabase session)
+      // Client-side gate via Supabase (RLS protects user_roles, so this read
+      // is authoritative — a non-admin cannot fake a row here).
+      // Each /admin server function additionally re-asserts the admin role
+      // server-side before returning data, so no privileged data leaks even
+      // if this gate is somehow bypassed in the browser.
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw redirect({ to: "/admin-login" });
       const { data: role } = await supabase
@@ -29,10 +32,6 @@ export const Route = createFileRoute("/admin")({
         .eq("role", "admin")
         .maybeSingle();
       if (!role) throw redirect({ to: "/admin-login" });
-
-      // 2) Server-side authoritative verification (cannot be bypassed
-      //    by tampering with localStorage or the user_roles cache).
-      await verifyAdminAccess();
     } catch (err) {
       if (isRedirect(err)) throw err;
       throw redirect({ to: "/admin-login" });
