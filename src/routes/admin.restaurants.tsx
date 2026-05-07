@@ -39,6 +39,7 @@ function Restaurants() {
   const [list, setList] = useState<Resto[] | null>(null);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<StatusFilter>("all");
+  const [city, setCity] = useState<string>("all");
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [details, setDetails] = useState<Details>(null);
@@ -104,6 +105,12 @@ function Restaurants() {
     };
   }, [list]);
 
+  const cities = useMemo(() => {
+    const set = new Set<string>();
+    (list ?? []).forEach((r) => r.city && set.add(r.city));
+    return Array.from(set).sort();
+  }, [list]);
+
   const filtered = useMemo(() => {
     return (list ?? [])
       .filter((r) => {
@@ -111,6 +118,7 @@ function Restaurants() {
         if (filter === "suspended") return !r.is_active;
         return true;
       })
+      .filter((r) => (city === "all" ? true : r.city === city))
       .filter((r) => {
         if (!q) return true;
         const needle = q.toLowerCase();
@@ -121,7 +129,7 @@ function Restaurants() {
           r.cuisine.toLowerCase().includes(needle)
         );
       });
-  }, [list, filter, q]);
+  }, [list, filter, q, city]);
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-6">
@@ -181,6 +189,19 @@ function Restaurants() {
             </span>
           </button>
         ))}
+        <div className="ml-auto flex items-center gap-2 pr-2">
+          <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+          <select
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            className="rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-semibold outline-none"
+          >
+            <option value="all">Toutes les villes</option>
+            {cities.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Error */}
