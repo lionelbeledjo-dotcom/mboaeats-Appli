@@ -50,9 +50,40 @@ function statusLabel(s: string) {
 }
 
 function CommandesPage() {
+  const navigate = useNavigate();
+  const getOrderFn = useServerFn(getOrder);
   const [tab, setTab] = useState<"all" | "active" | "delivered">("all");
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [authed, setAuthed] = useState<boolean | null>(null);
+  const [reordering, setReordering] = useState<string | null>(null);
+
+  const reorder = async (orderId: string, restoSlug: string | undefined) => {
+    setReordering(orderId);
+    try {
+      const r = await getOrderFn({ data: { id: orderId } }) as {
+        order: { restaurant_id: string };
+        items: Array<{ id: string; dish_id: string | null; name: string; qty: number; unit_price: number }>;
+      };
+      for (const it of r.items) {
+        if (!it.dish_id) continue;
+        addToCart({
+          id: `db__${it.dish_id}`,
+          dishId: it.dish_id,
+          restoId: r.order.restaurant_id,
+          name: it.name,
+          price: it.unit_price,
+          qty: it.qty,
+        });
+      }
+      toast.success("Articles ajoutés au panier");
+      if (restoSlug) navigate({ to: "/r/$slug", params: { slug: restoSlug } });
+      else navigate({ to: "/checkout" });
+    } catch (e) {
+      toast.error((e as Error).message ?? "Impossible de recommander");
+    } finally {
+      setReordering(null);
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
