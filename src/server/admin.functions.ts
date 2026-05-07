@@ -56,6 +56,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     return {
       gmv,
       ordersCount: ordersArr.length,
+      ordersPending,
       delivered,
       restosTotal: (restos ?? []).length,
       restosActive: (restos ?? []).filter((r) => r.is_active).length,
