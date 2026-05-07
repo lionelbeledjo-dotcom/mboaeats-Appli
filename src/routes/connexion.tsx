@@ -65,6 +65,7 @@ function formatPhoneForOtp(dial: string, raw: string) {
   const digits = input.replace(/\D/g, "");
   const dialDigits = dial.replace(/\D/g, "");
   if (input.startsWith("+")) return `+${digits}`;
+  if (digits.startsWith("00")) return `+${digits.slice(2)}`;
   if (digits.startsWith(dialDigits)) return `+${digits}`;
   return `${dial}${digits}`;
 }
