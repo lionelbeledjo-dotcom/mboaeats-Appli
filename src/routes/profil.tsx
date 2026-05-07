@@ -8,6 +8,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { isCartSoundEnabled, setCartSoundEnabled, CART_SOUND_EVT } from "@/lib/cart-sound";
 import { getMyProfile, upsertMyProfile, getMyLoyalty } from "@/server/account.functions";
+import { useSessionUser } from "@/hooks/useSessionUser";
 
 export const Route = createFileRoute("/profil")({
   head: () => ({
