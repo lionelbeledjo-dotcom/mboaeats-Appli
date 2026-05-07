@@ -35,7 +35,7 @@ export function NotificationBell() {
         <div className="fixed inset-0 z-[60] flex justify-end bg-black/50 backdrop-blur-sm animate-fade-in" onClick={() => setOpen(false)}>
           <aside
             onClick={(e) => e.stopPropagation()}
-            className="flex h-full w-full max-w-sm flex-col border-l border-border bg-card shadow-2xl animate-slide-in-right"
+            className="flex h-full w-full max-w-sm flex-col border-l border-border bg-card shadow-2xl animate-fade-in"
           >
             <header className="flex items-center justify-between border-b border-border px-4 py-3">
               <div className="flex items-center gap-2">
