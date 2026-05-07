@@ -8,6 +8,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { isCartSoundEnabled, setCartSoundEnabled, CART_SOUND_EVT } from "@/lib/cart-sound";
 import { getMyProfile, upsertMyProfile, getMyLoyalty } from "@/server/account.functions";
+import { useSessionUser } from "@/hooks/useSessionUser";
 
 export const Route = createFileRoute("/profil")({
   head: () => ({
@@ -21,10 +22,11 @@ export const Route = createFileRoute("/profil")({
 
 function ProfilPage() {
   const navigate = useNavigate();
+  const { user: sessionUser, refresh: refreshSession } = useSessionUser();
   const [confirm, setConfirm] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [authEmail, setAuthEmail] = useState<string | null>(null);
-  const [authed, setAuthed] = useState(false);
+  const [authedSb, setAuthedSb] = useState(false);
   const [soundOn, setSoundOn] = useState(false);
   const [profile, setProfile] = useState<{ full_name: string | null; phone: string | null; city: string | null } | null>(null);
   const [loyalty, setLoyalty] = useState<{ points: number; currentTier: string } | null>(null);
@@ -32,6 +34,8 @@ function ProfilPage() {
   const [form, setForm] = useState({ full_name: "", phone: "", city: "Douala" });
   const [saving, setSaving] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
+
+  const authed = authedSb || !!sessionUser?.identifier;
 
   useEffect(() => {
     setSoundOn(isCartSoundEnabled());
@@ -41,7 +45,7 @@ function ProfilPage() {
     supabase.auth.getUser().then(async ({ data }) => {
       const u = data.user;
       if (!u) return;
-      setAuthed(true);
+      setAuthedSb(true);
       if (u.email) setAuthEmail(u.email);
       try {
         const [p, l] = await Promise.all([getMyProfile(), getMyLoyalty()]);
@@ -77,7 +81,7 @@ function ProfilPage() {
 
   const doLogout = async () => {
     setSigningOut(true);
-    try { await supabase.auth.signOut(); } catch {}
+    try { await supabase.auth.signOut({ scope: "global" }); } catch {}
     try {
       const { logoutSession } = await import("@/lib/session.functions");
       await logoutSession();
@@ -86,7 +90,14 @@ function ProfilPage() {
       const { invalidateSessionCache } = await import("@/hooks/useSessionUser");
       invalidateSessionCache();
       localStorage.removeItem("mboa_tastes");
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith("sb-") || k.startsWith("supabase."))
+        .forEach((k) => localStorage.removeItem(k));
     } catch {}
+    setAuthedSb(false);
+    setAuthEmail(null);
+    setProfile(null);
+    await refreshSession();
     navigate({ to: "/connexion", replace: true });
   };
 
