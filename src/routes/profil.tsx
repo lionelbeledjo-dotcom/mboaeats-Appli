@@ -202,6 +202,23 @@ function ProfilPage() {
           <Row to="/fidelite" icon={Sparkles} label="Mboa Points & avantages" />
         </Section>
 
+        {isAdmin && (
+          <section>
+            <h2 className="px-1 text-xs font-semibold uppercase tracking-wider text-primary flex items-center gap-1.5">
+              <ShieldCheck className="h-3.5 w-3.5" /> Espace administrateur
+            </h2>
+            <ul className="mt-2 divide-y divide-border/60 rounded-2xl border border-primary/40 bg-gradient-to-br from-primary/10 to-surface/60">
+              <Row to="/admin" icon={LayoutDashboard} label="Console admin (vue d'ensemble)" />
+              <Row to="/admin/parametres" icon={Settings} label="Paramètres plateforme" />
+              <Row to="/admin/commissions" icon={Coins} label="Commissions" />
+              <Row to="/admin/zones" icon={MapPin} label="Zones de livraison" />
+              <Row to="/admin/restaurants" icon={Store} label="Restaurants partenaires" />
+              <Row to="/admin/livreurs" icon={Bike} label="Livreurs" />
+              <Row to="/admin/litiges" icon={AlertTriangle} label="Litiges & réclamations" />
+            </ul>
+          </section>
+        )}
+
         <Section title="Pour les pros">
           <Row to="/devenir-livreur" icon={Bike} label="Devenir livreur" />
           <Row to="/devenir-resto" icon={Store} label="Devenir restaurateur" />
