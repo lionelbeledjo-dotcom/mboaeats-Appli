@@ -226,7 +226,14 @@ function Restaurants() {
                 )}
               </div>
 
-              <div className="mt-auto pt-4">
+              <div className="mt-auto space-y-2 pt-4">
+                <button
+                  onClick={() => openDetails(r.id)}
+                  className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl border border-border bg-background/50 text-xs font-semibold text-foreground transition hover:bg-background"
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                  Voir détails & documents
+                </button>
                 {r.is_active ? (
                   <button
                     onClick={() => updateStatus(r, false)}
