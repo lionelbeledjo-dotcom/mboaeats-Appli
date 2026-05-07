@@ -128,17 +128,31 @@ function Aide() {
             <p className="mt-3 text-sm font-semibold text-emerald-300 group-hover:underline">Démarrer une conversation →</p>
           </a>
 
-          <a
-            href={`tel:${SUPPORT_PHONE.replace(/\s/g, "")}`}
-            className="group rounded-3xl border border-border bg-surface/60 p-5 transition hover:border-primary hover:shadow-glow"
-          >
+          <div className="group rounded-3xl border border-border bg-surface/60 p-5 transition hover:border-primary hover:shadow-glow">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-primary shadow-glow">
               <Phone className="h-5 w-5 text-primary-foreground" />
             </div>
             <h3 className="mt-3 font-display font-bold">Appel direct</h3>
             <p className="text-xs text-muted-foreground">7j/7 · 8h-22h</p>
-            <p className="mt-3 text-sm font-semibold group-hover:text-primary">{SUPPORT_PHONE}</p>
-          </a>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <a href={`tel:${SUPPORT_PHONE_INTL}`} className="text-sm font-semibold hover:text-primary">{SUPPORT_PHONE}</a>
+              <a
+                href={`https://wa.me/${WHATSAPP}`}
+                target="_blank" rel="noreferrer"
+                className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-1 text-[11px] font-semibold text-emerald-300 hover:bg-emerald-500/25"
+                aria-label="WhatsApp"
+              >
+                <MessageCircle className="h-3 w-3" /> WhatsApp
+              </a>
+            </div>
+          </div>
+
+          <a
+            href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("Demande de support MboaEats")}`}
+            className="group rounded-3xl border border-gold/40 bg-gold/5 p-5 transition hover:border-gold hover:shadow-glow"
+          >
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-gold">
+              <Mail className="h-5 w-5 text-gold-foreground" />
 
           <a
             href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("Demande de support MboaEats")}`}
