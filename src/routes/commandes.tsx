@@ -65,6 +65,7 @@ function CommandesPage() {
                   <StatusBadge status={o.status} />
                 </div>
                 <p className="mt-2 line-clamp-1 text-sm text-muted-foreground">{o.items.join(" · ")}</p>
+                {o.status === "en_cours" && <EtaProgress id={o.id} eta={o.eta} />}
                 <div className="mt-3 flex items-center justify-between">
                   <span className="text-sm font-bold text-primary">{o.total.toLocaleString("fr-FR")} FCFA</span>
                   {o.status === "en_cours" ? (
@@ -138,5 +139,60 @@ function EtaCountdown({ id, eta }: { id: string; eta?: string }) {
     <span className="tabular-nums" aria-live="polite">
       {label}
     </span>
+  );
+}
+
+const STEPS = [
+  { key: "prep", label: "Préparation" },
+  { key: "route", label: "En route" },
+  { key: "done", label: "Livré" },
+] as const;
+
+function EtaProgress({ id, eta }: { id: string; eta?: string }) {
+  const deadline = useMemo(() => getDeadline(id, eta), [id, eta]);
+  const durationMs = useMemo(() => {
+    const minutes = eta ? parseInt(eta, 10) : NaN;
+    return (Number.isFinite(minutes) ? minutes : 15) * 60_000;
+  }, [eta]);
+  const startedAt = deadline - durationMs;
+
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(t);
+  }, []);
+
+  const elapsed = Math.max(0, now - startedAt);
+  const pct = Math.min(100, Math.round((elapsed / durationMs) * 100));
+  const stepIndex = pct >= 100 ? 2 : pct >= 33 ? 1 : 0;
+
+  return (
+    <div className="mt-3" aria-label={`Progression ${pct}%`}>
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full rounded-full bg-gradient-primary transition-[width] duration-700 ease-out"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <ol className="mt-2 flex items-center justify-between text-[10px] font-semibold">
+        {STEPS.map((s, i) => {
+          const reached = i <= stepIndex;
+          return (
+            <li
+              key={s.key}
+              className={`flex items-center gap-1 ${reached ? "text-primary" : "text-muted-foreground"}`}
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  reached ? "bg-primary" : "bg-muted-foreground/40"
+                } ${i === stepIndex && stepIndex < 2 ? "animate-pulse" : ""}`}
+                aria-hidden
+              />
+              {s.label}
+            </li>
+          );
+        })}
+      </ol>
+    </div>
   );
 }
