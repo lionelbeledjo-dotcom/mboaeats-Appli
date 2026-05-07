@@ -61,7 +61,8 @@ type Step = "identify" | "channel" | "otp";
 
 function Connexion() {
   const navigate = useNavigate();
-
+  const sendOtpFn = useServerFn(sendOtp);
+  const verifyOtpFn = useServerFn(verifyOtp);
   const [mode, setMode] = useState<Mode>("phone");
   const [step, setStep] = useState<Step>("identify");
 
