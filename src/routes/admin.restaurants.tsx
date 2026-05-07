@@ -43,6 +43,7 @@ function Restaurants() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [details, setDetails] = useState<Details>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const openDetails = async (id: string) => {
     setOpenId(id);
