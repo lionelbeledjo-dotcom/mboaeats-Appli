@@ -1,23 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAdmin } from "@/integrations/supabase/admin-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-async function assertAdmin(supabase: any, userId: string) {
-  const { data, error } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", userId)
-    .eq("role", "admin")
-    .maybeSingle();
-  if (error) throw new Error(error.message);
-  if (!data) throw new Error("Accès admin requis");
-}
 
 export const getPlatformSettings = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdmin])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
     const { data, error } = await supabaseAdmin
       .from("platform_settings")
       .select("key, value_int, value_text, description, updated_at")
@@ -44,7 +33,7 @@ export const getPlatformSettings = createServerFn({ method: "GET" })
   });
 
 export const upsertPlatformSetting = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdmin])
   .inputValidator((d) =>
     z
       .object({
@@ -56,7 +45,6 @@ export const upsertPlatformSetting = createServerFn({ method: "POST" })
       .parse(d)
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
     const { error } = await supabaseAdmin
       .from("platform_settings")
       .upsert(
@@ -74,10 +62,9 @@ export const upsertPlatformSetting = createServerFn({ method: "POST" })
   });
 
 export const deletePlatformSetting = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdmin])
   .inputValidator((d) => z.object({ key: z.string().min(1) }).parse(d))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
     const { error } = await supabaseAdmin.from("platform_settings").delete().eq("key", data.key);
     if (error) throw new Error(error.message);
     return { ok: true };

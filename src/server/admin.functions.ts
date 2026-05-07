@@ -1,23 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAdmin } from "@/integrations/supabase/admin-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-async function assertAdmin(supabase: any, userId: string) {
-  const { data, error } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", userId)
-    .eq("role", "admin")
-    .maybeSingle();
-  if (error) throw new Error(error.message);
-  if (!data) throw new Error("Accès admin requis");
-}
 
 export const getAdminOverview = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdmin])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
     const since = new Date(); since.setDate(since.getDate() - 7);
 
     const [{ data: orders }, { data: restos }, { data: drivers }, { data: disputes }, { data: zones }] = await Promise.all([
@@ -72,9 +61,8 @@ export const getAdminOverview = createServerFn({ method: "GET" })
   });
 
 export const listAllRestaurants = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdmin])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
     const { data, error } = await supabaseAdmin
       .from("restaurants")
       .select("id, name, city, neighborhood, cuisine, rating, reviews_count, is_active, is_open, created_at")
@@ -84,19 +72,17 @@ export const listAllRestaurants = createServerFn({ method: "GET" })
   });
 
 export const setRestaurantActive = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdmin])
   .inputValidator((d) => z.object({ id: z.string().uuid(), is_active: z.boolean() }).parse(d))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
     const { error } = await supabaseAdmin.from("restaurants").update({ is_active: data.is_active }).eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
 
 export const listAllDrivers = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdmin])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
     const { data: locs } = await supabaseAdmin
       .from("driver_locations")
       .select("driver_id, status, lat, lng, updated_at");
@@ -139,9 +125,8 @@ export const listAllDrivers = createServerFn({ method: "GET" })
   });
 
 export const listAllDisputes = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdmin])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
     const { data, error } = await supabaseAdmin
       .from("disputes")
       .select("*")
@@ -170,7 +155,7 @@ export const listAllDisputes = createServerFn({ method: "GET" })
   });
 
 export const resolveDispute = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdmin])
   .inputValidator((d) =>
     z.object({
       id: z.string().uuid(),
@@ -179,7 +164,6 @@ export const resolveDispute = createServerFn({ method: "POST" })
     }).parse(d)
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
     const { error } = await supabaseAdmin
       .from("disputes")
       .update({
@@ -194,9 +178,8 @@ export const resolveDispute = createServerFn({ method: "POST" })
   });
 
 export const getCommissionsReport = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdmin])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
     const since = new Date(); since.setDate(since.getDate() - 7);
     const [{ data: orders }, { data: rates }, { data: restos }] = await Promise.all([
       supabaseAdmin
