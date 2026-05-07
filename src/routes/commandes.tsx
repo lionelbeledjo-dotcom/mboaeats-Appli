@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Package, Clock, CheckCircle2, ChevronRight, MapPin } from "lucide-react";
+import { orders, type Order } from "@/data/orders";
 
 export const Route = createFileRoute("/commandes")({
   head: () => ({
@@ -11,44 +12,6 @@ export const Route = createFileRoute("/commandes")({
   }),
   component: CommandesPage,
 });
-
-type Order = {
-  id: string;
-  resto: string;
-  items: string[];
-  total: number;
-  status: "en_cours" | "livree" | "annulee";
-  date: string;
-  eta?: string;
-};
-
-const orders: Order[] = [
-  {
-    id: "MBE-2106",
-    resto: "Chez Mama Douala",
-    items: ["Ndolé aux crevettes", "Jus de bissap"],
-    total: 4300,
-    status: "en_cours",
-    date: "Aujourd'hui · 12:34",
-    eta: "12 min",
-  },
-  {
-    id: "MBE-2089",
-    resto: "Le Village Akwa",
-    items: ["Poisson braisé du Wouri", "Bobolo"],
-    total: 7000,
-    status: "livree",
-    date: "Hier · 19:48",
-  },
-  {
-    id: "MBE-2061",
-    resto: "Saga Africa",
-    items: ["Ndolé Royal", "Crevettes grillées"],
-    total: 10500,
-    status: "livree",
-    date: "3 mai · 13:12",
-  },
-];
 
 function CommandesPage() {
   const [tab, setTab] = useState<"all" | "en_cours" | "livree">("all");
@@ -128,7 +91,7 @@ function StatusBadge({ status }: { status: Order["status"] }) {
   if (status === "en_cours")
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-1 text-[10px] font-bold text-primary">
-        <Clock className="h-3 w-3" /> En cours
+        <Clock className="h-3 w-3 animate-pulse" /> En cours
       </span>
     );
   if (status === "livree")
