@@ -81,7 +81,7 @@ function ProfilPage() {
 
   const doLogout = async () => {
     setSigningOut(true);
-    try { await supabase.auth.signOut(); } catch {}
+    try { await supabase.auth.signOut({ scope: "global" }); } catch {}
     try {
       const { logoutSession } = await import("@/lib/session.functions");
       await logoutSession();
@@ -90,7 +90,14 @@ function ProfilPage() {
       const { invalidateSessionCache } = await import("@/hooks/useSessionUser");
       invalidateSessionCache();
       localStorage.removeItem("mboa_tastes");
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith("sb-") || k.startsWith("supabase."))
+        .forEach((k) => localStorage.removeItem(k));
     } catch {}
+    setAuthedSb(false);
+    setAuthEmail(null);
+    setProfile(null);
+    await refreshSession();
     navigate({ to: "/connexion", replace: true });
   };
 
