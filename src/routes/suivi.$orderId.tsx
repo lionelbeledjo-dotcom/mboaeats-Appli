@@ -193,6 +193,12 @@ function SuiviPage() {
             </div>
           </section>
         )}
+
+        {order.delivered_at && (
+          <section className="mt-5">
+            <ReviewForm restaurantId={order.restaurant_id} orderId={order.id} />
+          </section>
+        )}
       </main>
     </div>
   );
