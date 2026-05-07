@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { createHash, randomInt } from "crypto";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { getMboaSession } from "./session.server";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/twilio";
 const OTP_TTL_SECONDS = 5 * 60;
@@ -109,6 +110,15 @@ export const verifyOtp = createServerFn({ method: "POST" })
       .from("otp_codes")
       .update({ consumed_at: new Date().toISOString() })
       .eq("id", row.id);
+
+    const session = await getMboaSession();
+    await session.update({
+      mode: "phone",
+      identifier: phone,
+      phone,
+      channel: "sms",
+      loggedAt: Date.now(),
+    });
 
     return { ok: true, phone };
   });
