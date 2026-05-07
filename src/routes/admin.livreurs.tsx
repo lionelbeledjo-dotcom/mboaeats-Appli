@@ -27,8 +27,14 @@ function Livreurs() {
   const [filter, setFilter] = useState<Filter>("all");
   const [q, setQ] = useState("");
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const reload = () => fetchAll().then((r) => setList(r.drivers as Driver[])).catch(() => setList([]));
+  const reload = () => {
+    setError(null);
+    return fetchAll()
+      .then((r) => setList(r.drivers as Driver[]))
+      .catch((e) => { setList([]); setError(e instanceof Error ? e.message : "Erreur réseau"); });
+  };
 
   useEffect(() => {
     reload();
