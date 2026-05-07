@@ -8,7 +8,7 @@ import { RowSkeleton, EmptyState } from "@/components/ui/feedback";
 export const Route = createFileRoute("/commandes")({
   head: () => ({
     meta: [
-      { title: "Mes commandes — MboaEats" },
+      { title: "Mes Commandes — MboaEats" },
       { name: "description", content: "Historique et suivi de vos commandes." },
     ],
   }),
@@ -74,7 +74,7 @@ function CommandesPage() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 glass border-b border-border/40">
         <div className="mx-auto max-w-md px-4 py-4">
-          <h1 className="font-display text-xl font-bold">Mes commandes</h1>
+          <h1 className="font-display text-xl font-bold">Mes Commandes</h1>
           <div className="mt-3 flex gap-2">
             {[
               { k: "all", l: "Toutes" },
