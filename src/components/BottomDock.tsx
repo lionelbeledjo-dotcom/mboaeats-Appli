@@ -74,7 +74,12 @@ export function BottomDock() {
                         }
                       >
                         <Icon className={isCenter ? "h-5 w-5" : "h-[18px] w-[18px]"} strokeWidth={active ? 2.4 : 2} />
-                        {badge > 0 ? (
+                        {it.label === "Mes Commandes" && activeOrdersLoading ? (
+                          <span
+                            aria-label="Chargement"
+                            className="absolute -right-1 -top-1 h-4 w-4 animate-pulse rounded-full bg-muted ring-2 ring-background"
+                          />
+                        ) : badge > 0 ? (
                           <span
                             className={`absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold leading-none text-accent-foreground tabular-nums ring-2 ring-background ${
                               badgePulse ? "animate-pulse" : ""
