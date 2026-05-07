@@ -208,7 +208,7 @@ function ProfilPage() {
               </span>
             </button>
           </li>
-          <Row to="/profil" icon={Bell} label="Notifications" />
+          <Row to="/preferences" icon={Bell} label="Préférences de notifications" />
           <Row to="/confidentialite" icon={Shield} label="Confidentialité & RGPD" />
           <Row to="/aide" icon={HelpCircle} label="Aide & support" />
         </Section>
