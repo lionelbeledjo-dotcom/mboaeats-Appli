@@ -17,10 +17,25 @@ type Report = Awaited<ReturnType<typeof getCommissionsReport>>;
 function Commissions() {
   const fetchReport = useServerFn(getCommissionsReport);
   const [report, setReport] = useState<Report | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const reload = () => {
+    setError(null);
+    return fetchReport()
+      .then(setReport)
+      .catch((e) => { setReport(null); setError(e instanceof Error ? e.message : "Erreur réseau"); });
+  };
 
   useEffect(() => {
-    fetchReport().then(setReport).catch(() => setReport(null));
-  }, [fetchReport]);
+    reload();
+    const ch = supabase
+      .channel("admin-commissions")
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => reload())
+      .subscribe();
+    const t = setInterval(reload, 60_000);
+    return () => { supabase.removeChannel(ch); clearInterval(t); };
+    // eslint-disable-next-line
+  }, []);
 
   const exportCsv = () => {
     if (!report) return;
