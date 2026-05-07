@@ -4,10 +4,11 @@ import {
   Store, Star, CheckCircle2, PauseCircle, Loader2, Search,
   MapPin, Utensils, ShieldCheck, ShieldOff, Filter, Eye, X,
   Phone, User, FileCheck2, FileX2, Hash, Image as ImageIcon, Clock,
+  Pencil, Save, Crosshair,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { listAllRestaurants, setRestaurantActive, getRestaurantDetails } from "@/server/admin.functions";
+import { listAllRestaurants, setRestaurantActive, getRestaurantDetails, updateRestaurantLocation } from "@/server/admin.functions";
 import RestaurantMap from "@/components/admin/RestaurantMap";
 
 export const Route = createFileRoute("/admin/restaurants")({
@@ -298,13 +299,54 @@ function DocBadge({ ok, label }: { ok: boolean; label: string }) {
   );
 }
 
-function DetailsModal({ loading, details, onClose }: { loading: boolean; details: Details; onClose: () => void }) {
+function DetailsModal({ loading, details, onClose, onSaved }: { loading: boolean; details: Details; onClose: () => void; onSaved?: (lat: number, lng: number) => void }) {
   const r = details?.restaurant;
   const owner = details?.owner;
   const hasCover = !!r?.cover_url;
   const hasLogo = !!r?.image_url;
-  const hasGeo = !!(r?.lat && r?.lng);
+  const baseLat = r?.lat ? Number(r.lat) : null;
+  const baseLng = r?.lng ? Number(r.lng) : null;
+  const hasGeo = baseLat !== null && baseLng !== null;
   const hasHours = r?.opening_hours && Object.keys(r.opening_hours).length > 0;
+
+  const updateLoc = useServerFn(updateRestaurantLocation);
+  const [editing, setEditing] = useState(false);
+  const [lat, setLat] = useState<number | null>(baseLat);
+  const [lng, setLng] = useState<number | null>(baseLng);
+  const [saving, setSaving] = useState(false);
+
+  // Reset local state when restaurant changes
+  useEffect(() => {
+    setEditing(false);
+    setLat(baseLat);
+    setLng(baseLng);
+  }, [r?.id, baseLat, baseLng]);
+
+  const dirty = editing && lat !== null && lng !== null && (lat !== baseLat || lng !== baseLng);
+
+  const save = async () => {
+    if (!r || lat === null || lng === null) return;
+    setSaving(true);
+    try {
+      await updateLoc({ data: { id: r.id, lat, lng } });
+      toast.success("Coordonnées mises à jour");
+      setEditing(false);
+      onSaved?.(lat, lng);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erreur");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const startEdit = () => {
+    if (!hasGeo) {
+      // Fallback : centre Douala par défaut
+      setLat(4.0511);
+      setLng(9.7679);
+    }
+    setEditing(true);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur" onClick={onClose}>
@@ -381,18 +423,58 @@ function DetailsModal({ loading, details, onClose }: { loading: boolean; details
 
             {/* Adresse & géo */}
             <div>
-              <h3 className="mb-2 text-sm font-bold">Adresse & localisation</h3>
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <h3 className="text-sm font-bold">Adresse & localisation</h3>
+                {!editing ? (
+                  <button
+                    onClick={startEdit}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background/50 px-3 py-1.5 text-xs font-semibold hover:bg-background"
+                  >
+                    <Pencil className="h-3 w-3" />
+                    Modifier la position
+                  </button>
+                ) : (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => { setEditing(false); setLat(baseLat); setLng(baseLng); }}
+                      className="rounded-lg border border-border bg-background/50 px-3 py-1.5 text-xs font-semibold hover:bg-background"
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      onClick={save}
+                      disabled={!dirty || saving}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-glow disabled:opacity-50"
+                    >
+                      {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
+                      Enregistrer
+                    </button>
+                  </div>
+                )}
+              </div>
               <div className="grid gap-2 sm:grid-cols-2">
                 <Row icon={MapPin} label="Adresse" value={r.address ?? "—"} />
                 <Row icon={MapPin} label="Ville / Quartier" value={`${r.city}${r.neighborhood ? ` · ${r.neighborhood}` : ""}`} />
-                <Row icon={Hash} label="Latitude" value={r.lat ?? "—"} />
-                <Row icon={Hash} label="Longitude" value={r.lng ?? "—"} />
+                <Row icon={Hash} label="Latitude" value={lat !== null ? lat.toFixed(6) : "—"} />
+                <Row icon={Hash} label="Longitude" value={lng !== null ? lng.toFixed(6) : "—"} />
               </div>
-              {hasGeo ? (
+              {(hasGeo || editing) && lat !== null && lng !== null ? (
                 <div className="mt-3">
-                  <RestaurantMap lat={Number(r.lat)} lng={Number(r.lng)} name={r.name} />
+                  {editing && (
+                    <p className="mb-2 flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-xs text-primary">
+                      <Crosshair className="h-3 w-3" />
+                      Glissez le marqueur ou cliquez sur la carte pour repositionner.
+                    </p>
+                  )}
+                  <RestaurantMap
+                    lat={lat}
+                    lng={lng}
+                    name={r.name}
+                    editable={editing}
+                    onChange={(la, ln) => { setLat(la); setLng(ln); }}
+                  />
                   <a
-                    href={`https://www.openstreetmap.org/?mlat=${r.lat}&mlon=${r.lng}#map=18/${r.lat}/${r.lng}`}
+                    href={`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=18/${lat}/${lng}`}
                     target="_blank"
                     rel="noreferrer"
                     className="mt-2 inline-block text-xs text-primary hover:underline"
@@ -402,7 +484,7 @@ function DetailsModal({ loading, details, onClose }: { loading: boolean; details
                 </div>
               ) : (
                 <p className="mt-3 rounded-xl border border-dashed border-border bg-background/30 p-4 text-center text-xs text-muted-foreground">
-                  Aucune géolocalisation enregistrée pour ce restaurant.
+                  Aucune géolocalisation enregistrée. Cliquez « Modifier la position » pour la définir.
                 </p>
               )}
             </div>

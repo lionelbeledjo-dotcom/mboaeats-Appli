@@ -1,17 +1,27 @@
 import { useEffect, useRef } from "react";
 
-type Props = { lat: number; lng: number; name: string };
+type Props = {
+  lat: number;
+  lng: number;
+  name: string;
+  editable?: boolean;
+  onChange?: (lat: number, lng: number) => void;
+};
 
-export default function RestaurantMap({ lat, lng, name }: Props) {
+export default function RestaurantMap({ lat, lng, name, editable = false, onChange }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
+  const markerRef = useRef<any>(null);
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
 
+  // Init map once
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const L = (await import("leaflet")).default;
       await import("leaflet/dist/leaflet.css");
-      if (cancelled || !containerRef.current) return;
+      if (cancelled || !containerRef.current || mapRef.current) return;
 
       const map = L.map(containerRef.current, {
         center: [lat, lng],
@@ -31,9 +41,21 @@ export default function RestaurantMap({ lat, lng, name }: Props) {
         iconSize: [32, 32],
         iconAnchor: [16, 32],
       });
-      L.marker([lat, lng], { icon }).addTo(map).bindPopup(name);
+      const marker = L.marker([lat, lng], { icon, draggable: editable }).addTo(map).bindPopup(name);
+      markerRef.current = marker;
 
-      // Force resize after modal animation
+      marker.on("dragend", () => {
+        const p = marker.getLatLng();
+        onChangeRef.current?.(p.lat, p.lng);
+      });
+
+      if (editable) {
+        map.on("click", (e: any) => {
+          marker.setLatLng(e.latlng);
+          onChangeRef.current?.(e.latlng.lat, e.latlng.lng);
+        });
+      }
+
       setTimeout(() => map.invalidateSize(), 100);
     })();
 
@@ -42,9 +64,25 @@ export default function RestaurantMap({ lat, lng, name }: Props) {
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
+        markerRef.current = null;
       }
     };
-  }, [lat, lng, name]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Sync marker draggability + position when props change
+  useEffect(() => {
+    const marker = markerRef.current;
+    const map = mapRef.current;
+    if (!marker || !map) return;
+    if (editable) marker.dragging?.enable();
+    else marker.dragging?.disable();
+    const cur = marker.getLatLng();
+    if (cur.lat !== lat || cur.lng !== lng) {
+      marker.setLatLng([lat, lng]);
+      map.panTo([lat, lng]);
+    }
+  }, [lat, lng, editable]);
 
   return (
     <div
