@@ -91,7 +91,7 @@ function StatusBadge({ status }: { status: Order["status"] }) {
   if (status === "en_cours")
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-1 text-[10px] font-bold text-primary">
-        <Clock className="h-3 w-3" /> En cours
+        <Clock className="h-3 w-3 animate-pulse" /> En cours
       </span>
     );
   if (status === "livree")
