@@ -1,18 +1,19 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Home, Search, ShoppingCart, Users, User } from "lucide-react";
+import { Home, ShoppingBag, Users, User, Package } from "lucide-react";
+import { useCart } from "@/hooks/use-cart";
+import { countActiveOrders } from "@/data/orders";
 
 type Item = {
-  to: "/" | "/recherche" | "/commandes" | "/tablee" | "/profil";
+  to: "/" | "/commandes" | "/checkout" | "/tablee" | "/profil";
   label: string;
   icon: typeof Home;
   exact?: boolean;
-  badge?: number;
 };
 
 const items: Item[] = [
   { to: "/", label: "Accueil", icon: Home, exact: true },
-  { to: "/recherche", label: "Recherche", icon: Search },
-  { to: "/commandes", label: "Commandes", icon: ShoppingCart, badge: 1 },
+  { to: "/commandes", label: "Commandes", icon: Package },
+  { to: "/checkout", label: "Panier", icon: ShoppingBag },
   { to: "/tablee", label: "Tablée", icon: Users },
   { to: "/profil", label: "Profil", icon: User },
 ];
@@ -20,40 +21,52 @@ const items: Item[] = [
 export function BottomDock() {
   const location = useLocation();
   const path = location.pathname;
+  const { count } = useCart();
+  const activeOrders = countActiveOrders();
 
-  // Hide on admin/restaurant/livreur back-office spaces
   if (/^\/(admin|restaurant|livreur)/.test(path)) return null;
 
   return (
     <>
-      {/* spacer so content is not hidden under the dock */}
       <div className="h-24" aria-hidden />
-      <nav
-        aria-label="Navigation principale"
-        className="fixed inset-x-0 bottom-0 z-50"
-      >
+      <nav aria-label="Navigation principale" className="fixed inset-x-0 bottom-0 z-50">
         <div className="mx-auto max-w-md px-3 pb-3 pt-2">
           <div className="rounded-3xl border border-border/60 bg-background/85 px-2 py-2 shadow-glow backdrop-blur-xl">
             <ul className="flex items-end justify-between">
               {items.map((it) => {
                 const active = it.exact ? path === it.to : path.startsWith(it.to);
                 const Icon = it.icon;
-                const isCenter = it.label === "Commandes";
+                const isCenter = it.label === "Panier";
+                const badge =
+                  it.label === "Panier"
+                    ? count
+                    : it.label === "Commandes"
+                      ? activeOrders
+                      : 0;
+                const badgePulse = it.label === "Commandes" && activeOrders > 0;
+
                 return (
                   <li key={it.to} className="flex-1">
                     <Link
                       to={it.to}
+                      aria-label={
+                        it.label === "Panier" && count > 0
+                          ? `Panier, ${count} article${count > 1 ? "s" : ""}`
+                          : it.label === "Commandes" && activeOrders > 0
+                            ? `Commandes, ${activeOrders} en cours`
+                            : it.label
+                      }
                       className="group relative flex flex-col items-center gap-1 rounded-2xl px-1 py-1.5"
                     >
                       <span
                         className={
                           isCenter
-                            ? `flex h-12 w-12 -translate-y-3 items-center justify-center rounded-2xl shadow-glow transition-transform ${
+                            ? `relative flex h-12 w-12 -translate-y-3 items-center justify-center rounded-2xl shadow-glow transition-transform ${
                                 active
                                   ? "bg-gradient-primary text-primary-foreground scale-105"
                                   : "bg-gradient-primary text-primary-foreground"
                               }`
-                            : `flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${
+                            : `relative flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${
                                 active
                                   ? "bg-primary/15 text-primary"
                                   : "text-muted-foreground group-hover:text-foreground"
@@ -61,9 +74,13 @@ export function BottomDock() {
                         }
                       >
                         <Icon className={isCenter ? "h-5 w-5" : "h-[18px] w-[18px]"} strokeWidth={active ? 2.4 : 2} />
-                        {it.badge ? (
-                          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-foreground">
-                            {it.badge}
+                        {badge > 0 ? (
+                          <span
+                            className={`absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold leading-none text-accent-foreground tabular-nums ring-2 ring-background ${
+                              badgePulse ? "animate-pulse" : ""
+                            }`}
+                          >
+                            {badge > 99 ? "99+" : badge}
                           </span>
                         ) : null}
                       </span>
