@@ -65,19 +65,24 @@ function TableePaiement() {
     }
   };
 
+  const [receipt, setReceipt] = useState<{ ref: string; at: Date } | null>(null);
+
   const submit = () => {
     const code = digits.join("");
     if (code.length < 4) { setErr("Saisis le code reçu (4-6 chiffres)."); return; }
     setStep("loading");
     setTimeout(() => {
+      const ref = "MBE-" + Math.random().toString(36).slice(2, 8).toUpperCase();
+      const at = new Date();
+      setReceipt({ ref, at });
       setStep("done");
       try {
         sessionStorage.setItem(
           "tablee:lastPaid",
-          JSON.stringify({ participant, amount: total, at: Date.now() }),
+          JSON.stringify({ participant, amount: total, at: at.getTime() }),
         );
       } catch {}
-      setTimeout(() => navigate({ to: "/tablee" }), 1600);
+      setTimeout(() => navigate({ to: "/tablee" }), 4500);
     }, 1200);
   };
 
