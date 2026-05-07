@@ -60,6 +60,15 @@ type Mode = "phone" | "email";
 type Channel = "sms" | "whatsapp" | "email";
 type Step = "identify" | "channel" | "otp";
 
+function formatPhoneForOtp(dial: string, raw: string) {
+  const input = raw.trim();
+  const digits = input.replace(/\D/g, "");
+  const dialDigits = dial.replace(/\D/g, "");
+  if (input.startsWith("+")) return `+${digits}`;
+  if (digits.startsWith(dialDigits)) return `+${digits}`;
+  return `${dial}${digits}`;
+}
+
 function Connexion() {
   const navigate = useNavigate();
   const sendOtpFn = useServerFn(sendOtp);
@@ -91,7 +100,7 @@ function Connexion() {
   }, [countryQuery]);
 
   const identifierLabel =
-    mode === "phone" ? `${country.dial} ${phone}` : email;
+    mode === "phone" ? formatPhoneForOtp(country.dial, phone) : email;
 
   const submitIdentify = (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,7 +125,7 @@ function Connexion() {
     setLoading(true);
     try {
       if (mode === "phone" && channel === "sms") {
-        const fullPhone = `${country.dial}${phone.replace(/\D/g, "")}`;
+        const fullPhone = formatPhoneForOtp(country.dial, phone);
         await sendOtpFn({ data: { phone: fullPhone } });
         setStep("otp");
       } else {
@@ -140,7 +149,7 @@ function Connexion() {
     setLoading(true);
     try {
       if (mode === "phone" && channel === "sms") {
-        const fullPhone = `${country.dial}${phone.replace(/\D/g, "")}`;
+        const fullPhone = formatPhoneForOtp(country.dial, phone);
         const res: any = await verifyOtpFn({ data: { phone: fullPhone, code: code.trim() } });
         // Ouvre une vraie session Supabase Auth pour que les endpoints protégés fonctionnent
         if (res?.auth?.token_hash) {
