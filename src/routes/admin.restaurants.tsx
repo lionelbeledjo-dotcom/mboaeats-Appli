@@ -8,6 +8,7 @@ import {
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { listAllRestaurants, setRestaurantActive, getRestaurantDetails } from "@/server/admin.functions";
+import RestaurantMap from "@/components/admin/RestaurantMap";
 
 export const Route = createFileRoute("/admin/restaurants")({
   head: () => ({ meta: [{ title: "Restaurants · Admin MboaEats" }, { name: "robots", content: "noindex,nofollow" }] }),
