@@ -7,6 +7,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { getOrder } from "@/server/marketplace.functions";
 import { useRealtimeOrder } from "@/hooks/use-realtime-order";
+import { ReviewForm } from "@/components/ReviewForm";
 
 export const Route = createFileRoute("/suivi/$orderId")({
   beforeLoad: async ({ params }) => {
