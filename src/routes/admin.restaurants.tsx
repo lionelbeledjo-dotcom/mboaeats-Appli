@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { listAllRestaurants, setRestaurantActive } from "@/server/admin.functions";
 
 export const Route = createFileRoute("/admin/restaurants")({
+  head: () => ({ meta: [{ title: "Restaurants · Admin MboaEats" }, { name: "robots", content: "noindex,nofollow" }] }),
   component: Restaurants,
 });
 

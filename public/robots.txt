@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin-login
+Disallow: /restaurant
+Disallow: /livreur
+Disallow: /checkout
+
+Sitemap: https://mboaeat.site/sitemap.xml

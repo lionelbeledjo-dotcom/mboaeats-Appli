@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Star, Clock, Search, MapPin, Flame } from "lucide-react";
+import { ArrowLeft, Star, Clock, Search, MapPin, Flame, UtensilsCrossed } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { listRestaurants } from "@/server/marketplace.functions";
+import { CardSkeleton, EmptyState } from "@/components/ui/feedback";
 
 export const Route = createFileRoute("/decouvrir")({
   component: Decouvrir,
@@ -97,17 +98,15 @@ function Decouvrir() {
 
         <div className="mt-5 grid gap-4">
           {loading &&
-            Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-44 animate-pulse rounded-2xl border border-border bg-surface/40"
-              />
-            ))}
+            Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)}
 
           {!loading && restos.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-              Aucun restaurant trouvé.
-            </div>
+            <EmptyState
+              icon={UtensilsCrossed}
+              title="Aucun restaurant trouvé"
+              description="Essayez de changer de ville ou retirez les filtres pour voir plus de résultats."
+              action={{ label: "Retour à l'accueil", to: "/" }}
+            />
           )}
 
           {!loading &&

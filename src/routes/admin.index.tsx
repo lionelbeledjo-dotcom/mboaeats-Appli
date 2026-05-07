@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getAdminOverview } from "@/server/admin.functions";
 
 export const Route = createFileRoute("/admin/")({
+  head: () => ({ meta: [{ title: "Console Admin · MboaEats" }, { name: "robots", content: "noindex,nofollow" }] }),
   component: Overview,
 });
 

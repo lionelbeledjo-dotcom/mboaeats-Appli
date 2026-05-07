@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { listAllDrivers } from "@/server/admin.functions";
 
 export const Route = createFileRoute("/admin/livreurs")({
+  head: () => ({ meta: [{ title: "Livreurs · Admin MboaEats" }, { name: "robots", content: "noindex,nofollow" }] }),
   component: Livreurs,
 });
 

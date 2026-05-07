@@ -6,6 +6,7 @@ import { CommissionConfig } from "@/components/admin/CommissionConfig";
 import { getCommissionsReport } from "@/server/admin.functions";
 
 export const Route = createFileRoute("/admin/commissions")({
+  head: () => ({ meta: [{ title: "Commissions · Admin MboaEats" }, { name: "robots", content: "noindex,nofollow" }] }),
   component: Commissions,
 });
 

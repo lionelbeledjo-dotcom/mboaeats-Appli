@@ -23,6 +23,14 @@ function prefetchRestaurantImages(restoId: string) {
 }
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "MboaEats — Vos plats camerounais livrés à Douala, Yaoundé & Bafoussam" },
+      { name: "description", content: "Commandez Ndolé, Poulet DG, Soya et plus encore. Livraison rapide, paiement Mobile Money, mode Tablée pour partager entre amis." },
+      { property: "og:title", content: "MboaEats — Le goût du Mboa, livré chez vous" },
+      { property: "og:description", content: "Restaurants triés sur le volet à Douala, Yaoundé et Bafoussam. Paiement Mobile Money sécurisé." },
+    ],
+  }),
   component: Index,
 });
 
