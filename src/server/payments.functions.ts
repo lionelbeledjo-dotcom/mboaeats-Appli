@@ -88,9 +88,10 @@ async function campayStatus(providerTxId: string) {
 export const initiatePayment = createServerFn({ method: "POST" })
   .inputValidator((d) => InitiateSchema.parse(d))
   .handler(async ({ data }) => {
+    if (!isCampayConfigured()) {
+      throw new Error("Paiement indisponible : Campay n'est pas configuré.");
+    }
     const reference = genReference(data.provider);
-    const live = isCampayConfigured();
-    const otpCode = live ? null : "123456";
 
     const { error } = await supabaseAdmin.from("payments").insert({
       provider: data.provider,
@@ -99,36 +100,26 @@ export const initiatePayment = createServerFn({ method: "POST" })
       amount_fcfa: data.amount,
       purpose: data.purpose,
       status: "otp_required",
-      otp_code: otpCode,
-      metadata: { live, provider_name: "campay", ...(data.metadata ?? {}) },
+      otp_code: null,
+      metadata: { live: true, provider_name: "campay", ...(data.metadata ?? {}) },
     });
     if (error) throw new Error(error.message);
 
-    if (live) {
-      const res = await campayCollect(data.msisdn, data.amount, reference);
-      if (!res.ok) {
-        await supabaseAdmin.from("payments").update({ status: "failed" }).eq("reference", reference);
-        return { ok: false, reference, mode: "live" as const, error: res.error };
-      }
-      await supabaseAdmin
-        .from("payments")
-        .update({ provider_tx_id: res.providerTxId, status: "pending" })
-        .eq("reference", reference);
-      return {
-        ok: true,
-        reference,
-        mode: "live" as const,
-        providerTxId: res.providerTxId,
-        ussd: res.ussd,
-        hint: "Validez sur votre téléphone (notification MoMo/Orange).",
-      };
+    const res = await campayCollect(data.msisdn, data.amount, reference);
+    if (!res.ok) {
+      await supabaseAdmin.from("payments").update({ status: "failed" }).eq("reference", reference);
+      return { ok: false as const, reference, error: res.error };
     }
-
+    await supabaseAdmin
+      .from("payments")
+      .update({ provider_tx_id: res.providerTxId, status: "pending" })
+      .eq("reference", reference);
     return {
-      ok: true,
+      ok: true as const,
       reference,
-      mode: "demo" as const,
-      hint: "Code de démo : 123456",
+      providerTxId: res.providerTxId,
+      ussd: res.ussd,
+      hint: "Validez sur votre téléphone (notification MoMo/Orange).",
     };
   });
 
@@ -144,24 +135,15 @@ export const verifyPayment = createServerFn({ method: "POST" })
     if (!row) return { ok: false, error: "Référence introuvable" };
     if (row.status === "succeeded") return { ok: true, alreadyPaid: true };
 
-    const live = !!(row.metadata as { live?: boolean } | null)?.live;
-
-    if (!live) {
-      if (!data.otp || data.otp !== row.otp_code) {
-        return { ok: false, error: "Code OTP invalide" };
-      }
-    } else {
-      // Polling Campay
-      if (!row.provider_tx_id) return { ok: false, error: "Transaction non initiée" };
-      const s = await campayStatus(row.provider_tx_id);
-      if (s.status === "SUCCESSFUL") {
-        // continue
-      } else if (s.status === "FAILED") {
-        await supabaseAdmin.from("payments").update({ status: "failed" }).eq("reference", data.reference);
-        return { ok: false, error: "Paiement refusé par l'opérateur" };
-      } else {
-        return { ok: false, pending: true, error: "En attente de validation sur le téléphone…" };
-      }
+    // Polling Campay (live uniquement)
+    if (!row.provider_tx_id) return { ok: false, error: "Transaction non initiée" };
+    const s = await campayStatus(row.provider_tx_id);
+    if (s.status === "FAILED") {
+      await supabaseAdmin.from("payments").update({ status: "failed" }).eq("reference", data.reference);
+      return { ok: false, error: "Paiement refusé par l'opérateur" };
+    }
+    if (s.status !== "SUCCESSFUL") {
+      return { ok: false, pending: true, error: "En attente de validation sur le téléphone…" };
     }
 
     const { error: upErr } = await supabaseAdmin
