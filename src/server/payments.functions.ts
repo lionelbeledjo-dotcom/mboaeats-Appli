@@ -3,13 +3,15 @@ import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 // ───────────────────────────────────────────────────────────────────────────
-// MboaEats — Paiements MTN MoMo & Orange Money
+// MboaEats — Paiements MTN MoMo & Orange Money via Campay (agrégateur CM)
 //
-// Switch automatique démo ↔ prod selon présence des secrets :
-//  • MOMO_SUBSCRIPTION_KEY + MOMO_API_USER + MOMO_API_KEY  → vraie API MTN
-//  • ORANGE_CLIENT_ID + ORANGE_CLIENT_SECRET               → vraie API Orange
+// Mode LIVE si CAMPAY_USERNAME + CAMPAY_PASSWORD sont définis.
 // Sinon → mode démo (OTP attendu = 123456).
+// Webhook: /api/public/campay-webhook (signé via CAMPAY_WEBHOOK_KEY)
+// Doc Campay: https://documenter.getpostman.com/view/2391374/T1LV8PVA
 // ───────────────────────────────────────────────────────────────────────────
+
+const CAMPAY_BASE = process.env.CAMPAY_BASE_URL || "https://demo.campay.net/api";
 
 const InitiateSchema = z.object({
   provider: z.enum(["momo", "orange"]),
@@ -20,41 +22,74 @@ const InitiateSchema = z.object({
 });
 
 const VerifySchema = z.object({
-  reference: z.string().min(6).max(80),
-  otp: z.string().regex(/^\d{4,8}$/),
+  reference: z.string().min(6).max(120),
+  otp: z.string().regex(/^\d{4,8}$/).optional(),
 });
 
 function genReference(prefix: string) {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`.toUpperCase();
 }
 
-function isMomoConfigured() {
-  return !!(process.env.MOMO_SUBSCRIPTION_KEY && process.env.MOMO_API_USER && process.env.MOMO_API_KEY);
-}
-function isOrangeConfigured() {
-  return !!(process.env.ORANGE_CLIENT_ID && process.env.ORANGE_CLIENT_SECRET);
+function isCampayConfigured() {
+  return !!(process.env.CAMPAY_USERNAME && process.env.CAMPAY_PASSWORD);
 }
 
-// Stub : à remplacer par l'appel réel au sandbox MTN une fois les clés fournies.
-// Doc: https://momodeveloper.mtn.com/api-documentation/api-description/
-async function callMomoCollection(_msisdn: string, _amount: number, reference: string) {
-  // TODO prod: POST /collection/v1_0/requesttopay avec X-Reference-Id = reference
-  return { ok: true, providerTxId: reference };
+// Cache simple du token (in-memory worker)
+let _token: { value: string; exp: number } | null = null;
+async function campayToken(): Promise<string> {
+  if (_token && _token.exp > Date.now() + 30_000) return _token.value;
+  const r = await fetch(`${CAMPAY_BASE}/token/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: process.env.CAMPAY_USERNAME,
+      password: process.env.CAMPAY_PASSWORD,
+    }),
+  });
+  if (!r.ok) throw new Error(`Campay token failed: ${r.status}`);
+  const j = (await r.json()) as { token: string; expires_in: number };
+  _token = { value: j.token, exp: Date.now() + (j.expires_in ?? 3600) * 1000 };
+  return _token.value;
 }
 
-// Stub Orange Money — Web Payment / OM API CM
-async function callOrangePush(_msisdn: string, _amount: number, reference: string) {
-  // TODO prod: POST /omcoreapis/1.0.2/mp/init puis /pay
-  return { ok: true, providerTxId: reference };
+async function campayCollect(msisdn: string, amount: number, reference: string) {
+  const token = await campayToken();
+  // Normaliser numéro CM : 237XXXXXXXXX (sans +)
+  const phone = msisdn.replace(/\D/g, "").replace(/^0+/, "");
+  const fullPhone = phone.startsWith("237") ? phone : `237${phone}`;
+  const r = await fetch(`${CAMPAY_BASE}/collect/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Token ${token}` },
+    body: JSON.stringify({
+      amount: String(amount),
+      currency: "XAF",
+      from: fullPhone,
+      description: `MboaEats ${reference}`,
+      external_reference: reference,
+    }),
+  });
+  const j = (await r.json().catch(() => ({}))) as { reference?: string; status?: string; ussd_code?: string };
+  if (!r.ok || !j.reference) {
+    return { ok: false as const, error: `Campay collect HTTP ${r.status}` };
+  }
+  return { ok: true as const, providerTxId: j.reference, ussd: j.ussd_code };
+}
+
+async function campayStatus(providerTxId: string) {
+  const token = await campayToken();
+  const r = await fetch(`${CAMPAY_BASE}/transaction/${providerTxId}/`, {
+    headers: { Authorization: `Token ${token}` },
+  });
+  if (!r.ok) return { status: "unknown" as const };
+  const j = (await r.json()) as { status: string };
+  return { status: j.status }; // SUCCESSFUL | FAILED | PENDING
 }
 
 export const initiatePayment = createServerFn({ method: "POST" })
   .inputValidator((d) => InitiateSchema.parse(d))
   .handler(async ({ data }) => {
     const reference = genReference(data.provider);
-    const live = data.provider === "momo" ? isMomoConfigured() : isOrangeConfigured();
-
-    // Démo : OTP fixe 123456
+    const live = isCampayConfigured();
     const otpCode = live ? null : "123456";
 
     const { error } = await supabaseAdmin.from("payments").insert({
@@ -65,26 +100,35 @@ export const initiatePayment = createServerFn({ method: "POST" })
       purpose: data.purpose,
       status: "otp_required",
       otp_code: otpCode,
-      metadata: { live, ...(data.metadata ?? {}) },
+      metadata: { live, provider_name: "campay", ...(data.metadata ?? {}) },
     });
     if (error) throw new Error(error.message);
 
     if (live) {
-      const res = data.provider === "momo"
-        ? await callMomoCollection(data.msisdn, data.amount, reference)
-        : await callOrangePush(data.msisdn, data.amount, reference);
+      const res = await campayCollect(data.msisdn, data.amount, reference);
       if (!res.ok) {
         await supabaseAdmin.from("payments").update({ status: "failed" }).eq("reference", reference);
-        return { ok: false, reference, mode: "live" as const, error: "Provider rejected" };
+        return { ok: false, reference, mode: "live" as const, error: res.error };
       }
+      await supabaseAdmin
+        .from("payments")
+        .update({ provider_tx_id: res.providerTxId, status: "pending" })
+        .eq("reference", reference);
+      return {
+        ok: true,
+        reference,
+        mode: "live" as const,
+        providerTxId: res.providerTxId,
+        ussd: res.ussd,
+        hint: "Validez sur votre téléphone (notification MoMo/Orange).",
+      };
     }
 
     return {
       ok: true,
       reference,
-      mode: live ? ("live" as const) : ("demo" as const),
-      // En démo on renvoie l'OTP pour faciliter le test
-      hint: live ? null : "Code de démo : 123456",
+      mode: "demo" as const,
+      hint: "Code de démo : 123456",
     };
   });
 
@@ -103,12 +147,21 @@ export const verifyPayment = createServerFn({ method: "POST" })
     const live = !!(row.metadata as { live?: boolean } | null)?.live;
 
     if (!live) {
-      if (data.otp !== row.otp_code) {
+      if (!data.otp || data.otp !== row.otp_code) {
         return { ok: false, error: "Code OTP invalide" };
       }
     } else {
-      // TODO prod : vérifier le statut auprès de MTN/Orange.
-      // Pour l'instant on accepte toute chaîne 4-8 chiffres en attendant les clés.
+      // Polling Campay
+      if (!row.provider_tx_id) return { ok: false, error: "Transaction non initiée" };
+      const s = await campayStatus(row.provider_tx_id);
+      if (s.status === "SUCCESSFUL") {
+        // continue
+      } else if (s.status === "FAILED") {
+        await supabaseAdmin.from("payments").update({ status: "failed" }).eq("reference", data.reference);
+        return { ok: false, error: "Paiement refusé par l'opérateur" };
+      } else {
+        return { ok: false, pending: true, error: "En attente de validation sur le téléphone…" };
+      }
     }
 
     const { error: upErr } = await supabaseAdmin
