@@ -1,15 +1,26 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft, Bike, Navigation, Wallet, TrendingUp, Clock, MapPin,
-  Phone, Check, X, Star, Flame, Coins, ChevronRight, Power, Package,
+  Check, X, Star, Coins, Power, Package, Loader2, ShoppingBag,
 } from "lucide-react";
+import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  listAvailableMissions,
+  listMyMissions,
+  claimMission,
+  updateMissionStatus,
+  updateMyLocation,
+  getMyEarnings,
+} from "@/server/driver.functions";
 
 export const Route = createFileRoute("/livreur")({
   component: Livreur,
   head: () => ({
     meta: [
-      { title: "Espace Livreur · MboaEats Premium" },
+      { title: "Espace Livreur · MboaEats" },
       { name: "description", content: "Gérez votre disponibilité, vos courses et vos gains en temps réel sur MboaEats." },
     ],
   }),
@@ -17,20 +28,169 @@ export const Route = createFileRoute("/livreur")({
 
 type Tab = "courses" | "navigation" | "portefeuille";
 
+type MissionRow = {
+  id: string;
+  reference: string;
+  status: string;
+  total: number;
+  delivery_fee: number | null;
+  eta_minutes: number | null;
+  delivery_address: { line?: string; neighborhood?: string; city?: string } | null;
+  created_at: string;
+  ready_at?: string | null;
+  picked_up_at?: string | null;
+  delivered_at?: string | null;
+  restaurants?: { name: string; address: string | null; neighborhood: string | null } | null;
+};
+
+type Earnings = {
+  earningsToday: number;
+  earningsWeek: number;
+  countToday: number;
+  countWeek: number;
+  week: { d: string; v: number }[];
+};
+
 function Livreur() {
-  const [online, setOnline] = useState(true);
+  const [authReady, setAuthReady] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
+  const [online, setOnline] = useState(false);
   const [tab, setTab] = useState<Tab>("courses");
-  const [pulse, setPulse] = useState(0);
+
+  const [available, setAvailable] = useState<MissionRow[]>([]);
+  const [mine, setMine] = useState<MissionRow[]>([]);
+  const [earnings, setEarnings] = useState<Earnings | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchAvailable = useServerFn(listAvailableMissions);
+  const fetchMine = useServerFn(listMyMissions);
+  const fetchEarnings = useServerFn(getMyEarnings);
+  const sendLocation = useServerFn(updateMyLocation);
+  const doClaim = useServerFn(claimMission);
+  const doUpdate = useServerFn(updateMissionStatus);
 
   useEffect(() => {
-    const t = setInterval(() => setPulse((p) => p + 1), 3000);
-    return () => clearInterval(t);
+    supabase.auth.getUser().then(({ data }) => {
+      setSignedIn(!!data.user);
+      setAuthReady(true);
+    });
   }, []);
+
+  const reload = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [a, m, e] = await Promise.all([
+        fetchAvailable().catch(() => ({ missions: [] })),
+        fetchMine().catch(() => ({ missions: [] })),
+        fetchEarnings().catch(() => null),
+      ]);
+      setAvailable((a.missions ?? []) as MissionRow[]);
+      setMine((m.missions ?? []) as MissionRow[]);
+      if (e) setEarnings(e as Earnings);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchAvailable, fetchMine, fetchEarnings]);
+
+  useEffect(() => {
+    if (signedIn) reload();
+  }, [signedIn, reload]);
+
+  // Realtime — toute mise à jour de commande ou nouvelle ready
+  useEffect(() => {
+    if (!signedIn) return;
+    const ch = supabase
+      .channel("driver-feed")
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => reload())
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [signedIn, reload]);
+
+  // GPS toutes les 10s quand online
+  const lastPos = useRef<{ lat: number; lng: number } | null>(null);
+  useEffect(() => {
+    if (!signedIn || !online) return;
+    let watchId: number | null = null;
+    const push = async (pos: GeolocationPosition) => {
+      lastPos.current = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      try {
+        await sendLocation({
+          data: {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            heading: pos.coords.heading ?? null,
+            speed: pos.coords.speed ?? null,
+            status: "available",
+          },
+        });
+      } catch {
+        /* silence */
+      }
+    };
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(push, () => {
+        // fallback Douala centre
+        const fake = { coords: { latitude: 4.0511, longitude: 9.7679, heading: null, speed: null } } as unknown as GeolocationPosition;
+        push(fake);
+      }, { enableHighAccuracy: true });
+      watchId = navigator.geolocation.watchPosition(push, () => {}, { enableHighAccuracy: true, maximumAge: 8000 });
+    }
+    const t = setInterval(() => {
+      if (lastPos.current) {
+        sendLocation({
+          data: { lat: lastPos.current.lat, lng: lastPos.current.lng, status: "available" },
+        }).catch(() => {});
+      }
+    }, 10_000);
+    return () => {
+      if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+      clearInterval(t);
+    };
+  }, [online, signedIn, sendLocation]);
+
+  const activeMission = useMemo(
+    () => mine.find((m) => ["picked_up", "delivering"].includes(m.status)) ?? mine.find((m) => m.driver_assigned_open(m)) ?? null,
+    [mine]
+  );
+  // safer: just find non-final
+  const currentMission = useMemo(
+    () => mine.find((m) => !["delivered", "cancelled"].includes(m.status)) ?? null,
+    [mine]
+  );
+
+  const handleClaim = async (id: string) => {
+    try {
+      await doClaim({ data: { order_id: id } });
+      toast.success("Mission acceptée");
+      reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erreur");
+    }
+  };
+
+  const handleStatus = async (id: string, status: "picked_up" | "delivering" | "delivered" | "cancelled") => {
+    try {
+      await doUpdate({ data: { order_id: id, status } });
+      toast.success(
+        status === "picked_up" ? "Commande récupérée" :
+        status === "delivering" ? "En route" :
+        status === "delivered" ? "Livrée 🎉" : "Annulée"
+      );
+      reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erreur");
+    }
+  };
+
+  if (!authReady) return <Splash />;
+  if (!signedIn) return <SignInGate />;
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-24">
       <Header online={online} setOnline={setOnline} />
-      <Stats online={online} />
+      <Stats online={online} earnings={earnings} />
 
       <nav className="sticky top-[64px] z-30 mx-auto flex max-w-5xl gap-2 px-4 py-3 md:px-8">
         {(["courses", "navigation", "portefeuille"] as Tab[]).map((t) => (
@@ -49,10 +209,51 @@ function Livreur() {
       </nav>
 
       <main className="mx-auto max-w-5xl px-4 md:px-8">
-        {tab === "courses" && <Courses online={online} pulse={pulse} />}
-        {tab === "navigation" && <NavigationView />}
-        {tab === "portefeuille" && <Portefeuille />}
+        {loading ? (
+          <div className="flex items-center justify-center py-16 text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin" />
+          </div>
+        ) : tab === "courses" ? (
+          <Courses
+            online={online}
+            available={available}
+            current={currentMission}
+            mine={mine}
+            onClaim={handleClaim}
+            onStatus={handleStatus}
+          />
+        ) : tab === "navigation" ? (
+          <NavigationView mission={currentMission} onStatus={handleStatus} />
+        ) : (
+          <Portefeuille earnings={earnings} mine={mine} />
+        )}
       </main>
+    </div>
+  );
+}
+
+function Splash() {
+  return (
+    <div className="flex min-h-screen items-center justify-center text-muted-foreground">
+      <Loader2 className="h-6 w-6 animate-spin" />
+    </div>
+  );
+}
+
+function SignInGate() {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
+      <Bike className="h-10 w-10 text-primary" />
+      <h1 className="font-display text-2xl font-bold">Espace Livreur</h1>
+      <p className="max-w-sm text-sm text-muted-foreground">
+        Connectez-vous pour accéder à vos missions, votre GPS et vos gains en temps réel.
+      </p>
+      <Link
+        to="/connexion"
+        className="rounded-2xl bg-gradient-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-glow"
+      >
+        Se connecter
+      </Link>
     </div>
   );
 }
@@ -69,8 +270,8 @@ function Header({ online, setOnline }: { online: boolean; setOnline: (v: boolean
             <Bike className="h-4 w-4 text-primary-foreground" />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground leading-none">Junior · Moto bleue</p>
-            <p className="text-xs flex items-center gap-1"><Star className="h-3 w-3 text-gold" /> 4.92 · Douala</p>
+            <p className="text-xs text-muted-foreground leading-none">Livreur</p>
+            <p className="text-xs flex items-center gap-1"><Star className="h-3 w-3 text-gold" /> 4.92</p>
           </div>
         </div>
         <button
@@ -89,7 +290,7 @@ function Header({ online, setOnline }: { online: boolean; setOnline: (v: boolean
   );
 }
 
-function Stats({ online }: { online: boolean }) {
+function Stats({ online, earnings }: { online: boolean; earnings: Earnings | null }) {
   return (
     <section className="mx-auto max-w-5xl px-4 pt-4 md:px-8">
       <div className="rounded-3xl border border-border bg-gradient-to-br from-surface via-background to-surface p-5 shadow-card">
@@ -97,7 +298,8 @@ function Stats({ online }: { online: boolean }) {
           <div>
             <p className="text-xs uppercase tracking-widest text-muted-foreground">Gains du jour</p>
             <p className="mt-1 font-display text-4xl font-extrabold text-gradient-primary">
-              12 750 <span className="text-base font-semibold text-muted-foreground">FCFA</span>
+              {(earnings?.earningsToday ?? 0).toLocaleString("fr-FR")}
+              <span className="text-base font-semibold text-muted-foreground"> FCFA</span>
             </p>
           </div>
           <div className={`rounded-full px-3 py-1 text-xs font-semibold ${online ? "bg-emerald-500/15 text-emerald-400" : "bg-surface text-muted-foreground"}`}>
@@ -105,9 +307,9 @@ function Stats({ online }: { online: boolean }) {
           </div>
         </div>
         <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-          <Mini icon={<Package className="h-4 w-4 text-primary" />} value="9" label="Courses" />
-          <Mini icon={<Clock className="h-4 w-4 text-primary" />} value="5h12" label="En ligne" />
-          <Mini icon={<Coins className="h-4 w-4 text-gold" />} value="2 100" label="Pourboires" />
+          <Mini icon={<Package className="h-4 w-4 text-primary" />} value={String(earnings?.countToday ?? 0)} label="Courses" />
+          <Mini icon={<Clock className="h-4 w-4 text-primary" />} value={`${earnings?.countWeek ?? 0}`} label="Sem." />
+          <Mini icon={<Coins className="h-4 w-4 text-gold" />} value={(earnings?.earningsWeek ?? 0).toLocaleString("fr-FR")} label="FCFA 7j" />
         </div>
       </div>
     </section>
@@ -124,86 +326,104 @@ function Mini({ icon, value, label }: { icon: React.ReactNode; value: string; la
   );
 }
 
-const incoming = {
-  resto: "Chez Mama Biya",
-  pickup: "Akwa, rue Joffre",
-  drop: "Bonanjo · Portail bleu derrière la pharmacie",
-  payout: 1850,
-  distance: "3.4 km",
-  eta: "12 min",
-};
+function fmtAddr(a: MissionRow["delivery_address"]) {
+  if (!a) return "—";
+  return [a.line, a.neighborhood, a.city].filter(Boolean).join(" · ");
+}
 
-function Courses({ online, pulse }: { online: boolean; pulse: number }) {
-  const [accepted, setAccepted] = useState(false);
+function Courses({
+  online, available, current, mine, onClaim, onStatus,
+}: {
+  online: boolean;
+  available: MissionRow[];
+  current: MissionRow | null;
+  mine: MissionRow[];
+  onClaim: (id: string) => void;
+  onStatus: (id: string, s: "picked_up" | "delivering" | "delivered" | "cancelled") => void;
+}) {
+  const history = mine.filter((m) => m.status === "delivered").slice(0, 8);
+
   return (
     <div className="space-y-4 py-4">
-      {!online ? (
-        <EmptyOffline />
-      ) : !accepted ? (
-        <div key={pulse} className="animate-fade-up rounded-3xl border border-primary/40 bg-surface/60 p-5 shadow-glow">
-          <div className="flex items-center justify-between">
-            <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-bold text-primary uppercase tracking-wider">
-              Nouvelle course
-            </span>
-            <span className="text-xs text-muted-foreground">expire dans 18s</span>
-          </div>
-          <h3 className="mt-3 font-display text-xl font-bold">{incoming.resto}</h3>
+      {!online && !current && <EmptyOffline />}
 
-          <div className="mt-4 space-y-3 text-sm">
-            <Row icon="🍽️" label="Récupérer" value={incoming.pickup} />
-            <Row icon="📍" label="Livrer à" value={incoming.drop} />
-          </div>
+      {current && <ActiveCourse mission={current} onStatus={onStatus} />}
 
-          <div className="mt-4 flex items-center justify-between rounded-2xl border border-border bg-background/40 p-3">
-            <div className="text-xs text-muted-foreground">
-              <p>{incoming.distance} · {incoming.eta}</p>
+      {online && !current && (
+        <>
+          <h2 className="font-display text-lg font-bold">Missions disponibles</h2>
+          {available.length === 0 ? (
+            <div className="rounded-3xl border border-dashed border-border bg-surface/30 px-6 py-12 text-center text-sm text-muted-foreground">
+              Aucune mission ouverte pour le moment. On vous notifie dès qu'une commande est prête.
             </div>
-            <p className="font-display text-2xl font-bold text-gradient-gold">
-              {incoming.payout.toLocaleString("fr-FR")} <span className="text-xs font-semibold text-muted-foreground">FCFA</span>
-            </p>
-          </div>
-
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            <button className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-background py-3 text-sm font-semibold hover:bg-surface">
-              <X className="h-4 w-4" /> Refuser
-            </button>
-            <button
-              onClick={() => setAccepted(true)}
-              className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3 text-sm font-bold text-primary-foreground shadow-glow transition-transform hover:scale-[1.02]"
-            >
-              <Check className="h-4 w-4" /> Accepter
-            </button>
-          </div>
-        </div>
-      ) : (
-        <ActiveCourse onDone={() => setAccepted(false)} />
+          ) : (
+            <div className="space-y-3">
+              {available.map((m) => (
+                <MissionCard key={m.id} m={m} onClaim={onClaim} />
+              ))}
+            </div>
+          )}
+        </>
       )}
 
-      <div>
-        <h2 className="mt-6 font-display text-lg font-bold">Historique du jour</h2>
-        <div className="mt-3 space-y-2">
-          {[
-            { id: "MBE-2840", resto: "Saveurs du Mboa", amount: 1450, tip: 200, time: "13:42" },
-            { id: "MBE-2839", resto: "Le Wouri Grill", amount: 2300, tip: 500, time: "12:18" },
-            { id: "MBE-2838", resto: "Suya King", amount: 1100, tip: 0, time: "11:05" },
-          ].map((r) => (
-            <div key={r.id} className="flex items-center justify-between rounded-2xl border border-border bg-surface/40 p-3">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <Check className="h-4 w-4" />
+      {history.length > 0 && (
+        <div>
+          <h2 className="mt-6 font-display text-lg font-bold">Historique récent</h2>
+          <div className="mt-3 space-y-2">
+            {history.map((r) => (
+              <div key={r.id} className="flex items-center justify-between rounded-2xl border border-border bg-surface/40 p-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <Check className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold">{r.restaurants?.name ?? "Restaurant"}</p>
+                    <p className="text-xs text-muted-foreground">#{r.reference}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-semibold">{r.resto}</p>
-                  <p className="text-xs text-muted-foreground">#{r.id} · {r.time}</p>
-                </div>
+                <p className="text-sm font-bold">{(r.delivery_fee ?? 0).toLocaleString("fr-FR")} FCFA</p>
               </div>
-              <div className="text-right">
-                <p className="text-sm font-bold">{r.amount.toLocaleString("fr-FR")} FCFA</p>
-                {r.tip > 0 && <p className="text-xs text-gold">+{r.tip} pourboire</p>}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
+      )}
+    </div>
+  );
+}
+
+function MissionCard({ m, onClaim }: { m: MissionRow; onClaim: (id: string) => void }) {
+  return (
+    <div className="animate-fade-up rounded-3xl border border-primary/40 bg-surface/60 p-5 shadow-glow">
+      <div className="flex items-center justify-between">
+        <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-bold text-primary uppercase tracking-wider">
+          Nouvelle course
+        </span>
+        <span className="text-xs text-muted-foreground">#{m.reference}</span>
+      </div>
+      <h3 className="mt-3 font-display text-xl font-bold">{m.restaurants?.name ?? "Restaurant"}</h3>
+      <div className="mt-4 space-y-3 text-sm">
+        <Row icon="🍽️" label="Récupérer" value={[m.restaurants?.address, m.restaurants?.neighborhood].filter(Boolean).join(" · ") || "—"} />
+        <Row icon="📍" label="Livrer à" value={fmtAddr(m.delivery_address)} />
+      </div>
+      <div className="mt-4 flex items-center justify-between rounded-2xl border border-border bg-background/40 p-3">
+        <div className="text-xs text-muted-foreground">
+          <p>Statut: {m.status} · ETA {m.eta_minutes ?? "—"} min</p>
+        </div>
+        <p className="font-display text-2xl font-bold text-gradient-gold">
+          {(m.delivery_fee ?? 0).toLocaleString("fr-FR")}
+          <span className="text-xs font-semibold text-muted-foreground"> FCFA</span>
+        </p>
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <button className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-background py-3 text-sm font-semibold hover:bg-surface">
+          <X className="h-4 w-4" /> Passer
+        </button>
+        <button
+          onClick={() => onClaim(m.id)}
+          className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3 text-sm font-bold text-primary-foreground shadow-glow transition-transform hover:scale-[1.02]"
+        >
+          <Check className="h-4 w-4" /> Accepter
+        </button>
       </div>
     </div>
   );
@@ -227,73 +447,120 @@ function EmptyOffline() {
       <Power className="h-10 w-10 text-muted-foreground" />
       <h3 className="font-display text-xl font-bold">Vous êtes hors ligne</h3>
       <p className="text-sm text-muted-foreground max-w-xs">
-        Activez "En ligne" en haut à droite pour recevoir de nouvelles courses dans votre zone.
+        Activez "En ligne" en haut à droite pour partager votre position GPS et recevoir les missions de votre zone.
       </p>
     </div>
   );
 }
 
-function ActiveCourse({ onDone }: { onDone: () => void }) {
+function ActiveCourse({
+  mission, onStatus,
+}: {
+  mission: MissionRow;
+  onStatus: (id: string, s: "picked_up" | "delivering" | "delivered" | "cancelled") => void;
+}) {
+  const next = nextStatus(mission.status);
   return (
     <div className="rounded-3xl border border-emerald-500/30 bg-emerald-500/5 p-5">
       <div className="flex items-center justify-between">
         <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-400 uppercase tracking-wider">
           Course en cours
         </span>
-        <span className="text-xs text-muted-foreground">#MBE-2841</span>
+        <span className="text-xs text-muted-foreground">#{mission.reference}</span>
       </div>
-      <h3 className="mt-2 font-display text-xl font-bold">{incoming.resto}</h3>
-      <p className="mt-1 text-sm text-muted-foreground">{incoming.drop}</p>
+      <h3 className="mt-2 font-display text-xl font-bold">{mission.restaurants?.name ?? "Restaurant"}</h3>
+      <p className="mt-1 text-sm text-muted-foreground">{fmtAddr(mission.delivery_address)}</p>
+      <p className="mt-1 text-xs text-muted-foreground">Étape : {labelStatus(mission.status)}</p>
 
       <div className="mt-4 grid grid-cols-2 gap-2">
-        <button className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-background py-3 text-sm font-semibold">
-          <Phone className="h-4 w-4" /> Client
+        <button
+          onClick={() => onStatus(mission.id, "cancelled")}
+          className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-background py-3 text-sm font-semibold"
+        >
+          <X className="h-4 w-4" /> Annuler
         </button>
-        <button className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3 text-sm font-bold text-primary-foreground">
-          <Navigation className="h-4 w-4" /> Naviguer
-        </button>
+        {next && (
+          <button
+            onClick={() => onStatus(mission.id, next.value)}
+            className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3 text-sm font-bold text-primary-foreground shadow-glow"
+          >
+            <Check className="h-4 w-4" /> {next.label}
+          </button>
+        )}
       </div>
 
-      <button
-        onClick={onDone}
-        className="mt-3 w-full rounded-2xl border border-emerald-500/40 bg-emerald-500/10 py-3 text-sm font-bold text-emerald-300 hover:bg-emerald-500/20"
-      >
-        Marquer comme livré · +1 850 FCFA
-      </button>
+      {mission.status === "delivering" && (
+        <button
+          onClick={() => onStatus(mission.id, "delivered")}
+          className="mt-3 w-full rounded-2xl border border-emerald-500/40 bg-emerald-500/10 py-3 text-sm font-bold text-emerald-300 hover:bg-emerald-500/20"
+        >
+          Marquer livré · +{(mission.delivery_fee ?? 0).toLocaleString("fr-FR")} FCFA
+        </button>
+      )}
     </div>
   );
 }
 
-function NavigationView() {
+function nextStatus(s: string): { value: "picked_up" | "delivering" | "delivered"; label: string } | null {
+  if (["accepted", "preparing", "ready"].includes(s)) return { value: "picked_up", label: "Récupéré" };
+  if (s === "picked_up") return { value: "delivering", label: "En route" };
+  if (s === "delivering") return { value: "delivered", label: "Livré" };
+  return null;
+}
+function labelStatus(s: string) {
+  return ({
+    accepted: "Acceptée par le resto",
+    preparing: "En préparation",
+    ready: "Prête à récupérer",
+    picked_up: "Récupérée",
+    delivering: "En route vers le client",
+  } as Record<string, string>)[s] ?? s;
+}
+
+function NavigationView({
+  mission, onStatus,
+}: {
+  mission: MissionRow | null;
+  onStatus: (id: string, s: "picked_up" | "delivering" | "delivered" | "cancelled") => void;
+}) {
+  if (!mission) {
+    return (
+      <div className="rounded-3xl border border-dashed border-border bg-surface/30 px-6 py-16 text-center text-sm text-muted-foreground">
+        Aucune course active. Acceptez une mission pour activer la navigation.
+      </div>
+    );
+  }
   return (
     <div className="space-y-4 py-4">
       <div className="relative overflow-hidden rounded-3xl border border-border shadow-card aspect-[4/3]">
         <MapboxMock />
         <div className="absolute left-4 right-4 top-4 rounded-2xl glass p-3">
-          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Prochaine étape</p>
-          <p className="font-display text-lg font-bold">Tournez à droite sur Bd. de la Liberté</p>
-          <p className="text-xs text-muted-foreground">Dans 280 m</p>
+          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Destination</p>
+          <p className="font-display text-lg font-bold">{fmtAddr(mission.delivery_address)}</p>
+          <p className="text-xs text-muted-foreground">Étape : {labelStatus(mission.status)}</p>
         </div>
 
         <div className="absolute bottom-4 left-4 right-4 grid grid-cols-3 gap-2 rounded-2xl border border-border bg-surface/90 p-3 backdrop-blur">
-          <NavStat label="ETA" value="12 min" />
-          <NavStat label="Distance" value="3.4 km" />
-          <NavStat label="Trafic" value="Fluide" tone="emerald" />
+          <NavStat label="ETA" value={`${mission.eta_minutes ?? "—"} min`} />
+          <NavStat label="Gain" value={`${(mission.delivery_fee ?? 0).toLocaleString("fr-FR")}`} />
+          <NavStat label="Statut" value={mission.status} tone="emerald" />
         </div>
       </div>
 
-      <div className="rounded-3xl border border-border bg-surface/60 p-4">
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">Note du client</p>
-        <p className="mt-1 text-sm font-medium">"Maison à côté de l'école St-Michel, klaxonner devant le portail bleu, le chien est gentil."</p>
-      </div>
-
       <div className="grid grid-cols-2 gap-3">
-        <button className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface/60 py-3 text-sm font-semibold">
-          <MapPin className="h-4 w-4 text-primary" /> Recentrer
+        <button
+          onClick={() => onStatus(mission.id, "delivering")}
+          className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface/60 py-3 text-sm font-semibold"
+        >
+          <MapPin className="h-4 w-4 text-primary" /> En route
         </button>
-        <button className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3 text-sm font-bold text-primary-foreground shadow-glow">
-          <Navigation className="h-4 w-4" /> Itinéraire alternatif
-        </button>
+        <a
+          href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fmtAddr(mission.delivery_address))}`}
+          target="_blank" rel="noreferrer"
+          className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3 text-sm font-bold text-primary-foreground shadow-glow"
+        >
+          <Navigation className="h-4 w-4" /> Ouvrir GPS
+        </a>
       </div>
     </div>
   );
@@ -317,54 +584,38 @@ function MapboxMock() {
         </pattern>
       </defs>
       <rect width="400" height="300" fill="url(#g)" />
-      {/* Roads */}
       <path d="M0 220 L 400 180" stroke="hsl(var(--muted-foreground) / 0.25)" strokeWidth="18" strokeLinecap="round" />
       <path d="M120 0 L 180 300" stroke="hsl(var(--muted-foreground) / 0.25)" strokeWidth="14" strokeLinecap="round" />
-      <path d="M40 60 Q 200 80 380 40" stroke="hsl(var(--muted-foreground) / 0.2)" strokeWidth="10" strokeLinecap="round" />
-      {/* Route */}
-      <path
-        d="M60 250 Q 140 220 170 180 T 320 80"
-        stroke="hsl(var(--primary))"
-        strokeWidth="5"
-        strokeLinecap="round"
-        fill="none"
-      />
-      {/* Driver */}
+      <path d="M60 250 Q 140 220 170 180 T 320 80" stroke="hsl(var(--primary))" strokeWidth="5" strokeLinecap="round" fill="none" />
       <g transform="translate(140, 215)">
         <circle r="22" fill="hsl(var(--primary) / 0.3)">
           <animate attributeName="r" values="18;28;18" dur="1.5s" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="0.6;0;0.6" dur="1.5s" repeatCount="indefinite" />
         </circle>
         <circle r="13" fill="hsl(var(--primary))" stroke="white" strokeWidth="2" />
         <text textAnchor="middle" dy="5" fontSize="13">🛵</text>
-      </g>
-      {/* Destination */}
-      <g transform="translate(320, 80)">
-        <path d="M0,-18 L6,-4 L20,-2 L9,7 L13,21 L0,13 L-13,21 L-9,7 L-20,-2 L-6,-4 Z" fill="hsl(var(--gold))" />
       </g>
     </svg>
   );
 }
 
-function Portefeuille() {
-  const balance = 47200;
-  const week = useMemo(() => [
-    { d: "Lun", v: 8200 }, { d: "Mar", v: 11400 }, { d: "Mer", v: 7600 },
-    { d: "Jeu", v: 13800 }, { d: "Ven", v: 15200 }, { d: "Sam", v: 18900 }, { d: "Dim", v: 12750 },
-  ], []);
-  const max = Math.max(...week.map((d) => d.v));
+function Portefeuille({ earnings, mine }: { earnings: Earnings | null; mine: MissionRow[] }) {
+  const week = earnings?.week ?? [];
+  const max = Math.max(1, ...week.map((d) => d.v));
+  const balance = earnings?.earningsWeek ?? 0;
+  const recent = mine.filter((m) => m.status === "delivered").slice(0, 6);
 
   return (
     <div className="space-y-5 py-4">
       <div className="relative overflow-hidden rounded-3xl border border-gold/40 bg-gradient-to-br from-surface via-background to-surface p-6 shadow-card">
         <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-gold/30 blur-3xl" />
         <div className="relative">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">Solde disponible</p>
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">Gains 7 jours</p>
           <p className="mt-2 font-display text-5xl font-extrabold text-gradient-gold">
-            {balance.toLocaleString("fr-FR")} <span className="text-base font-semibold text-muted-foreground">FCFA</span>
+            {balance.toLocaleString("fr-FR")}
+            <span className="text-base font-semibold text-muted-foreground"> FCFA</span>
           </p>
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <button className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3 text-sm font-bold text-primary-foreground shadow-glow transition-transform hover:scale-[1.02]">
+            <button className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3 text-sm font-bold text-primary-foreground shadow-glow">
               <Wallet className="h-4 w-4" /> Retirer MTN MoMo
             </button>
             <button className="flex items-center justify-center gap-2 rounded-2xl border border-gold/40 bg-gold/10 py-3 text-sm font-bold text-gold hover:bg-gold/20">
@@ -374,15 +625,14 @@ function Portefeuille() {
         </div>
       </div>
 
-      {/* Bar chart */}
       <div className="rounded-3xl border border-border bg-surface/60 p-5">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs uppercase tracking-wider text-muted-foreground">Cette semaine</p>
-            <p className="mt-1 font-display text-2xl font-bold">87 850 FCFA</p>
+            <p className="mt-1 font-display text-2xl font-bold">{balance.toLocaleString("fr-FR")} FCFA</p>
           </div>
           <span className="flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-1 text-xs font-bold text-emerald-400">
-            <TrendingUp className="h-3 w-3" /> +18%
+            <TrendingUp className="h-3 w-3" /> {earnings?.countWeek ?? 0} courses
           </span>
         </div>
 
@@ -391,7 +641,7 @@ function Portefeuille() {
             const h = (d.v / max) * 100;
             const isToday = i === week.length - 1;
             return (
-              <div key={d.d} className="flex flex-1 flex-col items-center gap-1.5">
+              <div key={i} className="flex flex-1 flex-col items-center gap-1.5">
                 <div className="flex w-full flex-1 items-end">
                   <div
                     className={`w-full rounded-t-lg ${isToday ? "bg-gradient-to-t from-primary to-gold shadow-glow" : "bg-primary/30"}`}
@@ -405,58 +655,27 @@ function Portefeuille() {
         </div>
       </div>
 
-      {/* Tips & breakdown */}
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="rounded-2xl border border-border bg-surface/60 p-4">
-          <div className="flex items-center gap-2">
-            <Coins className="h-4 w-4 text-gold" />
-            <p className="text-sm font-semibold">Pourboires (7j)</p>
-          </div>
-          <p className="mt-2 font-display text-2xl font-bold text-gradient-gold">9 350 FCFA</p>
-          <p className="text-xs text-muted-foreground">Reçu de 14 clients · 100% à vous</p>
-        </div>
-        <div className="rounded-2xl border border-border bg-surface/60 p-4">
-          <div className="flex items-center gap-2">
-            <Flame className="h-4 w-4 text-primary" />
-            <p className="text-sm font-semibold">Bonus pluie</p>
-          </div>
-          <p className="mt-2 font-display text-2xl font-bold">+2 400 FCFA</p>
-          <p className="text-xs text-muted-foreground">Actif jusqu'à 21h00 ce soir</p>
-        </div>
-      </div>
-
-      {/* Transactions */}
       <div>
-        <h3 className="font-display text-lg font-bold">Dernières transactions</h3>
+        <h3 className="font-display text-lg font-bold flex items-center gap-2"><ShoppingBag className="h-4 w-4" /> Dernières courses</h3>
         <div className="mt-3 divide-y divide-border rounded-2xl border border-border bg-surface/40">
-          {[
-            { label: "Course MBE-2840", amount: 1650, type: "in", time: "13:42" },
-            { label: "Pourboire client", amount: 200, type: "tip", time: "13:42" },
-            { label: "Retrait MTN MoMo", amount: -10000, type: "out", time: "Hier 19:00" },
-            { label: "Course MBE-2839", amount: 2800, type: "in", time: "Hier 18:20" },
-          ].map((t, i) => (
-            <div key={i} className="flex items-center justify-between p-3">
+          {recent.length === 0 && (
+            <p className="p-4 text-sm text-muted-foreground">Pas encore de courses livrées.</p>
+          )}
+          {recent.map((r) => (
+            <div key={r.id} className="flex items-center justify-between p-3">
               <div className="flex items-center gap-3">
-                <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${
-                  t.type === "out" ? "bg-red-500/10 text-red-400" :
-                  t.type === "tip" ? "bg-gold/10 text-gold" : "bg-primary/10 text-primary"
-                }`}>
-                  {t.type === "out" ? <Wallet className="h-4 w-4" /> : t.type === "tip" ? <Coins className="h-4 w-4" /> : <Check className="h-4 w-4" />}
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <Check className="h-4 w-4" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold">{t.label}</p>
-                  <p className="text-xs text-muted-foreground">{t.time}</p>
+                  <p className="text-sm font-semibold">{r.restaurants?.name ?? "Course"}</p>
+                  <p className="text-xs text-muted-foreground">#{r.reference}</p>
                 </div>
               </div>
-              <p className={`text-sm font-bold ${t.amount < 0 ? "text-red-400" : ""}`}>
-                {t.amount > 0 ? "+" : ""}{t.amount.toLocaleString("fr-FR")} FCFA
-              </p>
+              <p className="text-sm font-bold">+{(r.delivery_fee ?? 0).toLocaleString("fr-FR")} FCFA</p>
             </div>
           ))}
         </div>
-        <button className="mt-3 flex w-full items-center justify-center gap-1 rounded-2xl border border-border bg-surface/40 py-3 text-sm font-semibold text-muted-foreground hover:text-foreground">
-          Voir tout l'historique <ChevronRight className="h-4 w-4" />
-        </button>
       </div>
     </div>
   );
