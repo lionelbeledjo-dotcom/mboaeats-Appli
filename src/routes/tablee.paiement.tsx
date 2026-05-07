@@ -71,6 +71,12 @@ function TableePaiement() {
     setStep("loading");
     setTimeout(() => {
       setStep("done");
+      try {
+        sessionStorage.setItem(
+          "tablee:lastPaid",
+          JSON.stringify({ participant, amount: total, at: Date.now() }),
+        );
+      } catch {}
       setTimeout(() => navigate({ to: "/tablee" }), 1600);
     }, 1200);
   };
