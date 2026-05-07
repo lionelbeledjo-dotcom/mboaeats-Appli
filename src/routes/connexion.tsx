@@ -288,8 +288,7 @@ function Connexion() {
 
                 <p className="flex items-start gap-2 text-[11px] leading-snug text-muted-foreground">
                   <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-                  Mode test : aucun message réel n'est envoyé. Code universel{" "}
-                  <span className="font-semibold text-foreground">123456</span>.
+                  Un code à 6 chiffres vous sera envoyé par SMS pour confirmer votre identité.
                 </p>
 
                 {error && (
