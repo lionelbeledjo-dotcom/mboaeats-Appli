@@ -129,13 +129,14 @@ export const verifyOtp = createServerFn({ method: "POST" })
       .update({ consumed_at: new Date().toISOString() })
       .eq("id", row.id);
 
-    const session = await getMboaSession();
     await session.update({
       mode: "phone",
       identifier: phone,
       phone,
       channel: "sms",
       loggedAt: Date.now(),
+      pendingPhone: undefined,
+      pendingPhoneAt: undefined,
     });
 
     return { ok: true, phone };
