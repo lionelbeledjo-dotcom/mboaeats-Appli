@@ -31,9 +31,15 @@ function Checkout() {
   const initiate = useServerFn(initiatePayment);
   const verify = useServerFn(verifyPayment);
   const fetchPass = useServerFn(getActiveMboaPass);
+  const createOrderFn = useServerFn(createOrder);
+  const markPaidFn = useServerFn(markOrderPaid);
 
   const { items: cartItems, subtotal } = useCart();
-  const cart = cartItems.map((i: { name: string; qty: number; price: number }) => ({ name: i.name, qty: i.qty, price: i.price }));
+  const cart = cartItems.map((i) => ({ name: i.name, qty: i.qty, price: i.price }));
+  // Items provenant de la base (préfixés "db__") → vraie commande live
+  const dbItems = cartItems.filter((i) => i.id.startsWith("db__"));
+  const isLiveOrder = dbItems.length > 0;
+  const liveRestoId = dbItems[0]?.restoId ?? null;
   const [hasPass, setHasPass] = useState(false);
   const [promo, setPromo] = useState<{ code: string; discount: number } | null>(null);
   const delivery = hasPass || subtotal === 0 ? 0 : 800;
@@ -49,6 +55,7 @@ function Checkout() {
   const [topError, setTopError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [seconds, setSeconds] = useState(20);
+  const [liveOrderId, setLiveOrderId] = useState<string | null>(null);
 
   // Détection MboaPass (livraison gratuite)
   useEffect(() => {
