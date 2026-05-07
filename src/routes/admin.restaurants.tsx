@@ -4,10 +4,11 @@ import {
   Store, Star, CheckCircle2, PauseCircle, Loader2, Search,
   MapPin, Utensils, ShieldCheck, ShieldOff, Filter, Eye, X,
   Phone, User, FileCheck2, FileX2, Hash, Image as ImageIcon, Clock,
+  Pencil, Save, Crosshair,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { listAllRestaurants, setRestaurantActive, getRestaurantDetails } from "@/server/admin.functions";
+import { listAllRestaurants, setRestaurantActive, getRestaurantDetails, updateRestaurantLocation } from "@/server/admin.functions";
 import RestaurantMap from "@/components/admin/RestaurantMap";
 
 export const Route = createFileRoute("/admin/restaurants")({
