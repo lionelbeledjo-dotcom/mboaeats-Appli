@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Package, Clock, CheckCircle2, ChevronRight, MapPin } from "lucide-react";
 import { orders, type Order } from "@/data/orders";
 
@@ -69,7 +69,7 @@ function CommandesPage() {
                   <span className="text-sm font-bold text-primary">{o.total.toLocaleString("fr-FR")} FCFA</span>
                   {o.status === "en_cours" ? (
                     <Link to="/suivi" className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
-                      <MapPin className="h-3.5 w-3.5" /> Suivre · {o.eta}
+                      <MapPin className="h-3.5 w-3.5" /> Suivre · <EtaCountdown id={o.id} eta={o.eta} />
                       <ChevronRight className="h-3.5 w-3.5" />
                     </Link>
                   ) : (
@@ -101,4 +101,42 @@ function StatusBadge({ status }: { status: Order["status"] }) {
       </span>
     );
   return <span className="rounded-full bg-muted px-2 py-1 text-[10px] font-bold">Annulée</span>;
+}
+
+const DEADLINE_KEY = "mboa_eta_deadlines_v1";
+
+function getDeadline(id: string, eta?: string): number {
+  const minutes = eta ? parseInt(eta, 10) : NaN;
+  const fallbackMs = (Number.isFinite(minutes) ? minutes : 15) * 60_000;
+  try {
+    const raw = localStorage.getItem(DEADLINE_KEY);
+    const map: Record<string, number> = raw ? JSON.parse(raw) : {};
+    if (typeof map[id] === "number") return map[id];
+    map[id] = Date.now() + fallbackMs;
+    localStorage.setItem(DEADLINE_KEY, JSON.stringify(map));
+    return map[id];
+  } catch {
+    return Date.now() + fallbackMs;
+  }
+}
+
+function EtaCountdown({ id, eta }: { id: string; eta?: string }) {
+  const deadline = useMemo(() => getDeadline(id, eta), [id, eta]);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const t = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(t);
+  }, []);
+
+  const remaining = Math.max(0, deadline - now);
+  const m = Math.floor(remaining / 60_000);
+  const s = Math.floor((remaining % 60_000) / 1000);
+  const label = remaining === 0 ? "Arrivée imminente" : `${m}:${s.toString().padStart(2, "0")}`;
+
+  return (
+    <span className="tabular-nums" aria-live="polite">
+      {label}
+    </span>
+  );
 }
