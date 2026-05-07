@@ -15,7 +15,7 @@ export const Route = createFileRoute("/connexion")({
   }),
 });
 
-const DEMO_CODE = "123456";
+
 
 const COUNTRIES: { code: string; dial: string; flag: string; name: string }[] = [
   { code: "CM", dial: "+237", flag: "🇨🇲", name: "Cameroun" },
