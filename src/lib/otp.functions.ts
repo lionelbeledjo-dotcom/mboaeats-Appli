@@ -13,10 +13,11 @@ function hashCode(phone: string, code: string) {
 }
 
 function normalizePhone(phone: string) {
-  const trimmed = phone.trim().replace(/\s+/g, "");
-  if (!trimmed.startsWith("+")) throw new Error("Numéro invalide (format E.164 requis, ex: +237...)");
-  if (!/^\+\d{6,15}$/.test(trimmed)) throw new Error("Numéro invalide");
-  return trimmed;
+  const trimmed = phone.trim();
+  const digits = trimmed.replace(/\D/g, "");
+  const normalized = trimmed.startsWith("+") ? `+${digits}` : `+${digits}`;
+  if (!/^\+\d{6,15}$/.test(normalized)) throw new Error("Numéro invalide");
+  return normalized;
 }
 
 async function sendSms(to: string, body: string) {
@@ -135,14 +136,37 @@ export const verifyOtp = createServerFn({ method: "POST" })
     const sanitized = phone.replace(/[^\d]/g, "");
     const syntheticEmail = `phone-${sanitized}@phone.mboaeats.local`;
 
+    const { data: existingUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers({
+      page: 1,
+      perPage: 100,
+    });
+    if (listError) {
+      console.error("listUsers error", listError);
+    }
+    const existingUser = existingUsers?.users.find(
+      (user) => user.email?.toLowerCase() === syntheticEmail.toLowerCase()
+    );
+
     // 1) Créer l'utilisateur s'il n'existe pas (idempotent — ignore l'erreur "déjà existant")
-    await supabaseAdmin.auth.admin.createUser({
-      email: syntheticEmail,
-      phone,
-      email_confirm: true,
-      phone_confirm: true,
-      user_metadata: { phone, login_method: "otp_sms" },
-    }).catch(() => undefined);
+    if (!existingUser) {
+      await supabaseAdmin.auth.admin.createUser({
+        email: syntheticEmail,
+        phone,
+        email_confirm: true,
+        phone_confirm: true,
+        user_metadata: { phone, login_method: "otp_sms" },
+      }).catch((error) => {
+        console.error("create phone user error", error);
+      });
+    } else if (existingUser.user_metadata?.phone !== phone || existingUser.phone !== phone.replace(/^\+/, "")) {
+      await supabaseAdmin.auth.admin.updateUserById(existingUser.id, {
+        phone,
+        phone_confirm: true,
+        user_metadata: { ...existingUser.user_metadata, phone, login_method: "otp_sms" },
+      }).catch((error) => {
+        console.error("update phone user error", error);
+      });
+    }
 
     // 2) Générer un magic link admin pour récupérer un hashed_token utilisable côté client
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
