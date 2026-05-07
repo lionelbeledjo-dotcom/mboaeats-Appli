@@ -264,6 +264,146 @@ function Restaurants() {
           Aucun restaurant ne correspond à ce filtre.
         </p>
       )}
+
+      {openId && (
+        <DetailsModal
+          loading={detailsLoading}
+          details={details}
+          onClose={() => { setOpenId(null); setDetails(null); }}
+        />
+      )}
+    </div>
+  );
+}
+
+function Row({ icon: Icon, label, value }: { icon: any; label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex items-start gap-3 rounded-xl border border-border bg-background/40 p-3">
+      <Icon className="mt-0.5 h-4 w-4 text-muted-foreground" />
+      <div className="min-w-0 flex-1">
+        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
+        <p className="break-words text-sm font-medium">{value ?? <span className="text-muted-foreground">—</span>}</p>
+      </div>
+    </div>
+  );
+}
+
+function DocBadge({ ok, label }: { ok: boolean; label: string }) {
+  return (
+    <div className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold ${ok ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400" : "border-gold/40 bg-gold/10 text-gold"}`}>
+      {ok ? <FileCheck2 className="h-4 w-4" /> : <FileX2 className="h-4 w-4" />}
+      {label}
+    </div>
+  );
+}
+
+function DetailsModal({ loading, details, onClose }: { loading: boolean; details: Details; onClose: () => void }) {
+  const r = details?.restaurant;
+  const owner = details?.owner;
+  const hasCover = !!r?.cover_url;
+  const hasLogo = !!r?.image_url;
+  const hasGeo = !!(r?.lat && r?.lng);
+  const hasHours = r?.opening_hours && Object.keys(r.opening_hours).length > 0;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur" onClick={onClose}>
+      <div
+        className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl border border-border bg-surface shadow-glow"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background/80 text-muted-foreground hover:text-foreground"
+          aria-label="Fermer"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
+        {loading || !r ? (
+          <div className="flex h-64 items-center justify-center">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <div className="space-y-6 p-6">
+            {/* Cover + identité */}
+            <div className="overflow-hidden rounded-2xl border border-border">
+              {r.cover_url ? (
+                <img src={r.cover_url} alt={r.name} className="h-40 w-full object-cover" />
+              ) : (
+                <div className="flex h-40 items-center justify-center bg-gradient-primary/20 text-muted-foreground">
+                  <ImageIcon className="h-8 w-8" />
+                </div>
+              )}
+              <div className="flex items-center gap-4 p-4">
+                {r.image_url ? (
+                  <img src={r.image_url} alt="" className="h-14 w-14 rounded-2xl object-cover" />
+                ) : (
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-primary">
+                    <Store className="h-6 w-6 text-primary-foreground" />
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <h2 className="font-display text-xl font-bold">{r.name}</h2>
+                  <p className="text-xs text-muted-foreground">{r.cuisine} · {r.city}{r.neighborhood ? ` · ${r.neighborhood}` : ""}</p>
+                </div>
+                <span className={`rounded-full px-3 py-1 text-[11px] font-bold ${r.is_active ? "bg-emerald-500/15 text-emerald-400" : "bg-gold/15 text-gold"}`}>
+                  {r.is_active ? "Actif" : "En attente"}
+                </span>
+              </div>
+            </div>
+
+            {/* Vérification documents */}
+            <div>
+              <h3 className="mb-2 text-sm font-bold">Documents & vérification</h3>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <DocBadge ok={!!r.owner_id} label="Propriétaire lié" />
+                <DocBadge ok={hasLogo} label="Logo" />
+                <DocBadge ok={hasCover} label="Couverture" />
+                <DocBadge ok={hasGeo} label="Géolocalisation" />
+                <DocBadge ok={!!r.address} label="Adresse" />
+                <DocBadge ok={!!hasHours} label="Horaires" />
+                <DocBadge ok={(details?.stats.dishes ?? 0) > 0} label={`${details?.stats.dishes ?? 0} plats`} />
+                <DocBadge ok={r.is_open !== false} label={r.is_open === false ? "Fermé" : "Ouvert"} />
+              </div>
+            </div>
+
+            {/* Coordonnées propriétaire */}
+            <div>
+              <h3 className="mb-2 text-sm font-bold">Coordonnées du propriétaire</h3>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Row icon={User} label="Nom" value={owner?.full_name ?? "—"} />
+                <Row icon={Phone} label="Téléphone" value={owner?.phone ?? "—"} />
+                <Row icon={MapPin} label="Ville" value={owner?.city ?? "—"} />
+                <Row icon={Hash} label="Owner ID" value={r.owner_id ? <code className="text-[11px]">{r.owner_id}</code> : "—"} />
+              </div>
+            </div>
+
+            {/* Adresse & géo */}
+            <div>
+              <h3 className="mb-2 text-sm font-bold">Adresse & localisation</h3>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Row icon={MapPin} label="Adresse" value={r.address ?? "—"} />
+                <Row icon={MapPin} label="Ville / Quartier" value={`${r.city}${r.neighborhood ? ` · ${r.neighborhood}` : ""}`} />
+                <Row icon={Hash} label="Latitude" value={r.lat ?? "—"} />
+                <Row icon={Hash} label="Longitude" value={r.lng ?? "—"} />
+              </div>
+            </div>
+
+            {/* Métriques opérationnelles */}
+            <div>
+              <h3 className="mb-2 text-sm font-bold">Opérations</h3>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Row icon={Clock} label="ETA livraison" value={`${r.eta_min ?? "—"}–${r.eta_max ?? "—"} min`} />
+                <Row icon={Utensils} label="Frais de livraison" value={`${r.delivery_fee ?? 0} FCFA`} />
+                <Row icon={Hash} label="Min. commande" value={`${r.min_order ?? 0} FCFA`} />
+                <Row icon={Star} label="Note" value={`${r.rating ?? "—"} (${r.reviews_count ?? 0} avis)`} />
+                <Row icon={Hash} label="Slug" value={r.slug} />
+                <Row icon={Hash} label="Commandes total" value={details?.stats.orders ?? 0} />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
