@@ -49,6 +49,15 @@ function ProfilPage() {
       setAuthedSb(true);
       if (u.email) setAuthEmail(u.email);
       try {
+        const { data: role } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", u.id)
+          .eq("role", "admin")
+          .maybeSingle();
+        setIsAdmin(!!role);
+      } catch {}
+      try {
         const [p, l] = await Promise.all([getMyProfile(), getMyLoyalty()]);
         setProfile(p.profile ?? null);
         setForm({
