@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Search, MapPin, Star, Clock, Flame, Bell, ChevronRight, Plus, Users, ArrowRight,
 } from "lucide-react";
 
 import { restaurants as realRestaurants, getRestaurant } from "@/data/restaurants";
 import MboaExpressAssistant from "@/components/MboaExpressAssistant";
+import QuickLogin from "@/components/QuickLogin";
 
 // Pre-cache decoded images so menu pages render instantly on hover/intent.
 const imageCache = new Set<string>();
