@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.tg_notify_order_status() FROM PUBLIC, anon, authenticated;
