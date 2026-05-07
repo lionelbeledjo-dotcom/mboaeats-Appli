@@ -3,11 +3,11 @@ import { useEffect, useState } from "react";
 import {
   User, Crown, MapPin, CreditCard, Bell, Shield, HelpCircle,
   LogOut, ChevronRight, Heart, Bike, Store, Sparkles, Volume2, VolumeX,
+  Loader2, Check,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { isCartSoundEnabled, setCartSoundEnabled, CART_SOUND_EVT } from "@/lib/cart-sound";
-
-type DemoUser = { mode?: "phone" | "email"; identifier?: string };
+import { getMyProfile, upsertMyProfile, getMyLoyalty } from "@/server/account.functions";
 
 export const Route = createFileRoute("/profil")({
   head: () => ({
@@ -23,32 +23,57 @@ function ProfilPage() {
   const navigate = useNavigate();
   const [confirm, setConfirm] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
-  const [demoUser, setDemoUser] = useState<DemoUser | null>(null);
   const [authEmail, setAuthEmail] = useState<string | null>(null);
+  const [authed, setAuthed] = useState(false);
   const [soundOn, setSoundOn] = useState(false);
+  const [profile, setProfile] = useState<{ full_name: string | null; phone: string | null; city: string | null } | null>(null);
+  const [loyalty, setLoyalty] = useState<{ points: number; currentTier: string } | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({ full_name: "", phone: "", city: "Douala" });
+  const [saving, setSaving] = useState(false);
+  const [savedFlash, setSavedFlash] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("mboa_demo_user");
-      if (raw) setDemoUser(JSON.parse(raw));
-    } catch {}
     setSoundOn(isCartSoundEnabled());
     const sync = () => setSoundOn(isCartSoundEnabled());
     window.addEventListener(CART_SOUND_EVT, sync);
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user?.email) setAuthEmail(data.user.email);
+
+    supabase.auth.getUser().then(async ({ data }) => {
+      const u = data.user;
+      if (!u) return;
+      setAuthed(true);
+      if (u.email) setAuthEmail(u.email);
+      try {
+        const [p, l] = await Promise.all([getMyProfile(), getMyLoyalty()]);
+        setProfile(p.profile ?? null);
+        setForm({
+          full_name: p.profile?.full_name ?? "",
+          phone: p.profile?.phone ?? u.phone ?? "",
+          city: p.profile?.city ?? "Douala",
+        });
+        setLoyalty({ points: l.points, currentTier: l.currentTier });
+      } catch {}
     }).catch(() => {});
+
     return () => window.removeEventListener(CART_SOUND_EVT, sync);
   }, []);
 
-  const identifier = authEmail || demoUser?.identifier || "Invité";
-  const displayName =
-    authEmail
-      ? authEmail.split("@")[0]
-      : demoUser?.mode === "email" && demoUser.identifier
-        ? demoUser.identifier.split("@")[0]
-        : demoUser?.identifier || "Mon compte";
+  const identifier = authEmail || profile?.phone || "Invité";
+  const displayName = profile?.full_name || (authEmail ? authEmail.split("@")[0] : "Mon compte");
   const initials = (displayName.match(/[a-zA-Z]/g) || ["U"]).slice(0, 2).join("").toUpperCase();
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await upsertMyProfile({ data: form });
+      setProfile({ ...form });
+      setSavedFlash(true);
+      setEditing(false);
+      setTimeout(() => setSavedFlash(false), 1800);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const doLogout = async () => {
     setSigningOut(true);
@@ -59,6 +84,7 @@ function ProfilPage() {
     } catch {}
     navigate({ to: "/connexion", replace: true });
   };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="glass border-b border-border/40">
@@ -71,10 +97,53 @@ function ProfilPage() {
               <p className="font-display text-lg font-bold capitalize">{displayName}</p>
               <p className="truncate text-xs text-muted-foreground">{identifier}</p>
             </div>
-            <Link to="/connexion" aria-label="Aller à la connexion" className="rounded-full border border-border bg-surface/60 p-2">
-              <LogOut className="h-4 w-4" />
-            </Link>
+            {authed ? (
+              <button onClick={() => setEditing((v) => !v)} className="rounded-full border border-border bg-surface/60 px-3 py-1.5 text-xs font-semibold">
+                {editing ? "Annuler" : "Modifier"}
+              </button>
+            ) : (
+              <Link to="/connexion" className="rounded-full bg-gradient-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-glow">
+                Se connecter
+              </Link>
+            )}
           </div>
+
+          {savedFlash && (
+            <div className="mt-3 flex items-center gap-2 rounded-xl border border-primary/40 bg-primary/10 px-3 py-2 text-xs text-primary animate-fade-in">
+              <Check className="h-3.5 w-3.5" /> Profil mis à jour
+            </div>
+          )}
+
+          {editing && authed && (
+            <div className="mt-4 space-y-2 rounded-2xl border border-border bg-card p-3 animate-fade-in">
+              <input
+                placeholder="Nom complet"
+                value={form.full_name}
+                onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+              />
+              <input
+                placeholder="+237 6XX XX XX XX"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+              />
+              <select
+                value={form.city}
+                onChange={(e) => setForm({ ...form, city: e.target.value })}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+              >
+                <option>Douala</option><option>Yaoundé</option><option>Bafoussam</option>
+              </select>
+              <button
+                onClick={save}
+                disabled={saving}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-primary py-2.5 text-sm font-semibold text-primary-foreground shadow-glow disabled:opacity-60"
+              >
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Enregistrer"}
+              </button>
+            </div>
+          )}
 
           <Link
             to="/fidelite"
@@ -85,8 +154,11 @@ function ProfilPage() {
                 <Crown className="h-5 w-5 text-gold" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Mboa Gold</p>
-                <p className="font-bold">1 240 <span className="text-xs font-normal text-muted-foreground">points</span></p>
+                <p className="text-xs text-muted-foreground">Mboa {loyalty?.currentTier ?? "Pistache"}</p>
+                <p className="font-bold">
+                  {(loyalty?.points ?? 0).toLocaleString("fr-FR")}{" "}
+                  <span className="text-xs font-normal text-muted-foreground">points</span>
+                </p>
               </div>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -141,15 +213,16 @@ function ProfilPage() {
           <Row to="/aide" icon={HelpCircle} label="Aide & support" />
         </Section>
 
-        {/* Logout button (UX pro, élégant) */}
-        <button
-          type="button"
-          onClick={() => setConfirm(true)}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-3.5 text-sm font-semibold text-destructive transition hover:bg-destructive/20 active:scale-[0.99]"
-        >
-          <LogOut className="h-4 w-4" />
-          Se déconnecter
-        </button>
+        {authed && (
+          <button
+            type="button"
+            onClick={() => setConfirm(true)}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-3.5 text-sm font-semibold text-destructive transition hover:bg-destructive/20 active:scale-[0.99]"
+          >
+            <LogOut className="h-4 w-4" />
+            Se déconnecter
+          </button>
+        )}
 
         <p className="pt-2 text-center text-[11px] text-muted-foreground">
           MboaEats v1.0 · Fait avec ❤️ à Douala
@@ -193,7 +266,6 @@ function ProfilPage() {
           </div>
         )}
 
-        {/* Discreet owner access — barely visible dot at the very bottom */}
         <div className="flex justify-center pt-6 pb-2 opacity-30 hover:opacity-100 transition-opacity">
           <Link
             to="/admin-login"

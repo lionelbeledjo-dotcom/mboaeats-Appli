@@ -1,5 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Crown, Flame, Gift, Sparkles, Trophy, Lock, Check } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowLeft, Crown, Flame, Gift, Sparkles, Trophy, Lock, Check, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { getMyLoyalty } from "@/server/account.functions";
 
 export const Route = createFileRoute("/fidelite")({
   component: Fidelite,
@@ -18,18 +21,49 @@ const tiers = [
   { name: "Roi du Mboa", icon: "👑", from: 6000, perks: ["Livraison illimitée", "Accès Tablée VIP", "Cadeaux partenaires", "Concierge culinaire"], color: "from-yellow-400/30 to-gold/10" },
 ];
 
-const quests = [
-  { label: "Commander 3 fois cette semaine", reward: 300, progress: 2, total: 3 },
-  { label: "Inviter un ami à la Tablée", reward: 500, progress: 0, total: 1 },
-  { label: "Tester un nouveau resto", reward: 200, progress: 1, total: 1, done: true },
-];
-
 function Fidelite() {
-  // Niveau Soya Boy → Chef Ndolé : 62% de progression
-  const currentTier = tiers[1];
-  const nextTier = tiers[2];
-  const pct = 62;
-  const points = Math.round(currentTier.from + (pct / 100) * (nextTier.from - currentTier.from));
+  const [loading, setLoading] = useState(true);
+  const [authed, setAuthed] = useState(false);
+  const [data, setData] = useState<{ points: number; currentTier: string; nextTier: string; nextThreshold: number; pct: number; orders30: number } | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(async ({ data: u }) => {
+      if (u.user) {
+        setAuthed(true);
+        try { setData(await getMyLoyalty()); } catch {}
+      }
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+  }
+
+  const points = data?.points ?? 0;
+  const currentTier = tiers.find((t) => t.name === data?.currentTier) ?? tiers[0];
+  const nextTier = tiers.find((t) => t.name === data?.nextTier) ?? tiers[1];
+  const pct = data?.pct ?? 0;
+  const orders30 = data?.orders30 ?? 0;
+
+  const quests: { label: string; reward: number; progress: number; total: number; done?: boolean }[] = [
+    { label: "Commander 3 fois ce mois-ci", reward: 300, progress: Math.min(orders30, 3), total: 3, done: orders30 >= 3 },
+    { label: "Inviter un ami à la Tablée", reward: 500, progress: 0, total: 1 },
+    { label: "Tester un nouveau resto", reward: 200, progress: orders30 > 0 ? 1 : 0, total: 1, done: orders30 > 0 },
+  ];
+
+  if (!authed) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-6">
+        <div className="max-w-sm rounded-3xl border border-border bg-card p-6 text-center shadow-card">
+          <Crown className="mx-auto h-8 w-8 text-gold" />
+          <h1 className="mt-3 font-display text-xl font-bold">Mboa Points</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Connectez-vous pour suivre votre fidélité.</p>
+          <Link to="/connexion" className="mt-4 inline-flex w-full justify-center rounded-xl bg-gradient-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground">Se connecter</Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground">
