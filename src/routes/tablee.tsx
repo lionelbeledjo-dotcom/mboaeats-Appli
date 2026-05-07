@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Users, Copy, Check, Share2, Plus, Trash2, Crown, MessageCircle,
   Smartphone, Clock, ArrowLeft, Sparkles, Tag,
