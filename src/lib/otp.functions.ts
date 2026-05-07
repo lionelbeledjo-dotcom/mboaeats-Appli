@@ -86,6 +86,17 @@ export const verifyOtp = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ phone: z.string(), code: z.string().regex(/^\d{6}$/) }).parse(d))
   .handler(async ({ data }) => {
     const phone = normalizePhone(data.phone);
+
+    // Vérifie que le numéro correspond à celui pour lequel l'OTP a été demandé
+    const session = await getMboaSession();
+    const pending = session.data.pendingPhone;
+    if (!pending) {
+      throw new Error("Aucune demande de code en cours. Demandez un nouveau code.");
+    }
+    if (pending !== phone) {
+      throw new Error("Ce code ne correspond pas au numéro utilisé pour la demande.");
+    }
+
     const code_hash = hashCode(phone, data.code);
 
     const { data: rows } = await supabaseAdmin
