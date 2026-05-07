@@ -7,6 +7,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { getOrder } from "@/server/marketplace.functions";
 import { useRealtimeOrder } from "@/hooks/use-realtime-order";
+import { ReviewForm } from "@/components/ReviewForm";
 
 export const Route = createFileRoute("/suivi/$orderId")({
   beforeLoad: async ({ params }) => {
@@ -54,7 +55,7 @@ type OrderItem = {
 
 function SuiviPage() {
   const data = Route.useLoaderData() as {
-    order: Record<string, unknown> & { id: string; status: string; subtotal: number; delivery_fee: number; promo_code: string | null; promo_discount: number; total: number; eta_minutes: number | null; paid_at: string | null; delivered_at: string | null; reference: string; restaurant?: { name?: string } | null; delivery_address?: { line?: string; city?: string } | null };
+    order: Record<string, unknown> & { id: string; restaurant_id: string; status: string; subtotal: number; delivery_fee: number; promo_code: string | null; promo_discount: number; total: number; eta_minutes: number | null; paid_at: string | null; delivered_at: string | null; reference: string; restaurant?: { name?: string } | null; delivery_address?: { line?: string; city?: string } | null };
     items: OrderItem[];
   };
   const { order: live, events } = useRealtimeOrder(data.order.id);
@@ -190,6 +191,12 @@ function SuiviPage() {
                 {order.delivery_address.line}, {order.delivery_address.city}
               </p>
             </div>
+          </section>
+        )}
+
+        {order.delivered_at && (
+          <section className="mt-5">
+            <ReviewForm restaurantId={order.restaurant_id} orderId={order.id} />
           </section>
         )}
       </main>

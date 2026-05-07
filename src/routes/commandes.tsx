@@ -1,8 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Package, CheckCircle2, ChevronRight, MapPin, LogIn } from "lucide-react";
+import { Package, CheckCircle2, ChevronRight, MapPin, LogIn, RotateCcw, Loader2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { getMyOrders } from "@/server/marketplace.functions";
+import { getMyOrders, getOrder } from "@/server/marketplace.functions";
+import { addToCart } from "@/hooks/use-cart";
 import { RowSkeleton, EmptyState } from "@/components/ui/feedback";
 
 export const Route = createFileRoute("/commandes")({
@@ -47,9 +50,40 @@ function statusLabel(s: string) {
 }
 
 function CommandesPage() {
+  const navigate = useNavigate();
+  const getOrderFn = useServerFn(getOrder);
   const [tab, setTab] = useState<"all" | "active" | "delivered">("all");
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [authed, setAuthed] = useState<boolean | null>(null);
+  const [reordering, setReordering] = useState<string | null>(null);
+
+  const reorder = async (orderId: string, restoSlug: string | undefined) => {
+    setReordering(orderId);
+    try {
+      const r = await getOrderFn({ data: { id: orderId } }) as {
+        order: { restaurant_id: string };
+        items: Array<{ id: string; dish_id: string | null; name: string; qty: number; unit_price: number }>;
+      };
+      for (const it of r.items) {
+        if (!it.dish_id) continue;
+        addToCart({
+          id: `db__${it.dish_id}`,
+          dishId: it.dish_id,
+          restoId: r.order.restaurant_id,
+          name: it.name,
+          price: it.unit_price,
+          qty: it.qty,
+        });
+      }
+      toast.success("Articles ajoutés au panier");
+      if (restoSlug) navigate({ to: "/r/$slug", params: { slug: restoSlug } });
+      else navigate({ to: "/checkout" });
+    } catch (e) {
+      toast.error((e as Error).message ?? "Impossible de recommander");
+    } finally {
+      setReordering(null);
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -146,9 +180,14 @@ function CommandesPage() {
                         <ChevronRight className="h-3.5 w-3.5" />
                       </Link>
                     ) : (
-                      <Link to="/" className="text-xs font-semibold text-muted-foreground hover:text-foreground">
-                        Recommander →
-                      </Link>
+                      <button
+                        onClick={() => reorder(o.id, o.restaurant?.slug)}
+                        disabled={reordering === o.id}
+                        className="inline-flex items-center gap-1 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-surface disabled:opacity-60"
+                      >
+                        {reordering === o.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
+                        Recommander
+                      </button>
                     )}
                   </div>
                 </li>

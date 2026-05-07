@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import {
   User, Crown, MapPin, CreditCard, Bell, Shield, HelpCircle,
   LogOut, ChevronRight, Heart, Bike, Store, Sparkles, Volume2, VolumeX,
-  Loader2, Check, ShieldCheck, LayoutDashboard, Coins, AlertTriangle, Settings,
+  Loader2, Check, ShieldCheck, LayoutDashboard, Coins, AlertTriangle, Settings, Package,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { isCartSoundEnabled, setCartSoundEnabled, CART_SOUND_EVT } from "@/lib/cart-sound";
@@ -194,7 +194,8 @@ function ProfilPage() {
 
       <main className="mx-auto max-w-md px-4 py-4 space-y-6">
         <Section title="Mon compte">
-          <Row to="/commandes" icon={Heart} label="Commandes & favoris" />
+          <Row to="/commandes" icon={Package} label="Mes commandes" />
+          <Row to="/favoris" icon={Heart} label="Mes favoris" />
           <Row to="/adresses" icon={MapPin} label="Mes adresses" />
           <Row to="/checkout" icon={CreditCard} label="Moyens de paiement" />
           <Row to="/mboapass" icon={Crown} label="MboaPass Premium" />
