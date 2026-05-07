@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { TrendingUp, Coins, Store, Bike, AlertTriangle, Users, ArrowUpRight, Loader2, MapPin } from "lucide-react";
+import { TrendingUp, Coins, Store, Bike, AlertTriangle, Users, ArrowUpRight, Loader2, MapPin, Clock, Settings, ChevronRight } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { getAdminOverview } from "@/server/admin.functions";
