@@ -68,7 +68,8 @@ function Litiges() {
         <p className="text-sm text-muted-foreground">Réclamations clients à traiter en temps réel</p>
       </div>
 
-      {!items && <div className="flex justify-center p-16"><Loader2 className="h-5 w-5 animate-spin" /></div>}
+      {error && <ErrorState message={error} onRetry={reload} />}
+      {!items && !error && <div className="flex justify-center p-16"><Loader2 className="h-5 w-5 animate-spin" /></div>}
 
       <div className="grid gap-4 md:grid-cols-2">
         {open.map((it) => {
