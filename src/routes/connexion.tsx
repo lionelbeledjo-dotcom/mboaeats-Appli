@@ -1,6 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Flame, ShieldCheck, Loader2, Check, AlertCircle, Mail, Phone, MessageCircle, Send, ChevronDown } from "lucide-react";
+import { sendOtp, verifyOtp } from "@/lib/otp.functions";
 
 export const Route = createFileRoute("/connexion")({
   component: Connexion,
@@ -13,7 +15,7 @@ export const Route = createFileRoute("/connexion")({
   }),
 });
 
-const DEMO_CODE = "123456";
+
 
 const COUNTRIES: { code: string; dial: string; flag: string; name: string }[] = [
   { code: "CM", dial: "+237", flag: "🇨🇲", name: "Cameroun" },
@@ -59,7 +61,8 @@ type Step = "identify" | "channel" | "otp";
 
 function Connexion() {
   const navigate = useNavigate();
-
+  const sendOtpFn = useServerFn(sendOtp);
+  const verifyOtpFn = useServerFn(verifyOtp);
   const [mode, setMode] = useState<Mode>("phone");
   const [step, setStep] = useState<Step>("identify");
 
@@ -108,33 +111,52 @@ function Connexion() {
   const sendCode = async () => {
     setError(null);
     setLoading(true);
-    // Simulation : aucun envoi réel. Code de test universel : 123456
-    await new Promise((r) => setTimeout(r, 500));
-    setLoading(false);
-    setStep("otp");
+    try {
+      if (mode === "phone" && channel === "sms") {
+        const fullPhone = `${country.dial}${phone.replace(/\D/g, "")}`;
+        await sendOtpFn({ data: { phone: fullPhone } });
+        setStep("otp");
+      } else {
+        // Autres canaux (WhatsApp, email) — non encore branchés
+        setError("Ce canal n'est pas encore disponible. Choisissez SMS.");
+      }
+    } catch (err: any) {
+      setError(err?.message ?? "Échec de l'envoi du code");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const submitCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (code.trim() !== DEMO_CODE) {
-      setError("Code invalide. Utilisez 123456 pour les tests.");
+    if (!/^\d{6}$/.test(code.trim())) {
+      setError("Saisissez les 6 chiffres du code.");
       return;
     }
     setLoading(true);
     try {
-      localStorage.setItem(
-        "mboa_demo_user",
-        JSON.stringify({
-          mode,
-          identifier: mode === "phone" ? `${country.dial}${phone}` : email,
-          channel,
-          loggedAt: Date.now(),
-        })
-      );
-    } catch {}
-    await new Promise((r) => setTimeout(r, 200));
-    navigate({ to: "/" });
+      if (mode === "phone" && channel === "sms") {
+        const fullPhone = `${country.dial}${phone.replace(/\D/g, "")}`;
+        await verifyOtpFn({ data: { phone: fullPhone, code: code.trim() } });
+      }
+      try {
+        localStorage.setItem(
+          "mboa_demo_user",
+          JSON.stringify({
+            mode,
+            identifier: mode === "phone" ? `${country.dial}${phone}` : email,
+            channel,
+            loggedAt: Date.now(),
+          })
+        );
+      } catch {}
+      navigate({ to: "/" });
+    } catch (err: any) {
+      setError(err?.message ?? "Code invalide");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -266,8 +288,7 @@ function Connexion() {
 
                 <p className="flex items-start gap-2 text-[11px] leading-snug text-muted-foreground">
                   <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-                  Mode test : aucun message réel n'est envoyé. Code universel{" "}
-                  <span className="font-semibold text-foreground">123456</span>.
+                  Un code à 6 chiffres vous sera envoyé par SMS pour confirmer votre identité.
                 </p>
 
                 {error && (
@@ -326,7 +347,7 @@ function Connexion() {
           {step === "otp" && (
             <form onSubmit={submitCode} className="space-y-4 animate-fade-up">
               <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 text-xs">
-                ✅ Mode test — saisissez <span className="font-bold">123456</span> pour entrer instantanément.
+                📩 Code envoyé par SMS au <span className="font-semibold">{identifierLabel}</span>. Saisissez les 6 chiffres reçus.
               </div>
 
               <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
