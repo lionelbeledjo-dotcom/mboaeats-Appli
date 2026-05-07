@@ -62,6 +62,23 @@ function TableePage() {
 
   const navigate = useNavigate();
 
+  // Au retour de /tablee/paiement, marquer "moi" comme payé
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("tablee:lastPaid");
+      if (!raw) return;
+      const data = JSON.parse(raw) as { participant?: string; at?: number };
+      if (!data?.at || Date.now() - data.at > 5 * 60 * 1000) {
+        sessionStorage.removeItem("tablee:lastPaid");
+        return;
+      }
+      setParticipants((list) =>
+        list.map((p) => (p.id === "1" ? { ...p, paid: true } : p)),
+      );
+      sessionStorage.removeItem("tablee:lastPaid");
+    } catch {}
+  }, []);
+
   const applyPromo = () => {
     const k = promoCode.trim().toUpperCase();
     if (!k) { setPromoErr("Saisis un code"); return; }
