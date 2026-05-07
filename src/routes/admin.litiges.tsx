@@ -30,7 +30,7 @@ function Litiges() {
   const doResolve = useServerFn(resolveDispute);
   const [items, setItems] = useState<Dispute[] | null>(null);
 
-  const reload = () => fetchAll().then((r) => setItems(r.disputes as Dispute[])).catch(() => setItems([]));
+  const reload = () => fetchAll().then((r) => setItems(r.disputes as unknown as Dispute[])).catch(() => setItems([]));
   useEffect(() => {
     reload();
     const ch = supabase
