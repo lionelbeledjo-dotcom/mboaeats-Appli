@@ -12,14 +12,14 @@ import {
 export const Route = createFileRoute("/admin/parametres")({
   beforeLoad: async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw redirect({ to: "/admin-login" });
+    if (!user) throw redirect({ to: "/admin/login" });
     const { data: role } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", user.id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!role) throw redirect({ to: "/admin-login" });
+    if (!role) throw redirect({ to: "/admin/login" });
   },
   head: () => ({
     meta: [
