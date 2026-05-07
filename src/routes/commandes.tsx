@@ -1,21 +1,73 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { Package, Clock, CheckCircle2, ChevronRight, MapPin } from "lucide-react";
-import { orders, type Order } from "@/data/orders";
+import { useEffect, useState } from "react";
+import { Package, Clock, CheckCircle2, ChevronRight, MapPin, LogIn } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { getMyOrders } from "@/server/marketplace.functions";
 
 export const Route = createFileRoute("/commandes")({
   head: () => ({
     meta: [
       { title: "Mes commandes — MboaEats" },
-      { name: "description", content: "Historique et suivi de vos commandes MboaEats." },
+      { name: "description", content: "Historique et suivi de vos commandes." },
     ],
   }),
   component: CommandesPage,
 });
 
+type Order = {
+  id: string;
+  reference: string;
+  status: string;
+  total: number;
+  eta_minutes: number | null;
+  created_at: string;
+  paid_at: string | null;
+  delivered_at: string | null;
+  restaurant: { name: string; image_url: string | null; slug: string } | null;
+};
+
+const ACTIVE = new Set([
+  "pending_payment", "paid", "accepted", "preparing", "ready", "picked_up", "delivering",
+]);
+
+function statusLabel(s: string) {
+  return ({
+    pending_payment: "À payer",
+    paid: "Payée",
+    accepted: "Acceptée",
+    preparing: "En préparation",
+    ready: "Prête",
+    picked_up: "Récupérée",
+    delivering: "En livraison",
+    delivered: "Livrée",
+    cancelled: "Annulée",
+    refunded: "Remboursée",
+  } as Record<string, string>)[s] ?? s;
+}
+
 function CommandesPage() {
-  const [tab, setTab] = useState<"all" | "en_cours" | "livree">("all");
-  const filtered = orders.filter((o) => tab === "all" || o.status === tab);
+  const [tab, setTab] = useState<"all" | "active" | "delivered">("all");
+  const [orders, setOrders] = useState<Order[] | null>(null);
+  const [authed, setAuthed] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!mounted) return;
+      setAuthed(!!user);
+      if (!user) { setOrders([]); return; }
+      try {
+        const r = await getMyOrders();
+        if (mounted) setOrders((r as { orders: Order[] }).orders);
+      } catch { if (mounted) setOrders([]); }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  const filtered = (orders ?? []).filter((o) =>
+    tab === "all" ? true : tab === "active" ? ACTIVE.has(o.status) : o.status === "delivered"
+  );
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -25,8 +77,8 @@ function CommandesPage() {
           <div className="mt-3 flex gap-2">
             {[
               { k: "all", l: "Toutes" },
-              { k: "en_cours", l: "En cours" },
-              { k: "livree", l: "Livrées" },
+              { k: "active", l: "En cours" },
+              { k: "delivered", l: "Livrées" },
             ].map((t) => (
               <button
                 key={t.k}
@@ -36,16 +88,28 @@ function CommandesPage() {
                     ? "bg-gradient-primary text-primary-foreground shadow-glow"
                     : "border border-border bg-surface/60 text-muted-foreground"
                 }`}
-              >
-                {t.l}
-              </button>
+              >{t.l}</button>
             ))}
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-md px-4 py-4">
-        {filtered.length === 0 ? (
+        {authed === false ? (
+          <div className="rounded-2xl border border-border bg-surface/40 p-10 text-center">
+            <LogIn className="mx-auto h-10 w-10 text-muted-foreground" />
+            <p className="mt-3 text-sm text-muted-foreground">Connectez-vous pour voir vos commandes.</p>
+            <Link to="/connexion" className="mt-4 inline-block rounded-full bg-gradient-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-glow">
+              Se connecter
+            </Link>
+          </div>
+        ) : orders === null ? (
+          <ul className="space-y-3">
+            {[0, 1, 2].map((i) => (
+              <li key={i} className="h-28 animate-pulse rounded-2xl border border-border bg-surface/30" />
+            ))}
+          </ul>
+        ) : filtered.length === 0 ? (
           <div className="rounded-2xl border border-border bg-surface/40 p-10 text-center">
             <Package className="mx-auto h-10 w-10 text-muted-foreground" />
             <p className="mt-3 text-sm text-muted-foreground">Aucune commande pour l'instant</p>
@@ -55,32 +119,41 @@ function CommandesPage() {
           </div>
         ) : (
           <ul className="space-y-3">
-            {filtered.map((o) => (
-              <li key={o.id} className="rounded-2xl border border-border bg-surface/60 p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground">{o.date} · #{o.id}</p>
-                    <p className="mt-0.5 font-semibold">{o.resto}</p>
+            {filtered.map((o) => {
+              const active = ACTIVE.has(o.status);
+              return (
+                <li key={o.id} className="rounded-2xl border border-border bg-surface/60 p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(o.created_at).toLocaleString("fr-FR")} · #{o.reference}
+                      </p>
+                      <p className="mt-0.5 truncate font-semibold">{o.restaurant?.name ?? "Restaurant"}</p>
+                    </div>
+                    <StatusBadge status={o.status} />
                   </div>
-                  <StatusBadge status={o.status} />
-                </div>
-                <p className="mt-2 line-clamp-1 text-sm text-muted-foreground">{o.items.join(" · ")}</p>
-                {o.status === "en_cours" && <EtaProgress id={o.id} eta={o.eta} />}
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="text-sm font-bold text-primary">{o.total.toLocaleString("fr-FR")} FCFA</span>
-                  {o.status === "en_cours" ? (
-                    <Link to="/suivi" className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
-                      <MapPin className="h-3.5 w-3.5" /> Suivre · <EtaCountdown id={o.id} eta={o.eta} />
-                      <ChevronRight className="h-3.5 w-3.5" />
-                    </Link>
-                  ) : (
-                    <Link to="/" className="text-xs font-semibold text-muted-foreground hover:text-foreground">
-                      Recommander →
-                    </Link>
-                  )}
-                </div>
-              </li>
-            ))}
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="text-sm font-bold text-primary tabular-nums">
+                      {o.total.toLocaleString("fr-FR")} FCFA
+                    </span>
+                    {active ? (
+                      <Link
+                        to="/suivi/$orderId"
+                        params={{ orderId: o.id }}
+                        className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary"
+                      >
+                        <MapPin className="h-3.5 w-3.5" /> Suivre
+                        <ChevronRight className="h-3.5 w-3.5" />
+                      </Link>
+                    ) : (
+                      <Link to="/" className="text-xs font-semibold text-muted-foreground hover:text-foreground">
+                        Recommander →
+                      </Link>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </main>
@@ -88,111 +161,18 @@ function CommandesPage() {
   );
 }
 
-function StatusBadge({ status }: { status: Order["status"] }) {
-  if (status === "en_cours")
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-1 text-[10px] font-bold text-primary">
-        <Clock className="h-3 w-3 animate-pulse" /> En cours
-      </span>
-    );
-  if (status === "livree")
+function StatusBadge({ status }: { status: string }) {
+  if (status === "delivered")
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-1 text-[10px] font-bold text-emerald-400">
         <CheckCircle2 className="h-3 w-3" /> Livrée
       </span>
     );
-  return <span className="rounded-full bg-muted px-2 py-1 text-[10px] font-bold">Annulée</span>;
-}
-
-const DEADLINE_KEY = "mboa_eta_deadlines_v1";
-
-function getDeadline(id: string, eta?: string): number {
-  const minutes = eta ? parseInt(eta, 10) : NaN;
-  const fallbackMs = (Number.isFinite(minutes) ? minutes : 15) * 60_000;
-  try {
-    const raw = localStorage.getItem(DEADLINE_KEY);
-    const map: Record<string, number> = raw ? JSON.parse(raw) : {};
-    if (typeof map[id] === "number") return map[id];
-    map[id] = Date.now() + fallbackMs;
-    localStorage.setItem(DEADLINE_KEY, JSON.stringify(map));
-    return map[id];
-  } catch {
-    return Date.now() + fallbackMs;
-  }
-}
-
-function EtaCountdown({ id, eta }: { id: string; eta?: string }) {
-  const deadline = useMemo(() => getDeadline(id, eta), [id, eta]);
-  const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    const t = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(t);
-  }, []);
-
-  const remaining = Math.max(0, deadline - now);
-  const m = Math.floor(remaining / 60_000);
-  const s = Math.floor((remaining % 60_000) / 1000);
-  const label = remaining === 0 ? "Arrivée imminente" : `${m}:${s.toString().padStart(2, "0")}`;
-
+  if (status === "cancelled" || status === "refunded")
+    return <span className="rounded-full bg-muted px-2 py-1 text-[10px] font-bold">{statusLabel(status)}</span>;
   return (
-    <span className="tabular-nums" aria-live="polite">
-      {label}
+    <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-1 text-[10px] font-bold text-primary">
+      <Clock className="h-3 w-3 animate-pulse" /> {statusLabel(status)}
     </span>
-  );
-}
-
-const STEPS = [
-  { key: "prep", label: "Préparation" },
-  { key: "route", label: "En route" },
-  { key: "done", label: "Livré" },
-] as const;
-
-function EtaProgress({ id, eta }: { id: string; eta?: string }) {
-  const deadline = useMemo(() => getDeadline(id, eta), [id, eta]);
-  const durationMs = useMemo(() => {
-    const minutes = eta ? parseInt(eta, 10) : NaN;
-    return (Number.isFinite(minutes) ? minutes : 15) * 60_000;
-  }, [eta]);
-  const startedAt = deadline - durationMs;
-
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const t = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(t);
-  }, []);
-
-  const elapsed = Math.max(0, now - startedAt);
-  const pct = Math.min(100, Math.round((elapsed / durationMs) * 100));
-  const stepIndex = pct >= 100 ? 2 : pct >= 33 ? 1 : 0;
-
-  return (
-    <div className="mt-3" aria-label={`Progression ${pct}%`}>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-        <div
-          className="h-full rounded-full bg-gradient-primary transition-[width] duration-700 ease-out"
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-      <ol className="mt-2 flex items-center justify-between text-[10px] font-semibold">
-        {STEPS.map((s, i) => {
-          const reached = i <= stepIndex;
-          return (
-            <li
-              key={s.key}
-              className={`flex items-center gap-1 ${reached ? "text-primary" : "text-muted-foreground"}`}
-            >
-              <span
-                className={`h-1.5 w-1.5 rounded-full ${
-                  reached ? "bg-primary" : "bg-muted-foreground/40"
-                } ${i === stepIndex && stepIndex < 2 ? "animate-pulse" : ""}`}
-                aria-hidden
-              />
-              {s.label}
-            </li>
-          );
-        })}
-      </ol>
-    </div>
   );
 }

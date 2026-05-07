@@ -33,6 +33,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TableePaiementRouteImport } from './routes/tablee.paiement'
+import { Route as SuiviOrderIdRouteImport } from './routes/suivi.$orderId'
 import { Route as RestaurantsRestoIdRouteImport } from './routes/restaurants.$restoId'
 import { Route as CategorieSlugRouteImport } from './routes/categorie.$slug'
 import { Route as AdminZonesRouteImport } from './routes/admin.zones'
@@ -162,6 +163,11 @@ const TableePaiementRoute = TableePaiementRouteImport.update({
   path: '/paiement',
   getParentRoute: () => TableeRoute,
 } as any)
+const SuiviOrderIdRoute = SuiviOrderIdRouteImport.update({
+  id: '/$orderId',
+  path: '/$orderId',
+  getParentRoute: () => SuiviRoute,
+} as any)
 const RestaurantsRestoIdRoute = RestaurantsRestoIdRouteImport.update({
   id: '/restaurants/$restoId',
   path: '/restaurants/$restoId',
@@ -225,7 +231,7 @@ export interface FileRoutesByFullPath {
   '/profil': typeof ProfilRoute
   '/recherche': typeof RechercheRoute
   '/restaurant': typeof RestaurantRoute
-  '/suivi': typeof SuiviRoute
+  '/suivi': typeof SuiviRouteWithChildren
   '/tablee': typeof TableeRouteWithChildren
   '/admin/commissions': typeof AdminCommissionsRoute
   '/admin/litiges': typeof AdminLitigesRoute
@@ -234,6 +240,7 @@ export interface FileRoutesByFullPath {
   '/admin/zones': typeof AdminZonesRoute
   '/categorie/$slug': typeof CategorieSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
+  '/suivi/$orderId': typeof SuiviOrderIdRoute
   '/tablee/paiement': typeof TableePaiementRoute
   '/admin/': typeof AdminIndexRoute
   '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
@@ -258,7 +265,7 @@ export interface FileRoutesByTo {
   '/profil': typeof ProfilRoute
   '/recherche': typeof RechercheRoute
   '/restaurant': typeof RestaurantRoute
-  '/suivi': typeof SuiviRoute
+  '/suivi': typeof SuiviRouteWithChildren
   '/tablee': typeof TableeRouteWithChildren
   '/admin/commissions': typeof AdminCommissionsRoute
   '/admin/litiges': typeof AdminLitigesRoute
@@ -267,6 +274,7 @@ export interface FileRoutesByTo {
   '/admin/zones': typeof AdminZonesRoute
   '/categorie/$slug': typeof CategorieSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
+  '/suivi/$orderId': typeof SuiviOrderIdRoute
   '/tablee/paiement': typeof TableePaiementRoute
   '/admin': typeof AdminIndexRoute
   '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
@@ -293,7 +301,7 @@ export interface FileRoutesById {
   '/profil': typeof ProfilRoute
   '/recherche': typeof RechercheRoute
   '/restaurant': typeof RestaurantRoute
-  '/suivi': typeof SuiviRoute
+  '/suivi': typeof SuiviRouteWithChildren
   '/tablee': typeof TableeRouteWithChildren
   '/admin/commissions': typeof AdminCommissionsRoute
   '/admin/litiges': typeof AdminLitigesRoute
@@ -302,6 +310,7 @@ export interface FileRoutesById {
   '/admin/zones': typeof AdminZonesRoute
   '/categorie/$slug': typeof CategorieSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
+  '/suivi/$orderId': typeof SuiviOrderIdRoute
   '/tablee/paiement': typeof TableePaiementRoute
   '/admin/': typeof AdminIndexRoute
   '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
@@ -338,6 +347,7 @@ export interface FileRouteTypes {
     | '/admin/zones'
     | '/categorie/$slug'
     | '/restaurants/$restoId'
+    | '/suivi/$orderId'
     | '/tablee/paiement'
     | '/admin/'
     | '/restaurants/$restoId/plats/$platId'
@@ -371,6 +381,7 @@ export interface FileRouteTypes {
     | '/admin/zones'
     | '/categorie/$slug'
     | '/restaurants/$restoId'
+    | '/suivi/$orderId'
     | '/tablee/paiement'
     | '/admin'
     | '/restaurants/$restoId/plats/$platId'
@@ -405,6 +416,7 @@ export interface FileRouteTypes {
     | '/admin/zones'
     | '/categorie/$slug'
     | '/restaurants/$restoId'
+    | '/suivi/$orderId'
     | '/tablee/paiement'
     | '/admin/'
     | '/restaurants/$restoId/plats/$platId'
@@ -431,7 +443,7 @@ export interface RootRouteChildren {
   ProfilRoute: typeof ProfilRoute
   RechercheRoute: typeof RechercheRoute
   RestaurantRoute: typeof RestaurantRoute
-  SuiviRoute: typeof SuiviRoute
+  SuiviRoute: typeof SuiviRouteWithChildren
   TableeRoute: typeof TableeRouteWithChildren
   CategorieSlugRoute: typeof CategorieSlugRoute
   RestaurantsRestoIdRoute: typeof RestaurantsRestoIdRouteWithChildren
@@ -607,6 +619,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TableePaiementRouteImport
       parentRoute: typeof TableeRoute
     }
+    '/suivi/$orderId': {
+      id: '/suivi/$orderId'
+      path: '/$orderId'
+      fullPath: '/suivi/$orderId'
+      preLoaderRoute: typeof SuiviOrderIdRouteImport
+      parentRoute: typeof SuiviRoute
+    }
     '/restaurants/$restoId': {
       id: '/restaurants/$restoId'
       path: '/restaurants/$restoId'
@@ -686,6 +705,16 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface SuiviRouteChildren {
+  SuiviOrderIdRoute: typeof SuiviOrderIdRoute
+}
+
+const SuiviRouteChildren: SuiviRouteChildren = {
+  SuiviOrderIdRoute: SuiviOrderIdRoute,
+}
+
+const SuiviRouteWithChildren = SuiviRoute._addFileChildren(SuiviRouteChildren)
+
 interface TableeRouteChildren {
   TableePaiementRoute: typeof TableePaiementRoute
 }
@@ -729,7 +758,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfilRoute: ProfilRoute,
   RechercheRoute: RechercheRoute,
   RestaurantRoute: RestaurantRoute,
-  SuiviRoute: SuiviRoute,
+  SuiviRoute: SuiviRouteWithChildren,
   TableeRoute: TableeRouteWithChildren,
   CategorieSlugRoute: CategorieSlugRoute,
   RestaurantsRestoIdRoute: RestaurantsRestoIdRouteWithChildren,
