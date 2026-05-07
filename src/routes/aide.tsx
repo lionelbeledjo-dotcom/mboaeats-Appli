@@ -16,14 +16,15 @@ export const Route = createFileRoute("/aide")({
 });
 
 const SUPPORT_EMAIL = "lionelbrown2728@yahoo.fr";
-const SUPPORT_PHONE = "+237 6 90 00 00 00";
-const WHATSAPP = "237690000000";
+const SUPPORT_PHONE = "+33 6 60 06 17 23";
+const SUPPORT_PHONE_INTL = "+33660061723";
+const WHATSAPP = "33660061723";
 
 const categories = [
-  { icon: CreditCard, label: "Paiement", color: "from-primary/20 to-primary/5" },
-  { icon: Bike, label: "Livraison", color: "from-gold/20 to-gold/5" },
-  { icon: Utensils, label: "Commande", color: "from-emerald-500/20 to-emerald-500/5" },
-  { icon: ShieldCheck, label: "Compte & sécurité", color: "from-blue-500/20 to-blue-500/5" },
+  { slug: "paiement", icon: CreditCard, label: "Paiement", color: "from-primary/20 to-primary/5" },
+  { slug: "livraison", icon: Bike, label: "Livraison", color: "from-gold/20 to-gold/5" },
+  { slug: "commande", icon: Utensils, label: "Commande", color: "from-emerald-500/20 to-emerald-500/5" },
+  { slug: "compte-securite", icon: ShieldCheck, label: "Compte & sécurité", color: "from-blue-500/20 to-blue-500/5" },
 ];
 
 const faqs = [
