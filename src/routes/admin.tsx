@@ -1,7 +1,7 @@
-import { createFileRoute, Link, Outlet, redirect, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, redirect, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard, Store, Bike, AlertTriangle, Coins, Settings, ArrowLeft,
-  TrendingUp, Users, ShieldCheck, Search, Star, Check, X, MoreHorizontal, MapPin,
+  TrendingUp, Users, ShieldCheck, Search, Star, Check, X, MoreHorizontal, MapPin, LogOut,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -75,6 +75,12 @@ function AdminSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const path = useRouterState({ select: (r) => r.location.pathname });
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try { await supabase.auth.signOut({ scope: "global" }); } catch {}
+    navigate({ to: "/admin-login", replace: true });
+  };
 
   const isActive = (item: typeof navItems[number]) =>
     item.exact ? path === item.url : path.startsWith(item.url);
@@ -127,10 +133,18 @@ function AdminSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link to="/admin" className="flex items-center gap-2">
+                  <Link to="/admin/parametres" className="flex items-center gap-2">
                     <Settings className="h-4 w-4" />
                     {!collapsed && <span>Paramètres</span>}
                   </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <button type="button" onClick={handleLogout} className="flex w-full items-center gap-2 text-destructive">
+                    <LogOut className="h-4 w-4" />
+                    {!collapsed && <span>Se déconnecter</span>}
+                  </button>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
