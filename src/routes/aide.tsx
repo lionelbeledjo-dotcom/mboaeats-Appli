@@ -148,7 +148,6 @@ function Aide() {
           </div>
 
           <a
-          <a
             href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("Demande de support MboaEats")}`}
             className="group rounded-3xl border border-gold/40 bg-gold/5 p-5 transition hover:border-gold hover:shadow-glow"
           >
