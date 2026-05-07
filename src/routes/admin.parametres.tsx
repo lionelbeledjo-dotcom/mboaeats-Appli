@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Settings, Save, Trash2, Plus, ShieldCheck, Loader2, Check } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
@@ -10,6 +10,17 @@ import {
 } from "@/server/admin-settings.functions";
 
 export const Route = createFileRoute("/admin/parametres")({
+  beforeLoad: async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw redirect({ to: "/admin-login" });
+    const { data: role } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (!role) throw redirect({ to: "/admin-login" });
+  },
   head: () => ({
     meta: [
       { title: "Paramètres · Admin MboaEats" },
