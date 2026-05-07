@@ -6,12 +6,25 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 export const listFavorites = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
+    const { data: favs, error } = await context.supabase
       .from("favorites")
-      .select("restaurant_id, restaurants(id, slug, name, cuisine, city, image_url, rating, eta_min, eta_max, delivery_fee)")
+      .select("restaurant_id, created_at")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return { favorites: data ?? [] };
+    const ids = (favs ?? []).map((f) => f.restaurant_id);
+    if (ids.length === 0) return { favorites: [] };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: restos } = await supabaseAdmin
+      .from("restaurants")
+      .select("id, slug, name, cuisine, city, image_url, rating, eta_min, eta_max, delivery_fee")
+      .in("id", ids);
+    const map = new Map((restos ?? []).map((r) => [r.id, r]));
+    return {
+      favorites: (favs ?? []).map((f) => ({
+        restaurant_id: f.restaurant_id,
+        restaurants: map.get(f.restaurant_id) ?? null,
+      })),
+    };
   });
 
 export const toggleFavorite = createServerFn({ method: "POST" })
