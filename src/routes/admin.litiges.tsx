@@ -31,8 +31,14 @@ function Litiges() {
   const fetchAll = useServerFn(listAllDisputes);
   const doResolve = useServerFn(resolveDispute);
   const [items, setItems] = useState<Dispute[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const reload = () => fetchAll().then((r) => setItems(r.disputes as unknown as Dispute[])).catch(() => setItems([]));
+  const reload = () => {
+    setError(null);
+    return fetchAll()
+      .then((r) => setItems(r.disputes as unknown as Dispute[]))
+      .catch((e) => { setItems([]); setError(e instanceof Error ? e.message : "Erreur réseau"); });
+  };
   useEffect(() => {
     reload();
     const ch = supabase
