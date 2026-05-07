@@ -2,6 +2,7 @@ import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation, useNa
 import { useEffect, useState } from "react";
 import { BottomDock } from "@/components/BottomDock";
 import { CartFab } from "@/components/CartFab";
+import { NotificationBell } from "@/components/NotificationBell";
 import { Toaster } from "@/components/ui/sonner";
 
 const PUBLIC_ROUTES = ["/connexion", "/admin-login"];
