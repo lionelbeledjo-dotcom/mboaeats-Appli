@@ -63,14 +63,9 @@ export default function QuickLogin() {
     setLoading(true);
     try {
       await verifyOtpFn({ data: { phone: fullPhone, code: code.trim() } });
-      try {
-        localStorage.setItem(
-          "mboa_demo_user",
-          JSON.stringify({ mode: "phone", identifier: fullPhone, channel: "sms", loggedAt: Date.now() })
-        );
-      } catch {}
+      const { invalidateSessionCache } = await import("@/hooks/useSessionUser");
+      invalidateSessionCache();
       navigate({ to: "/" });
-      // Force a refresh of header state
       window.location.reload();
     } catch (err: any) {
       setError(err?.message ?? "Code invalide");

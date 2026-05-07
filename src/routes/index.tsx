@@ -7,6 +7,7 @@ import {
 import { restaurants as realRestaurants, getRestaurant } from "@/data/restaurants";
 import MboaExpressAssistant from "@/components/MboaExpressAssistant";
 import QuickLogin from "@/components/QuickLogin";
+import { useSessionUser } from "@/hooks/useSessionUser";
 
 // Pre-cache decoded images so menu pages render instantly on hover/intent.
 const imageCache = new Set<string>();
@@ -65,13 +66,8 @@ const restaurants = realRestaurants.map((r) => {
 
 function Index() {
   const [city, setCity] = useState("Douala");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    try {
-      setIsLoggedIn(!!localStorage.getItem("mboa_demo_user"));
-    } catch {}
-  }, []);
+  const { user } = useSessionUser();
+  const isLoggedIn = !!user;
 
   return (
     <div className="min-h-screen bg-background text-foreground">

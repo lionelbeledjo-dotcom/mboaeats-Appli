@@ -1,9 +1,10 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { BottomDock } from "@/components/BottomDock";
 import { CartFab } from "@/components/CartFab";
 import { NotificationBell } from "@/components/NotificationBell";
 import { Toaster } from "@/components/ui/sonner";
+import { useSessionUser } from "@/hooks/useSessionUser";
 
 const PUBLIC_ROUTES = ["/connexion", "/admin-login"];
 const PUBLIC_PREFIXES = ["/admin"];
@@ -11,24 +12,21 @@ const PUBLIC_PREFIXES = ["/admin"];
 function AuthGate({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const [ready, setReady] = useState(false);
+  const { user, loading } = useSessionUser();
+
+  const path = location.pathname;
+  const isPublic =
+    PUBLIC_ROUTES.includes(path) || PUBLIC_PREFIXES.some((p) => path.startsWith(p));
 
   useEffect(() => {
-    const path = location.pathname;
-    const isPublic =
-      PUBLIC_ROUTES.includes(path) || PUBLIC_PREFIXES.some((p) => path.startsWith(p));
-    let logged = false;
-    try {
-      logged = !!localStorage.getItem("mboa_demo_user");
-    } catch {}
-    if (!logged && !isPublic) {
+    if (loading) return;
+    if (!user && !isPublic) {
       navigate({ to: "/connexion", replace: true });
-      return;
     }
-    setReady(true);
-  }, [location.pathname, navigate]);
+  }, [loading, user, isPublic, navigate]);
 
-  if (!ready) return null;
+  if (loading) return null;
+  if (!user && !isPublic) return null;
   return <>{children}</>;
 }
 
