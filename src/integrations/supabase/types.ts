@@ -1140,6 +1140,7 @@ export type Database = {
     }
     Functions: {
       claim_super_admin: { Args: never; Returns: boolean }
+      claim_superadmin: { Args: never; Returns: boolean }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
