@@ -170,16 +170,56 @@ function TableePaiement() {
           )}
 
           {step === "done" && (
-            <div className="flex flex-col items-center gap-3 py-10 text-center">
+            <div className="flex flex-col items-center gap-4 py-8 text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400">
                 <Check className="h-8 w-8" />
               </div>
-              <p className="font-display text-xl font-bold">Paiement confirmé</p>
-              <p className="text-sm text-muted-foreground">Ta part de {total.toLocaleString("fr-FR")} F a été réglée. Retour à la tablée…</p>
+              <div>
+                <p className="font-display text-xl font-bold">Paiement confirmé</p>
+                <p className="text-xs text-muted-foreground">Reçu MTN MoMo</p>
+              </div>
+
+              <div className="w-full rounded-2xl border border-dashed border-border bg-background/60 p-4 text-left text-sm">
+                <Row label="Référence" value={receipt?.ref ?? "—"} mono />
+                <Row label="Participant" value={`${participant} · ${item}`} />
+                <Row label="Numéro" value={msisdn} mono />
+                <Row label="Date" value={receipt ? receipt.at.toLocaleString("fr-FR") : "—"} />
+                <div className="my-3 border-t border-border" />
+                <Row label="Sous-total" value={`${amount.toLocaleString("fr-FR")} F`} />
+                {discount > 0 && (
+                  <Row
+                    label={`Promo ${promo ?? ""}`}
+                    value={`−${discount.toLocaleString("fr-FR")} F`}
+                    accent
+                  />
+                )}
+                <div className="my-2 border-t border-border" />
+                <div className="flex items-center justify-between font-display text-base font-bold">
+                  <span>Total payé</span>
+                  <span className="text-emerald-400">{total.toLocaleString("fr-FR")} F</span>
+                </div>
+              </div>
+
+              <p className="text-xs text-muted-foreground">Retour à la tablée dans quelques secondes…</p>
+              <button
+                onClick={() => navigate({ to: "/tablee" })}
+                className="rounded-full border border-border bg-surface px-4 py-2 text-xs font-semibold hover:bg-surface-elevated"
+              >
+                Retour maintenant
+              </button>
             </div>
           )}
         </div>
       </main>
+    </div>
+  );
+}
+
+function Row({ label, value, mono, accent }: { label: string; value: string; mono?: boolean; accent?: boolean }) {
+  return (
+    <div className="flex items-center justify-between gap-3 py-1">
+      <span className="text-xs uppercase tracking-wider text-muted-foreground">{label}</span>
+      <span className={`${mono ? "font-mono" : ""} ${accent ? "text-primary" : "text-foreground"} text-sm`}>{value}</span>
     </div>
   );
 }
