@@ -1,31 +1,35 @@
 import * as React from 'react'
-
 import {
-  Body,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Preview,
-  Text,
+  Body, Container, Head, Heading, Html, Img, Link, Preview, Section, Text,
 } from '@react-email/components'
+import { LOGO_URL, SUPPORT_EMAIL, styles } from './_brand'
 
 interface ReauthenticationEmailProps {
   token: string
+  siteName?: string
 }
 
-export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => (
-  <Html lang="en" dir="ltr">
+export const ReauthenticationEmail = ({ token, siteName = 'MboaEats' }: ReauthenticationEmailProps) => (
+  <Html lang="fr" dir="ltr">
     <Head />
-    <Preview>Your verification code</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Heading style={h1}>Confirm reauthentication</Heading>
-        <Text style={text}>Use the code below to confirm your identity:</Text>
-        <Text style={codeStyle}>{token}</Text>
-        <Text style={footer}>
-          This code will expire shortly. If you didn't request this, you can
-          safely ignore this email.
+    <Preview>Votre code de vérification {siteName}</Preview>
+    <Body style={styles.main}>
+      <Container style={styles.container}>
+        <Section style={styles.header}>
+          <Img src={LOGO_URL} alt={siteName} width={56} height={56} style={styles.logo} />
+          <Text style={styles.brandName}>{siteName}</Text>
+        </Section>
+        <Section style={styles.card}>
+          <Heading style={styles.h1}>Confirmer votre identité</Heading>
+          <Text style={styles.text}>Utilisez le code ci-dessous pour confirmer votre identité :</Text>
+          <Text style={styles.code}>{token}</Text>
+          <Text style={{ ...styles.text, fontSize: '13px', margin: 0 }}>
+            Ce code expire rapidement. Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.
+          </Text>
+        </Section>
+        <Text style={styles.footer}>
+          Besoin d'aide ? <Link href={`mailto:${SUPPORT_EMAIL}`} style={styles.link}>{SUPPORT_EMAIL}</Link><br />
+          © {new Date().getFullYear()} {siteName}
         </Text>
       </Container>
     </Body>
@@ -33,26 +37,3 @@ export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => 
 )
 
 export default ReauthenticationEmail
-
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
-}
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const codeStyle = {
-  fontFamily: 'Courier, monospace',
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 30px',
-}
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
