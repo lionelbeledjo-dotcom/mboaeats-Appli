@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import {
   User, Crown, MapPin, CreditCard, Bell, Shield, HelpCircle,
   LogOut, ChevronRight, Heart, Bike, Store, Sparkles, Volume2, VolumeX,
-  Loader2, Check, ShieldCheck, LayoutDashboard, Coins, AlertTriangle, Settings,
+  Loader2, Check, ShieldCheck, LayoutDashboard, Coins, AlertTriangle, Settings, Package,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { isCartSoundEnabled, setCartSoundEnabled, CART_SOUND_EVT } from "@/lib/cart-sound";
