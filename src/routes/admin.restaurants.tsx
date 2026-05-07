@@ -60,12 +60,22 @@ function Restaurants() {
     }
   };
 
-  const reload = () =>
-    fetchAll()
+  const reload = () => {
+    setError(null);
+    return fetchAll()
       .then((r) => setList(r.restaurants as Resto[]))
-      .catch(() => setList([]));
+      .catch((e) => { setList([]); setError(e instanceof Error ? e.message : "Erreur réseau"); });
+  };
 
-  useEffect(() => { reload(); /* eslint-disable-next-line */ }, []);
+  useEffect(() => {
+    reload();
+    const ch = supabase
+      .channel("admin-restaurants")
+      .on("postgres_changes", { event: "*", schema: "public", table: "restaurants" }, () => reload())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+    // eslint-disable-next-line
+  }, []);
 
   const updateStatus = async (r: Resto, next: boolean) => {
     const verb = next ? "Approuver" : "Désactiver";
