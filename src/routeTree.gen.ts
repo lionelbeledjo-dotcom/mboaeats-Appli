@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TableeRouteImport } from './routes/tablee'
 import { Route as SuiviRouteImport } from './routes/suivi'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RestaurantRouteImport } from './routes/restaurant'
 import { Route as RechercheRouteImport } from './routes/recherche'
 import { Route as ProfilRouteImport } from './routes/profil'
@@ -53,6 +54,11 @@ const TableeRoute = TableeRouteImport.update({
 const SuiviRoute = SuiviRouteImport.update({
   id: '/suivi',
   path: '/suivi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RestaurantRoute = RestaurantRouteImport.update({
@@ -244,6 +250,7 @@ export interface FileRoutesByFullPath {
   '/profil': typeof ProfilRoute
   '/recherche': typeof RechercheRoute
   '/restaurant': typeof RestaurantRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suivi': typeof SuiviRouteWithChildren
   '/tablee': typeof TableeRouteWithChildren
   '/admin/commissions': typeof AdminCommissionsRoute
@@ -280,6 +287,7 @@ export interface FileRoutesByTo {
   '/profil': typeof ProfilRoute
   '/recherche': typeof RechercheRoute
   '/restaurant': typeof RestaurantRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suivi': typeof SuiviRouteWithChildren
   '/tablee': typeof TableeRouteWithChildren
   '/admin/commissions': typeof AdminCommissionsRoute
@@ -318,6 +326,7 @@ export interface FileRoutesById {
   '/profil': typeof ProfilRoute
   '/recherche': typeof RechercheRoute
   '/restaurant': typeof RestaurantRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suivi': typeof SuiviRouteWithChildren
   '/tablee': typeof TableeRouteWithChildren
   '/admin/commissions': typeof AdminCommissionsRoute
@@ -357,6 +366,7 @@ export interface FileRouteTypes {
     | '/profil'
     | '/recherche'
     | '/restaurant'
+    | '/sitemap.xml'
     | '/suivi'
     | '/tablee'
     | '/admin/commissions'
@@ -393,6 +403,7 @@ export interface FileRouteTypes {
     | '/profil'
     | '/recherche'
     | '/restaurant'
+    | '/sitemap.xml'
     | '/suivi'
     | '/tablee'
     | '/admin/commissions'
@@ -430,6 +441,7 @@ export interface FileRouteTypes {
     | '/profil'
     | '/recherche'
     | '/restaurant'
+    | '/sitemap.xml'
     | '/suivi'
     | '/tablee'
     | '/admin/commissions'
@@ -468,6 +480,7 @@ export interface RootRouteChildren {
   ProfilRoute: typeof ProfilRoute
   RechercheRoute: typeof RechercheRoute
   RestaurantRoute: typeof RestaurantRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SuiviRoute: typeof SuiviRouteWithChildren
   TableeRoute: typeof TableeRouteWithChildren
   CategorieSlugRoute: typeof CategorieSlugRoute
@@ -489,6 +502,13 @@ declare module '@tanstack/react-router' {
       path: '/suivi'
       fullPath: '/suivi'
       preLoaderRoute: typeof SuiviRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/restaurant': {
@@ -799,6 +819,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfilRoute: ProfilRoute,
   RechercheRoute: RechercheRoute,
   RestaurantRoute: RestaurantRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   SuiviRoute: SuiviRouteWithChildren,
   TableeRoute: TableeRouteWithChildren,
   CategorieSlugRoute: CategorieSlugRoute,
