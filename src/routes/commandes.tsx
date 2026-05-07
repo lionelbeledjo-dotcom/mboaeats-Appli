@@ -107,17 +107,16 @@ function CommandesPage() {
         ) : orders === null ? (
           <ul className="space-y-3">
             {[0, 1, 2].map((i) => (
-              <li key={i} className="h-28 animate-pulse rounded-2xl border border-border bg-surface/30" />
+              <li key={i}><RowSkeleton /></li>
             ))}
           </ul>
         ) : filtered.length === 0 ? (
-          <div className="rounded-2xl border border-border bg-surface/40 p-10 text-center">
-            <Package className="mx-auto h-10 w-10 text-muted-foreground" />
-            <p className="mt-3 text-sm text-muted-foreground">Aucune commande pour l'instant</p>
-            <Link to="/" className="mt-4 inline-block rounded-full bg-gradient-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-glow">
-              Découvrir les restos
-            </Link>
-          </div>
+          <EmptyState
+            icon={Package}
+            title="Pas encore de commande"
+            description="Découvrez nos restos et passez votre première commande en quelques tapes."
+            action={{ label: "Découvrir les restos", to: "/decouvrir" }}
+          />
         ) : (
           <ul className="space-y-3">
             {filtered.map((o) => {
