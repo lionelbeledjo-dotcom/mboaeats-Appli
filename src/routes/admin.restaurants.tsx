@@ -105,6 +105,12 @@ function Restaurants() {
     };
   }, [list]);
 
+  const cities = useMemo(() => {
+    const set = new Set<string>();
+    (list ?? []).forEach((r) => r.city && set.add(r.city));
+    return Array.from(set).sort();
+  }, [list]);
+
   const filtered = useMemo(() => {
     return (list ?? [])
       .filter((r) => {
@@ -112,6 +118,7 @@ function Restaurants() {
         if (filter === "suspended") return !r.is_active;
         return true;
       })
+      .filter((r) => (city === "all" ? true : r.city === city))
       .filter((r) => {
         if (!q) return true;
         const needle = q.toLowerCase();
@@ -122,7 +129,7 @@ function Restaurants() {
           r.cuisine.toLowerCase().includes(needle)
         );
       });
-  }, [list, filter, q]);
+  }, [list, filter, q, city]);
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-6">
