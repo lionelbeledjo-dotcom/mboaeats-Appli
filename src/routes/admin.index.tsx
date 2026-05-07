@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { TrendingUp, Coins, Store, Bike, AlertTriangle, Users, ArrowUpRight, Loader2, MapPin } from "lucide-react";
+import { TrendingUp, Coins, Store, Bike, AlertTriangle, Users, ArrowUpRight, Loader2, MapPin, Clock, Settings, ChevronRight } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { getAdminOverview } from "@/server/admin.functions";
@@ -48,11 +48,25 @@ function Overview() {
         <p className="text-sm text-muted-foreground">Activité MboaEats · Cameroun · 7 derniers jours</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Kpi label="Commandes en attente" value={(stats as any).ordersPending?.toString() ?? "0"} icon={<Clock className="h-4 w-4 text-primary" />} accent="primary" hint={`${stats.ordersCount} sur 7j · ${stats.delivered} livrées`} />
+        <Kpi label="Litiges ouverts" value={stats.disputesOpen.toString()} icon={<AlertTriangle className="h-4 w-4 text-red-400" />} accent="red" hint={`${stats.disputesAmount.toLocaleString("fr-FR")} F en jeu`} />
+        <Kpi label="Restos actifs" value={`${stats.restosActive}/${stats.restosTotal}`} icon={<Store className="h-4 w-4 text-gold" />} accent="gold" hint="Partenaires en ligne" />
+        <Kpi label="Livreurs en ligne" value={`${stats.driversOnline}/${stats.driversTotal}`} icon={<Bike className="h-4 w-4 text-primary" />} hint="Disponibles maintenant" />
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <Shortcut to="/admin/litiges" icon={AlertTriangle} label="Litiges" sub="Traiter & résoudre" badge={stats.disputesOpen || undefined} accent="red" />
+        <Shortcut to="/admin/restaurants" icon={Store} label="Restaurants" sub="Activer / suspendre" />
+        <Shortcut to="/admin/livreurs" icon={Bike} label="Livreurs" sub="Suivi & flotte" />
+        <Shortcut to="/admin/commissions" icon={Coins} label="Commissions" sub="Taux & rapport" accent="gold" />
+        <Shortcut to="/admin/zones" icon={MapPin} label="Zones livraison" sub="Tarifs & ETA" />
+        <Shortcut to="/admin/parametres" icon={Settings} label="Paramètres" sub="Plateforme & admins" accent="primary" />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
         <Kpi label="GMV (7j)" value={`${(stats.gmv / 1000).toFixed(1)}K FCFA`} icon={<TrendingUp className="h-4 w-4 text-primary" />} accent="primary" />
-        <Kpi label="Commandes" value={stats.ordersCount.toString()} icon={<Users className="h-4 w-4 text-primary" />} />
-        <Kpi label="Restos actifs" value={`${stats.restosActive}/${stats.restosTotal}`} icon={<Store className="h-4 w-4 text-gold" />} accent="gold" />
-        <Kpi label="Litiges ouverts" value={stats.disputesOpen.toString()} icon={<AlertTriangle className="h-4 w-4 text-red-400" />} accent="red" />
+        <Kpi label="Total commandes (7j)" value={stats.ordersCount.toString()} icon={<Users className="h-4 w-4 text-primary" />} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -121,14 +135,51 @@ function Overview() {
   );
 }
 
-function Kpi({ label, value, icon, accent }: { label: string; value: string; icon: React.ReactNode; accent?: "primary" | "gold" | "red" }) {
+function Kpi({ label, value, icon, accent, hint }: { label: string; value: string; icon: React.ReactNode; accent?: "primary" | "gold" | "red"; hint?: string }) {
   return (
     <div className="rounded-3xl border border-border bg-surface/60 p-5">
       <div className="flex items-center justify-between">
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-background">{icon}</div>
       </div>
       <p className="mt-4 text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
-      <p className={`mt-1 font-display text-2xl font-extrabold ${accent === "gold" ? "text-gradient-gold" : accent === "primary" ? "text-gradient-primary" : ""}`}>{value}</p>
+      <p className={`mt-1 font-display text-2xl font-extrabold ${accent === "gold" ? "text-gradient-gold" : accent === "primary" ? "text-gradient-primary" : accent === "red" ? "text-red-400" : ""}`}>{value}</p>
+      {hint && <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>}
     </div>
+  );
+}
+
+function Shortcut({
+  to, icon: Icon, label, sub, badge, accent,
+}: {
+  to: string; icon: typeof Store; label: string; sub: string; badge?: number;
+  accent?: "primary" | "gold" | "red";
+}) {
+  const ring =
+    accent === "red" ? "border-red-500/30 hover:border-red-500/60"
+    : accent === "gold" ? "border-gold/30 hover:border-gold/60"
+    : accent === "primary" ? "border-primary/40 hover:border-primary/70"
+    : "border-border hover:border-primary/40";
+  const iconColor =
+    accent === "red" ? "text-red-400"
+    : accent === "gold" ? "text-gold"
+    : "text-primary";
+  return (
+    <Link
+      to={to}
+      className={`group flex items-center gap-3 rounded-2xl border ${ring} bg-surface/60 p-4 transition hover:shadow-glow`}
+    >
+      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-background">
+        <Icon className={`h-5 w-5 ${iconColor}`} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-bold">{label}</p>
+        <p className="truncate text-[11px] text-muted-foreground">{sub}</p>
+      </div>
+      {badge ? (
+        <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] font-bold text-red-400">{badge}</span>
+      ) : (
+        <ChevronRight className="h-4 w-4 text-muted-foreground transition group-hover:translate-x-0.5" />
+      )}
+    </Link>
   );
 }
