@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TableeRouteImport } from './routes/tablee'
+import { Route as SuperadminRouteImport } from './routes/superadmin'
 import { Route as SuiviRouteImport } from './routes/suivi'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RestaurantRouteImport } from './routes/restaurant'
@@ -35,8 +36,10 @@ import { Route as AideRouteImport } from './routes/aide'
 import { Route as AdressesRouteImport } from './routes/adresses'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SuperadminIndexRouteImport } from './routes/superadmin.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TableePaiementRouteImport } from './routes/tablee.paiement'
+import { Route as SuperadminLoginRouteImport } from './routes/superadmin_.login'
 import { Route as SuiviOrderIdRouteImport } from './routes/suivi.$orderId'
 import { Route as RestaurantsRestoIdRouteImport } from './routes/restaurants.$restoId'
 import { Route as RSlugRouteImport } from './routes/r.$slug'
@@ -58,6 +61,11 @@ import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/em
 const TableeRoute = TableeRouteImport.update({
   id: '/tablee',
   path: '/tablee',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SuperadminRoute = SuperadminRouteImport.update({
+  id: '/superadmin',
+  path: '/superadmin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SuiviRoute = SuiviRouteImport.update({
@@ -185,6 +193,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SuperadminIndexRoute = SuperadminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SuperadminRoute,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -194,6 +207,11 @@ const TableePaiementRoute = TableePaiementRouteImport.update({
   id: '/paiement',
   path: '/paiement',
   getParentRoute: () => TableeRoute,
+} as any)
+const SuperadminLoginRoute = SuperadminLoginRouteImport.update({
+  id: '/superadmin_/login',
+  path: '/superadmin/login',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const SuiviOrderIdRoute = SuiviOrderIdRouteImport.update({
   id: '/$orderId',
@@ -309,6 +327,7 @@ export interface FileRoutesByFullPath {
   '/restaurant': typeof RestaurantRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suivi': typeof SuiviRouteWithChildren
+  '/superadmin': typeof SuperadminRouteWithChildren
   '/tablee': typeof TableeRouteWithChildren
   '/admin/commissions': typeof AdminCommissionsRoute
   '/admin/litiges': typeof AdminLitigesRoute
@@ -322,8 +341,10 @@ export interface FileRoutesByFullPath {
   '/r/$slug': typeof RSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
+  '/superadmin/login': typeof SuperadminLoginRoute
   '/tablee/paiement': typeof TableePaiementRoute
   '/admin/': typeof AdminIndexRoute
+  '/superadmin/': typeof SuperadminIndexRoute
   '/api/public/campay-webhook': typeof ApiPublicCampayWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -368,8 +389,10 @@ export interface FileRoutesByTo {
   '/r/$slug': typeof RSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
+  '/superadmin/login': typeof SuperadminLoginRoute
   '/tablee/paiement': typeof TableePaiementRoute
   '/admin': typeof AdminIndexRoute
+  '/superadmin': typeof SuperadminIndexRoute
   '/api/public/campay-webhook': typeof ApiPublicCampayWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -403,6 +426,7 @@ export interface FileRoutesById {
   '/restaurant': typeof RestaurantRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suivi': typeof SuiviRouteWithChildren
+  '/superadmin': typeof SuperadminRouteWithChildren
   '/tablee': typeof TableeRouteWithChildren
   '/admin/commissions': typeof AdminCommissionsRoute
   '/admin/litiges': typeof AdminLitigesRoute
@@ -416,8 +440,10 @@ export interface FileRoutesById {
   '/r/$slug': typeof RSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
+  '/superadmin_/login': typeof SuperadminLoginRoute
   '/tablee/paiement': typeof TableePaiementRoute
   '/admin/': typeof AdminIndexRoute
+  '/superadmin/': typeof SuperadminIndexRoute
   '/api/public/campay-webhook': typeof ApiPublicCampayWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -452,6 +478,7 @@ export interface FileRouteTypes {
     | '/restaurant'
     | '/sitemap.xml'
     | '/suivi'
+    | '/superadmin'
     | '/tablee'
     | '/admin/commissions'
     | '/admin/litiges'
@@ -465,8 +492,10 @@ export interface FileRouteTypes {
     | '/r/$slug'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
+    | '/superadmin/login'
     | '/tablee/paiement'
     | '/admin/'
+    | '/superadmin/'
     | '/api/public/campay-webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -511,8 +540,10 @@ export interface FileRouteTypes {
     | '/r/$slug'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
+    | '/superadmin/login'
     | '/tablee/paiement'
     | '/admin'
+    | '/superadmin'
     | '/api/public/campay-webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -545,6 +576,7 @@ export interface FileRouteTypes {
     | '/restaurant'
     | '/sitemap.xml'
     | '/suivi'
+    | '/superadmin'
     | '/tablee'
     | '/admin/commissions'
     | '/admin/litiges'
@@ -558,8 +590,10 @@ export interface FileRouteTypes {
     | '/r/$slug'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
+    | '/superadmin_/login'
     | '/tablee/paiement'
     | '/admin/'
+    | '/superadmin/'
     | '/api/public/campay-webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -593,11 +627,13 @@ export interface RootRouteChildren {
   RestaurantRoute: typeof RestaurantRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SuiviRoute: typeof SuiviRouteWithChildren
+  SuperadminRoute: typeof SuperadminRouteWithChildren
   TableeRoute: typeof TableeRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
   CategorieSlugRoute: typeof CategorieSlugRoute
   RSlugRoute: typeof RSlugRoute
   RestaurantsRestoIdRoute: typeof RestaurantsRestoIdRouteWithChildren
+  SuperadminLoginRoute: typeof SuperadminLoginRoute
   ApiPublicCampayWebhookRoute: typeof ApiPublicCampayWebhookRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -611,6 +647,13 @@ declare module '@tanstack/react-router' {
       path: '/tablee'
       fullPath: '/tablee'
       preLoaderRoute: typeof TableeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/superadmin': {
+      id: '/superadmin'
+      path: '/superadmin'
+      fullPath: '/superadmin'
+      preLoaderRoute: typeof SuperadminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/suivi': {
@@ -788,6 +831,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/superadmin/': {
+      id: '/superadmin/'
+      path: '/'
+      fullPath: '/superadmin/'
+      preLoaderRoute: typeof SuperadminIndexRouteImport
+      parentRoute: typeof SuperadminRoute
+    }
     '/admin/': {
       id: '/admin/'
       path: '/'
@@ -801,6 +851,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/tablee/paiement'
       preLoaderRoute: typeof TableePaiementRouteImport
       parentRoute: typeof TableeRoute
+    }
+    '/superadmin_/login': {
+      id: '/superadmin_/login'
+      path: '/superadmin/login'
+      fullPath: '/superadmin/login'
+      preLoaderRoute: typeof SuperadminLoginRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/suivi/$orderId': {
       id: '/suivi/$orderId'
@@ -966,6 +1023,18 @@ const SuiviRouteChildren: SuiviRouteChildren = {
 
 const SuiviRouteWithChildren = SuiviRoute._addFileChildren(SuiviRouteChildren)
 
+interface SuperadminRouteChildren {
+  SuperadminIndexRoute: typeof SuperadminIndexRoute
+}
+
+const SuperadminRouteChildren: SuperadminRouteChildren = {
+  SuperadminIndexRoute: SuperadminIndexRoute,
+}
+
+const SuperadminRouteWithChildren = SuperadminRoute._addFileChildren(
+  SuperadminRouteChildren,
+)
+
 interface TableeRouteChildren {
   TableePaiementRoute: typeof TableePaiementRoute
 }
@@ -1014,11 +1083,13 @@ const rootRouteChildren: RootRouteChildren = {
   RestaurantRoute: RestaurantRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SuiviRoute: SuiviRouteWithChildren,
+  SuperadminRoute: SuperadminRouteWithChildren,
   TableeRoute: TableeRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
   CategorieSlugRoute: CategorieSlugRoute,
   RSlugRoute: RSlugRoute,
   RestaurantsRestoIdRoute: RestaurantsRestoIdRouteWithChildren,
+  SuperadminLoginRoute: SuperadminLoginRoute,
   ApiPublicCampayWebhookRoute: ApiPublicCampayWebhookRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
