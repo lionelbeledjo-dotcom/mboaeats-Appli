@@ -180,9 +180,14 @@ function CommandesPage() {
                         <ChevronRight className="h-3.5 w-3.5" />
                       </Link>
                     ) : (
-                      <Link to="/" className="text-xs font-semibold text-muted-foreground hover:text-foreground">
-                        Recommander →
-                      </Link>
+                      <button
+                        onClick={() => reorder(o.id, o.restaurant?.slug)}
+                        disabled={reordering === o.id}
+                        className="inline-flex items-center gap-1 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-surface disabled:opacity-60"
+                      >
+                        {reordering === o.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
+                        Recommander
+                      </button>
                     )}
                   </div>
                 </li>
