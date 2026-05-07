@@ -1,7 +1,8 @@
 import { createFileRoute, Link, Outlet, redirect, useRouterState, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Store, Bike, AlertTriangle, Coins, Settings, ArrowLeft,
-  TrendingUp, Users, ShieldCheck, Search, Star, Check, X, MoreHorizontal, MapPin, LogOut,
+  TrendingUp, Users, ShieldCheck, ShieldAlert, Search, Star, Check, X, MoreHorizontal, MapPin, LogOut,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -41,6 +42,30 @@ const navItems = [
 ];
 
 function AdminLayout() {
+  const [adminInfo, setAdminInfo] = useState<{ isAdmin: boolean; email: string | null } | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        if (alive) setAdminInfo({ isAdmin: false, email: null });
+        return;
+      }
+      const { data: role } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      if (alive) setAdminInfo({ isAdmin: !!role, email: user.email ?? null });
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  const isAdmin = adminInfo?.isAdmin ?? false;
+  const loading = adminInfo === null;
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background text-foreground">
@@ -56,10 +81,40 @@ function AdminLayout() {
                 <Search className="h-3.5 w-3.5 text-muted-foreground" />
                 <input placeholder="Rechercher commande, resto, livreur…" className="w-72 bg-transparent outline-none" />
               </div>
-              <div className="flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5">
-                <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-                <span className="text-xs font-semibold">Admin</span>
-              </div>
+              {loading ? (
+                <div className="flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5">
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-muted-foreground" />
+                  <span className="text-xs font-semibold text-muted-foreground">Vérification…</span>
+                </div>
+              ) : isAdmin ? (
+                <div
+                  className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5"
+                  title={adminInfo?.email ?? "Admin connecté"}
+                >
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+                  </span>
+                  <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-xs font-semibold text-primary">
+                    Admin connecté
+                    {adminInfo?.email && (
+                      <span className="ml-1 hidden font-normal text-muted-foreground lg:inline">
+                        · {adminInfo.email}
+                      </span>
+                    )}
+                  </span>
+                </div>
+              ) : (
+                <Link
+                  to="/admin-login"
+                  className="flex items-center gap-2 rounded-full border border-destructive/40 bg-destructive/10 px-3 py-1.5 hover:bg-destructive/20"
+                  title="Vous n'êtes pas admin"
+                >
+                  <ShieldAlert className="h-3.5 w-3.5 text-destructive" />
+                  <span className="text-xs font-semibold text-destructive">Non admin · Se connecter</span>
+                </Link>
+              )}
             </div>
           </header>
           <main className="flex-1 overflow-x-hidden">
