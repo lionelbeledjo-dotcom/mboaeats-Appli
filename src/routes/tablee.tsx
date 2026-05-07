@@ -150,6 +150,21 @@ function TableePage() {
         <h1 className="mt-3 font-display text-3xl font-bold sm:text-4xl">{name}</h1>
         <p className="mt-1 text-muted-foreground">Tablée chez <span className="text-foreground font-medium">{restaurant}</span></p>
 
+        {mismatch && (
+          <div role="alert" className="mt-4 flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-200">
+            <div>
+              <p className="font-semibold">Paiement non appliqué — total désynchronisé</p>
+              <p className="mt-1 text-xs opacity-90">
+                OTP validé pour <strong>{mismatch.otpTotal.toLocaleString("fr-FR")} F</strong>, mais le total actuel est <strong>{mismatch.currentTotal.toLocaleString("fr-FR")} F</strong> (promo modifiée). Relance la validation pour confirmer le bon montant.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => { setMismatch(null); openPayment(); }} className="rounded-full bg-amber-400 px-4 py-2 text-xs font-bold text-black hover:bg-amber-300">Nouvelle validation</button>
+              <button onClick={() => setMismatch(null)} className="rounded-full border border-amber-400/50 px-3 py-2 text-xs font-semibold">Ignorer</button>
+            </div>
+          </div>
+        )}
+
         {/* Invitation card */}
         <section className="mt-6 grid gap-4 rounded-3xl border border-border bg-gradient-to-br from-surface to-surface-elevated p-5 shadow-card md:grid-cols-[1fr_auto] md:items-center md:p-6">
           <div>
