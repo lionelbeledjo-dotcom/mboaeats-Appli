@@ -64,7 +64,9 @@ function Commissions() {
 
       <CommissionConfig />
 
-      {!report ? (
+      {error ? (
+        <ErrorState message={error} onRetry={reload} />
+      ) : !report ? (
         <div className="flex justify-center p-16"><Loader2 className="h-5 w-5 animate-spin" /></div>
       ) : (
         <>
