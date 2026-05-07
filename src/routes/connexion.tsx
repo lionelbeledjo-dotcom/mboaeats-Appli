@@ -347,7 +347,7 @@ function Connexion() {
           {step === "otp" && (
             <form onSubmit={submitCode} className="space-y-4 animate-fade-up">
               <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 text-xs">
-                ✅ Mode test — saisissez <span className="font-bold">123456</span> pour entrer instantanément.
+                📩 Code envoyé par SMS au <span className="font-semibold">{identifierLabel}</span>. Saisissez les 6 chiffres reçus.
               </div>
 
               <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
