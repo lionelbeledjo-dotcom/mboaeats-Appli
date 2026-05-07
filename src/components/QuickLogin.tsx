@@ -62,7 +62,15 @@ export default function QuickLogin() {
     }
     setLoading(true);
     try {
-      await verifyOtpFn({ data: { phone: fullPhone, code: code.trim() } });
+      const res: any = await verifyOtpFn({ data: { phone: fullPhone, code: code.trim() } });
+      if (res?.auth?.token_hash) {
+        const { supabase } = await import("@/integrations/supabase/client");
+        const { error: vErr } = await supabase.auth.verifyOtp({
+          type: "magiclink",
+          token_hash: res.auth.token_hash,
+        });
+        if (vErr) throw new Error(vErr.message);
+      }
       const { invalidateSessionCache } = await import("@/hooks/useSessionUser");
       invalidateSessionCache();
       navigate({ to: "/" });
