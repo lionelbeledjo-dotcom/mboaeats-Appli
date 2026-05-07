@@ -31,6 +31,8 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     const ordersArr = orders ?? [];
     const gmv = ordersArr.reduce((s, o) => s + (o.total ?? 0), 0);
     const delivered = ordersArr.filter((o) => o.status === "delivered").length;
+    const PENDING_STATUSES = ["pending_payment", "paid", "accepted", "preparing", "ready", "picked_up", "delivering"];
+    const ordersPending = ordersArr.filter((o) => PENDING_STATUSES.includes(o.status as string)).length;
 
     // GMV par ville (via délivery_address.city ou via resto)
     const restoMap = new Map((restos ?? []).map((r) => [r.id, r]));
