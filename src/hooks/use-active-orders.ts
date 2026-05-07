@@ -14,11 +14,12 @@ const ACTIVE = new Set([
 
 /**
  * Returns the number of orders currently in an "in progress" state for the
- * signed-in user. Refreshes on auth changes and at a low polling cadence so
- * the BottomDock badge stays in sync with delivery status.
+ * signed-in user, plus a loading flag that is true during the initial fetch
+ * and while the Realtime channel is (re)connecting.
  */
 export function useActiveOrdersCount() {
   const [count, setCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let alive = true;
@@ -27,7 +28,10 @@ export function useActiveOrdersCount() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-          if (alive) setCount(0);
+          if (alive) {
+            setCount(0);
+            setLoading(false);
+          }
           return;
         }
         const r = (await getMyOrders()) as { orders: Array<{ status: string }> };
@@ -35,6 +39,8 @@ export function useActiveOrdersCount() {
         setCount((r.orders ?? []).filter((o) => ACTIVE.has(o.status)).length);
       } catch {
         if (alive) setCount(0);
+      } finally {
+        if (alive) setLoading(false);
       }
     };
 
@@ -47,6 +53,7 @@ export function useActiveOrdersCount() {
         supabase.removeChannel(channel);
         channel = null;
       }
+      if (alive) setLoading(true);
       channel = supabase
         .channel(`orders-active-${user.id}`)
         .on(
@@ -59,13 +66,26 @@ export function useActiveOrdersCount() {
           },
           () => refresh(),
         )
-        .subscribe();
+        .subscribe((status) => {
+          if (!alive) return;
+          if (status === "SUBSCRIBED") {
+            refresh();
+          } else if (
+            status === "CHANNEL_ERROR" ||
+            status === "TIMED_OUT" ||
+            status === "CLOSED"
+          ) {
+            // Reconnecting — surface the loading state on the badge
+            setLoading(true);
+          }
+        });
     };
 
     refresh();
     setupRealtime();
     const interval = window.setInterval(refresh, 60_000);
     const { data: sub } = supabase.auth.onAuthStateChange(() => {
+      setLoading(true);
       refresh();
       setupRealtime();
     });
@@ -78,5 +98,5 @@ export function useActiveOrdersCount() {
     };
   }, []);
 
-  return count;
+  return { count, loading };
 }
