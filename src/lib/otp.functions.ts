@@ -70,6 +70,13 @@ export const sendOtp = createServerFn({ method: "POST" })
       .insert({ phone, code_hash, expires_at });
     if (error) throw new Error("Impossible d'enregistrer le code");
 
+    // Verrouille la session sur ce numéro : seul ce numéro pourra valider l'OTP
+    const session = await getMboaSession();
+    await session.update({
+      pendingPhone: phone,
+      pendingPhoneAt: Date.now(),
+    });
+
     await sendSms(phone, `MboaEats : votre code de vérification est ${code}. Valable 5 min. Ne le partagez avec personne.`);
 
     return { ok: true, expiresIn: OTP_TTL_SECONDS };
