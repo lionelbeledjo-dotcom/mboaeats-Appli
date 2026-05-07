@@ -71,6 +71,36 @@ export const listAllRestaurants = createServerFn({ method: "GET" })
     return { restaurants: data ?? [] };
   });
 
+export const getRestaurantDetails = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data }) => {
+    const { data: resto, error } = await supabaseAdmin
+      .from("restaurants")
+      .select("*")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!resto) throw new Error("Restaurant introuvable");
+
+    let owner: { full_name: string | null; phone: string | null; city: string | null } | null = null;
+    if (resto.owner_id) {
+      const { data: p } = await supabaseAdmin
+        .from("profiles")
+        .select("full_name, phone, city")
+        .eq("user_id", resto.owner_id)
+        .maybeSingle();
+      owner = p ?? null;
+    }
+
+    const [{ count: dishesCount }, { count: ordersCount }] = await Promise.all([
+      supabaseAdmin.from("dishes").select("id", { count: "exact", head: true }).eq("restaurant_id", data.id),
+      supabaseAdmin.from("orders").select("id", { count: "exact", head: true }).eq("restaurant_id", data.id),
+    ]);
+
+    return { restaurant: resto, owner, stats: { dishes: dishesCount ?? 0, orders: ordersCount ?? 0 } };
+  });
+
 export const setRestaurantActive = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d) => z.object({ id: z.string().uuid(), is_active: z.boolean() }).parse(d))
