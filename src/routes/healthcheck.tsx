@@ -41,6 +41,16 @@ function StatusIcon({ status }: { status: Status }) {
 
 const REFRESH_INTERVAL_MS = 10_000;
 
+function formatRelative(date: Date, now: number): string {
+  const s = Math.max(0, Math.floor((now - date.getTime()) / 1000));
+  if (s < 5) return "à l'instant";
+  if (s < 60) return `il y a ${s}s`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `il y a ${m} min`;
+  return date.toLocaleTimeString();
+}
+
+
 function HealthcheckPage() {
   const [backend, setBackend] = useState<Check>({ name: "Backend (DB)", status: "loading" });
   const [auth, setAuth] = useState<Check>({ name: "Authentification", status: "loading" });
