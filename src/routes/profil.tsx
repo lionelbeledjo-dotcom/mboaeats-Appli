@@ -79,7 +79,12 @@ function ProfilPage() {
     setSigningOut(true);
     try { await supabase.auth.signOut(); } catch {}
     try {
-      localStorage.removeItem("mboa_demo_user");
+      const { logoutSession } = await import("@/lib/session.functions");
+      await logoutSession();
+    } catch {}
+    try {
+      const { invalidateSessionCache } = await import("@/hooks/useSessionUser");
+      invalidateSessionCache();
       localStorage.removeItem("mboa_tastes");
     } catch {}
     navigate({ to: "/connexion", replace: true });
