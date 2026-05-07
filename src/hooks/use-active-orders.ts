@@ -12,17 +12,23 @@ const ACTIVE = new Set([
   "delivering",
 ]);
 
+const MAX_RETRIES = 3;
+
 /**
  * Returns the number of orders currently in an "in progress" state for the
- * signed-in user, plus a loading flag that is true during the initial fetch
- * and while the Realtime channel is (re)connecting.
+ * signed-in user, plus loading and error flags. `error` becomes true when the
+ * Realtime channel fails to (re)connect after several attempts.
  */
 export function useActiveOrdersCount() {
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     let alive = true;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let retries = 0;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
 
     const refresh = async () => {
       try {
@@ -43,8 +49,6 @@ export function useActiveOrdersCount() {
         if (alive) setLoading(false);
       }
     };
-
-    let channel: ReturnType<typeof supabase.channel> | null = null;
 
     const setupRealtime = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -69,14 +73,26 @@ export function useActiveOrdersCount() {
         .subscribe((status) => {
           if (!alive) return;
           if (status === "SUBSCRIBED") {
+            retries = 0;
+            setError(false);
             refresh();
           } else if (
             status === "CHANNEL_ERROR" ||
             status === "TIMED_OUT" ||
             status === "CLOSED"
           ) {
-            // Reconnecting — surface the loading state on the badge
             setLoading(true);
+            if (retries >= MAX_RETRIES) {
+              setError(true);
+              setLoading(false);
+              return;
+            }
+            retries += 1;
+            const delay = Math.min(1000 * 2 ** retries, 8000);
+            if (retryTimer) clearTimeout(retryTimer);
+            retryTimer = setTimeout(() => {
+              if (alive) setupRealtime();
+            }, delay);
           }
         });
     };
@@ -85,6 +101,8 @@ export function useActiveOrdersCount() {
     setupRealtime();
     const interval = window.setInterval(refresh, 60_000);
     const { data: sub } = supabase.auth.onAuthStateChange(() => {
+      retries = 0;
+      setError(false);
       setLoading(true);
       refresh();
       setupRealtime();
@@ -93,10 +111,11 @@ export function useActiveOrdersCount() {
     return () => {
       alive = false;
       window.clearInterval(interval);
+      if (retryTimer) clearTimeout(retryTimer);
       sub.subscription.unsubscribe();
       if (channel) supabase.removeChannel(channel);
     };
   }, []);
 
-  return { count, loading };
+  return { count, loading, error };
 }
