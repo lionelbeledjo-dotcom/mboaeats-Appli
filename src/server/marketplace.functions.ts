@@ -84,7 +84,7 @@ export const applyPromo = createServerFn({ method: "POST" })
     if (!row) return { ok: false, error: "Code promo invalide" };
     if (row.expires_at && new Date(row.expires_at) < new Date())
       return { ok: false, error: "Code expiré" };
-    if (row.max_uses && row.uses_count >= row.max_uses)
+    if (row.max_uses && (row.uses_count ?? 0) >= row.max_uses)
       return { ok: false, error: "Code épuisé" };
     if (data.subtotal < (row.min_order ?? 0))
       return {
