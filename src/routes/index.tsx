@@ -7,6 +7,7 @@ import {
 import { restaurants as realRestaurants, getRestaurant } from "@/data/restaurants";
 import MboaExpressAssistant from "@/components/MboaExpressAssistant";
 import QuickLogin from "@/components/QuickLogin";
+import { useSessionUser } from "@/hooks/useSessionUser";
 
 // Pre-cache decoded images so menu pages render instantly on hover/intent.
 const imageCache = new Set<string>();
