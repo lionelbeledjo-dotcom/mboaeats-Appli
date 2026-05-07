@@ -75,6 +75,12 @@ function AdminSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const path = useRouterState({ select: (r) => r.location.pathname });
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try { await supabase.auth.signOut({ scope: "global" }); } catch {}
+    navigate({ to: "/admin-login", replace: true });
+  };
 
   const isActive = (item: typeof navItems[number]) =>
     item.exact ? path === item.url : path.startsWith(item.url);
