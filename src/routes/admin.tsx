@@ -10,18 +10,33 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
+import { isRedirect } from "@tanstack/react-router";
+import { verifyAdminAccess } from "@/server/admin-access.functions";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw redirect({ to: "/admin-login" });
-    const { data: role } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!role) throw redirect({ to: "/admin-login" });
+    // Skip during SSR/prerender — no client session available, the client-side
+    // re-execution after hydration will perform the real check.
+    if (typeof window === "undefined") return;
+    try {
+      // 1) Quick client-side gate (uses persisted Supabase session)
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw redirect({ to: "/admin-login" });
+      const { data: role } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      if (!role) throw redirect({ to: "/admin-login" });
+
+      // 2) Server-side authoritative verification (cannot be bypassed
+      //    by tampering with localStorage or the user_roles cache).
+      await verifyAdminAccess();
+    } catch (err) {
+      if (isRedirect(err)) throw err;
+      throw redirect({ to: "/admin-login" });
+    }
   },
   component: AdminLayout,
   head: () => ({
