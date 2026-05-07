@@ -64,6 +64,8 @@ function Connexion() {
   const navigate = useNavigate();
   const sendOtpFn = useServerFn(sendOtp);
   const verifyOtpFn = useServerFn(verifyOtp);
+  const checkAdminFn = useServerFn(checkAdminEligibility);
+  const claimAdminFn = useServerFn(claimAdminByPhone);
   const [mode, setMode] = useState<Mode>("phone");
   const [step, setStep] = useState<Step>("identify");
 
@@ -152,6 +154,22 @@ function Connexion() {
       }
       const { invalidateSessionCache } = await import("@/hooks/useSessionUser");
       invalidateSessionCache();
+
+      // Vérifier si ce compte est éligible à devenir admin
+      try {
+        const status = await checkAdminFn();
+        if (status.isAdmin) {
+          navigate({ to: "/admin" });
+          return;
+        }
+        if (status.eligible) {
+          await claimAdminFn();
+          navigate({ to: "/admin" });
+          return;
+        }
+      } catch {
+        // ignore — utilisateur normal
+      }
       navigate({ to: "/" });
     } catch (err: any) {
       setError(err?.message ?? "Code invalide");
