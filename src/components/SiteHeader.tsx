@@ -29,23 +29,75 @@ const NAV_ITEMS: ReadonlyArray<{
 export function SiteHeader() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
+  const burgerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  // +1 pour le CTA "Commander maintenant" en bas du panneau
+  const itemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
 
   const isActive = (to: string, exact?: boolean) =>
     exact ? pathname === to : pathname === to || pathname.startsWith(to + "/");
 
-  // Ferme le menu burger à chaque changement de route
+  // Ferme le menu burger à chaque changement de route + restaure le focus sur le burger
   useEffect(() => {
-    setOpen(false);
+    setOpen((wasOpen) => {
+      if (wasOpen) {
+        // Le panneau était ouvert : on rend le focus au déclencheur après navigation
+        requestAnimationFrame(() => burgerRef.current?.focus());
+      }
+      return false;
+    });
   }, [pathname]);
 
-  // Bloque le scroll body quand le menu est ouvert
+  // Bloque le scroll body + ferme avec Échap quand le menu est ouvert
   useEffect(() => {
     if (typeof document === "undefined") return;
     document.body.style.overflow = open ? "hidden" : "";
+
+    if (!open) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setOpen(false);
+        burgerRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+
+    // Focus sur le 1er item à l'ouverture
+    const t = window.setTimeout(() => itemRefs.current[0]?.focus(), 80);
+
     return () => {
       document.body.style.overflow = "";
+      document.removeEventListener("keydown", onKeyDown);
+      window.clearTimeout(t);
     };
   }, [open]);
+
+  // Navigation clavier (roving focus) dans le panneau mobile
+  const onItemKeyDown = (e: ReactKeyboardEvent<HTMLAnchorElement>, index: number) => {
+    const items = itemRefs.current.filter(Boolean) as HTMLAnchorElement[];
+    if (items.length === 0) return;
+
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        items[(index + 1) % items.length]?.focus();
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        items[(index - 1 + items.length) % items.length]?.focus();
+        break;
+      case "Home":
+        e.preventDefault();
+        items[0]?.focus();
+        break;
+      case "End":
+        e.preventDefault();
+        items[items.length - 1]?.focus();
+        break;
+    }
+  };
 
   return (
     <header
