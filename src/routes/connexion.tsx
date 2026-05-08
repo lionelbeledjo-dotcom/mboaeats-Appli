@@ -112,29 +112,22 @@ function Connexion() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-neutral-950">
-      {/* Decorative background */}
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-32 -left-24 h-80 w-80 rounded-full bg-orange-500/30 blur-3xl" />
-        <div className="absolute top-1/3 -right-24 h-96 w-96 rounded-full bg-emerald-500/20 blur-3xl" />
-        <div className="absolute -bottom-24 left-1/3 h-80 w-80 rounded-full bg-fuchsia-500/20 blur-3xl" />
-      </div>
-
-      <div className="relative mx-auto flex min-h-screen w-full max-w-md flex-col items-center justify-center px-5 py-10">
+    <div className="min-h-screen bg-white">
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col items-center justify-center px-5 py-10">
         {/* Logo */}
         <div className="mb-8 flex flex-col items-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-xl ring-1 ring-white/20 shadow-2xl">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#06C167]">
             <span className="text-3xl">🍲</span>
           </div>
-          <h2 className="mt-3 text-lg font-bold tracking-tight text-white">MboaEats</h2>
+          <h2 className="mt-3 text-lg font-bold tracking-tight text-black">MboaEats</h2>
         </div>
 
-        {/* Glass card */}
-        <div className="w-full rounded-3xl border border-white/15 bg-white/10 p-6 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)] backdrop-blur-2xl">
-          <h1 className="text-center text-2xl font-bold tracking-tight text-white">
+        {/* Card */}
+        <div className="w-full rounded-2xl bg-white p-6 shadow-[0_2px_24px_-8px_rgba(0,0,0,0.08)] ring-1 ring-neutral-100">
+          <h1 className="text-center text-2xl font-bold tracking-tight text-black">
             {step === "phone" ? "Connexion" : "Vérification"}
           </h1>
-          <p className="mt-1 text-center text-sm text-white/70">
+          <p className="mt-1 text-center text-sm text-[#6B6B6B]">
             {step === "phone"
               ? "Entrez votre numéro pour recevoir un code"
               : `Code envoyé au ${fullPhone}`}
@@ -142,15 +135,15 @@ function Connexion() {
 
           {step === "phone" ? (
             <form onSubmit={handleSend} className="mt-6 space-y-3">
-              <div className="flex items-center gap-2 rounded-2xl border border-white/20 bg-white/10 p-1.5 transition focus-within:border-white/50 focus-within:bg-white/15">
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setShowCountries((v) => !v)}
-                  className="flex items-center gap-1.5 rounded-xl bg-white/15 px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/25"
+                  className="flex h-12 items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 text-sm font-semibold text-black hover:bg-neutral-50"
                 >
                   <span className="text-base leading-none">{country.flag}</span>
                   <span>{country.dial}</span>
-                  <ChevronDown className="h-3.5 w-3.5 opacity-70" />
+                  <ChevronDown className="h-3.5 w-3.5 text-[#6B6B6B]" />
                 </button>
                 <input
                   type="tel"
@@ -159,12 +152,12 @@ function Connexion() {
                   placeholder="6XX XXX XXX"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="flex-1 bg-transparent px-2 py-2.5 text-base text-white placeholder:text-white/50 outline-none"
+                  className="h-12 flex-1 rounded-xl bg-[#F6F6F6] px-4 text-base font-medium text-black placeholder:text-[#9b9b9b] outline-none focus:ring-2 focus:ring-black/10"
                 />
               </div>
 
               {showCountries && (
-                <div className="max-h-48 overflow-y-auto rounded-2xl border border-white/20 bg-neutral-900/80 p-2 backdrop-blur-xl">
+                <div className="max-h-48 overflow-y-auto rounded-xl border border-neutral-200 bg-white p-2 shadow-sm">
                   {COUNTRIES.map((c) => (
                     <button
                       key={c.code}
@@ -173,22 +166,22 @@ function Connexion() {
                         setCountryCode(c.code);
                         setShowCountries(false);
                       }}
-                      className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-white hover:bg-white/10 ${
-                        c.code === countryCode ? "bg-white/10" : ""
+                      className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-black hover:bg-neutral-50 ${
+                        c.code === countryCode ? "bg-neutral-50" : ""
                       }`}
                     >
                       <span className="flex items-center gap-2">
                         <span className="text-base leading-none">{c.flag}</span>
                         <span>{c.name}</span>
                       </span>
-                      <span className="text-xs text-white/60">{c.dial}</span>
+                      <span className="text-xs text-[#6B6B6B]">{c.dial}</span>
                     </button>
                   ))}
                 </div>
               )}
 
               {error && (
-                <div className="flex items-start gap-2 rounded-xl border border-red-400/40 bg-red-500/15 p-2.5 text-xs text-red-100">
+                <div className="flex items-start gap-2 rounded-xl bg-red-50 p-2.5 text-xs text-red-700">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                   <span>{error}</span>
                 </div>
@@ -197,13 +190,13 @@ function Connexion() {
               <button
                 type="submit"
                 disabled={loading}
-                className="mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white text-sm font-bold text-neutral-900 shadow-lg transition active:scale-[0.99] disabled:opacity-60"
+                className="mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#06C167] text-sm font-bold text-white transition hover:bg-[#05a857] active:scale-[0.99] disabled:opacity-60"
               >
                 {loading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <>
-                    <Phone className="h-4 w-4" /> Recevoir le code
+                    Recevoir le code
                     <ArrowRight className="h-4 w-4" />
                   </>
                 )}
@@ -212,7 +205,7 @@ function Connexion() {
           ) : (
             <form onSubmit={handleVerify} className="mt-6 space-y-3">
               {devCode && (
-                <div className="rounded-xl border border-amber-300/40 bg-amber-300/10 p-2.5 text-xs text-amber-100">
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-2.5 text-xs text-amber-800">
                   🛠️ Mode dev — code : <span className="font-mono font-bold">{devCode}</span>
                 </div>
               )}
@@ -224,11 +217,11 @@ function Connexion() {
                 placeholder="••••••"
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-                className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3.5 text-center text-2xl font-bold tracking-[0.5em] text-white outline-none placeholder:text-white/40 focus:border-white/50"
+                className="w-full rounded-xl bg-[#F6F6F6] px-4 py-3.5 text-center text-2xl font-bold tracking-[0.5em] text-black placeholder:text-[#c4c4c4] outline-none focus:ring-2 focus:ring-black/10"
                 autoFocus
               />
               {error && (
-                <div className="flex items-start gap-2 rounded-xl border border-red-400/40 bg-red-500/15 p-2.5 text-xs text-red-100">
+                <div className="flex items-start gap-2 rounded-xl bg-red-50 p-2.5 text-xs text-red-700">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                   <span>{error}</span>
                 </div>
@@ -236,7 +229,7 @@ function Connexion() {
               <button
                 type="submit"
                 disabled={loading}
-                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white text-sm font-bold text-neutral-900 shadow-lg transition active:scale-[0.99] disabled:opacity-60"
+                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#06C167] text-sm font-bold text-white transition hover:bg-[#05a857] active:scale-[0.99] disabled:opacity-60"
               >
                 {loading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -253,7 +246,7 @@ function Connexion() {
                   handleSend(new Event("submit") as unknown as React.FormEvent);
                 }}
                 disabled={resendIn > 0 || loading}
-                className="block w-full text-center text-xs font-medium text-white/80 underline-offset-4 hover:underline disabled:text-white/40 disabled:no-underline"
+                className="block w-full text-center text-xs font-medium text-black underline-offset-4 hover:underline disabled:text-[#9b9b9b] disabled:no-underline"
               >
                 {resendIn > 0 ? `Renvoyer le code dans ${resendIn}s` : "Renvoyer le code"}
               </button>
@@ -265,7 +258,7 @@ function Connexion() {
                   setError(null);
                   setDevCode(null);
                 }}
-                className="block w-full text-center text-xs text-white/60 underline-offset-4 hover:underline"
+                className="block w-full text-center text-xs text-[#6B6B6B] underline-offset-4 hover:underline"
               >
                 Modifier le numéro
               </button>
@@ -274,25 +267,25 @@ function Connexion() {
         </div>
 
         {/* Signup block */}
-        <div className="mt-6 w-full rounded-2xl border border-white/15 bg-white/5 px-5 py-4 text-center backdrop-blur-xl">
-          <p className="text-sm text-white/80">
+        <div className="mt-6 w-full text-center">
+          <p className="text-sm text-black">
             Nouveau sur MboaEats ?{" "}
             <Link
               to="/inscription"
-              className="font-bold text-white underline underline-offset-4 hover:text-orange-300"
+              className="font-bold text-[#06C167] hover:underline underline-offset-4"
             >
               Créer un compte
             </Link>
           </p>
         </div>
 
-        <p className="mt-6 text-center text-[11px] text-white/50">
+        <p className="mt-6 text-center text-[11px] text-[#6B6B6B]">
           En continuant tu acceptes nos{" "}
-          <Link to="/cgu" className="underline underline-offset-2 hover:text-white">
+          <Link to="/cgu" className="underline underline-offset-2 hover:text-black">
             CGU
           </Link>{" "}
           et notre{" "}
-          <Link to="/confidentialite" className="underline underline-offset-2 hover:text-white">
+          <Link to="/confidentialite" className="underline underline-offset-2 hover:text-black">
             politique de confidentialité
           </Link>
           .
