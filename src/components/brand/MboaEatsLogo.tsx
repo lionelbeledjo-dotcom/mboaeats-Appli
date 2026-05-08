@@ -47,21 +47,20 @@ export function MboaEatsLogo({
   );
 
   const inner = (
-    <div className="flex flex-col items-start">
-      <DeliveryBadge className="mb-2 ml-[2px] sm:ml-[3px]" />
+    <div className="flex min-w-0 flex-col items-center text-center sm:items-start sm:text-left">
+      <DeliveryBadge className="mb-2" />
       {wordmark}
     </div>
   );
 
   if (!withContainer) {
-    // Variant without green background (for use over existing dark surfaces)
-    return <div className={className}>{inner}</div>;
+    return <div className={cn("max-w-full", className)}>{inner}</div>;
   }
 
   return (
     <div
       className={cn(
-        "rounded-2xl bg-[#0A8F4E] shadow-[0_12px_32px_-14px_rgba(6,193,103,0.55)] sm:rounded-3xl",
+        "mx-auto inline-flex max-w-full rounded-2xl bg-[#0A8F4E] shadow-[0_12px_32px_-14px_rgba(6,193,103,0.55)] sm:rounded-3xl",
         PADDING_SIZES[size],
         className,
       )}
