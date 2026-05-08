@@ -22,7 +22,8 @@ export const Route = createFileRoute("/profil")({
 
 function ProfilPage() {
   const navigate = useNavigate();
-  const { user: sessionUser, refresh: refreshSession } = useSessionUser();
+  const { user: sessionUser, loading: sessionLoading, refresh: refreshSession } = useSessionUser();
+  const [authChecked, setAuthChecked] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [authEmail, setAuthEmail] = useState<string | null>(null);
