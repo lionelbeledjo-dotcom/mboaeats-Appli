@@ -349,7 +349,7 @@ function Connexion() {
       </div>
 
       <div className="relative z-[1] mx-auto flex min-h-screen w-full max-w-[548px] flex-col px-6 pt-[46px]">
-        <div className="mb-[50px] flex flex-col items-center text-center">
+        <div className="mb-[28px] flex flex-col items-center text-center">
           <div className="relative mb-6 flex h-20 w-20 items-center justify-center rounded-[31px] bg-gradient-to-br from-[#ffa414] via-[#ff850c] to-[#ff5b05] shadow-[0_0_58px_rgba(255,128,10,0.42)]">
             <div className="absolute inset-[-28px] -z-10 rounded-full bg-[#ff8908]/20 blur-3xl" aria-hidden />
             <Flame className="h-10 w-10 text-white" strokeWidth={2.35} />
