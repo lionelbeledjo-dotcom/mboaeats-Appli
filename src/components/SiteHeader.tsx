@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, ShoppingBag, UtensilsCrossed, LifeBuoy, Menu, X, MoreHorizontal } from "lucide-react";
 import { MboaEatsLogo } from "@/components/brand/MboaEatsLogo";
