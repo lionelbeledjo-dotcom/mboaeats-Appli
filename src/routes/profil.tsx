@@ -360,7 +360,7 @@ function ProfilPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</h2>
+      <h2 className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground dark:text-white">{title}</h2>
       <ul className="mt-2 divide-y divide-border/60 rounded-2xl border border-border bg-surface/60">
         {children}
       </ul>
