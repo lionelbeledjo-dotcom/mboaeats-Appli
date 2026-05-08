@@ -699,7 +699,7 @@ function Connexion() {
           )}
 
           {step === "otp" && (
-            <form onSubmit={submitCode} className="space-y-5 animate-fade-up">
+            <form id="otp-form" onSubmit={submitCode} className="space-y-5 animate-fade-up">
               <div className="text-center">
                 <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-600 shadow-[0_0_30px_rgba(251,146,60,0.5)]">
                   <ShieldCheck className="h-6 w-6 text-white" />
