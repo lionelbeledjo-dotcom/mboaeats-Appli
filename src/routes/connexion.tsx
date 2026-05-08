@@ -137,7 +137,7 @@ function Connexion() {
       return;
     }
     setChannel("email");
-    setStep("channel");
+    await sendCode("email");
   };
 
   const sendCode = async (overrideChannel?: Channel) => {
@@ -151,8 +151,17 @@ function Connexion() {
         await sendOtpFn({ data: { phone: fullPhone, channel: ch } });
         if (overrideChannel) setChannel(overrideChannel);
         setStep("otp");
+      } else if (mode === "email" || ch === "email") {
+        const { supabase } = await import("@/integrations/supabase/client");
+        const { error: sErr } = await supabase.auth.signInWithOtp({
+          email: email.trim(),
+          options: { shouldCreateUser: true, emailRedirectTo: window.location.origin },
+        });
+        if (sErr) throw new Error(sErr.message);
+        setChannel("email");
+        setStep("otp");
       } else {
-        setError("Ce canal n'est pas encore disponible. Choisissez SMS ou WhatsApp.");
+        setError("Ce canal n'est pas disponible.");
       }
     } catch (err: any) {
       const msg = err?.message ?? "Échec de l'envoi du code";
@@ -177,7 +186,6 @@ function Connexion() {
       if (mode === "phone" && (channel === "sms" || channel === "whatsapp")) {
         const fullPhone = formatPhoneForOtp(country.dial, phone);
         const res: any = await verifyOtpFn({ data: { phone: fullPhone, code: code.trim() } });
-        // Ouvre une vraie session Supabase Auth pour que les endpoints protégés fonctionnent
         if (res?.auth?.token_hash) {
           const { supabase } = await import("@/integrations/supabase/client");
           const { error: vErr } = await supabase.auth.verifyOtp({
@@ -186,6 +194,14 @@ function Connexion() {
           });
           if (vErr) throw new Error(vErr.message);
         }
+      } else if (mode === "email") {
+        const { supabase } = await import("@/integrations/supabase/client");
+        const { error: vErr } = await supabase.auth.verifyOtp({
+          email: email.trim(),
+          token: code.trim(),
+          type: "email",
+        });
+        if (vErr) throw new Error(vErr.message);
       }
       const { invalidateSessionCache } = await import("@/hooks/useSessionUser");
       invalidateSessionCache();
@@ -455,7 +471,7 @@ function Connexion() {
           {step === "otp" && (
             <form onSubmit={submitCode} className="space-y-4 animate-fade-up">
               <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 text-xs">
-                {channel === "whatsapp" ? "💬 Code envoyé par WhatsApp" : "📩 Code envoyé par SMS"} au <span className="font-semibold">{identifierLabel}</span>. Saisissez les 6 chiffres reçus.
+                {channel === "whatsapp" ? "💬 Code envoyé par WhatsApp" : channel === "email" ? "📧 Code envoyé par email" : "📩 Code envoyé par SMS"} à <span className="font-semibold">{identifierLabel}</span>. Saisissez les 6 chiffres reçus.
               </div>
 
               <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
