@@ -313,6 +313,9 @@ function Connexion() {
     } finally {
       setResendingSms(false);
     }
+  };
+
+  const verifyCode = async (code: string) => {
     resetMessages();
     if (!/^\d{6}$/.test(code)) {
       setError("Saisissez les 6 chiffres reçus.");
