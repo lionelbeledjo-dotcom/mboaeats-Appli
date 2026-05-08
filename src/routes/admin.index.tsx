@@ -46,13 +46,13 @@ const LAST_ORDERS: OrderRow[] = [
 function Overview() {
   const [selected, setSelected] = useState<OrderRow | null>(null);
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-6">
+    <div className="mx-auto max-w-7xl space-y-4 p-3 sm:space-y-6 sm:p-6">
       <div>
-        <h1 className="font-display text-3xl font-extrabold">Vue d'ensemble</h1>
-        <p className="text-sm text-muted-foreground">Activité MboaEats · Douala · Aperçu en direct</p>
+        <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Vue d'ensemble</h1>
+        <p className="text-xs text-muted-foreground sm:text-sm">Activité MboaEats · Douala · Aperçu en direct</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:gap-4 lg:grid-cols-4">
         {KPIS.map((k) => (
           <div key={k.label} className="rounded-3xl border border-border bg-surface/60 p-5">
             <div className="flex items-center justify-between">
