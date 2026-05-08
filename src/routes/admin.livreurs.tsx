@@ -147,13 +147,13 @@ function Livreurs() {
           <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Livreurs</h1>
           <p className="text-sm text-muted-foreground">{counts.all} livreurs · {counts.online} en ligne · {counts.inactive} désactivés</p>
         </div>
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Rechercher (nom, téléphone, ville)…"
-            className="rounded-xl border border-border bg-surface/60 py-2 pl-9 pr-3 text-sm outline-none focus:border-primary"
+            className="w-full rounded-xl border border-border bg-surface/60 py-2.5 pl-9 pr-3 text-sm outline-none focus:border-primary sm:w-auto sm:py-2"
           />
         </div>
       </div>
