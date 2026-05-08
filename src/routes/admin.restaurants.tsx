@@ -8,10 +8,12 @@ import {
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { listAllRestaurants, setRestaurantActive, getRestaurantDetails, updateRestaurantLocation } from "@/server/admin.functions";
+import { listAllRestaurants, setRestaurantActive, getRestaurantDetails, updateRestaurantLocation, updateRestaurant, deleteRestaurant } from "@/server/admin.functions";
 import RestaurantMap from "@/components/admin/RestaurantMap";
 import { supabase } from "@/integrations/supabase/client";
 import { ErrorState } from "@/components/admin/ErrorState";
+import { Modal, Field, inputCls } from "@/components/admin/Modal";
+import { Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/admin/restaurants")({
   head: () => ({ meta: [{ title: "Restaurants · Admin MboaEats" }, { name: "robots", content: "noindex,nofollow" }] }),
@@ -36,6 +38,8 @@ function Restaurants() {
   const fetchAll = useServerFn(listAllRestaurants);
   const setActive = useServerFn(setRestaurantActive);
   const fetchDetails = useServerFn(getRestaurantDetails);
+  const updateResto = useServerFn(updateRestaurant);
+  const deleteResto = useServerFn(deleteRestaurant);
   const [list, setList] = useState<Resto[] | null>(null);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<StatusFilter>("all");
@@ -45,6 +49,7 @@ function Restaurants() {
   const [details, setDetails] = useState<Details>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editing, setEditing] = useState<Resto | null>(null);
 
   const openDetails = async (id: string) => {
     setOpenId(id);
@@ -89,6 +94,20 @@ function Restaurants() {
       setList((cur) =>
         (cur ?? []).map((x) => (x.id === r.id ? { ...x, is_active: next } : x))
       );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erreur");
+    } finally {
+      setPendingId(null);
+    }
+  };
+
+  const handleDelete = async (r: Resto) => {
+    if (!window.confirm(`Supprimer DÉFINITIVEMENT « ${r.name} » et toutes ses données ? Cette action est irréversible.`)) return;
+    setPendingId(r.id);
+    try {
+      await deleteResto({ data: { id: r.id } });
+      toast.success("Restaurant supprimé");
+      setList((cur) => (cur ?? []).filter((x) => x.id !== r.id));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erreur");
     } finally {
@@ -292,6 +311,22 @@ function Restaurants() {
                     Approuver et publier
                   </button>
                 )}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setEditing(r)}
+                    disabled={busy}
+                    className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-border bg-background/50 text-xs font-semibold transition hover:bg-background disabled:opacity-60"
+                  >
+                    <Pencil className="h-3.5 w-3.5" /> Éditer
+                  </button>
+                  <button
+                    onClick={() => handleDelete(r)}
+                    disabled={busy}
+                    className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-destructive/40 bg-destructive/10 text-xs font-semibold text-destructive transition hover:bg-destructive/20 disabled:opacity-60"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> Supprimer
+                  </button>
+                </div>
               </div>
             </div>
           );
@@ -311,7 +346,51 @@ function Restaurants() {
           onClose={() => { setOpenId(null); setDetails(null); }}
         />
       )}
+
+      {editing && (
+        <EditRestoModal
+          resto={editing}
+          onClose={() => setEditing(null)}
+          onSave={async (patch) => {
+            await updateResto({ data: { id: editing.id, ...patch } });
+            toast.success("Restaurant mis à jour");
+            setList((cur) => (cur ?? []).map((x) => (x.id === editing.id ? { ...x, ...patch } as Resto : x)));
+            setEditing(null);
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+function EditRestoModal({ resto, onClose, onSave }: { resto: Resto; onClose: () => void; onSave: (patch: { name: string; cuisine: string; city: string; neighborhood: string | null }) => Promise<void> }) {
+  const [name, setName] = useState(resto.name);
+  const [cuisine, setCuisine] = useState(resto.cuisine);
+  const [city, setCity] = useState(resto.city);
+  const [neighborhood, setNeighborhood] = useState(resto.neighborhood ?? "");
+  const [saving, setSaving] = useState(false);
+  const submit = async () => {
+    setSaving(true);
+    try { await onSave({ name, cuisine, city, neighborhood: neighborhood || null }); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Erreur"); }
+    finally { setSaving(false); }
+  };
+  return (
+    <Modal title={`Éditer · ${resto.name}`} onClose={onClose} footer={
+      <>
+        <button onClick={onClose} className="rounded-xl border border-border px-4 py-2 text-sm font-semibold">Annuler</button>
+        <button onClick={submit} disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-4 py-2 text-sm font-bold text-primary-foreground disabled:opacity-60">
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Enregistrer
+        </button>
+      </>
+    }>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Field label="Nom"><input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} /></Field>
+        <Field label="Cuisine"><input className={inputCls} value={cuisine} onChange={(e) => setCuisine(e.target.value)} /></Field>
+        <Field label="Ville"><input className={inputCls} value={city} onChange={(e) => setCity(e.target.value)} /></Field>
+        <Field label="Quartier"><input className={inputCls} value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} /></Field>
+      </div>
+    </Modal>
   );
 }
 

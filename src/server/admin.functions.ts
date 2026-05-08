@@ -332,3 +332,119 @@ export const getCommissionsReport = createServerFn({ method: "GET" })
       avgRate: totalGmv ? Number(((totalCommission / totalGmv) * 100).toFixed(1)) : 0,
     };
   });
+
+// ===== Update / Delete : Restaurants =====
+export const updateRestaurant = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d) =>
+    z.object({
+      id: z.string().uuid(),
+      name: z.string().min(1).max(120).optional(),
+      cuisine: z.string().min(1).max(80).optional(),
+      city: z.string().min(1).max(80).optional(),
+      neighborhood: z.string().max(120).nullable().optional(),
+      address: z.string().max(200).nullable().optional(),
+      delivery_fee: z.number().int().min(0).max(50000).optional(),
+      min_order: z.number().int().min(0).max(1000000).optional(),
+      eta_min: z.number().int().min(0).max(240).optional(),
+      eta_max: z.number().int().min(0).max(240).optional(),
+    }).parse(d)
+  )
+  .handler(async ({ data }) => {
+    const { id, ...patch } = data;
+    const { error } = await supabaseAdmin.from("restaurants").update(patch).eq("id", id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const deleteRestaurant = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data }) => {
+    const { error } = await supabaseAdmin.from("restaurants").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// ===== Update / Delete : Drivers =====
+export const getDriverDetails = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data }) => {
+    const [{ data: profile }, { data: loc }, { data: orders }] = await Promise.all([
+      supabaseAdmin.from("profiles").select("user_id, full_name, phone, city, created_at").eq("user_id", data.id).maybeSingle(),
+      supabaseAdmin.from("driver_locations").select("*").eq("driver_id", data.id).maybeSingle(),
+      supabaseAdmin.from("orders").select("id, reference, status, delivery_fee, delivered_at").eq("driver_id", data.id).order("created_at", { ascending: false }).limit(20),
+    ]);
+    return { profile: profile ?? null, location: loc ?? null, orders: orders ?? [] };
+  });
+
+export const updateDriverProfile = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d) =>
+    z.object({
+      id: z.string().uuid(),
+      full_name: z.string().min(1).max(120).optional(),
+      phone: z.string().max(40).nullable().optional(),
+      city: z.string().max(80).nullable().optional(),
+    }).parse(d)
+  )
+  .handler(async ({ data }) => {
+    const { id, ...patch } = data;
+    const { error } = await supabaseAdmin.from("profiles").update(patch).eq("user_id", id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const deleteDriver = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data }) => {
+    await supabaseAdmin.from("user_roles").delete().eq("user_id", data.id).eq("role", "livreur" as never);
+    const { error } = await supabaseAdmin.from("driver_locations").delete().eq("driver_id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// ===== View / Update / Delete : Disputes =====
+export const getDisputeDetails = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data }) => {
+    const { data: dispute, error } = await supabaseAdmin.from("disputes").select("*").eq("id", data.id).maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!dispute) throw new Error("Litige introuvable");
+    const [{ data: order }, { data: resto }, { data: client }] = await Promise.all([
+      dispute.order_id ? supabaseAdmin.from("orders").select("id, reference, total, status, created_at").eq("id", dispute.order_id).maybeSingle() : Promise.resolve({ data: null }),
+      dispute.restaurant_id ? supabaseAdmin.from("restaurants").select("id, name, city").eq("id", dispute.restaurant_id).maybeSingle() : Promise.resolve({ data: null }),
+      supabaseAdmin.from("profiles").select("full_name, phone, city").eq("user_id", dispute.user_id).maybeSingle(),
+    ]);
+    return { dispute, order: order ?? null, restaurant: resto ?? null, client: client ?? null };
+  });
+
+export const updateDispute = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d) =>
+    z.object({
+      id: z.string().uuid(),
+      priority: z.enum(["low", "medium", "high"]).optional(),
+      description: z.string().max(2000).nullable().optional(),
+      amount: z.number().int().min(0).optional(),
+      reason: z.string().min(1).max(200).optional(),
+    }).parse(d)
+  )
+  .handler(async ({ data }) => {
+    const { id, ...patch } = data;
+    const { error } = await supabaseAdmin.from("disputes").update(patch).eq("id", id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const deleteDispute = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data }) => {
+    const { error } = await supabaseAdmin.from("disputes").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
