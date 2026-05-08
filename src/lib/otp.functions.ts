@@ -12,37 +12,155 @@ function hashCode(phone: string, code: string) {
   return createHash("sha256").update(`${phone}:${code}`).digest("hex");
 }
 
-function normalizePhone(phone: string) {
+/**
+ * Normalise un numéro vers le format E.164 (+<indicatif><numéro>).
+ * - Supprime espaces, tirets, parenthèses, points
+ * - "00xx..." -> "+xx..."
+ * - "06/07XXXXXXXX" (10 chiffres) -> "+33XXXXXXXXX" (mobile France)
+ * - "6XXXXXXXX" (9 chiffres commençant par 6) -> "+237XXXXXXXX" (mobile Cameroun)
+ * - Rejette tout numéro qui ne devient pas un E.164 valide.
+ */
+function normalizePhone(phone: string): string {
+  if (!phone || typeof phone !== "string") {
+    throw new Error("Numéro de téléphone manquant.");
+  }
   const trimmed = phone.trim();
-  const rawDigits = trimmed.replace(/\D/g, "");
-  const digits = rawDigits.startsWith("00") ? rawDigits.slice(2) : rawDigits;
-  const normalized = `+${digits}`;
-  if (!/^\+\d{6,15}$/.test(normalized)) throw new Error("Numéro invalide");
-  return normalized;
+
+  // Si déjà au format international "+..."
+  if (trimmed.startsWith("+")) {
+    const digits = trimmed.slice(1).replace(/\D/g, "");
+    const normalized = `+${digits}`;
+    if (!/^\+\d{8,15}$/.test(normalized)) {
+      throw new Error("Numéro invalide. Utilisez le format international, ex: +237612345678.");
+    }
+    return normalized;
+  }
+
+  let cleaned = trimmed.replace(/\D/g, "");
+
+  // 00xx... -> +xx...
+  if (cleaned.startsWith("00")) {
+    cleaned = cleaned.slice(2);
+    const normalized = `+${cleaned}`;
+    if (!/^\+\d{8,15}$/.test(normalized)) {
+      throw new Error("Numéro invalide. Vérifiez l'indicatif pays.");
+    }
+    return normalized;
+  }
+
+  // France mobile : 06/07 + 8 chiffres = 10 chiffres
+  if (/^0[67]\d{8}$/.test(cleaned)) {
+    return `+33${cleaned.substring(1)}`;
+  }
+
+  // Cameroun mobile : 6XXXXXXXX (9 chiffres commençant par 6)
+  if (/^6\d{8}$/.test(cleaned)) {
+    return `+237${cleaned}`;
+  }
+
+  // Cameroun déjà préfixé sans '+' : 237XXXXXXXXX
+  if (/^237\d{8,9}$/.test(cleaned)) {
+    return `+${cleaned}`;
+  }
+
+  // France déjà préfixée sans '+' : 33XXXXXXXXX
+  if (/^33\d{9}$/.test(cleaned)) {
+    return `+${cleaned}`;
+  }
+
+  throw new Error(
+    "Format de numéro non reconnu. Utilisez le format international (ex: +237612345678 ou +33612345678)."
+  );
 }
 
-async function sendSms(to: string, body: string) {
+type OtpChannel = "sms" | "whatsapp";
+
+/**
+ * Envoie un message via Twilio (SMS ou WhatsApp) à travers le Lovable Gateway.
+ * Loggue intégralement le résultat Twilio et lève une erreur claire en cas d'échec.
+ */
+async function sendTwilioMessage(opts: {
+  to: string;
+  body: string;
+  channel: OtpChannel;
+}) {
+  const { to, body, channel } = opts;
+
   const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
   const TWILIO_API_KEY = process.env.TWILIO_API_KEY;
   const TWILIO_FROM_NUMBER = process.env.TWILIO_FROM_NUMBER;
-  if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY manquant");
-  if (!TWILIO_API_KEY) throw new Error("TWILIO_API_KEY manquant");
-  if (!TWILIO_FROM_NUMBER) throw new Error("TWILIO_FROM_NUMBER manquant");
+  // Optionnel : numéro WhatsApp dédié (sandbox: +14155238886, ou WA Business)
+  const TWILIO_WHATSAPP_FROM =
+    process.env.TWILIO_WHATSAPP_FROM || process.env.TWILIO_FROM_NUMBER;
 
-  const res = await fetch(`${GATEWAY_URL}/Messages.json`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${LOVABLE_API_KEY}`,
-      "X-Connection-Api-Key": TWILIO_API_KEY,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: new URLSearchParams({ To: to, From: TWILIO_FROM_NUMBER, Body: body }),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    console.error("Twilio error", res.status, data);
-    throw new Error(`Échec d'envoi du SMS (${res.status})`);
+  if (!LOVABLE_API_KEY) throw new Error("Configuration manquante (LOVABLE_API_KEY).");
+  if (!TWILIO_API_KEY) throw new Error("Configuration manquante (TWILIO_API_KEY).");
+  if (!TWILIO_FROM_NUMBER) throw new Error("Configuration manquante (TWILIO_FROM_NUMBER).");
+
+  const fromRaw = channel === "whatsapp" ? TWILIO_WHATSAPP_FROM! : TWILIO_FROM_NUMBER!;
+  const From = channel === "whatsapp"
+    ? (fromRaw.startsWith("whatsapp:") ? fromRaw : `whatsapp:${fromRaw}`)
+    : fromRaw;
+  const To = channel === "whatsapp" ? `whatsapp:${to}` : to;
+
+  const params = new URLSearchParams({ To, From, Body: body });
+
+  let res: Response;
+  try {
+    res = await fetch(`${GATEWAY_URL}/Messages.json`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "X-Connection-Api-Key": TWILIO_API_KEY,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: params,
+    });
+  } catch (err: any) {
+    console.error("[OTP] Network error contacting Twilio gateway:", err?.message || err);
+    throw new Error("Service d'envoi indisponible. Réessayez ou utilisez WhatsApp.");
   }
+
+  const data: any = await res.json().catch(() => ({}));
+
+  // Log complet (status / sid / errorCode / errorMessage)
+  console.log("[OTP] Twilio send result:", {
+    httpStatus: res.status,
+    channel,
+    to: data?.to ?? To,
+    from: data?.from ?? From,
+    sid: data?.sid,
+    status: data?.status,
+    errorCode: data?.error_code ?? data?.errorCode ?? null,
+    errorMessage: data?.error_message ?? data?.errorMessage ?? null,
+  });
+
+  if (!res.ok || data?.error_code) {
+    const code = data?.error_code ?? res.status;
+    const msg = data?.error_message || data?.message || "envoi impossible";
+
+    // Erreurs Twilio fréquentes -> message utilisateur lisible
+    // 21608 : numéro non vérifié sur compte Trial
+    // 21211 : numéro destinataire invalide
+    // 21614 : numéro non SMS-capable
+    // 63007/63016 : WhatsApp — destinataire non opt-in / hors fenêtre 24h
+    if (code === 21608) {
+      throw new Error(
+        "Ce numéro n'est pas autorisé (compte Twilio en mode Test). Activez un compte payant ou vérifiez ce numéro dans Twilio. Sinon, essayez WhatsApp."
+      );
+    }
+    if (code === 21211 || code === 21614) {
+      throw new Error("Numéro invalide ou non compatible SMS. Réessayez ou utilisez WhatsApp.");
+    }
+    if (channel === "whatsapp" && (code === 63007 || code === 63016)) {
+      throw new Error(
+        "WhatsApp : ce numéro n'a pas encore activé la conversation avec notre bot. Envoyez d'abord 'join' au numéro WhatsApp Twilio, puis réessayez."
+      );
+    }
+
+    throw new Error(`Erreur d'envoi (code ${code}). ${msg}. Réessayez ou utilisez ${channel === "sms" ? "WhatsApp" : "SMS"}.`);
+  }
+
   return data;
 }
 
