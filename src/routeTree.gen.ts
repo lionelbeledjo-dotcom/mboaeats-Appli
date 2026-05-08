@@ -22,6 +22,7 @@ import { Route as ParrainageRouteImport } from './routes/parrainage'
 import { Route as MboapassRouteImport } from './routes/mboapass'
 import { Route as MboaAiRouteImport } from './routes/mboa-ai'
 import { Route as LivreurRouteImport } from './routes/livreur'
+import { Route as InscriptionRouteImport } from './routes/inscription'
 import { Route as HealthcheckRouteImport } from './routes/healthcheck'
 import { Route as FideliteRouteImport } from './routes/fidelite'
 import { Route as FavorisRouteImport } from './routes/favoris'
@@ -37,6 +38,7 @@ import { Route as CguRouteImport } from './routes/cgu'
 import { Route as AideRouteImport } from './routes/aide'
 import { Route as AdressesRouteImport } from './routes/adresses'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AccueilRouteImport } from './routes/accueil'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SuperadminIndexRouteImport } from './routes/superadmin.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
@@ -130,6 +132,11 @@ const LivreurRoute = LivreurRouteImport.update({
   path: '/livreur',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InscriptionRoute = InscriptionRouteImport.update({
+  id: '/inscription',
+  path: '/inscription',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HealthcheckRoute = HealthcheckRouteImport.update({
   id: '/healthcheck',
   path: '/healthcheck',
@@ -203,6 +210,11 @@ const AdressesRoute = AdressesRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccueilRoute = AccueilRouteImport.update({
+  id: '/accueil',
+  path: '/accueil',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -345,6 +357,7 @@ const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/accueil': typeof AccueilRoute
   '/admin': typeof AdminRouteWithChildren
   '/adresses': typeof AdressesRoute
   '/aide': typeof AideRouteWithChildren
@@ -360,6 +373,7 @@ export interface FileRoutesByFullPath {
   '/favoris': typeof FavorisRoute
   '/fidelite': typeof FideliteRoute
   '/healthcheck': typeof HealthcheckRoute
+  '/inscription': typeof InscriptionRoute
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
   '/mboapass': typeof MboapassRoute
@@ -402,6 +416,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/accueil': typeof AccueilRoute
   '/adresses': typeof AdressesRoute
   '/aide': typeof AideRouteWithChildren
   '/cgu': typeof CguRoute
@@ -416,6 +431,7 @@ export interface FileRoutesByTo {
   '/favoris': typeof FavorisRoute
   '/fidelite': typeof FideliteRoute
   '/healthcheck': typeof HealthcheckRoute
+  '/inscription': typeof InscriptionRoute
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
   '/mboapass': typeof MboapassRoute
@@ -458,6 +474,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/accueil': typeof AccueilRoute
   '/admin': typeof AdminRouteWithChildren
   '/adresses': typeof AdressesRoute
   '/aide': typeof AideRouteWithChildren
@@ -473,6 +490,7 @@ export interface FileRoutesById {
   '/favoris': typeof FavorisRoute
   '/fidelite': typeof FideliteRoute
   '/healthcheck': typeof HealthcheckRoute
+  '/inscription': typeof InscriptionRoute
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
   '/mboapass': typeof MboapassRoute
@@ -517,6 +535,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/accueil'
     | '/admin'
     | '/adresses'
     | '/aide'
@@ -532,6 +551,7 @@ export interface FileRouteTypes {
     | '/favoris'
     | '/fidelite'
     | '/healthcheck'
+    | '/inscription'
     | '/livreur'
     | '/mboa-ai'
     | '/mboapass'
@@ -574,6 +594,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/accueil'
     | '/adresses'
     | '/aide'
     | '/cgu'
@@ -588,6 +609,7 @@ export interface FileRouteTypes {
     | '/favoris'
     | '/fidelite'
     | '/healthcheck'
+    | '/inscription'
     | '/livreur'
     | '/mboa-ai'
     | '/mboapass'
@@ -629,6 +651,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/accueil'
     | '/admin'
     | '/adresses'
     | '/aide'
@@ -644,6 +667,7 @@ export interface FileRouteTypes {
     | '/favoris'
     | '/fidelite'
     | '/healthcheck'
+    | '/inscription'
     | '/livreur'
     | '/mboa-ai'
     | '/mboapass'
@@ -687,6 +711,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccueilRoute: typeof AccueilRoute
   AdminRoute: typeof AdminRouteWithChildren
   AdressesRoute: typeof AdressesRoute
   AideRoute: typeof AideRouteWithChildren
@@ -702,6 +727,7 @@ export interface RootRouteChildren {
   FavorisRoute: typeof FavorisRoute
   FideliteRoute: typeof FideliteRoute
   HealthcheckRoute: typeof HealthcheckRoute
+  InscriptionRoute: typeof InscriptionRoute
   LivreurRoute: typeof LivreurRoute
   MboaAiRoute: typeof MboaAiRoute
   MboapassRoute: typeof MboapassRoute
@@ -823,6 +849,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LivreurRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/inscription': {
+      id: '/inscription'
+      path: '/inscription'
+      fullPath: '/inscription'
+      preLoaderRoute: typeof InscriptionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/healthcheck': {
       id: '/healthcheck'
       path: '/healthcheck'
@@ -926,6 +959,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/accueil': {
+      id: '/accueil'
+      path: '/accueil'
+      fullPath: '/accueil'
+      preLoaderRoute: typeof AccueilRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -1200,6 +1240,7 @@ const RestaurantsRestoIdRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccueilRoute: AccueilRoute,
   AdminRoute: AdminRouteWithChildren,
   AdressesRoute: AdressesRoute,
   AideRoute: AideRouteWithChildren,
@@ -1215,6 +1256,7 @@ const rootRouteChildren: RootRouteChildren = {
   FavorisRoute: FavorisRoute,
   FideliteRoute: FideliteRoute,
   HealthcheckRoute: HealthcheckRoute,
+  InscriptionRoute: InscriptionRoute,
   LivreurRoute: LivreurRoute,
   MboaAiRoute: MboaAiRoute,
   MboapassRoute: MboapassRoute,

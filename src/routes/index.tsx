@@ -1,260 +1,174 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import {
-  Search, MapPin, Star, Clock, Flame, Bell, ChevronRight, Plus, Users, ArrowRight, Bike,
-} from "lucide-react";
-
-import { restaurants as realRestaurants, getRestaurant } from "@/data/restaurants";
-import MboaExpressAssistant from "@/components/MboaExpressAssistant";
+import { Mail, Lock, Loader2, ArrowRight, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { z } from "zod";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import QuickLogin from "@/components/QuickLogin";
-import { useSessionUser } from "@/hooks/useSessionUser";
-
-// Pre-cache decoded images so menu pages render instantly on hover/intent.
-const imageCache = new Set<string>();
-function prefetchRestaurantImages(restoId: string) {
-  const r = getRestaurant(restoId);
-  if (!r) return;
-  const urls = [r.cover, ...r.categories.flatMap((c) => c.dishes.map((d) => d.image))];
-  for (const url of urls) {
-    if (imageCache.has(url)) continue;
-    imageCache.add(url);
-    const img = new Image();
-    img.decoding = "async";
-    img.src = url;
-  }
-}
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "MboaEats — Vos plats camerounais livrés à Douala, Yaoundé & Bafoussam" },
-      { name: "description", content: "Commandez Ndolé, Poulet DG, Soya et plus encore. Livraison rapide, paiement Mobile Money, mode Tablée pour partager entre amis." },
-      { property: "og:title", content: "MboaEats — Le goût du Mboa, livré chez vous" },
-      { property: "og:description", content: "Restaurants triés sur le volet à Douala, Yaoundé et Bafoussam. Paiement Mobile Money sécurisé." },
+      { title: "MboaEats — Connexion" },
+      { name: "description", content: "Connectez-vous à MboaEats pour commander vos plats camerounais préférés." },
+      { property: "og:title", content: "MboaEats — Connexion" },
+      { property: "og:description", content: "Accédez à votre compte MboaEats." },
     ],
   }),
-  component: Index,
+  component: Landing,
 });
 
-const cities = ["Douala", "Yaoundé", "Bafoussam"];
+const emailSchema = z.string().trim().email("Email invalide").max(255);
 
-const categories = [
-  { slug: "ndole", label: "Ndolé", icon: "🥬" },
-  { slug: "poulet-dg", label: "Poulet DG", icon: "🍗" },
-  { slug: "poisson", label: "Poisson braisé", icon: "🐟" },
-  { slug: "eru", label: "Eru", icon: "🍲" },
-  { slug: "suya", label: "Suya", icon: "🍢" },
-  { slug: "beignets", label: "Beignets", icon: "🥯" },
-  { slug: "jus", label: "Jus naturels", icon: "🥤" },
-];
+function Landing() {
+  const navigate = useNavigate();
+  const { isAuthenticated, loading } = useAuth();
+  const [tab, setTab] = useState<"phone" | "email">("phone");
 
-const restaurants = realRestaurants.map((r) => {
-  const minPrice = Math.min(
-    ...r.categories.flatMap((c) => c.dishes.map((d) => d.price))
-  );
-  return {
-    slug: r.id,
-    name: r.name,
-    tag: r.tagline.split("—")[0].trim(),
-    rating: r.rating,
-    eta: r.eta,
-    price: `${minPrice.toLocaleString("fr-FR")} FCFA`,
-    img: r.cover,
-    badge: r.badge ?? r.neighborhood,
-  };
-});
-
-function Index() {
-  const [city, setCity] = useState("Douala");
-  const { user } = useSessionUser();
-  const isLoggedIn = !!user;
+  // If already authenticated, skip the gate and go to the restaurants home
+  useEffect(() => {
+    if (!loading && isAuthenticated) navigate({ to: "/accueil", replace: true });
+  }, [loading, isAuthenticated, navigate]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Header city={city} setCity={setCity} />
-      <main className="mx-auto max-w-md px-4 pb-4">
-        <SearchBar />
-        {!isLoggedIn && <div className="mt-4"><QuickLogin /></div>}
-        <Categories />
-        <TableeBanner />
-        <Restaurants city={city} />
-      </main>
-      <MboaExpressAssistant />
-    </div>
-  );
-}
-
-function Header({ city, setCity }: { city: string; setCity: (c: string) => void }) {
-  return (
-    <header className="sticky top-0 z-40 glass border-b border-border/40">
-      <div className="mx-auto flex max-w-md items-center justify-between px-4 py-3">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-primary shadow-glow">
-            <Flame className="h-5 w-5 text-primary-foreground" />
+    <div className="min-h-screen bg-white">
+      <div className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-8">
+        {/* Brand */}
+        <div className="mb-8 flex flex-col items-center text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#06C167] text-2xl font-black text-white shadow-lg">
+            M
           </div>
-          <span className="font-display text-lg font-bold tracking-tight">
-            Mboa<span className="text-gradient-primary">Eats</span>
-          </span>
-        </Link>
-
-        <div className="flex items-center gap-2">
-          <label className="flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1.5 text-xs font-semibold text-primary">
-            <MapPin className="h-3.5 w-3.5" />
-            <select
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              className="bg-transparent outline-none"
-              aria-label="Choisir une ville"
-            >
-              {cities.map((c) => <option key={c} className="bg-surface text-foreground">{c}</option>)}
-            </select>
-          </label>
-          <Link to="/profil" aria-label="Notifications" className="relative rounded-full border border-border bg-surface/60 p-2">
-            <Bell className="h-4 w-4" />
-            <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-accent ring-2 ring-background" />
-          </Link>
+          <h1 className="mt-4 text-2xl font-bold tracking-tight text-black">Bienvenue sur MboaEats</h1>
+          <p className="mt-1 text-sm text-neutral-600">Connecte-toi pour commander en quelques secondes.</p>
         </div>
-      </div>
-    </header>
-  );
-}
 
-function SearchBar() {
-  return (
-    <div className="mt-4 flex items-center gap-2">
-      <Link
-        to="/recherche"
-        className="flex flex-1 items-center gap-2 rounded-2xl border border-border bg-surface/80 px-4 py-3 shadow-card"
-      >
-        <Search className="h-5 w-5 text-muted-foreground" />
-        <span className="text-sm text-muted-foreground">Plat, restaurant, quartier…</span>
-      </Link>
-      <Link
-        to="/decouvrir"
-        className="rounded-2xl border border-primary/40 bg-primary/10 px-3 py-3 text-xs font-bold uppercase text-primary"
-      >
-        Live
-      </Link>
+        {/* Tabs */}
+        <div className="mb-5 inline-flex w-full rounded-full bg-neutral-100 p-1">
+          {(["phone", "email"] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setTab(t)}
+              className={`flex-1 rounded-full px-4 py-2.5 text-sm font-semibold transition-all ${
+                tab === t ? "bg-white text-black shadow-sm" : "text-neutral-600 hover:text-black"
+              }`}
+            >
+              {t === "phone" ? "Téléphone" : "Email"}
+            </button>
+          ))}
+        </div>
+
+        {tab === "phone" ? (
+          <QuickLogin onSuccess={() => navigate({ to: "/accueil" })} />
+        ) : (
+          <EmailLoginForm onSuccess={() => navigate({ to: "/accueil" })} />
+        )}
+
+        {/* Signup invite */}
+        <p className="mt-6 text-center text-sm text-neutral-600">
+          Nouveau sur MboaEats ?{" "}
+          <Link to="/inscription" className="font-bold text-[#06C167] hover:underline underline-offset-4">
+            S'inscrire
+          </Link>
+        </p>
+
+        {/* Footer */}
+        <p className="mt-auto pt-8 text-center text-xs text-neutral-500">
+          En continuant tu acceptes nos{" "}
+          <Link to="/cgu" className="font-medium text-neutral-700 underline underline-offset-2 hover:text-black">
+            CGU
+          </Link>{" "}
+          et notre{" "}
+          <Link to="/confidentialite" className="font-medium text-neutral-700 underline underline-offset-2 hover:text-black">
+            politique de confidentialité
+          </Link>
+          .
+        </p>
+      </div>
     </div>
   );
 }
 
-function Categories() {
+function EmailLoginForm({ onSuccess }: { onSuccess: () => void }) {
+  const [email, setEmail] = useState("");
+  const [pwd, setPwd] = useState("");
+  const [showPwd, setShowPwd] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setErr(null);
+    const eRes = emailSchema.safeParse(email);
+    if (!eRes.success) return setErr(eRes.error.issues[0].message);
+    if (!pwd) return setErr("Mot de passe requis");
+    setBusy(true);
+    const { error } = await supabase.auth.signInWithPassword({ email: eRes.data, password: pwd });
+    setBusy(false);
+    if (error) {
+      setErr(
+        error.message === "Invalid login credentials"
+          ? "Email ou mot de passe incorrect"
+          : error.message,
+      );
+      return;
+    }
+    toast.success("Connexion réussie");
+    onSuccess();
+  }
+
   return (
-    <section className="mt-5">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Catégories
-        </h2>
-        <Link to="/recherche" className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
-          Tout voir <ChevronRight className="h-3 w-3" />
+    <form onSubmit={submit} className="space-y-3">
+      <label className="flex items-center gap-3 rounded-2xl border border-neutral-200 bg-white px-4 py-3 transition-all focus-within:border-[#06C167] focus-within:ring-2 focus-within:ring-[#06C167]/20">
+        <Mail className="h-4 w-4 shrink-0 text-neutral-500" />
+        <input
+          type="email"
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="ton@email.com"
+          className="flex-1 bg-transparent text-sm text-black placeholder:text-neutral-400 focus:outline-none"
+        />
+      </label>
+
+      <label className="flex items-center gap-3 rounded-2xl border border-neutral-200 bg-white px-4 py-3 transition-all focus-within:border-[#06C167] focus-within:ring-2 focus-within:ring-[#06C167]/20">
+        <Lock className="h-4 w-4 shrink-0 text-neutral-500" />
+        <input
+          type={showPwd ? "text" : "password"}
+          autoComplete="current-password"
+          value={pwd}
+          onChange={(e) => setPwd(e.target.value)}
+          placeholder="Mot de passe"
+          className="flex-1 bg-transparent text-sm text-black placeholder:text-neutral-400 focus:outline-none"
+        />
+        <button type="button" onClick={() => setShowPwd((v) => !v)} className="text-neutral-500" aria-label="Afficher">
+          {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </button>
+      </label>
+
+      <div className="flex justify-end pt-1">
+        <Link to="/reset-password" className="text-xs font-medium text-neutral-600 hover:text-black">
+          Mot de passe oublié ?
         </Link>
       </div>
-      <div className="mt-3 -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {categories.map((c) => (
-          <Link
-            key={c.slug}
-            to="/categorie/$slug"
-            params={{ slug: c.slug }}
-            preload="intent"
-            className="flex shrink-0 items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium hover:border-primary/50 active:scale-95 transition-transform"
-          >
-            <span className="text-base">{c.icon}</span>
-            <span>{c.label}</span>
-          </Link>
-        ))}
-      </div>
-    </section>
-  );
-}
 
-function TableeBanner() {
-  return (
-    <Link
-      to="/tablee"
-      className="mt-5 relative block overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/15 via-primary/5 to-accent/10 p-4 shadow-card"
-    >
-      <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground shadow-glow">
-          <Users className="h-5 w-5" />
+      {err && (
+        <div className="flex items-start gap-2 rounded-xl bg-red-50 px-3 py-2 text-xs text-red-700">
+          <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          <span>{err}</span>
         </div>
-        <div className="flex-1">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-gold">Exclusivité</p>
-          <p className="font-display font-bold leading-tight">Mode Tablée</p>
-          <p className="text-xs text-muted-foreground">Commandez à plusieurs, payez chacun votre part.</p>
-        </div>
-        <ArrowRight className="h-4 w-4 text-primary" />
-      </div>
-    </Link>
-  );
-}
+      )}
 
-function Restaurants({ city }: { city: string }) {
-  return (
-    <section className="mt-6">
-      <div className="flex items-end justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-primary">À la une</p>
-          <h2 className="mt-1 font-display text-xl font-bold">Restos ouverts à {city}</h2>
-        </div>
-      </div>
-
-      <div className="mt-4 grid gap-4">
-        {restaurants.map((r, i) => (
-          <Link
-            key={r.name}
-            to="/restaurants/$restoId"
-            params={{ restoId: r.slug }}
-            preload="intent"
-            onMouseEnter={() => prefetchRestaurantImages(r.slug)}
-            onTouchStart={() => prefetchRestaurantImages(r.slug)}
-            className="group relative block overflow-hidden rounded-2xl border border-border bg-card shadow-card active:scale-[0.99] transition-transform"
-            style={{ animationDelay: `${i * 50}ms` }}
-          >
-            <div className="relative aspect-[16/10] overflow-hidden">
-              <img
-                src={r.img}
-                alt={r.name}
-                width={768}
-                height={480}
-                loading={i < 2 ? "eager" : "lazy"}
-                className="h-full w-full object-cover"
-              />
-              <span className="absolute left-3 top-3 rounded-full bg-background/85 px-2.5 py-1 text-[11px] font-semibold backdrop-blur">
-                {r.badge}
-              </span>
-              <span
-                aria-hidden
-                className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-glow"
-              >
-                <Plus className="h-4 w-4" />
-              </span>
-            </div>
-            <div className="p-3.5">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <h3 className="truncate font-display text-base font-semibold">{r.name}</h3>
-                  <p className="truncate text-xs text-muted-foreground">{r.tag}</p>
-                </div>
-                <div className="flex items-center gap-1 rounded-md bg-gold/10 px-1.5 py-0.5 text-xs font-semibold text-gold">
-                  <Star className="h-3 w-3 fill-current" />
-                  {r.rating}
-                </div>
-              </div>
-              <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-                <span className="inline-flex items-center gap-1">
-                  <Clock className="h-3.5 w-3.5" /> {r.eta}
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <Bike className="h-3.5 w-3.5 text-primary" />
-                  <span className="font-semibold text-foreground">800 F</span>
-                </span>
-                <span className="font-semibold text-foreground">dès {r.price}</span>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-    </section>
+      <button
+        type="submit"
+        disabled={busy}
+        className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#06C167] px-4 py-3.5 text-sm font-bold uppercase tracking-wide text-white shadow-[0_8px_24px_-12px_rgba(6,193,103,0.7)] transition-all hover:bg-[#05A659] active:scale-[0.99] disabled:opacity-60"
+      >
+        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+        Se connecter
+        {!busy && <ArrowRight className="h-4 w-4" strokeWidth={2.5} />}
+      </button>
+    </form>
   );
 }
