@@ -144,6 +144,63 @@ function Connexion() {
     );
   }, [countryQuery]);
 
+  // Reset highlight when filter changes / panel opens
+  useEffect(() => {
+    if (showCountries) setHighlightedCountry(0);
+  }, [countryQuery, showCountries]);
+
+  // Auto-focus search when opening; restore focus on close
+  useEffect(() => {
+    if (showCountries) {
+      requestAnimationFrame(() => countrySearchRef.current?.focus());
+    }
+  }, [showCountries]);
+
+  const closeCountries = (restoreFocus = true) => {
+    setShowCountries(false);
+    setCountryQuery("");
+    if (restoreFocus) requestAnimationFrame(() => countryTriggerRef.current?.focus());
+  };
+
+  const selectCountry = (code: string) => {
+    setCountryCode(code);
+    closeCountries();
+  };
+
+  const handleCountryListKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      closeCountries();
+      return;
+    }
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightedCountry((i) => Math.min(i + 1, filteredCountries.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightedCountry((i) => Math.max(i - 1, 0));
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      setHighlightedCountry(0);
+    } else if (e.key === "End") {
+      e.preventDefault();
+      setHighlightedCountry(filteredCountries.length - 1);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      const c = filteredCountries[highlightedCountry];
+      if (c) selectCountry(c.code);
+    }
+  };
+
+  // Scroll highlighted option into view
+  useEffect(() => {
+    if (!showCountries) return;
+    const el = countryListRef.current?.querySelector<HTMLElement>(
+      `[data-country-index="${highlightedCountry}"]`,
+    );
+    el?.scrollIntoView({ block: "nearest" });
+  }, [highlightedCountry, showCountries]);
+
   const identifierLabel =
     mode === "phone" ? formatPhoneForOtp(country.dial, phone) : email;
 
