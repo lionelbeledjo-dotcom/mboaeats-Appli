@@ -47,7 +47,7 @@
   --background: oklch(1 0 0);                 /* #FFFFFF */
   --surface: oklch(0.985 0.003 80);           /* near-white */
   --surface-elevated: oklch(0.97 0.004 80);   /* #F5F5F5 */
-  --foreground: oklch(0.18 0.02 280);         /* near-black */
+  --foreground: oklch(0.14 0 0);              /* near #000 */
 
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.18 0.02 280);
