@@ -165,9 +165,15 @@ async function sendTwilioMessage(opts: {
 }
 
 export const sendOtp = createServerFn({ method: "POST" })
-  .inputValidator((d) => z.object({ phone: z.string() }).parse(d))
+  .inputValidator((d) =>
+    z.object({
+      phone: z.string(),
+      channel: z.enum(["sms", "whatsapp"]).optional().default("sms"),
+    }).parse(d)
+  )
   .handler(async ({ data }) => {
     const phone = normalizePhone(data.phone);
+    const channel: OtpChannel = data.channel ?? "sms";
 
     // Rate limit: max 1 code in last 30s
     const since = new Date(Date.now() - 30_000).toISOString();
@@ -190,16 +196,16 @@ export const sendOtp = createServerFn({ method: "POST" })
       .insert({ phone, code_hash, expires_at });
     if (error) throw new Error("Impossible d'enregistrer le code");
 
-    // Verrouille la session sur ce numéro : seul ce numéro pourra valider l'OTP
     const session = await getMboaSession();
     await session.update({
       pendingPhone: phone,
       pendingPhoneAt: Date.now(),
     });
 
-    await sendSms(phone, `MboaEats : votre code de vérification est ${code}. Valable 5 min. Ne le partagez avec personne.`);
+    const body = `MboaEats : votre code de vérification est ${code}. Valable 5 min. Ne le partagez avec personne.`;
+    await sendTwilioMessage({ to: phone, body, channel });
 
-    return { ok: true, expiresIn: OTP_TTL_SECONDS };
+    return { ok: true, expiresIn: OTP_TTL_SECONDS, channel };
   });
 
 export const verifyOtp = createServerFn({ method: "POST" })
