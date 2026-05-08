@@ -95,7 +95,24 @@ function Livreurs() {
     } finally { setPendingId(null); }
   }
 
-  const tabs: { key: Filter; label: string; count: number }[] = [
+  async function openView(d: Driver) {
+    setViewing(d);
+    setViewingData(null);
+    try { setViewingData(await fetchDetails({ data: { id: d.id } })); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Erreur"); }
+  }
+
+  async function handleDelete(d: Driver) {
+    if (!confirm(`Supprimer DÉFINITIVEMENT le livreur ${d.name} ? Position et rôle seront effacés.`)) return;
+    setPendingId(d.id);
+    try {
+      await deleteFn({ data: { id: d.id } });
+      toast.success("Livreur supprimé");
+      setList((prev) => prev?.filter((x) => x.id !== d.id) ?? null);
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erreur"); }
+    finally { setPendingId(null); }
+  }
+
     { key: "all", label: "Tous", count: counts.all },
     { key: "online", label: "En ligne", count: counts.online },
     { key: "offline", label: "Hors ligne", count: counts.offline },
