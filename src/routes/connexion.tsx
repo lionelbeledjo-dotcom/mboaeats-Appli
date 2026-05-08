@@ -336,9 +336,19 @@ function Connexion() {
     try {
       if (mode === "phone" && (ch === "sms" || ch === "whatsapp")) {
         const fullPhone = formatPhoneForOtp(country.dial, phone);
-        await sendOtpFn({ data: { phone: fullPhone, channel: ch } });
+        const res: any = await sendOtpFn({ data: { phone: fullPhone, channel: ch } });
+        // Le serveur peut répondre { ok:false, error } (ex: rate limit) sans throw.
+        if (res && res.ok === false) {
+          setError(res.error ?? "Échec de l'envoi du code");
+          return;
+        }
         if (overrideChannel) setChannel(overrideChannel);
         setStep("otp");
+        // En développement, le serveur renvoie le code en clair pour permettre
+        // un test de bout en bout sans envoi SMS réel.
+        if (res?.devCode && /^\d{6}$/.test(res.devCode)) {
+          setCode(res.devCode);
+        }
       } else if (mode === "email" || ch === "email") {
         const { supabase } = await import("@/integrations/supabase/client");
         const { error: sErr } = await supabase.auth.signInWithOtp({
