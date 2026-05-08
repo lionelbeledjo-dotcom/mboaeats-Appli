@@ -70,15 +70,15 @@ function Overview() {
         ))}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="rounded-3xl border border-border bg-surface/60 p-5 lg:col-span-2">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+        <div className="min-w-0 rounded-2xl border border-border bg-surface/60 p-3 sm:rounded-3xl sm:p-5 lg:col-span-2">
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg font-bold">Revenus de la semaine</h2>
+            <h2 className="font-display text-base font-bold sm:text-lg">Revenus de la semaine</h2>
             <span className="text-xs text-muted-foreground">FCFA</span>
           </div>
-          <div className="mt-4 h-72">
+          <div className="mt-3 h-56 w-full sm:mt-4 sm:h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={WEEK} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+              <LineChart data={WEEK} margin={{ top: 10, right: 8, left: -18, bottom: 0 }}>
                 <defs>
                   <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
                     <stop offset="0%" stopColor="hsl(var(--primary))" />
@@ -86,8 +86,8 @@ function Overview() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} width={36} />
                 <Tooltip
                   contentStyle={{ background: "hsl(var(--background))", border: "1px solid hsl(var(--border))", borderRadius: 12, fontSize: 12 }}
                   formatter={(v: number) => [`${v.toLocaleString("fr-FR")} F`, "Revenus"]}
@@ -98,7 +98,7 @@ function Overview() {
           </div>
         </div>
 
-        <div className="rounded-3xl border border-border bg-surface/60 p-5">
+        <div className="rounded-2xl border border-border bg-surface/60 p-3 sm:rounded-3xl sm:p-5">
           <h2 className="font-display text-lg font-bold">5 dernières commandes</h2>
           <ul className="mt-4 space-y-3">
             {LAST_ORDERS.map((o) => (
