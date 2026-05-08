@@ -414,7 +414,7 @@ function Connexion() {
                 </button>
                 <button
                   type="button"
-                  onClick={sendCode}
+                  onClick={() => sendCode()}
                   disabled={loading}
                   className="inline-flex h-12 flex-[2] items-center justify-center gap-2 rounded-full bg-gradient-primary text-sm font-semibold text-primary-foreground shadow-glow active:scale-[0.98] disabled:opacity-60"
                 >
