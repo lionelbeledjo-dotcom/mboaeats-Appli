@@ -769,7 +769,7 @@ function Connexion() {
                   type="button"
                   onClick={handleResend}
                   disabled={cooldown > 0 || resendCount >= MAX_RESEND || loading}
-                  className="text-sm font-semibold text-[#047A45] transition hover:text-[#05a557] disabled:text-[#9A9A9A] disabled:cursor-not-allowed focus:outline-none focus-visible:underline"
+                  className="text-sm font-semibold text-[#047A45] transition hover:text-[#03613A] disabled:text-[#767676] disabled:cursor-not-allowed focus:outline-none focus-visible:underline"
                 >
                   {resendCount >= MAX_RESEND
                     ? "Limite de renvois atteinte"
