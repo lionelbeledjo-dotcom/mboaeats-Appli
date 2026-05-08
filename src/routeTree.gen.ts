@@ -43,6 +43,7 @@ import { Route as SuperadminLoginRouteImport } from './routes/superadmin_.login'
 import { Route as SuiviOrderIdRouteImport } from './routes/suivi.$orderId'
 import { Route as RestaurantsRestoIdRouteImport } from './routes/restaurants.$restoId'
 import { Route as RSlugRouteImport } from './routes/r.$slug'
+import { Route as CompteSecuriteRouteImport } from './routes/compte.securite'
 import { Route as ComptePaiementsRouteImport } from './routes/compte.paiements'
 import { Route as CompteLivraisonRouteImport } from './routes/compte.livraison'
 import { Route as CompteCommandesRouteImport } from './routes/compte.commandes'
@@ -232,6 +233,11 @@ const RSlugRoute = RSlugRouteImport.update({
   path: '/r/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompteSecuriteRoute = CompteSecuriteRouteImport.update({
+  id: '/compte/securite',
+  path: '/compte/securite',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ComptePaiementsRoute = ComptePaiementsRouteImport.update({
   id: '/compte/paiements',
   path: '/compte/paiements',
@@ -366,6 +372,7 @@ export interface FileRoutesByFullPath {
   '/compte/commandes': typeof CompteCommandesRoute
   '/compte/livraison': typeof CompteLivraisonRoute
   '/compte/paiements': typeof ComptePaiementsRoute
+  '/compte/securite': typeof CompteSecuriteRoute
   '/r/$slug': typeof RSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
@@ -418,6 +425,7 @@ export interface FileRoutesByTo {
   '/compte/commandes': typeof CompteCommandesRoute
   '/compte/livraison': typeof CompteLivraisonRoute
   '/compte/paiements': typeof ComptePaiementsRoute
+  '/compte/securite': typeof CompteSecuriteRoute
   '/r/$slug': typeof RSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
@@ -473,6 +481,7 @@ export interface FileRoutesById {
   '/compte/commandes': typeof CompteCommandesRoute
   '/compte/livraison': typeof CompteLivraisonRoute
   '/compte/paiements': typeof ComptePaiementsRoute
+  '/compte/securite': typeof CompteSecuriteRoute
   '/r/$slug': typeof RSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
@@ -529,6 +538,7 @@ export interface FileRouteTypes {
     | '/compte/commandes'
     | '/compte/livraison'
     | '/compte/paiements'
+    | '/compte/securite'
     | '/r/$slug'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
@@ -581,6 +591,7 @@ export interface FileRouteTypes {
     | '/compte/commandes'
     | '/compte/livraison'
     | '/compte/paiements'
+    | '/compte/securite'
     | '/r/$slug'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
@@ -635,6 +646,7 @@ export interface FileRouteTypes {
     | '/compte/commandes'
     | '/compte/livraison'
     | '/compte/paiements'
+    | '/compte/securite'
     | '/r/$slug'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
@@ -682,6 +694,7 @@ export interface RootRouteChildren {
   CompteCommandesRoute: typeof CompteCommandesRoute
   CompteLivraisonRoute: typeof CompteLivraisonRoute
   ComptePaiementsRoute: typeof ComptePaiementsRoute
+  CompteSecuriteRoute: typeof CompteSecuriteRoute
   RSlugRoute: typeof RSlugRoute
   RestaurantsRestoIdRoute: typeof RestaurantsRestoIdRouteWithChildren
   SuperadminLoginRoute: typeof SuperadminLoginRoute
@@ -931,6 +944,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/compte/securite': {
+      id: '/compte/securite'
+      path: '/compte/securite'
+      fullPath: '/compte/securite'
+      preLoaderRoute: typeof CompteSecuriteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/compte/paiements': {
       id: '/compte/paiements'
       path: '/compte/paiements'
@@ -1171,6 +1191,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompteCommandesRoute: CompteCommandesRoute,
   CompteLivraisonRoute: CompteLivraisonRoute,
   ComptePaiementsRoute: ComptePaiementsRoute,
+  CompteSecuriteRoute: CompteSecuriteRoute,
   RSlugRoute: RSlugRoute,
   RestaurantsRestoIdRoute: RestaurantsRestoIdRouteWithChildren,
   SuperadminLoginRoute: SuperadminLoginRoute,
