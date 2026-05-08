@@ -189,6 +189,12 @@ function AddressesPage() {
       // garde la mise à jour locale
     }
     setSavingEdit(false);
+    try {
+      window.localStorage.setItem(
+        "mboaeats:lastAddress",
+        JSON.stringify({ city: updated.city, neighborhood: updated.neighborhood }),
+      );
+    } catch {}
     toast.success("Adresse mise à jour ✅");
     cancelEdit();
   };
