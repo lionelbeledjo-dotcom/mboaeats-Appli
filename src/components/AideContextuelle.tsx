@@ -26,7 +26,7 @@ type HelpSection = {
   faqs: FaqItem[];
 };
 
-const SUPPORT_PHONE = "237699999999"; // wa.me format
+const SUPPORT_PHONE = "33666524101"; // wa.me format
 const SUPPORT_EMAIL = "support@mboaeat.site";
 
 const SECTIONS: Record<string, HelpSection> = {
