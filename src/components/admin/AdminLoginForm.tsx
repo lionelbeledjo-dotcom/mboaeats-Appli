@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Flame, ShieldCheck, Loader2, Lock, Mail } from "lucide-react";
+import { Flame, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 type Mode = "signin" | "bootstrap";
@@ -34,18 +34,9 @@ export function AdminLoginForm() {
     setError(null);
     setInfo(null);
 
-    if (!email || !password) {
-      setError("Email et mot de passe requis");
-      return;
-    }
-    if (mode === "bootstrap" && password !== confirm) {
-      setError("Les mots de passe ne correspondent pas");
-      return;
-    }
-    if (password.length < 8) {
-      setError("Mot de passe : 8 caractères minimum");
-      return;
-    }
+    if (!email || !password) return setError("Identifiant et code requis");
+    if (mode === "bootstrap" && password !== confirm) return setError("Les codes ne correspondent pas");
+    if (password.length < 8) return setError("Code : 8 caractères minimum");
 
     setLoading(true);
     try {
@@ -99,97 +90,116 @@ export function AdminLoginForm() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-32 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-primary/15 blur-[160px]" />
-        <div className="absolute bottom-0 right-0 h-[300px] w-[300px] rounded-full bg-gold/10 blur-[140px]" />
+    <div className="relative min-h-screen overflow-hidden bg-[#0d0d0f] text-white">
+      {/* Radiant amber decorations top */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[340px] overflow-hidden">
+        <svg
+          className="absolute inset-0 h-full w-full"
+          viewBox="0 0 400 340"
+          fill="none"
+          preserveAspectRatio="xMidYMin slice"
+          aria-hidden="true"
+        >
+          <defs>
+            <linearGradient id="amberStroke" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#fbbf24" />
+              <stop offset="100%" stopColor="#f97316" />
+            </linearGradient>
+            <radialGradient id="amberGlow" cx="50%" cy="0%" r="60%">
+              <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <rect width="400" height="340" fill="url(#amberGlow)" />
+          {/* Curves */}
+          <path d="M -40 80 Q 120 10 280 90 T 460 60" stroke="url(#amberStroke)" strokeWidth="1.5" opacity="0.7" fill="none" />
+          <path d="M -40 130 Q 140 60 300 140 T 480 110" stroke="url(#amberStroke)" strokeWidth="1" opacity="0.5" fill="none" />
+          <path d="M -40 30 Q 100 -20 240 40 T 460 10" stroke="url(#amberStroke)" strokeWidth="1" opacity="0.4" fill="none" />
+          {/* Geometric arcs */}
+          <circle cx="340" cy="60" r="70" stroke="url(#amberStroke)" strokeWidth="1.2" opacity="0.6" fill="none" />
+          <circle cx="340" cy="60" r="100" stroke="url(#amberStroke)" strokeWidth="0.8" opacity="0.35" fill="none" />
+          <circle cx="60" cy="40" r="40" stroke="#fbbf24" strokeWidth="0.8" opacity="0.4" fill="none" />
+          {/* Lines */}
+          <line x1="20" y1="180" x2="120" y2="180" stroke="#fbbf24" strokeWidth="1" opacity="0.3" />
+          <line x1="280" y1="200" x2="380" y2="200" stroke="#f97316" strokeWidth="1" opacity="0.4" />
+        </svg>
       </div>
 
-      <div className="relative mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-5 py-10">
-        <div className="mb-6 flex flex-col items-center gap-3 animate-fade-in">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-primary shadow-glow">
-            <Flame className="h-7 w-7 text-primary-foreground" />
+      <div className="relative mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6 py-10">
+        {/* Header */}
+        <div className="mb-10 flex flex-col items-center gap-4 animate-fade-in">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-600 shadow-[0_0_40px_rgba(251,146,60,0.5)]">
+            <Flame className="h-8 w-8 text-white" />
           </div>
           <div className="text-center">
-            <h1 className="font-display text-2xl font-bold">MboaEats Administration</h1>
-            <p className="mt-1 text-xs uppercase tracking-[0.25em] text-muted-foreground">
-              Console privée propriétaire
+            <h1 className="font-display text-3xl font-bold tracking-tight text-white">Mboa Console</h1>
+            <p className="mt-2 text-sm font-light text-white/60">
+              Veuillez vous connecter pour continuer
             </p>
           </div>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="w-full rounded-3xl border border-border bg-card/80 p-6 shadow-card backdrop-blur-xl animate-fade-up"
-        >
-          <div className="mb-5 flex items-center gap-2 rounded-full border border-primary/40 bg-primary/5 px-3 py-2 text-xs">
-            <ShieldCheck className="h-4 w-4 text-primary" />
-            <span className="font-semibold text-primary">
-              {mode === "bootstrap" ? "Première configuration" : "Authentification SUPER_ADMIN"}
-            </span>
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="w-full space-y-4 animate-fade-up">
+          {/* Phone / identifiant */}
+          <div>
+            <label className="mb-2 block text-xs font-medium text-white/70">Numéro</label>
+            <div className="flex items-stretch gap-2">
+              <div className="flex items-center gap-2 rounded-xl border border-amber-500/60 bg-[#1a1a1d] px-3 text-sm font-semibold text-white">
+                <span className="text-base leading-none">🇨🇲</span>
+                <span>+237</span>
+              </div>
+              <input
+                type="text"
+                inputMode="email"
+                autoComplete="username"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="flex-1 rounded-xl border border-amber-500/60 bg-[#1a1a1d] px-4 py-3 text-sm text-white placeholder:text-white/40 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30"
+                placeholder="Entrez votre numéro"
+                required
+              />
+            </div>
           </div>
 
-          <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Email maître
-          </label>
-          <div className="mt-1.5 flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2.5 focus-within:border-primary">
-            <Mail className="h-4 w-4 text-muted-foreground" />
-            <input
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="flex-1 bg-transparent text-sm outline-none"
-              placeholder="admin@mboaeats.com"
-              required
-            />
-          </div>
-
-          <label className="mt-4 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Mot de passe
-          </label>
-          <div className="mt-1.5 flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2.5 focus-within:border-primary">
-            <Lock className="h-4 w-4 text-muted-foreground" />
+          {/* Code */}
+          <div>
+            <label className="mb-2 block text-xs font-medium text-white/70">Code</label>
             <input
               type="password"
               autoComplete={mode === "bootstrap" ? "new-password" : "current-password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="flex-1 bg-transparent text-sm outline-none"
-              placeholder="••••••••"
+              className="w-full rounded-xl border border-amber-500/60 bg-[#1a1a1d] px-4 py-3 text-sm text-white placeholder:text-white/40 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30"
+              placeholder="Entrez votre code"
               required
               minLength={8}
             />
           </div>
 
           {mode === "bootstrap" && (
-            <>
-              <label className="mt-4 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Confirmer
-              </label>
-              <div className="mt-1.5 flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2.5 focus-within:border-primary">
-                <Lock className="h-4 w-4 text-muted-foreground" />
-                <input
-                  type="password"
-                  autoComplete="new-password"
-                  value={confirm}
-                  onChange={(e) => setConfirm(e.target.value)}
-                  className="flex-1 bg-transparent text-sm outline-none"
-                  placeholder="••••••••"
-                  required
-                  minLength={8}
-                />
-              </div>
-            </>
+            <div>
+              <label className="mb-2 block text-xs font-medium text-white/70">Confirmer le code</label>
+              <input
+                type="password"
+                autoComplete="new-password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                className="w-full rounded-xl border border-amber-500/60 bg-[#1a1a1d] px-4 py-3 text-sm text-white placeholder:text-white/40 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30"
+                placeholder="Confirmez votre code"
+                required
+                minLength={8}
+              />
+            </div>
           )}
 
           {error && (
-            <p className="mt-4 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+            <p className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-300">
               {error}
             </p>
           )}
           {info && (
-            <p className="mt-4 rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 text-xs text-primary">
+            <p className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
               {info}
             </p>
           )}
@@ -197,14 +207,23 @@ export function AdminLoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-6 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-gradient-primary text-sm font-semibold text-primary-foreground shadow-glow transition active:scale-[0.98] disabled:opacity-60"
+            className="relative mt-6 inline-flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-orange-600 text-sm font-bold uppercase tracking-wider text-white shadow-[0_10px_30px_-10px_rgba(249,115,22,0.7)] transition active:scale-[0.98] disabled:opacity-60"
           >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
-            {mode === "bootstrap" ? "Initialiser le compte propriétaire" : "Se connecter"}
+            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            {mode === "bootstrap" ? "Initialiser le compte" : "Se connecter"}
           </button>
 
+          <div className="mt-6 flex flex-col items-center gap-2 text-center">
+            <button type="button" className="text-sm text-white/70 hover:text-amber-300 transition">
+              Vérifier le code ?
+            </button>
+            <button type="button" className="text-sm text-white/70 hover:text-amber-300 transition">
+              Veuillez contacter l'administrateur ?
+            </button>
+          </div>
+
           {bootstrapAvailable && (
-            <p className="mt-4 text-center text-[11px] text-muted-foreground">
+            <p className="mt-4 text-center text-[11px] text-white/50">
               Aucun administrateur n'est encore configuré. Ce premier compte deviendra le SUPER_ADMIN.
             </p>
           )}
