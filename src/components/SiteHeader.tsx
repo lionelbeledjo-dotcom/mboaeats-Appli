@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, ShoppingBag, UtensilsCrossed, LifeBuoy, Menu, X, MoreHorizontal } from "lucide-react";
+import { Home, ShoppingBag, UtensilsCrossed, LifeBuoy, Menu, X, MoreHorizontal, HelpCircle } from "lucide-react";
 import { MboaEatsLogo } from "@/components/brand/MboaEatsLogo";
+import { NotificationBell } from "@/components/NotificationBell";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -106,6 +107,7 @@ export function SiteHeader() {
         "border-b border-white/5",
         "bg-[hsl(240_10%_8%_/_0.72)] backdrop-blur-xl backdrop-saturate-150",
         "supports-[backdrop-filter]:bg-[hsl(240_10%_8%_/_0.55)]",
+        "pt-[env(safe-area-inset-top)]",
       )}
     >
       {/* Filets lumineux décoratifs */}
@@ -167,6 +169,25 @@ export function SiteHeader() {
 
         {/* Actions droite */}
         <div className="flex shrink-0 items-center gap-1 sm:gap-3">
+          {/* Aide rapide */}
+          <Link
+            to="/aide"
+            aria-label="Aide & support"
+            className={cn(
+              "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
+              "border border-white/10 bg-white/5 text-white",
+              "transition-all duration-300 ease-out hover:bg-white/10 active:scale-95",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cm-green/60",
+            )}
+          >
+            <HelpCircle className="h-5 w-5" strokeWidth={2.25} />
+          </Link>
+
+          {/* Cloche notifications */}
+          <div className="[&_button]:h-10 [&_button]:w-10 [&_button]:border-white/10 [&_button]:bg-white/5 [&_button]:text-white [&_button:hover]:bg-white/10">
+            <NotificationBell />
+          </div>
+
           {/* CTA desktop / tablette */}
           <Link
             to="/commandes"

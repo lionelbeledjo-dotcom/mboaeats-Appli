@@ -30,8 +30,8 @@ export const Route = createFileRoute("/")({
 });
 
 const filters = [
-  { key: "nearby", label: "Nearby", icon: "📍" },
-  { key: "popular", label: "Popular", icon: "🔥" },
+  { key: "nearby", label: "À proximité", icon: "📍" },
+  { key: "popular", label: "Populaire", icon: "🔥" },
   { key: "cuisines", label: "Cuisines", icon: "🍽️" },
 ];
 
@@ -78,13 +78,13 @@ function Index() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#D9E8D8" }}>
-      <div className="mx-auto max-w-md px-4 pb-28 pt-4">
+      <div className="mx-auto max-w-md px-4 pb-28 pt-[calc(env(safe-area-inset-top)+1rem)]">
         {/* Top bar */}
         <header className="mb-4 flex items-center justify-between gap-3">
           <HamburgerMenu />
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium" style={{ color: "#888888" }}>
-              Deliver to
+              Livrer à
             </p>
             <button className="flex items-center gap-1 text-sm font-bold truncate" style={{ color: "#1A1A1A" }}>
               <MapPin className="h-4 w-4" style={{ color: "#00B14F" }} />
@@ -113,7 +113,7 @@ function Index() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Would you like to eat something?"
+            placeholder="Que voulez-vous manger ?"
             className="flex-1 bg-transparent text-sm outline-none"
             style={{ color: "#1A1A1A" }}
           />
@@ -149,10 +149,10 @@ function Index() {
         {/* Section title */}
         <div className="mt-6 mb-3 flex items-center justify-between">
           <h2 className="text-base font-bold" style={{ color: "#1A1A1A" }}>
-            Popular near you
+            Populaires près de chez vous
           </h2>
           <Link to="/decouvrir" className="text-xs font-semibold" style={{ color: "#00B14F" }}>
-            See all
+            Tout voir
           </Link>
         </div>
 
@@ -219,7 +219,7 @@ function Index() {
                       style={{ backgroundColor: "#00B14F" }}
                     >
                       <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
-                      Add
+                      Ajouter
                     </button>
                   </div>
                 </div>
