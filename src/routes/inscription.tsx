@@ -52,7 +52,7 @@ function InscriptionPage() {
       email: em.data,
       password: p.data,
       options: {
-        emailRedirectTo: `${window.location.origin}/connexion`,
+        emailRedirectTo: `${window.location.origin}/`,
         data: { full_name: n.data, phone: ph.data },
       },
     });
