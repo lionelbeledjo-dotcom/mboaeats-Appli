@@ -173,6 +173,8 @@ function Connexion() {
   const [otpCode, setOtpCode] = useState("");
   const [devCode, setDevCode] = useState<string | null>(null);
   const [resendIn, setResendIn] = useState(0);
+  const [resendingSms, setResendingSms] = useState(false);
+  const [resendOk, setResendOk] = useState(false);
 
   // Common
   const [loading, setLoading] = useState(false);
