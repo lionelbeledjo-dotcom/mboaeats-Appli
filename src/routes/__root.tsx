@@ -120,6 +120,7 @@ function RootComponent() {
       )}
       {!hideDock && <CartFab />}
       {!hideDock && <BottomDock />}
+      <AideContextuelle floating />
       <Toaster position="top-right" richColors closeButton />
     </AuthGate>
   );
