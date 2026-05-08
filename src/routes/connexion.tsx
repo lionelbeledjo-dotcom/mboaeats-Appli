@@ -70,6 +70,23 @@ function formatPhoneForOtp(dial: string, raw: string) {
   return `${dial}${digits}`;
 }
 
+/** Detect a country from a raw phone input that may start with +indicatif or 00indicatif. */
+function detectCountryFromInput(raw: string) {
+  const input = raw.trim();
+  let digits = "";
+  if (input.startsWith("+")) digits = input.slice(1).replace(/\D/g, "");
+  else if (input.replace(/\D/g, "").startsWith("00")) digits = input.replace(/\D/g, "").slice(2);
+  else return null;
+  if (!digits) return null;
+  // Match longest dial code first to avoid +1 swallowing +1XX, etc.
+  const sorted = [...COUNTRIES].sort((a, b) => b.dial.length - a.dial.length);
+  for (const c of sorted) {
+    const d = c.dial.replace(/\D/g, "");
+    if (digits.startsWith(d)) return { country: c, rest: digits.slice(d.length) };
+  }
+  return null;
+}
+
 function Connexion() {
   const navigate = useNavigate();
   const sendOtpFn = useServerFn(sendOtp);
@@ -400,14 +417,14 @@ function Connexion() {
                             closeCountries(false);
                           }
                         }}
-                        aria-label="Choisir le pays"
+                        aria-label={`Indicatif pays : ${country.name} ${country.dial}`}
                         aria-haspopup="listbox"
                         aria-expanded={showCountries}
                         aria-controls="country-listbox"
-                        className="flex min-h-[44px] shrink-0 items-center gap-2 rounded-[14px] border border-[#E2E2E2] bg-white px-3 text-sm font-semibold text-black transition hover:border-[#06C167] focus:outline-none focus-visible:border-[#06C167] focus-visible:ring-2 focus-visible:ring-[#06C167]/30"
+                        className={`flex h-full shrink-0 items-center gap-2 rounded-[14px] border-2 bg-white px-3 text-sm font-semibold text-black transition-colors hover:border-[#06C167] focus:outline-none focus-visible:border-[#06C167] focus-visible:ring-2 focus-visible:ring-[#06C167]/30 ${showCountries ? "border-[#06C167] ring-2 ring-[#06C167]/30" : "border-[#E2E2E2]"}`}
                       >
-                        <span className="text-[18px] leading-none">{country.flag}</span>
-                        <span className="font-display text-[16px] font-extrabold tracking-wide text-black">{country.dial}</span>
+                        <span className="text-[20px] leading-none" aria-hidden="true">{country.flag}</span>
+                        <span className="font-display text-[16px] font-extrabold tracking-wide text-black tabular-nums">{country.dial}</span>
                         <ChevronDown className={`h-4 w-4 text-[#6B6B6B] transition-transform ${showCountries ? "rotate-180" : ""}`} strokeWidth={2.5} />
                       </button>
                       <input
@@ -416,8 +433,17 @@ function Connexion() {
                         autoComplete="tel"
                         placeholder="Entrez votre numéro de téléphone"
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        className="min-h-[44px] min-w-0 flex-1 rounded-[14px] border border-[#E2E2E2] bg-white px-4 text-[16px] font-semibold text-black outline-none transition placeholder:text-[#9A9A9A] placeholder:font-normal focus:border-[#06C167] focus:ring-2 focus:ring-[#06C167]/30"
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          const detected = detectCountryFromInput(v);
+                          if (detected) {
+                            setCountryCode(detected.country.code);
+                            setPhone(detected.rest);
+                          } else {
+                            setPhone(v);
+                          }
+                        }}
+                        className="h-full min-w-0 flex-1 rounded-[14px] border-2 border-[#E2E2E2] bg-white px-4 text-[16px] font-semibold text-black outline-none transition-colors placeholder:text-[#9A9A9A] placeholder:font-normal focus:border-[#06C167] focus:ring-2 focus:ring-[#06C167]/30"
                         autoFocus
                       />
                     </div>
