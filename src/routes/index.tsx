@@ -84,7 +84,7 @@ function Index() {
           <HamburgerMenu />
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium" style={{ color: "#888888" }}>
-              Deliver to
+              Livrer à
             </p>
             <button className="flex items-center gap-1 text-sm font-bold truncate" style={{ color: "#1A1A1A" }}>
               <MapPin className="h-4 w-4" style={{ color: "#00B14F" }} />
