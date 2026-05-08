@@ -65,6 +65,8 @@ function Checkout() {
   const [pending, setPending] = useState(false);
   const [seconds, setSeconds] = useState(20);
   const [liveOrderId, setLiveOrderId] = useState<string | null>(null);
+  const [showExtras, setShowExtras] = useState(false);
+  const [extrasSeen, setExtrasSeen] = useState(false);
 
   // Détection MboaPass (livraison gratuite)
   useEffect(() => {
