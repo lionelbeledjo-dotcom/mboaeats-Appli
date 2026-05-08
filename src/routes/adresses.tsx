@@ -797,13 +797,21 @@ function CoverageMap({
               onClick={() => onSelect?.(z.neighborhood)}
               onKeyDown={(e) => {
                 const cols = window.matchMedia("(min-width: 640px)").matches ? 4 : 3;
+                const len = filteredZones.length;
                 let next = -1;
-                if (e.key === "ArrowRight") next = (i + 1) % zones.length;
-                else if (e.key === "ArrowLeft") next = (i - 1 + zones.length) % zones.length;
-                else if (e.key === "ArrowDown") next = Math.min(i + cols, zones.length - 1);
-                else if (e.key === "ArrowUp") next = Math.max(i - cols, 0);
+                if (e.key === "ArrowRight") next = (i + 1) % len;
+                else if (e.key === "ArrowLeft") next = (i - 1 + len) % len;
+                else if (e.key === "ArrowDown") next = Math.min(i + cols, len - 1);
+                else if (e.key === "ArrowUp") {
+                  if (i - cols < 0) {
+                    e.preventDefault();
+                    inputRef.current?.focus();
+                    return;
+                  }
+                  next = i - cols;
+                }
                 else if (e.key === "Home") next = 0;
-                else if (e.key === "End") next = zones.length - 1;
+                else if (e.key === "End") next = len - 1;
                 else if (e.key === " " || e.key === "Enter") {
                   e.preventDefault();
                   onSelect?.(z.neighborhood);
@@ -839,6 +847,7 @@ function CoverageMap({
           );
         })}
       </div>
+      )}
 
       {activeNeighborhood && (
         <p className="relative mt-2 text-[10px] font-medium text-emerald-400">
