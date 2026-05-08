@@ -764,7 +764,7 @@ function Connexion() {
 
         {/* Lien admin retiré de l'interface publique. Accès via /admin/login uniquement. */}
 
-        <div className="sr-only mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-center text-xs text-white/60 backdrop-blur-xl">
+        <div className="hidden mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-center text-xs text-white/60 backdrop-blur-xl">
           <p className="mb-2 font-semibold text-white">Vous ne recevez pas de code ?</p>
           <p className="mb-3">Contactez-nous sur WhatsApp, on vous inscrit manuellement en quelques minutes.</p>
           <a
@@ -781,7 +781,7 @@ function Connexion() {
           </a>
         </div>
 
-        <p className="sr-only mt-4 text-center text-[11px] text-white/55">
+        <p className="hidden mt-4 text-center text-[11px] text-white/55">
           Support : <a className="text-[#ffb38a] hover:underline" href="mailto:lionelbrown2728@yahoo.fr">lionelbrown2728@yahoo.fr</a>
         </p>
       </div>
