@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Flame, ShieldCheck, Loader2, Check, AlertCircle, Mail, Phone, MessageCircle, Send, ChevronDown } from "lucide-react";
+import { Flame, ShieldCheck, Loader2, Check, AlertCircle, Mail, Phone, MessageCircle, Send, ChevronDown, ArrowRight } from "lucide-react";
 import { sendOtp, verifyOtp, getOtpDeliveryConfig } from "@/lib/otp.functions";
 import { claimAdminByPhone, checkAdminEligibility } from "@/lib/admin-claim.functions";
 
@@ -322,80 +322,71 @@ function Connexion() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#07080a] text-white" style={{ colorScheme: "dark" }}>
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[446px] bg-[#1a1007]" />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[446px]"
-        style={{
-          background:
-            "radial-gradient(circle at 50% 10%, rgba(255,143,18,0.26), transparent 34%), radial-gradient(circle at 85% 20%, rgba(255,128,0,0.18), transparent 38%), linear-gradient(180deg, #221609 0%, #120d09 100%)",
-        }}
-      />
+    <div className="relative min-h-screen overflow-hidden bg-white text-black" style={{ colorScheme: "light" }}>
+      {/* Subtle Uber Eats green decorative arcs */}
       <svg
-        className="pointer-events-none absolute inset-x-0 top-0 h-[446px] w-full"
-        viewBox="0 0 1296 446"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[280px] w-full opacity-60"
+        viewBox="0 0 1296 280"
         fill="none"
         preserveAspectRatio="none"
         aria-hidden="true"
       >
-        <path d="M-34 91C159 45 389 41 562 91C742 143 871 245 1040 240C1145 237 1235 196 1324 129" stroke="#b16f0c" strokeWidth="3" opacity="0.62" />
-        <path d="M-18 235C193 178 423 166 609 223C776 274 868 394 1035 426C1133 445 1228 435 1323 410" stroke="#f0a20b" strokeWidth="4" opacity="0.85" />
-        <path d="M-34 407C139 357 305 342 472 352C713 366 846 463 1030 464C1164 465 1241 424 1329 351" stroke="#c0770c" strokeWidth="3" opacity="0.72" />
-        <circle cx="177" cy="160" r="157" stroke="#c89213" strokeWidth="3" opacity="0.55" />
-        <circle cx="1007" cy="225" r="172" stroke="#d89416" strokeWidth="4" opacity="0.76" />
-        <circle cx="1210" cy="222" r="376" stroke="#d98f18" strokeWidth="4" opacity="0.7" />
-        <path d="M-20 84C167 37 362 46 527 86C714 132 833 225 1027 239C1136 247 1232 219 1324 166" stroke="#c06f0c" strokeWidth="2" opacity="0.55" />
+        <path d="M-34 91C159 45 389 41 562 91C742 143 871 245 1040 240C1145 237 1235 196 1324 129" stroke="#06C167" strokeWidth="1.5" opacity="0.18" />
+        <path d="M-18 195C193 138 423 126 609 183C776 234 868 264 1035 266C1133 267 1228 245 1323 220" stroke="#06C167" strokeWidth="1.5" opacity="0.12" />
+        <circle cx="1107" cy="80" r="172" stroke="#06C167" strokeWidth="1.5" opacity="0.10" />
       </svg>
 
-      <div className="absolute right-[7.6%] top-4 z-10 flex items-start gap-[-4px]">
-        <button type="button" aria-label="Aide" className="flex h-[50px] w-[50px] items-center justify-center rounded-full bg-[#ff7308] text-2xl font-black text-white shadow-[0_12px_30px_rgba(255,112,8,0.35)] ring-1 ring-orange-300/20">
-          <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full border-2 border-white text-[15px] leading-none">?</span>
+      <div className="absolute right-5 top-5 z-10">
+        <button
+          type="button"
+          aria-label="Aide"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-[#E2E2E2] bg-white text-[#06C167] shadow-sm transition hover:bg-[#06C167]/5"
+        >
+          <span className="text-xl font-black leading-none">?</span>
         </button>
-        <span className="-ml-3 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 ring-[3px] ring-white" aria-hidden />
       </div>
 
-      <div className="relative z-[1] mx-auto flex min-h-screen w-full max-w-[548px] flex-col px-6 pt-[46px]">
-        <div className="mb-[28px] flex flex-col items-center text-center">
-          <div className="relative mb-6 flex h-20 w-20 items-center justify-center rounded-[31px] bg-gradient-to-br from-[#ffa414] via-[#ff850c] to-[#ff5b05] shadow-[0_0_58px_rgba(255,128,10,0.42)]">
-            <div className="absolute inset-[-28px] -z-10 rounded-full bg-[#ff8908]/20 blur-3xl" aria-hidden />
-            <Flame className="h-10 w-10 text-white" strokeWidth={2.35} />
+      <div className="relative z-[1] mx-auto flex min-h-screen w-full max-w-[480px] flex-col px-6 pt-10 pb-10">
+        <div className="mb-8 flex flex-col items-center text-center">
+          <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-[24px] bg-[#06C167] shadow-[0_10px_30px_-12px_rgba(6,193,103,0.55)]">
+            <Flame className="h-10 w-10 text-white" strokeWidth={2.4} />
           </div>
-          <h1 className="font-display text-[38px] font-black leading-none text-white drop-shadow-sm">MboaEats</h1>
-          <p className="mt-4 text-[17px] font-light leading-none text-white/66">
+          <h1 className="font-display text-[34px] font-black leading-none text-[#06C167]">MboaEats</h1>
+          <h2 className="mt-3 text-[20px] font-bold leading-none text-black">Mboa Console</h2>
+          <p className="mt-2 text-[15px] font-normal leading-snug text-[#6B6B6B]">
             Veuillez vous connecter pour continuer
           </p>
         </div>
 
-        <div className="rounded-[32px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(74,56,30,0.94)_0%,rgba(25,25,27,0.98)_42%,rgba(18,18,20,1)_100%)] p-[30px] shadow-[0_34px_90px_-28px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl animate-fade-up">
+        <div className="rounded-[24px] border border-[#EDEDED] bg-white p-6 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.08)] animate-fade-up">
           {step === "identify" && (
             <>
               {/* Mode tabs */}
-              <div className="mb-7 grid h-[52px] grid-cols-2 gap-2 rounded-full border border-[#806d49]/55 bg-[#625238]/85 p-[5px] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur">
+              <div className="mb-6 grid h-[48px] grid-cols-2 gap-1 rounded-full border border-[#E2E2E2] bg-[#F5F5F5] p-1">
                 <button
                   type="button"
                   onClick={() => { setMode("phone"); setError(null); }}
-                  className={`flex items-center justify-center gap-2 rounded-full px-3 text-[14px] font-extrabold transition ${mode === "phone" ? "bg-[#756b58] text-white shadow-[inset_0_0_0_1.5px_rgba(215,169,83,0.72)]" : "text-white/48 hover:text-white/75"}`}
+                  className={`flex min-h-[44px] items-center justify-center gap-2 rounded-full px-3 text-[14px] font-bold transition ${mode === "phone" ? "bg-white text-black shadow-sm" : "text-[#6B6B6B] hover:text-black"}`}
                 >
                   <Phone className="h-3.5 w-3.5" /> Téléphone
                 </button>
                 <button
                   type="button"
                   onClick={() => { setMode("email"); setError(null); }}
-                  className={`flex items-center justify-center gap-2 rounded-full px-3 text-[14px] font-extrabold transition ${mode === "email" ? "bg-[#756b58] text-white shadow-[inset_0_0_0_1.5px_rgba(215,169,83,0.72)]" : "text-white/48 hover:text-white/75"}`}
+                  className={`flex min-h-[44px] items-center justify-center gap-2 rounded-full px-3 text-[14px] font-bold transition ${mode === "email" ? "bg-white text-black shadow-sm" : "text-[#6B6B6B] hover:text-black"}`}
                 >
                   <Mail className="h-3.5 w-3.5" /> Email
                 </button>
               </div>
 
-              <form onSubmit={submitIdentify} className="space-y-[26px]">
+              <form onSubmit={submitIdentify} className="space-y-5">
                 {mode === "phone" ? (
                   <>
-                    <label className="block text-[13px] font-black uppercase tracking-[0.34em] text-white/56">
+                    <label className="block text-[12px] font-bold uppercase tracking-[0.18em] text-[#6B6B6B]">
                       Numéro de téléphone
                     </label>
-                    {/* Glassmorphism block — copper border + gold separator */}
-                    <div className="group relative flex h-[68px] items-stretch overflow-hidden rounded-[28px] border border-[#d89109] bg-[#2a2a2e]/95 backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_0_0_1px_rgba(255,166,0,0.05),0_16px_48px_-26px_rgba(255,148,18,0.72)] transition focus-within:border-[#ffb000] focus-within:ring-[3px] focus-within:ring-[#ff9d00]/34">
+                    <div className="flex h-[56px] items-stretch gap-2">
+                      {/* Country selector — bordered */}
                       <button
                         ref={countryTriggerRef}
                         type="button"
@@ -413,18 +404,12 @@ function Connexion() {
                         aria-haspopup="listbox"
                         aria-expanded={showCountries}
                         aria-controls="country-listbox"
-                        className="flex shrink-0 items-center gap-3 px-[20px] text-sm font-semibold text-white transition hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb000] focus-visible:ring-offset-2 focus-visible:ring-offset-[#111113] rounded-l-[28px]"
+                        className="flex min-h-[44px] shrink-0 items-center gap-2 rounded-[14px] border border-[#E2E2E2] bg-white px-3 text-sm font-semibold text-black transition hover:border-[#06C167] focus:outline-none focus-visible:border-[#06C167] focus-visible:ring-2 focus-visible:ring-[#06C167]/30"
                       >
-                        <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-[#5f5f65] text-[14px] font-black leading-none tracking-tight ring-1 ring-white/10">
-                          {country.code}
-                        </span>
-                        <span className="font-display text-[21px] font-black tracking-wide">{country.dial}</span>
-                        <ChevronDown className={`h-4 w-4 text-[#ffad05] transition-transform ${showCountries ? "rotate-180" : ""}`} strokeWidth={3} />
+                        <span className="text-[18px] leading-none">{country.flag}</span>
+                        <span className="font-display text-[16px] font-extrabold tracking-wide text-black">{country.dial}</span>
+                        <ChevronDown className={`h-4 w-4 text-[#6B6B6B] transition-transform ${showCountries ? "rotate-180" : ""}`} strokeWidth={2.5} />
                       </button>
-                      <span
-                        aria-hidden
-                        className="my-[14px] w-px bg-gradient-to-b from-transparent via-white/18 to-transparent"
-                      />
                       <input
                         type="tel"
                         inputMode="tel"
@@ -432,14 +417,14 @@ function Connexion() {
                         placeholder="Entrez votre numéro de téléphone"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="min-w-0 flex-1 bg-transparent px-5 text-[20px] font-semibold text-white outline-none placeholder:text-white/36 focus-visible:ring-2 focus-visible:ring-[#ffb000]/70 rounded-r-[28px]"
+                        className="min-h-[44px] min-w-0 flex-1 rounded-[14px] border border-[#E2E2E2] bg-white px-4 text-[16px] font-semibold text-black outline-none transition placeholder:text-[#9A9A9A] placeholder:font-normal focus:border-[#06C167] focus:ring-2 focus:ring-[#06C167]/30"
                         autoFocus
                       />
                     </div>
 
                     {showCountries && (
                       <div
-                        className="rounded-2xl border border-white/10 bg-[#0d0d0f]/90 p-2 backdrop-blur-2xl shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)]"
+                        className="rounded-2xl border border-[#E2E2E2] bg-white p-2 shadow-lg"
                         onKeyDown={handleCountryListKeyDown}
                       >
                         <input
@@ -455,7 +440,7 @@ function Connexion() {
                               ? `country-opt-${filteredCountries[highlightedCountry].code}`
                               : undefined
                           }
-                          className="mb-2 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-[#f59e0b]/70 focus-visible:ring-2 focus-visible:ring-[#f59e0b]"
+                          className="mb-2 w-full rounded-lg border border-[#E2E2E2] bg-white px-3 py-2 text-sm text-black placeholder:text-[#9A9A9A] outline-none focus:border-[#06C167] focus-visible:ring-2 focus-visible:ring-[#06C167]/30"
                         />
                         <div
                           ref={countryListRef}
@@ -479,18 +464,18 @@ function Connexion() {
                                 tabIndex={-1}
                                 onMouseEnter={() => setHighlightedCountry(idx)}
                                 onClick={() => selectCountry(c.code)}
-                                className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-white/90 transition focus:outline-none ${active ? "bg-[#f59e0b]/20 ring-1 ring-[#f59e0b]/60" : "hover:bg-white/10"} ${selected ? "bg-white/10" : ""}`}
+                                className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-black transition focus:outline-none ${active ? "bg-[#06C167]/10 ring-1 ring-[#06C167]/40" : "hover:bg-[#F5F5F5]"} ${selected ? "bg-[#F0F0F0]" : ""}`}
                               >
                                 <span className="flex items-center gap-2">
-                                  <span className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-white/10 text-base leading-none ring-1 ring-white/15">{c.flag}</span>
+                                  <span className="text-base leading-none">{c.flag}</span>
                                   <span>{c.name}</span>
                                 </span>
-                                <span className="text-xs text-white/55">{c.dial}</span>
+                                <span className="text-xs text-[#6B6B6B]">{c.dial}</span>
                               </button>
                             );
                           })}
                           {filteredCountries.length === 0 && (
-                            <p className="px-3 py-4 text-center text-xs text-white/55">Aucun pays trouvé</p>
+                            <p className="px-3 py-4 text-center text-xs text-[#6B6B6B]">Aucun pays trouvé</p>
                           )}
                         </div>
                       </div>
@@ -498,11 +483,11 @@ function Connexion() {
                   </>
                 ) : (
                   <>
-                    <label className="block text-[13px] font-black uppercase tracking-[0.34em] text-white/56">
+                    <label className="block text-[12px] font-bold uppercase tracking-[0.18em] text-[#6B6B6B]">
                       Adresse email
                     </label>
-                    <div className="flex h-[68px] items-center gap-3 rounded-[28px] border border-[#d89109] bg-[#2a2a2e]/95 px-5 backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_16px_48px_-26px_rgba(255,148,18,0.72)] transition focus-within:border-[#ffb000] focus-within:ring-[3px] focus-within:ring-[#ff9d00]/34">
-                      <Mail className="h-5 w-5 text-[#ffad05]" />
+                    <div className="flex h-[56px] items-center gap-3 rounded-[14px] border border-[#E2E2E2] bg-white px-4 transition focus-within:border-[#06C167] focus-within:ring-2 focus-within:ring-[#06C167]/30">
+                      <Mail className="h-5 w-5 text-[#06C167]" />
                       <input
                         type="email"
                         inputMode="email"
@@ -510,7 +495,7 @@ function Connexion() {
                         placeholder="vous@exemple.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="min-w-0 flex-1 bg-transparent text-[20px] font-semibold text-white outline-none placeholder:text-white/36"
+                        className="min-w-0 flex-1 bg-transparent text-[16px] font-semibold text-black outline-none placeholder:text-[#9A9A9A] placeholder:font-normal"
                         autoFocus
                       />
                     </div>
@@ -518,27 +503,27 @@ function Connexion() {
                 )}
 
                 {mode === "phone" && smsTrial && whatsappAvailable && (
-                  <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 text-xs text-foreground">
+                  <div className="rounded-xl border border-[#06C167]/30 bg-[#06C167]/5 p-3 text-xs text-black">
                     🔔 Le service SMS est temporairement indisponible. Recevez votre code par WhatsApp — gratuit et immédiat.
                   </div>
                 )}
 
                 {mode === "phone" && smsTrial && !whatsappAvailable && (
-                  <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-foreground">
-                    ⚠️ SMS et WhatsApp temporairement indisponibles. Utilisez votre <button type="button" onClick={() => setMode("email")} className="font-semibold text-primary underline">email</button> pour vous connecter immédiatement.
+                  <div className="rounded-xl border border-amber-500/40 bg-amber-50 p-3 text-xs text-black">
+                    ⚠️ SMS et WhatsApp temporairement indisponibles. Utilisez votre <button type="button" onClick={() => setMode("email")} className="font-semibold text-[#06C167] underline">email</button> pour vous connecter immédiatement.
                   </div>
                 )}
 
                 {mode === "phone" && !smsTrial && (
                   <div>
-                    <p className="mb-3 text-[13px] font-black uppercase tracking-[0.2em] text-white/36">
+                    <p className="mb-3 text-[12px] font-bold uppercase tracking-[0.18em] text-[#6B6B6B]">
                       Recevoir le code par
                     </p>
                     <div className="grid grid-cols-2 gap-3">
                       <button
                         type="button"
                         onClick={() => { setChannel("sms"); setError(null); setShowWhatsAppFallback(false); }}
-                        className={`flex h-[72px] items-center justify-center gap-2 rounded-[28px] border text-[20px] font-semibold transition ${channel === "sms" ? "border-[#ff5b05] bg-[#3a1e18] text-[#17120f] shadow-[inset_0_0_0_1px_rgba(255,102,0,0.2)]" : "border-white/12 bg-white/[0.04] text-white/45 hover:bg-white/[0.07]"}`}
+                        className={`flex min-h-[44px] h-[52px] items-center justify-center gap-2 rounded-[14px] border text-[15px] font-semibold transition ${channel === "sms" ? "border-[#06C167] bg-[#06C167]/8 text-black" : "border-[#E2E2E2] bg-white text-[#6B6B6B] hover:border-[#06C167]/50"}`}
                       >
                         <MessageCircle className="h-4 w-4" /> SMS
                       </button>
@@ -546,32 +531,32 @@ function Connexion() {
                         <button
                           type="button"
                           onClick={() => { setChannel("whatsapp"); setError(null); setShowWhatsAppFallback(false); }}
-                          className={`flex h-[72px] items-center justify-center gap-2 rounded-[28px] border text-[20px] font-semibold transition ${channel === "whatsapp" ? "border-[#ff5b05] bg-[#3a1e18] text-white" : "border-white/12 bg-white/[0.04] text-white/45 hover:bg-white/[0.07]"}`}
+                          className={`flex min-h-[44px] h-[52px] items-center justify-center gap-2 rounded-[14px] border text-[15px] font-semibold transition ${channel === "whatsapp" ? "border-[#06C167] bg-[#06C167]/8 text-black" : "border-[#E2E2E2] bg-white text-[#6B6B6B] hover:border-[#06C167]/50"}`}
                         >
                           <Send className="h-4 w-4" /> WhatsApp
                         </button>
                       ) : (
                         <div
-                          className="flex h-[72px] flex-col items-center justify-center gap-0.5 rounded-[28px] border border-dashed border-white/50 bg-white/[0.2] text-center text-[13px] font-bold text-white/28"
+                          className="flex h-[52px] flex-col items-center justify-center gap-0.5 rounded-[14px] border border-dashed border-[#E2E2E2] bg-[#F5F5F5] text-center text-[13px] font-semibold text-[#9A9A9A]"
                           aria-disabled
                           title="WhatsApp pas encore activé sur ce compte"
                         >
                           <span className="flex items-center gap-1.5"><Send className="h-3.5 w-3.5" /> WhatsApp</span>
-                          <span className="text-[10px] opacity-70">Bientôt disponible</span>
+                          <span className="text-[10px] opacity-80">Bientôt disponible</span>
                         </div>
                       )}
                     </div>
                   </div>
                 )}
 
-                <p className="flex items-start gap-3 text-[13px] leading-snug text-white/32">
-                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#ff5b05]" />
+                <p className="flex items-start gap-2 text-[12px] leading-snug text-[#6B6B6B]">
+                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#06C167]" />
                   Un code à 6 chiffres vous sera envoyé par {mode === "phone" ? (channel === "whatsapp" ? "WhatsApp" : "SMS") : "email"} pour confirmer votre identité.
                 </p>
 
                 {error && (
-                  <div className="space-y-3 rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-xs">
-                    <div className="flex items-start gap-2 text-destructive">
+                  <div className="space-y-3 rounded-xl border border-red-300 bg-red-50 p-4 text-xs text-black">
+                    <div className="flex items-start gap-2 text-red-600">
                       <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                       <div className="space-y-1">
                         <p className="font-semibold">Impossible d'envoyer le code</p>
@@ -579,8 +564,8 @@ function Connexion() {
                       </div>
                     </div>
 
-                    <div className="space-y-2 rounded-lg bg-background/60 p-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground">
+                    <div className="space-y-2 rounded-lg bg-white p-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-black">
                         ✨ Solutions immédiates
                       </p>
                       <div className="flex flex-wrap gap-2">
@@ -599,7 +584,7 @@ function Connexion() {
                             type="button"
                             onClick={() => sendCode("sms")}
                             disabled={loading}
-                            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-[11px] font-semibold text-foreground"
+                            className="inline-flex items-center gap-1.5 rounded-full border border-[#E2E2E2] bg-white px-3 py-1.5 text-[11px] font-semibold text-black"
                           >
                             <MessageCircle className="h-3 w-3" /> Essayer SMS
                           </button>
@@ -607,7 +592,7 @@ function Connexion() {
                         <button
                           type="button"
                           onClick={() => { setMode("email"); setError(null); setShowWhatsAppFallback(false); }}
-                          className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-[11px] font-semibold text-primary-foreground"
+                          className="inline-flex items-center gap-1.5 rounded-full bg-[#06C167] px-3 py-1.5 text-[11px] font-semibold text-white"
                         >
                           <Mail className="h-3 w-3" /> Utiliser mon email
                         </button>
@@ -619,7 +604,7 @@ function Connexion() {
                           )}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 rounded-full border border-[#25D366] bg-background px-3 py-1.5 text-[11px] font-semibold text-[#25D366]"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-[#25D366] bg-white px-3 py-1.5 text-[11px] font-semibold text-[#25D366]"
                         >
                           <Send className="h-3 w-3" /> Aide humaine
                         </a>
@@ -631,19 +616,16 @@ function Connexion() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="shine-sweep relative inline-flex h-[60px] w-full items-center justify-center gap-2 overflow-hidden rounded-[24px] text-[17px] font-black uppercase tracking-[0.22em] text-white shadow-[0_18px_34px_-18px_rgba(255,104,5,0.95)] transition-transform active:scale-[0.98] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#111113]"
-                  style={{
-                    background: "linear-gradient(90deg, #ffd28a 0%, #ff8b13 36%, #ff6908 68%, #f45b06 100%)",
-                  }}
+                  className="relative inline-flex min-h-[44px] h-[56px] w-full items-center justify-center gap-2 overflow-hidden rounded-[14px] bg-[#06C167] text-[15px] font-bold uppercase tracking-[0.16em] text-white shadow-[0_10px_24px_-12px_rgba(6,193,103,0.65)] transition hover:bg-[#05a557] active:scale-[0.99] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
-                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "SE CONNECTER"}
+                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (<>SE CONNECTER <ArrowRight className="h-5 w-5" /></>)}
                 </button>
 
-                <div className="mt-9 flex flex-col items-center gap-4 text-center">
+                <div className="mt-6 flex flex-col items-center gap-3 text-center">
                   <button
                     type="button"
                     onClick={() => { if (identifierLabel && (phone || email)) setStep("otp"); }}
-                    className="text-[16px] font-medium text-white/58 transition hover:text-amber-300 focus:outline-none focus-visible:underline"
+                    className="text-[14px] font-medium text-[#6B6B6B] transition hover:text-[#06C167] focus:outline-none focus-visible:underline"
                   >
                     Vérifier le code ?
                   </button>
@@ -651,7 +633,7 @@ function Connexion() {
                     href="https://wa.me/237699999999?text=Bonjour%20MboaEats%2C%20j%27ai%20besoin%20d%27aide%20pour%20me%20connecter."
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[16px] font-medium text-white/58 transition hover:text-amber-300 focus:outline-none focus-visible:underline"
+                    className="text-[14px] font-medium text-[#6B6B6B] transition hover:text-[#06C167] focus:outline-none focus-visible:underline"
                   >
                     Veuillez contacter l'administrateur ?
                   </a>
@@ -700,22 +682,21 @@ function Connexion() {
           {step === "otp" && (
             <form id="otp-form" onSubmit={submitCode} className="space-y-5 animate-fade-up">
               <div className="text-center">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-600 shadow-[0_0_30px_rgba(251,146,60,0.5)]">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#06C167] shadow-[0_8px_22px_-8px_rgba(6,193,103,0.55)]">
                   <ShieldCheck className="h-6 w-6 text-white" />
                 </div>
-                <h2 className="font-display text-xl font-bold text-white">Vérification</h2>
-                <p className="mt-1 text-sm text-white/60">
+                <h2 className="font-display text-xl font-bold text-black">Vérification</h2>
+                <p className="mt-1 text-sm text-[#6B6B6B]">
                   {channel === "whatsapp" ? "Code envoyé par WhatsApp" : channel === "email" ? "Code envoyé par email" : "Code envoyé par SMS"} à
                 </p>
-                <p className="mt-1 text-sm font-semibold text-amber-300">{identifierLabel}</p>
+                <p className="mt-1 text-sm font-semibold text-[#06C167]">{identifierLabel}</p>
               </div>
 
               <div>
-                <label className="mb-3 block text-center text-[11px] font-semibold uppercase tracking-[0.25em] text-white/55">
+                <label className="mb-3 block text-center text-[11px] font-bold uppercase tracking-[0.25em] text-[#6B6B6B]">
                   Saisissez les 6 chiffres
                 </label>
                 <OtpInput value={code} onChange={setCode} onComplete={() => {
-                  // submit when 6 digits entered
                   const form = document.getElementById("otp-form") as HTMLFormElement | null;
                   form?.requestSubmit();
                 }} />
@@ -723,7 +704,7 @@ function Connexion() {
               </div>
 
               {error && (
-                <div className="flex items-start gap-2 rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-xs text-red-300">
+                <div className="flex items-start gap-2 rounded-xl border border-red-300 bg-red-50 p-3 text-xs text-red-600">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                   <span>{error}</span>
                 </div>
@@ -732,10 +713,7 @@ function Connexion() {
               <button
                 type="submit"
                 disabled={loading || code.length !== 6}
-                className="shine-sweep relative inline-flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-xl text-sm font-bold uppercase tracking-[0.18em] text-white shadow-[0_10px_30px_-10px_rgba(249,115,22,0.7)] transition-transform active:scale-[0.98] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d0d0f]"
-                style={{
-                  background: "linear-gradient(90deg, #f59e0b 0%, #f97316 50%, #ea580c 100%)",
-                }}
+                className="relative inline-flex min-h-[44px] h-[52px] w-full items-center justify-center gap-2 overflow-hidden rounded-[14px] bg-[#06C167] text-sm font-bold uppercase tracking-[0.18em] text-white shadow-[0_10px_24px_-12px_rgba(6,193,103,0.65)] transition hover:bg-[#05a557] active:scale-[0.99] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               >
                 {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (<><Check className="h-4 w-4" /> Valider</>)}
               </button>
@@ -745,7 +723,7 @@ function Connexion() {
                   type="button"
                   onClick={handleResend}
                   disabled={cooldown > 0 || resendCount >= MAX_RESEND || loading}
-                  className="text-sm font-semibold text-amber-300 transition hover:text-amber-200 disabled:text-white/40 disabled:cursor-not-allowed focus:outline-none focus-visible:underline"
+                  className="text-sm font-semibold text-[#06C167] transition hover:text-[#05a557] disabled:text-[#9A9A9A] disabled:cursor-not-allowed focus:outline-none focus-visible:underline"
                 >
                   {resendCount >= MAX_RESEND
                     ? "Limite de renvois atteinte"
@@ -753,7 +731,7 @@ function Connexion() {
                       ? `Renvoyer le code dans ${cooldown}s`
                       : "Renvoyer le code"}
                 </button>
-                <p className="text-[11px] text-white/40">
+                <p className="text-[11px] text-[#9A9A9A]">
                   {resendCount}/{MAX_RESEND} tentatives utilisées
                 </p>
               </div>
@@ -761,7 +739,7 @@ function Connexion() {
               <button
                 type="button"
                 onClick={() => { setStep("identify"); setCode(""); setError(null); setResendCount(0); setCooldown(0); }}
-                className="block w-full text-center text-xs text-white/60 underline-offset-4 hover:text-white hover:underline focus:outline-none focus-visible:underline"
+                className="block w-full text-center text-xs text-[#6B6B6B] underline-offset-4 hover:text-black hover:underline focus:outline-none focus-visible:underline"
               >
                 ← Modifier {mode === "phone" ? "le numéro" : "l'email"}
               </button>
@@ -895,7 +873,7 @@ function OtpInput({
           onPaste={(e) => handlePaste(e, i)}
           onFocus={(e) => e.currentTarget.select()}
           aria-label={`Chiffre ${i + 1}`}
-          className="h-14 w-11 sm:w-12 rounded-xl border border-[#f59e0b]/60 bg-[#1a1a1d] text-center text-2xl font-bold text-white outline-none transition focus:border-[#fbbf24] focus:ring-2 focus:ring-amber-400/40 focus-visible:ring-2 focus-visible:ring-amber-400"
+          className="h-14 w-11 sm:w-12 rounded-xl border border-[#E2E2E2] bg-white text-center text-2xl font-bold text-black outline-none transition focus:border-[#06C167] focus:ring-2 focus:ring-[#06C167]/30 focus-visible:ring-2 focus-visible:ring-[#06C167]/40"
           autoFocus={i === 0}
         />
       ))}
