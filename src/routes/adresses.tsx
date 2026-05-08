@@ -81,6 +81,15 @@ function AddressesPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const cityInfo = useCityDelivery(city);
+  const coveredZone = findCoveredZone(neighborhood, cityInfo.zones);
+  const cityHasCoverage = !cityInfo.loading && cityInfo.zones.length > 0;
+  const neighborhoodCovered = !!coveredZone;
+  const canSubmit =
+    !!label.trim() &&
+    !!neighborhood.trim() &&
+    cityHasCoverage &&
+    neighborhoodCovered &&
+    validateCmPhone(phone).ok;
 
   const reloadList = async () => {
     try {
