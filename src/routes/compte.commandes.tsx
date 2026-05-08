@@ -1,5 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, RotateCcw, Star, Utensils } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { ArrowLeft, Check, Loader2, RotateCcw, Star, Utensils } from "lucide-react";
+import { addToCart, clearCart } from "@/hooks/use-cart";
 
 export const Route = createFileRoute("/compte/commandes")({
   component: CommandesPage,
@@ -65,6 +67,32 @@ function formatFcfa(n: number) {
 }
 
 function CommandesPage() {
+  const navigate = useNavigate();
+  const [reorderingId, setReorderingId] = useState<string | null>(null);
+  const [doneId, setDoneId] = useState<string | null>(null);
+
+  const reorder = async (o: Order) => {
+    if (reorderingId) return;
+    setReorderingId(o.id);
+    try {
+      clearCart();
+      addToCart({
+        id: `${o.id}-${o.dish}`,
+        dishId: o.id,
+        restoId: o.restaurant.toLowerCase().replace(/\s+/g, "-"),
+        name: o.dish,
+        price: o.price,
+        qty: 1,
+        image: o.image,
+      });
+      setDoneId(o.id);
+      await new Promise((r) => setTimeout(r, 450));
+      navigate({ to: "/checkout" });
+    } finally {
+      setReorderingId(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-30 glass">
@@ -113,8 +141,20 @@ function CommandesPage() {
                   </div>
                   <div className="flex items-center justify-between gap-3">
                     <span className="font-display text-base font-bold text-gradient-primary">{formatFcfa(o.price)}</span>
-                    <button className="inline-flex items-center gap-2 rounded-full bg-gradient-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-glow transition-transform hover:scale-[1.02]">
-                      <RotateCcw className="h-3.5 w-3.5" /> Commander à nouveau
+                    <button
+                      type="button"
+                      onClick={() => reorder(o)}
+                      disabled={reorderingId === o.id}
+                      className="inline-flex items-center gap-2 rounded-full bg-gradient-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-glow transition-transform hover:scale-[1.02] disabled:opacity-70"
+                    >
+                      {reorderingId === o.id ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : doneId === o.id ? (
+                        <Check className="h-3.5 w-3.5" />
+                      ) : (
+                        <RotateCcw className="h-3.5 w-3.5" />
+                      )}
+                      {doneId === o.id ? "Ajouté au panier" : "Commander à nouveau"}
                     </button>
                   </div>
                 </div>
