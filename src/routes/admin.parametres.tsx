@@ -253,7 +253,7 @@ function NotificationsTab() {
         <h2 className="font-display text-lg font-bold">Notifications</h2>
       </div>
       {items.map((it) => (
-        <label key={it.key} className="flex cursor-pointer items-start justify-between gap-4 rounded-2xl border border-border bg-background/40 p-4 hover:bg-background/60">
+        <label key={String(it.key)} className="flex cursor-pointer items-start justify-between gap-4 rounded-2xl border border-border bg-background/40 p-4 hover:bg-background/60">
           <div>
             <p className="font-semibold">{it.label}</p>
             <p className="text-xs text-muted-foreground">{it.desc}</p>
