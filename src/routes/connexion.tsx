@@ -180,6 +180,10 @@ function Connexion() {
   const [mode, setMode] = useState<Mode>("phone");
   const [step, setStep] = useState<Step>("identify");
 
+  // Warm the in-memory + HTTP cache for all flag SVGs once.
+  useEffect(() => { prefetchFlags(COUNTRIES.map((c) => c.code)); }, []);
+
+
   const [countryCode, setCountryCode] = useState("CM");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
