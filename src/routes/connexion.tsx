@@ -530,9 +530,13 @@ function Connexion() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-primary text-sm font-semibold text-primary-foreground shadow-glow transition active:scale-[0.98] disabled:opacity-60"
+                  className="shine-sweep relative inline-flex h-14 w-full items-center justify-center gap-2 overflow-hidden rounded-full text-base font-bold tracking-wide text-white shadow-[0_18px_50px_-15px_rgba(255,80,40,0.7)] ring-1 ring-white/15 transition-transform active:scale-[0.98] disabled:opacity-60"
+                  style={{
+                    background:
+                      "linear-gradient(120deg, #ff8a3d 0%, #ff5028 45%, #b21d2a 100%)",
+                  }}
                 >
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (mode === "phone" ? "Envoyer le code" : "Continuer")}
+                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (mode === "phone" ? "Suivant" : "Continuer")}
                 </button>
 
               </form>
