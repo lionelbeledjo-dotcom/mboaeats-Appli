@@ -140,19 +140,26 @@ function Connexion() {
     setStep("channel");
   };
 
-  const sendCode = async () => {
+  const sendCode = async (overrideChannel?: Channel) => {
+    const ch = overrideChannel ?? channel;
     setError(null);
+    setShowWhatsAppFallback(false);
     setLoading(true);
     try {
-      if (mode === "phone" && (channel === "sms" || channel === "whatsapp")) {
+      if (mode === "phone" && (ch === "sms" || ch === "whatsapp")) {
         const fullPhone = formatPhoneForOtp(country.dial, phone);
-        await sendOtpFn({ data: { phone: fullPhone, channel } });
+        await sendOtpFn({ data: { phone: fullPhone, channel: ch } });
+        if (overrideChannel) setChannel(overrideChannel);
         setStep("otp");
       } else {
         setError("Ce canal n'est pas encore disponible. Choisissez SMS ou WhatsApp.");
       }
     } catch (err: any) {
-      setError(err?.message ?? "Échec de l'envoi du code");
+      const msg = err?.message ?? "Échec de l'envoi du code";
+      setError(msg);
+      if (ch === "sms" && /whatsapp/i.test(msg)) {
+        setShowWhatsAppFallback(true);
+      }
     } finally {
       setLoading(false);
     }
