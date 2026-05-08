@@ -201,9 +201,18 @@ function OrderDetailsPanel({ order, onClose }: { order: OrderRow; onClose: () =>
             <h3 className="mt-1 font-display text-xl font-extrabold">Détails de la commande</h3>
             <p className="mt-0.5 text-xs text-muted-foreground">{order.date}</p>
           </div>
-          <button type="button" onClick={onClose} className="rounded-full p-2 hover:bg-background" aria-label="Fermer le panneau">
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => exportInvoicePdf(order)}
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground shadow-glow transition hover:opacity-90"
+            >
+              <Download className="h-3.5 w-3.5" /> Exporter PDF
+            </button>
+            <button type="button" onClick={onClose} className="rounded-full p-2 hover:bg-background" aria-label="Fermer le panneau">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         <div className="space-y-4 p-5">
