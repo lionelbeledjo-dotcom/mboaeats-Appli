@@ -44,6 +44,53 @@ function AddressesPage() {
 
   const [saved, setSaved] = useState<Saved[]>([]);
   const [loadingList, setLoadingList] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState<Saved | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  const startEdit = (a: Saved) => {
+    setEditingId(a.id);
+    setEditDraft({ ...a, phone: a.phone.replace(/^\+237\s*/, "") });
+  };
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditDraft(null);
+  };
+  const saveEdit = async () => {
+    if (!editDraft) return;
+    if (!editDraft.label.trim() || !editDraft.neighborhood.trim()) {
+      toast.error("Label et rue/quartier sont requis.");
+      return;
+    }
+    const phoneFull = editDraft.phone.trim()
+      ? `+237 ${editDraft.phone.replace(/\D/g, "")}`
+      : "";
+    setSavingEdit(true);
+    const updated: Saved = {
+      ...editDraft,
+      label: editDraft.label.trim(),
+      neighborhood: editDraft.neighborhood.trim(),
+      phone: phoneFull,
+    };
+    setSaved((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
+    try {
+      await upsertMyAddress({
+        data: {
+          id: updated.id.startsWith("local-") ? undefined : updated.id,
+          label: updated.label,
+          city: updated.city,
+          neighborhood: updated.neighborhood,
+          line: `${updated.neighborhood}${phoneFull ? ` · Tél : ${phoneFull}` : ""}`,
+        },
+      });
+    } catch {
+      // garde la mise à jour locale
+    }
+    setSavingEdit(false);
+    toast.success("Adresse mise à jour ✅");
+    cancelEdit();
+  };
+
 
   useEffect(() => {
     let active = true;
