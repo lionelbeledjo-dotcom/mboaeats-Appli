@@ -361,9 +361,15 @@ function Connexion() {
                   </>
                 )}
 
-                {mode === "phone" && smsTrial && (
+                {mode === "phone" && smsTrial && whatsappAvailable && (
                   <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 text-xs text-foreground">
                     🔔 Le service SMS est temporairement indisponible. Recevez votre code par WhatsApp — gratuit et immédiat.
+                  </div>
+                )}
+
+                {mode === "phone" && smsTrial && !whatsappAvailable && (
+                  <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-foreground">
+                    ⚠️ SMS et WhatsApp temporairement indisponibles. Utilisez votre <button type="button" onClick={() => setMode("email")} className="font-semibold text-primary underline">email</button> pour vous connecter immédiatement.
                   </div>
                 )}
 
@@ -380,13 +386,24 @@ function Connexion() {
                       >
                         <MessageCircle className="h-4 w-4" /> SMS
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => { setChannel("whatsapp"); setError(null); setShowWhatsAppFallback(false); }}
-                        className={`flex items-center justify-center gap-2 rounded-2xl border p-3 text-sm font-semibold transition ${channel === "whatsapp" ? "border-primary bg-primary/10 text-foreground" : "border-border bg-background text-muted-foreground hover:bg-muted/40"}`}
-                      >
-                        <Send className="h-4 w-4" /> WhatsApp
-                      </button>
+                      {whatsappAvailable ? (
+                        <button
+                          type="button"
+                          onClick={() => { setChannel("whatsapp"); setError(null); setShowWhatsAppFallback(false); }}
+                          className={`flex items-center justify-center gap-2 rounded-2xl border p-3 text-sm font-semibold transition ${channel === "whatsapp" ? "border-primary bg-primary/10 text-foreground" : "border-border bg-background text-muted-foreground hover:bg-muted/40"}`}
+                        >
+                          <Send className="h-4 w-4" /> WhatsApp
+                        </button>
+                      ) : (
+                        <div
+                          className="flex flex-col items-center justify-center gap-0.5 rounded-2xl border border-dashed border-border bg-muted/20 p-3 text-center text-[11px] font-medium text-muted-foreground"
+                          aria-disabled
+                          title="WhatsApp pas encore activé sur ce compte"
+                        >
+                          <span className="flex items-center gap-1.5"><Send className="h-3.5 w-3.5" /> WhatsApp</span>
+                          <span className="text-[10px] opacity-70">Bientôt disponible</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
