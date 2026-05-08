@@ -191,6 +191,11 @@ export default function QuickLogin({ onSuccess }: { onSuccess?: () => void } = {
           <div className="rounded-xl border border-primary/30 bg-primary/10 p-2.5 text-xs">
             📩 Code envoyé au <span className="font-semibold">{fullPhone}</span>
           </div>
+          {devCode && (
+            <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-2.5 text-xs text-amber-700">
+              🛠️ Mode dev — code : <span className="font-mono font-bold">{devCode}</span>
+            </div>
+          )}
           <input
             type="text"
             inputMode="numeric"
@@ -217,7 +222,15 @@ export default function QuickLogin({ onSuccess }: { onSuccess?: () => void } = {
           </button>
           <button
             type="button"
-            onClick={() => { setStep("phone"); setCode(""); setError(null); }}
+            onClick={handleResend}
+            disabled={resendIn > 0 || loading}
+            className="block w-full text-center text-xs font-medium text-primary underline-offset-4 hover:underline disabled:text-muted-foreground disabled:no-underline"
+          >
+            {resendIn > 0 ? `Renvoyer le code dans ${resendIn}s` : "Renvoyer le code"}
+          </button>
+          <button
+            type="button"
+            onClick={() => { setStep("phone"); setCode(""); setError(null); setDevCode(null); }}
             className="block w-full text-center text-xs text-muted-foreground underline-offset-4 hover:underline"
           >
             Modifier le numéro
