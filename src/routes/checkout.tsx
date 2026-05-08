@@ -453,42 +453,86 @@ function UssdScreen({ method, phone, pending, seconds, total, onConfirm }: {
   );
 }
 
-function CardScreen({ total, onConfirm }: { total: number; onConfirm: () => void }) {
-  const [submitting, setSubmitting] = useState(false);
+type PollResult = { status: "succeeded" | "failed" | "pending" | "unknown" };
+
+function CardScreen({ total, link, reference, poll, onSuccess }: {
+  total: number; link: string | null; reference: string;
+  poll: (ref: string) => Promise<PollResult>; onSuccess: () => void;
+}) {
+  const [status, setStatus] = useState<"pending" | "succeeded" | "failed">("pending");
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (status !== "pending") return;
+    let cancelled = false;
+    const tick = async () => {
+      try {
+        const r = await poll(reference);
+        if (cancelled) return;
+        if (r.status === "succeeded") { setStatus("succeeded"); setTimeout(onSuccess, 800); return; }
+        if (r.status === "failed") { setStatus("failed"); setError("Paiement refusé ou annulé."); return; }
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Erreur de vérification");
+      }
+    };
+    const id = setInterval(tick, 3000);
+    tick();
+    return () => { cancelled = true; clearInterval(id); };
+  }, [status, reference, poll, onSuccess]);
+
   return (
-    <form
-      onSubmit={(e) => { e.preventDefault(); setSubmitting(true); setTimeout(onConfirm, 1200); }}
-      className="rounded-3xl border border-border bg-surface/60 p-6 animate-fade-up"
-    >
+    <div className="rounded-3xl border border-border bg-surface/60 p-6 animate-fade-up">
       <h2 className="font-display text-xl font-bold">Carte bancaire</h2>
-      <p className="text-xs text-muted-foreground">Visa · Mastercard · 3D-Secure</p>
+      <p className="text-xs text-muted-foreground">Visa · Mastercard · 3D-Secure — via Campay</p>
 
       <div className="relative mt-5 overflow-hidden rounded-2xl bg-gradient-to-br from-primary/30 via-background to-gold/20 p-5 shadow-card">
         <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-primary/30 blur-3xl" />
         <div className="relative flex justify-between">
           <CreditCard className="h-7 w-7 text-foreground" />
-          <span className="font-display text-sm font-bold tracking-widest">VISA</span>
+          <span className="font-display text-sm font-bold tracking-widest">VISA · MC</span>
         </div>
-        <p className="relative mt-8 font-mono text-lg tracking-widest">•••• •••• •••• 4242</p>
-        <div className="relative mt-3 flex justify-between text-xs text-muted-foreground">
-          <span>TITULAIRE</span><span>EXP</span>
+        <p className="relative mt-8 font-mono text-lg tracking-widest">Page sécurisée Campay</p>
+        <div className="relative mt-3 text-xs text-muted-foreground">
+          Montant : <strong>{total.toLocaleString("fr-FR")} FCFA</strong>
         </div>
       </div>
 
-      <div className="mt-5 space-y-3">
-        <Field label="Numéro de carte" placeholder="4242 4242 4242 4242" />
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Expiration" placeholder="MM/AA" />
-          <Field label="CVV" placeholder="123" />
-        </div>
-        <Field label="Titulaire" placeholder="Nom sur la carte" />
+      <div className="mt-5 space-y-3 text-sm">
+        {status === "pending" && (
+          <>
+            <p className="flex items-center gap-2 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              En attente de la confirmation de ton paiement…
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Une nouvelle fenêtre s'est ouverte. Renseigne ta carte puis valide via 3D-Secure.
+              Cette page se mettra à jour automatiquement.
+            </p>
+            {link && (
+              <a
+                href={link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-4 font-bold text-primary-foreground shadow-glow"
+              >
+                <Lock className="h-4 w-4" /> Rouvrir la page de paiement
+              </a>
+            )}
+          </>
+        )}
+        {status === "succeeded" && (
+          <p className="flex items-center gap-2 text-emerald-500">
+            <Check className="h-4 w-4" /> Paiement confirmé. Redirection…
+          </p>
+        )}
+        {status === "failed" && (
+          <div className="rounded-2xl border border-destructive/40 bg-destructive/10 p-3 text-destructive">
+            <AlertCircle className="mr-1 inline h-4 w-4" /> {error ?? "Paiement refusé."}
+          </div>
+        )}
+        <p className="text-[11px] text-muted-foreground">Référence : {reference}</p>
       </div>
-
-      <button disabled={submitting} className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-4 font-bold text-primary-foreground shadow-glow disabled:opacity-60">
-        {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
-        Payer {total.toLocaleString("fr-FR")} FCFA
-      </button>
-    </form>
+    </div>
   );
 }
 
