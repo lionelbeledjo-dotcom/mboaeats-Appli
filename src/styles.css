@@ -32,6 +32,9 @@
   --color-gold: var(--gold);
   --color-gold-foreground: var(--gold-foreground);
   --color-uber-green: var(--uber-green);
+  --color-brand-cm-green: var(--brand-cm-green);
+  --color-brand-cm-green-fg: var(--brand-cm-green-fg);
+  --shadow-badge: var(--shadow-badge);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
