@@ -245,11 +245,13 @@ export function SiteHeader() {
 
           {/* Burger mobile */}
           <button
+            ref={burgerRef}
             type="button"
             onClick={() => setOpen((v) => !v)}
             aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
             aria-expanded={open}
             aria-controls="mobile-nav-panel"
+            aria-haspopup="menu"
             className={cn(
               "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full md:hidden",
               "border border-white/10 bg-white/5 text-white",
