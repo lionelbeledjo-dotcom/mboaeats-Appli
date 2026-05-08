@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Phone, Loader2, AlertCircle, Check, ArrowRight, ChevronDown } from "lucide-react";
+import { Loader2, AlertCircle, Check, ArrowRight, ChevronDown } from "lucide-react";
 import { sendOtp, verifyOtp } from "@/lib/otp.functions";
 import { useAuth } from "@/hooks/useAuth";
 import { invalidateSessionCache } from "@/hooks/useSessionUser";
