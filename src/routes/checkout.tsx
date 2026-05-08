@@ -213,6 +213,7 @@ function Checkout() {
 
   const confirm = async () => {
     setPending(false);
+    setPaymentStatus(method === "cash" ? "idle" : "succeeded");
     setStep("success");
     try {
       const orderId = liveOrderId ?? (await ensureLiveOrder());
