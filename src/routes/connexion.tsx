@@ -57,6 +57,10 @@ function FlagCircle({ iso, alt, size = 24 }: { iso: string; alt: string; size?: 
 
 type Tab = "email" | "phone";
 
+// Anneau de focus visible cohérent pour tous les éléments interactifs
+const FOCUS_RING =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-white";
+
 function OtpInput({
   value,
   onChange,
