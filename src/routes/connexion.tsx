@@ -817,3 +817,89 @@ function ChannelOption({
     </button>
   );
 }
+
+function OtpInput({
+  value,
+  onChange,
+  onComplete,
+  length = 6,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  onComplete?: (v: string) => void;
+  length?: number;
+}) {
+  const refs = useRef<Array<HTMLInputElement | null>>([]);
+  const digits = Array.from({ length }, (_, i) => value[i] ?? "");
+
+  const focusIndex = (i: number) => {
+    const el = refs.current[Math.max(0, Math.min(length - 1, i))];
+    el?.focus();
+    el?.select();
+  };
+
+  const setDigit = (i: number, d: string) => {
+    const sanitized = d.replace(/\D/g, "");
+    if (!sanitized) return;
+    const chars = (value + "").split("");
+    chars[i] = sanitized[0];
+    const next = chars.join("").slice(0, length);
+    onChange(next);
+    if (i < length - 1) focusIndex(i + 1);
+    if (next.length === length) onComplete?.(next);
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>, i: number) => {
+    const txt = e.clipboardData.getData("text").replace(/\D/g, "");
+    if (!txt) return;
+    e.preventDefault();
+    const next = (value.slice(0, i) + txt).slice(0, length);
+    onChange(next);
+    focusIndex(Math.min(length - 1, i + txt.length));
+    if (next.length === length) onComplete?.(next);
+  };
+
+  const handleKey = (e: React.KeyboardEvent<HTMLInputElement>, i: number) => {
+    if (e.key === "Backspace") {
+      e.preventDefault();
+      const chars = value.split("");
+      if (chars[i]) {
+        chars[i] = "";
+        onChange(chars.join(""));
+      } else if (i > 0) {
+        chars[i - 1] = "";
+        onChange(chars.join(""));
+        focusIndex(i - 1);
+      }
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      focusIndex(i - 1);
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      focusIndex(i + 1);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center gap-2 sm:gap-3" role="group" aria-label="Code de vérification">
+      {digits.map((d, i) => (
+        <input
+          key={i}
+          ref={(el) => { refs.current[i] = el; }}
+          type="text"
+          inputMode="numeric"
+          autoComplete={i === 0 ? "one-time-code" : "off"}
+          maxLength={1}
+          value={d}
+          onChange={(e) => setDigit(i, e.target.value)}
+          onKeyDown={(e) => handleKey(e, i)}
+          onPaste={(e) => handlePaste(e, i)}
+          onFocus={(e) => e.currentTarget.select()}
+          aria-label={`Chiffre ${i + 1}`}
+          className="h-14 w-11 sm:w-12 rounded-xl border border-[#f59e0b]/60 bg-[#1a1a1d] text-center text-2xl font-bold text-white outline-none transition focus:border-[#fbbf24] focus:ring-2 focus:ring-amber-400/40 focus-visible:ring-2 focus-visible:ring-amber-400"
+          autoFocus={i === 0}
+        />
+      ))}
+    </div>
+  );
+}
