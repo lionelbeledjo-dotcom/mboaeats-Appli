@@ -57,13 +57,31 @@ function Connexion() {
   return (
     <div className="min-h-screen bg-white">
       <div className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-8">
-        <Link
-          to="/"
+        <button
+          type="button"
+          onClick={() => {
+            if (typeof window !== "undefined" && window.history.length > 1) {
+              try {
+                window.history.back();
+                // Safety net: if back() doesn't change the route within 250ms, force navigate to /
+                const startPath = window.location.pathname;
+                setTimeout(() => {
+                  if (window.location.pathname === startPath) {
+                    navigate({ to: "/", replace: true });
+                  }
+                }, 250);
+                return;
+              } catch {
+                /* fallthrough */
+              }
+            }
+            navigate({ to: "/", replace: true });
+          }}
           className="inline-flex w-fit items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-black"
         >
           <ArrowLeft className="h-4 w-4" strokeWidth={2.5} />
           <span>Accueil</span>
-        </Link>
+        </button>
 
         <div className="mt-8 mb-6">
           <h1 className="text-3xl font-bold tracking-tight text-black">
