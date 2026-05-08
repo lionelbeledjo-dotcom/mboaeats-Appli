@@ -582,6 +582,35 @@ function SuccessScreen({ method, total }: { method: Method; total: number }) {
   );
 }
 
+function PaymentStatusBadge({ status, method }: { status: "idle" | "pending" | "succeeded" | "failed"; method: Method }) {
+  if (status === "idle") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full border border-border bg-background/40 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
+        En attente de paiement
+      </span>
+    );
+  }
+  if (status === "pending") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold text-amber-500">
+        <Loader2 className="h-3 w-3 animate-spin" /> Paiement en cours
+      </span>
+    );
+  }
+  if (status === "succeeded") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-500">
+        <Check className="h-3 w-3" /> {method === "cash" ? "Confirmée" : "Payée"}
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full border border-destructive/40 bg-destructive/10 px-2.5 py-1 text-[11px] font-semibold text-destructive">
+      <AlertCircle className="h-3 w-3" /> Échec
+    </span>
+  );
+}
+
 function Summary({ cartItems, subtotal, delivery, total, hasPass, landmark, promo, setPromo, paymentStatus, method, reference }: {
   cartItems: CartItem[]; subtotal: number; delivery: number; total: number; hasPass: boolean; landmark: string;
   promo: { code: string; discount: number } | null;
@@ -971,31 +1000,3 @@ function ExtrasModal({ onSkip, onClose }: { onSkip: () => void; onClose: () => v
   );
 }
 
-function PaymentStatusBadge({ status, method }: { status: "idle" | "pending" | "succeeded" | "failed"; method: Method }) {
-  if (status === "idle") {
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full border border-border bg-background/40 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
-        En attente de paiement
-      </span>
-    );
-  }
-  if (status === "pending") {
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold text-amber-500">
-        <Loader2 className="h-3 w-3 animate-spin" /> Paiement en cours
-      </span>
-    );
-  }
-  if (status === "succeeded") {
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-500">
-        <Check className="h-3 w-3" /> {method === "cash" ? "Confirmée" : "Payée"}
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-destructive/40 bg-destructive/10 px-2.5 py-1 text-[11px] font-semibold text-destructive">
-      <AlertCircle className="h-3 w-3" /> Échec
-    </span>
-  );
-}
