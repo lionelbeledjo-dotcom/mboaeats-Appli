@@ -103,7 +103,7 @@ function Connexion() {
   const identifierLabel =
     mode === "phone" ? formatPhoneForOtp(country.dial, phone) : email;
 
-  const submitIdentify = (e: React.FormEvent) => {
+  const submitIdentify = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     if (mode === "phone") {
@@ -111,13 +111,15 @@ function Connexion() {
         setError("Numéro de téléphone invalide");
         return;
       }
-    } else {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-        setError("Adresse email invalide");
-        return;
-      }
-      setChannel("email");
+      // Canal déjà choisi via le toggle SMS/WhatsApp -> on envoie directement
+      await sendCode();
+      return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError("Adresse email invalide");
+      return;
+    }
+    setChannel("email");
     setStep("channel");
   };
 
@@ -314,9 +316,33 @@ function Connexion() {
                   </>
                 )}
 
+                {mode === "phone" && (
+                  <div>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Recevoir le code par
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => { setChannel("sms"); setError(null); }}
+                        className={`flex items-center justify-center gap-2 rounded-2xl border p-3 text-sm font-semibold transition ${channel === "sms" ? "border-primary bg-primary/10 text-foreground" : "border-border bg-background text-muted-foreground hover:bg-muted/40"}`}
+                      >
+                        <MessageCircle className="h-4 w-4" /> SMS
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setChannel("whatsapp"); setError(null); }}
+                        className={`flex items-center justify-center gap-2 rounded-2xl border p-3 text-sm font-semibold transition ${channel === "whatsapp" ? "border-primary bg-primary/10 text-foreground" : "border-border bg-background text-muted-foreground hover:bg-muted/40"}`}
+                      >
+                        <Send className="h-4 w-4" /> WhatsApp
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <p className="flex items-start gap-2 text-[11px] leading-snug text-muted-foreground">
                   <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-                  Un code à 6 chiffres vous sera envoyé par SMS pour confirmer votre identité.
+                  Un code à 6 chiffres vous sera envoyé par {mode === "phone" ? (channel === "whatsapp" ? "WhatsApp" : "SMS") : "email"} pour confirmer votre identité.
                 </p>
 
                 {error && (
@@ -328,10 +354,12 @@ function Connexion() {
 
                 <button
                   type="submit"
-                  className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-primary text-sm font-semibold text-primary-foreground shadow-glow transition active:scale-[0.98]"
+                  disabled={loading}
+                  className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-primary text-sm font-semibold text-primary-foreground shadow-glow transition active:scale-[0.98] disabled:opacity-60"
                 >
-                  Continuer
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (mode === "phone" ? "Envoyer le code" : "Continuer")}
                 </button>
+
               </form>
             </>
           )}
