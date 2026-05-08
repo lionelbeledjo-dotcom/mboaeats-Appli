@@ -7,6 +7,8 @@ import { getMboaSession } from "./session.server";
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/twilio";
 const OTP_TTL_SECONDS = 5 * 60;
 const MAX_ATTEMPTS = 5;
+const SMS_TRIAL_FALLBACK_MESSAGE =
+  "Nous n'avons pas pu vous envoyer de SMS. Voulez-vous recevoir votre code par WhatsApp à la place ?";
 
 function hashCode(phone: string, code: string) {
   return createHash("sha256").update(`${phone}:${code}`).digest("hex");
@@ -20,30 +22,40 @@ function hashCode(phone: string, code: string) {
  * - "6XXXXXXXX" (9 chiffres commençant par 6) -> "+237XXXXXXXX" (mobile Cameroun)
  * - Rejette tout numéro qui ne devient pas un E.164 valide.
  */
-function normalizePhone(phone: string): string {
+export function normalizePhoneNumber(phone: string, countryCode?: string): string {
   if (!phone || typeof phone !== "string") {
-    throw new Error("Numéro de téléphone manquant.");
+    throw new Error("Format de numéro invalide");
   }
-  const trimmed = phone.trim();
+  const trimmed = phone.trim().replace(/[\s\-().]/g, "");
 
   // Si déjà au format international "+..."
   if (trimmed.startsWith("+")) {
     const digits = trimmed.slice(1).replace(/\D/g, "");
     const normalized = `+${digits}`;
     if (!/^\+\d{8,15}$/.test(normalized)) {
-      throw new Error("Numéro invalide. Utilisez le format international, ex: +237612345678.");
+      throw new Error("Format de numéro invalide");
     }
     return normalized;
   }
 
   let cleaned = trimmed.replace(/\D/g, "");
+  const normalizedCountry = countryCode?.replace(/\D/g, "");
 
   // 00xx... -> +xx...
   if (cleaned.startsWith("00")) {
     cleaned = cleaned.slice(2);
     const normalized = `+${cleaned}`;
     if (!/^\+\d{8,15}$/.test(normalized)) {
-      throw new Error("Numéro invalide. Vérifiez l'indicatif pays.");
+      throw new Error("Format de numéro invalide");
+    }
+    return normalized;
+  }
+
+  if ((normalizedCountry === "33" || normalizedCountry === "237") && cleaned.startsWith("0")) {
+    cleaned = cleaned.slice(1);
+    const normalized = `+${normalizedCountry}${cleaned}`;
+    if (!/^\+\d{8,15}$/.test(normalized)) {
+      throw new Error("Format de numéro invalide");
     }
     return normalized;
   }
@@ -68,9 +80,18 @@ function normalizePhone(phone: string): string {
     return `+${cleaned}`;
   }
 
-  throw new Error(
-    "Format de numéro non reconnu. Utilisez le format international (ex: +237612345678 ou +33612345678)."
-  );
+  if (normalizedCountry) {
+    const normalized = `+${normalizedCountry}${cleaned}`;
+    if (/^\+\d{8,15}$/.test(normalized)) return normalized;
+  }
+
+  throw new Error("Format de numéro invalide");
+}
+
+const normalizePhone = normalizePhoneNumber;
+
+function isTwilioTrialMode() {
+  return ["true", "1", "yes", "on"].includes((process.env.TWILIO_IS_TRIAL || "").toLowerCase());
 }
 
 type OtpChannel = "sms" | "whatsapp";
@@ -168,10 +189,8 @@ async function sendTwilioMessage(opts: {
     // 21211 : numéro destinataire invalide
     // 21614 : numéro non SMS-capable
     // 63007/63016 : WhatsApp — destinataire non opt-in / hors fenêtre 24h
-    if (code === 21608) {
-      throw new Error(
-        "Ce numéro n'est pas autorisé (compte Twilio en mode Test). Activez un compte payant ou vérifiez ce numéro dans Twilio. Sinon, essayez WhatsApp."
-      );
+    if (code === 21608 || (res.status === 400 && /trial accounts cannot send messages to unverified numbers/i.test(msg))) {
+      throw new Error(SMS_TRIAL_FALLBACK_MESSAGE);
     }
     if (code === 21211 || code === 21614) {
       throw new Error("Numéro invalide ou non compatible SMS. Réessayez ou utilisez WhatsApp.");
@@ -182,7 +201,11 @@ async function sendTwilioMessage(opts: {
       );
     }
 
-    throw new Error(`Erreur d'envoi (code ${code}). ${msg}. Réessayez ou utilisez ${channel === "sms" ? "WhatsApp" : "SMS"}.`);
+    throw new Error(
+      channel === "sms"
+        ? SMS_TRIAL_FALLBACK_MESSAGE
+        : `Impossible d'envoyer le code par WhatsApp (code ${code}). Réessayez.`
+    );
   }
 
   return data;
@@ -197,7 +220,7 @@ export const sendOtp = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const phone = normalizePhone(data.phone);
-    const channel: OtpChannel = data.channel ?? "sms";
+    const channel: OtpChannel = isTwilioTrialMode() ? "whatsapp" : (data.channel ?? "sms");
 
     // Rate limit: max 1 code in last 30s
     const since = new Date(Date.now() - 30_000).toISOString();
@@ -259,6 +282,12 @@ export const sendOtp = createServerFn({ method: "POST" })
 
     return { ok: true, expiresIn: OTP_TTL_SECONDS, channel };
   });
+
+export const getOtpDeliveryConfig = createServerFn({ method: "GET" })
+  .handler(async () => ({
+    twilioTrial: isTwilioTrialMode(),
+    defaultChannel: isTwilioTrialMode() ? "whatsapp" : "sms",
+  }));
 
 export const verifyOtp = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ phone: z.string(), code: z.string().regex(/^\d{6}$/) }).parse(d))

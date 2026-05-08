@@ -53,6 +53,42 @@ export type Database = {
         }
         Relationships: []
       }
+      auth_codes: {
+        Row: {
+          attempts: number
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          method: string
+          phone: string
+          used: boolean
+          used_at: string | null
+        }
+        Insert: {
+          attempts?: number
+          code: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          method?: string
+          phone: string
+          used?: boolean
+          used_at?: string | null
+        }
+        Update: {
+          attempts?: number
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          method?: string
+          phone?: string
+          used?: boolean
+          used_at?: string | null
+        }
+        Relationships: []
+      }
       commissions: {
         Row: {
           category: string
@@ -803,7 +839,10 @@ export type Database = {
           created_at: string
           expires_at: string
           id: string
+          method: string
           phone: string
+          used: boolean
+          used_at: string | null
         }
         Insert: {
           attempts?: number
@@ -812,7 +851,10 @@ export type Database = {
           created_at?: string
           expires_at: string
           id?: string
+          method?: string
           phone: string
+          used?: boolean
+          used_at?: string | null
         }
         Update: {
           attempts?: number
@@ -821,7 +863,10 @@ export type Database = {
           created_at?: string
           expires_at?: string
           id?: string
+          method?: string
           phone?: string
+          used?: boolean
+          used_at?: string | null
         }
         Relationships: []
       }
