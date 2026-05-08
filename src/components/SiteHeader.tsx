@@ -104,21 +104,20 @@ export function SiteHeader() {
       className={cn(
         "sticky top-0 z-40 w-full",
         "border-b border-white/5",
-        "bg-[hsl(240_10%_8%_/_0.72)] backdrop-blur-xl backdrop-saturate-150",
-        "supports-[backdrop-filter]:bg-[hsl(240_10%_8%_/_0.55)]",
-        "pt-[env(safe-area-inset-top)]",
+        "bg-[hsl(240_10%_8%_/_0.92)] backdrop-blur-xl backdrop-saturate-150",
+        "pt-[calc(env(safe-area-inset-top)+0.5rem)]",
       )}
     >
       {/* Filets lumineux décoratifs */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-cm-green/60 to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-1.5 px-2.5 sm:h-20 sm:gap-4 sm:px-6 lg:px-8">
-        {/* Logo */}
+      <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-2 px-3 py-2 sm:min-h-20 sm:gap-4 sm:px-6 sm:py-3 lg:px-8">
+        {/* Logo — centré verticalement, respire à gauche */}
         <Link
           to="/"
           aria-label="MboaEats — Accueil"
-          className="group inline-flex min-w-0 shrink items-center transition-transform duration-300 hover:scale-[1.03] active:scale-[0.98]"
+          className="group inline-flex min-w-0 shrink items-center self-center transition-transform duration-300 hover:scale-[1.03] active:scale-[0.98]"
         >
           <MboaEatsLogo size="sm" align="start" variant="ghost" badgeSize="sm" />
         </Link>
