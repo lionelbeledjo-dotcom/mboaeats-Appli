@@ -172,13 +172,13 @@ export const Route = createFileRoute("/aide/$category")({
   notFoundComponent: () => (
     <div className="mx-auto max-w-md p-8 text-center">
       <h1 className="font-display text-2xl font-bold">Catégorie introuvable</h1>
-      <Link to="/aide" className="mt-4 inline-block text-primary hover:underline">← Retour à l'aide</Link>
+      <Link to="/aide" hash="categories" className="mt-4 inline-block text-primary hover:underline">← Retour aux catégories</Link>
     </div>
   ),
   errorComponent: ({ error }) => (
     <div className="mx-auto max-w-md p-8 text-center">
       <p className="text-destructive">{error.message}</p>
-      <Link to="/aide" className="mt-4 inline-block text-primary hover:underline">← Retour à l'aide</Link>
+      <Link to="/aide" hash="categories" className="mt-4 inline-block text-primary hover:underline">← Retour aux catégories</Link>
     </div>
   ),
   component: CategoryPage,
@@ -193,8 +193,8 @@ function CategoryPage() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-30 glass">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
-          <Link to="/aide" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="h-4 w-4" /> Centre d'aide
+          <Link to="/aide" hash="categories" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="h-4 w-4" /> Catégories
           </Link>
           <span className="font-display font-bold">{cat.label}</span>
           <div className="w-20" />
