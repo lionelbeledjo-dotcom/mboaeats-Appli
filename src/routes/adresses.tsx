@@ -193,6 +193,15 @@ function AddressesPage() {
     cancelEdit();
   };
 
+    // Mémorise la dernière ville/quartier valides pour le prochain accès
+    try {
+      window.localStorage.setItem(
+        "mboaeats:lastAddress",
+        JSON.stringify({ city, neighborhood: coveredZone?.neighborhood ?? neighborhood.trim() }),
+      );
+    } catch {
+      // ignore storage errors (mode privé, quota, etc.)
+    }
 
   useEffect(() => {
     let active = true;
