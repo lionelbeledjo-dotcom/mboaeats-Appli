@@ -195,12 +195,22 @@ function Livreurs() {
                       </div>
                     </div>
                   </td>
-                  <td className="p-4 text-xs text-muted-foreground">
-                    <span className="inline-flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      {d.lat && d.lng ? `${d.lat.toFixed(3)}, ${d.lng.toFixed(3)}` : "—"}
+                  <td className="p-4 text-xs">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-background/40 px-2 py-0.5 font-semibold">
+                      <Bike className="h-3 w-3" /> {(d as any).vehicle ?? "Moto"}
                     </span>
-                    <p className="mt-0.5 inline-flex items-center gap-1"><Clock className="h-3 w-3" /> il y a {agoStr}</p>
+                    <p className="mt-1 text-[11px] text-muted-foreground inline-flex items-center gap-1">
+                      <Clock className="h-3 w-3" /> il y a {agoStr}
+                    </p>
+                  </td>
+                  <td className="p-4 text-xs">
+                    {(d as any).from && (d as any).to && (d as any).to !== "—" ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-2 py-1 font-semibold text-primary">
+                        <MapPin className="h-3 w-3" /> {(d as any).from} <span className="opacity-60">→</span> {(d as any).to}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">Disponible · {(d as any).from ?? "—"}</span>
+                    )}
                   </td>
                   <td className="p-4 text-right">{d.courses}</td>
                   <td className="p-4 text-right font-bold">{d.earned.toLocaleString("fr-FR")} F</td>
