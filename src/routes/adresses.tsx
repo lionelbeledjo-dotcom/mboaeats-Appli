@@ -47,6 +47,49 @@ function AddressesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<Saved | null>(null);
   const [savingEdit, setSavingEdit] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const reloadList = async () => {
+    try {
+      const { data } = await supabase.auth.getUser();
+      if (!data.user) return;
+      const res = await listMyAddresses();
+      const list = (res?.addresses ?? []).map((a: any) => ({
+        id: a.id,
+        label: a.label ?? "Adresse",
+        city: a.city ?? "",
+        neighborhood: a.neighborhood ?? "",
+        phone: "",
+      }));
+      setSaved(list);
+    } catch {
+      // silencieux
+    }
+  };
+
+  const onDelete = async (id: string) => {
+    setDeletingId(id);
+    const prev = saved;
+    setSaved((s) => s.filter((x) => x.id !== id));
+    if (id.startsWith("local-")) {
+      setDeletingId(null);
+      setConfirmDeleteId(null);
+      toast.success("Adresse supprimée");
+      return;
+    }
+    try {
+      await deleteMyAddress({ data: { id } });
+      toast.success("Adresse supprimée ✅");
+      await reloadList();
+    } catch (e: any) {
+      setSaved(prev);
+      toast.error("Suppression impossible", { description: e?.message ?? "Réessayez." });
+    } finally {
+      setDeletingId(null);
+      setConfirmDeleteId(null);
+    }
+  };
 
   const startEdit = (a: Saved) => {
     setEditingId(a.id);
