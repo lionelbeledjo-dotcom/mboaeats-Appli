@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Bike, Phone, MapPin, Loader2, Power, PowerOff, Search, CheckCircle2, Circle, Clock } from "lucide-react";
+import { Bike, Phone, MapPin, Loader2, Power, PowerOff, Search, CheckCircle2, Circle, Clock, Eye, Pencil, Trash2, Save } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { listAllDrivers, setDriverStatus, setDriverActive } from "@/server/admin.functions";
+import { listAllDrivers, setDriverStatus, setDriverActive, getDriverDetails, updateDriverProfile, deleteDriver } from "@/server/admin.functions";
 import { ErrorState } from "@/components/admin/ErrorState";
+import { Modal, Field, inputCls } from "@/components/admin/Modal";
 
 export const Route = createFileRoute("/admin/livreurs")({
   head: () => ({ meta: [{ title: "Livreurs · Admin MboaEats" }, { name: "robots", content: "noindex,nofollow" }] }),
