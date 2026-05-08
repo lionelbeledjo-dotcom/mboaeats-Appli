@@ -50,7 +50,7 @@ const SECTIONS: Record<string, HelpSection> = {
   },
   connexion: {
     key: "connexion",
-    title: "vous connecter",
+    title: "la connexion",
     faqs: [
       {
         q: "Je ne reçois pas le code SMS, que faire ?",
@@ -476,7 +476,7 @@ export function AideContextuelle({
             aria-label="Besoin d'aide ?"
             className={cn(
               floating
-                ? "fixed bottom-24 right-3 z-40 sm:right-4"
+                ? "fixed bottom-40 right-3 z-50 sm:bottom-44 sm:right-4 md:bottom-24"
                 : "inline-flex",
               "h-10 w-10 items-center justify-center rounded-full bg-orange-500 text-white shadow-lg transition-transform hover:scale-110 active:scale-95",
               className
