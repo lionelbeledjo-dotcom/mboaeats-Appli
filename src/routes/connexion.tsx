@@ -379,20 +379,30 @@ function Connexion() {
           {step === "identify" && (
             <>
               {/* Mode tabs */}
-              <div className="mb-6 grid h-[48px] grid-cols-2 gap-1 rounded-full border border-[#E2E2E2] bg-[#F5F5F5] p-1">
+              <div className="mb-6 grid h-[52px] grid-cols-2 gap-2 rounded-full bg-[#F6F6F6] p-1">
                 <button
                   type="button"
                   onClick={() => { setMode("phone"); setError(null); }}
-                  className={`flex min-h-[44px] items-center justify-center gap-2 rounded-full px-3 text-[14px] font-bold transition ${mode === "phone" ? "bg-white text-black shadow-sm" : "text-[#6B6B6B] hover:text-black"}`}
+                  aria-pressed={mode === "phone"}
+                  className={`flex min-h-[44px] items-center justify-center gap-2 rounded-full px-3 text-[14px] font-bold transition ${
+                    mode === "phone"
+                      ? "bg-white text-[#2D2D2D] shadow-[0_2px_6px_-2px_rgba(0,122,255,0.25)] ring-1 ring-[#007AFF]"
+                      : "bg-[#F6F6F6] text-[#6B6B6B] hover:text-[#2D2D2D]"
+                  }`}
                 >
-                  <Phone className="h-3.5 w-3.5" /> Téléphone
+                  <Phone strokeWidth={2} className={`h-4 w-4 ${mode === "phone" ? "text-[#007AFF]" : "text-[#9A9A9A]"}`} /> Téléphone
                 </button>
                 <button
                   type="button"
                   onClick={() => { setMode("email"); setError(null); }}
-                  className={`flex min-h-[44px] items-center justify-center gap-2 rounded-full px-3 text-[14px] font-bold transition ${mode === "email" ? "bg-white text-black shadow-sm" : "text-[#6B6B6B] hover:text-black"}`}
+                  aria-pressed={mode === "email"}
+                  className={`flex min-h-[44px] items-center justify-center gap-2 rounded-full px-3 text-[14px] font-bold transition ${
+                    mode === "email"
+                      ? "bg-white text-[#2D2D2D] shadow-[0_2px_6px_-2px_rgba(142,68,173,0.25)] ring-1 ring-[#8E44AD]"
+                      : "bg-[#F6F6F6] text-[#6B6B6B] hover:text-[#2D2D2D]"
+                  }`}
                 >
-                  <Mail className="h-3.5 w-3.5" /> Email
+                  <Mail strokeWidth={2} className={`h-4 w-4 ${mode === "email" ? "text-[#8E44AD]" : "text-[#9A9A9A]"}`} /> Email
                 </button>
               </div>
 
@@ -549,25 +559,35 @@ function Connexion() {
                       <button
                         type="button"
                         onClick={() => { setChannel("sms"); setError(null); setShowWhatsAppFallback(false); }}
-                        className={`flex min-h-[44px] h-[52px] items-center justify-center gap-2 rounded-[14px] border text-[15px] font-semibold transition ${channel === "sms" ? "border-[#06C167] bg-[#06C167]/8 text-black" : "border-[#E2E2E2] bg-white text-[#6B6B6B] hover:border-[#06C167]/50"}`}
+                        aria-pressed={channel === "sms"}
+                        className={`flex min-h-[44px] h-[52px] items-center justify-center gap-2 rounded-full border text-[15px] font-semibold text-[#2D2D2D] transition ${
+                          channel === "sms"
+                            ? "border-[#F39C12] bg-[#FFF8EC] shadow-[0_2px_6px_-2px_rgba(243,156,18,0.25)]"
+                            : "border-[#F39C12]/40 bg-[#FFFBF2] hover:border-[#F39C12]/70"
+                        }`}
                       >
-                        <MessageCircle className="h-4 w-4" /> SMS
+                        <MessageCircle strokeWidth={2} className="h-4 w-4 text-[#F39C12]" /> SMS
                       </button>
                       {whatsappAvailable ? (
                         <button
                           type="button"
                           onClick={() => { setChannel("whatsapp"); setError(null); setShowWhatsAppFallback(false); }}
-                          className={`flex min-h-[44px] h-[52px] items-center justify-center gap-2 rounded-[14px] border text-[15px] font-semibold transition ${channel === "whatsapp" ? "border-[#06C167] bg-[#06C167]/8 text-black" : "border-[#E2E2E2] bg-white text-[#6B6B6B] hover:border-[#06C167]/50"}`}
+                          aria-pressed={channel === "whatsapp"}
+                          className={`flex min-h-[44px] h-[52px] items-center justify-center gap-2 rounded-full border text-[15px] font-semibold text-[#2D2D2D] transition ${
+                            channel === "whatsapp"
+                              ? "border-[#25D366] bg-[#25D366]/10 shadow-[0_2px_6px_-2px_rgba(37,211,102,0.25)]"
+                              : "border-[#25D366]/40 bg-[#25D366]/5 hover:border-[#25D366]/70"
+                          }`}
                         >
-                          <Send className="h-4 w-4" /> WhatsApp
+                          <Send strokeWidth={2} className="h-4 w-4 text-[#25D366]" /> WhatsApp
                         </button>
                       ) : (
                         <div
-                          className="flex h-[52px] flex-col items-center justify-center gap-0.5 rounded-[14px] border border-dashed border-[#E2E2E2] bg-[#F5F5F5] text-center text-[13px] font-semibold text-[#9A9A9A]"
+                          className="flex h-[52px] flex-col items-center justify-center gap-0.5 rounded-full border border-dashed border-[#A8D5BA] bg-[#F5FBF7] text-center text-[13px] font-semibold text-[#6B6B6B]"
                           aria-disabled
                           title="WhatsApp pas encore activé sur ce compte"
                         >
-                          <span className="flex items-center gap-1.5"><Send className="h-3.5 w-3.5" /> WhatsApp</span>
+                          <span className="flex items-center gap-1.5"><Send strokeWidth={2} className="h-3.5 w-3.5 text-[#A8D5BA]" /> WhatsApp</span>
                           <span className="text-[10px] opacity-80">Bientôt disponible</span>
                         </div>
                       )}
@@ -642,9 +662,9 @@ function Connexion() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="relative inline-flex min-h-[44px] h-[56px] w-full items-center justify-center gap-2 overflow-hidden rounded-[14px] bg-[#06C167] text-[15px] font-bold uppercase tracking-[0.16em] text-white shadow-[0_10px_24px_-12px_rgba(6,193,103,0.65)] transition hover:bg-[#05a557] active:scale-[0.99] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                  className="relative inline-flex min-h-[44px] h-[56px] w-full items-center justify-center gap-2 overflow-hidden rounded-[14px] bg-gradient-to-b from-[#06C167] to-[#04A056] text-[15px] font-bold uppercase tracking-[0.16em] text-white shadow-[0_10px_24px_-12px_rgba(6,193,103,0.65)] transition hover:from-[#05B85E] hover:to-[#03934E] active:scale-[0.99] disabled:opacity-60 disabled:animate-none animate-soft-pulse focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
-                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (<>SE CONNECTER <ArrowRight className="h-5 w-5" /></>)}
+                  {loading ? <Loader2 strokeWidth={2} className="h-5 w-5 animate-spin" /> : (<>SE CONNECTER <ArrowRight strokeWidth={2} className="h-5 w-5" /></>)}
                 </button>
 
                 <div className="mt-6 flex flex-col items-center gap-3 text-center">
