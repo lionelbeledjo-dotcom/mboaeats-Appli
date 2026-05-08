@@ -101,13 +101,12 @@ function Aide() {
             {categories.map((c) => (
               <Link
                 key={c.slug}
-                to="/aide/$category"
-                params={{ category: c.slug }}
+                to={c.to}
                 className={`rounded-2xl border border-border bg-gradient-to-br ${c.color} p-5 text-left transition hover:border-primary/40 hover:shadow-glow`}
               >
                 <c.icon className="h-6 w-6" />
                 <p className="mt-3 font-display font-bold">{c.label}</p>
-                <p className="mt-1 text-xs text-muted-foreground">Voir les guides →</p>
+                <p className="mt-1 text-xs text-muted-foreground">Ouvrir →</p>
               </Link>
             ))}
           </div>
