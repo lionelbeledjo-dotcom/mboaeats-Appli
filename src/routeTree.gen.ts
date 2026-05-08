@@ -38,7 +38,6 @@ import { Route as CguRouteImport } from './routes/cgu'
 import { Route as AideRouteImport } from './routes/aide'
 import { Route as AdressesRouteImport } from './routes/adresses'
 import { Route as AdminRouteImport } from './routes/admin'
-import { Route as AccueilRouteImport } from './routes/accueil'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SuperadminIndexRouteImport } from './routes/superadmin.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
@@ -212,11 +211,6 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AccueilRoute = AccueilRouteImport.update({
-  id: '/accueil',
-  path: '/accueil',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -357,7 +351,6 @@ const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/accueil': typeof AccueilRoute
   '/admin': typeof AdminRouteWithChildren
   '/adresses': typeof AdressesRoute
   '/aide': typeof AideRouteWithChildren
@@ -416,7 +409,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/accueil': typeof AccueilRoute
   '/adresses': typeof AdressesRoute
   '/aide': typeof AideRouteWithChildren
   '/cgu': typeof CguRoute
@@ -474,7 +466,6 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/accueil': typeof AccueilRoute
   '/admin': typeof AdminRouteWithChildren
   '/adresses': typeof AdressesRoute
   '/aide': typeof AideRouteWithChildren
@@ -535,7 +526,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/accueil'
     | '/admin'
     | '/adresses'
     | '/aide'
@@ -594,7 +584,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/accueil'
     | '/adresses'
     | '/aide'
     | '/cgu'
@@ -651,7 +640,6 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/accueil'
     | '/admin'
     | '/adresses'
     | '/aide'
@@ -711,7 +699,6 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AccueilRoute: typeof AccueilRoute
   AdminRoute: typeof AdminRouteWithChildren
   AdressesRoute: typeof AdressesRoute
   AideRoute: typeof AideRouteWithChildren
@@ -959,13 +946,6 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/accueil': {
-      id: '/accueil'
-      path: '/accueil'
-      fullPath: '/accueil'
-      preLoaderRoute: typeof AccueilRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -1240,7 +1220,6 @@ const RestaurantsRestoIdRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AccueilRoute: AccueilRoute,
   AdminRoute: AdminRouteWithChildren,
   AdressesRoute: AdressesRoute,
   AideRoute: AideRouteWithChildren,
