@@ -274,32 +274,105 @@ function AddressesPage() {
             </p>
           ) : (
             <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-              {saved.map((a) => (
+              {saved.map((a) => {
+                const isEditing = editingId === a.id && editDraft;
+                return (
                 <li
                   key={a.id}
                   className="flex items-start gap-3 rounded-2xl border border-border bg-surface/60 p-4"
                 >
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
-                    {iconFor(a.label)}
+                    {iconFor(isEditing ? editDraft!.label : a.label)}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="truncate font-semibold">{a.label}</p>
-                      <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
-                        <Check className="-mt-0.5 mr-0.5 inline h-3 w-3" /> Enregistrée
-                      </span>
-                    </div>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {a.neighborhood} · {a.city}
-                    </p>
-                    {a.phone && (
-                      <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
-                        📞 {a.phone}
-                      </p>
+                    {isEditing ? (
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          value={editDraft!.label}
+                          onChange={(e) => setEditDraft({ ...editDraft!, label: e.target.value })}
+                          placeholder="Label"
+                          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
+                        />
+                        <input
+                          type="text"
+                          value={editDraft!.neighborhood}
+                          onChange={(e) => setEditDraft({ ...editDraft!, neighborhood: e.target.value })}
+                          placeholder="Rue / Quartier"
+                          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
+                        />
+                        <select
+                          value={editDraft!.city}
+                          onChange={(e) => setEditDraft({ ...editDraft!, city: e.target.value })}
+                          className="w-full appearance-none rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
+                        >
+                          {CITIES.map((c) => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                        <div className="flex items-stretch overflow-hidden rounded-xl border border-border bg-background focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30">
+                          <span className="inline-flex items-center gap-1 border-r border-border bg-surface px-2 text-xs font-semibold text-muted-foreground">
+                            <Phone className="h-3 w-3" /> +237
+                          </span>
+                          <input
+                            type="tel"
+                            inputMode="numeric"
+                            value={editDraft!.phone}
+                            onChange={(e) =>
+                              setEditDraft({ ...editDraft!, phone: e.target.value.replace(/[^\d ]/g, "").slice(0, 13) })
+                            }
+                            placeholder="6 99 12 34 56"
+                            className="flex-1 bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/60"
+                          />
+                        </div>
+                        <div className="flex gap-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={saveEdit}
+                            disabled={savingEdit}
+                            className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-orange-500 via-primary to-amber-500 px-3 py-2 text-xs font-bold text-primary-foreground shadow-glow disabled:opacity-70"
+                          >
+                            {savingEdit ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                            Enregistrer
+                          </button>
+                          <button
+                            type="button"
+                            onClick={cancelEdit}
+                            className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
+                          >
+                            <X className="h-3.5 w-3.5" /> Annuler
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-2">
+                          <p className="truncate font-semibold">{a.label}</p>
+                          <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
+                            <Check className="-mt-0.5 mr-0.5 inline h-3 w-3" /> Enregistrée
+                          </span>
+                        </div>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {a.neighborhood} · {a.city}
+                        </p>
+                        {a.phone && (
+                          <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                            📞 {a.phone}
+                          </p>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => startEdit(a)}
+                          className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-1 text-[11px] font-semibold text-muted-foreground hover:text-foreground"
+                        >
+                          <Pencil className="h-3 w-3" /> Modifier
+                        </button>
+                      </>
                     )}
                   </div>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           )}
         </section>
