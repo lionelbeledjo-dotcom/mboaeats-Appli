@@ -28,6 +28,19 @@ type Resto = {
 
 type StatusFilter = "all" | "active" | "suspended";
 
+const MOCK_RESTOS: Resto[] = [
+  { id: "mk-r1", name: "Le Wouri Saveurs", city: "Douala", neighborhood: "Akwa", cuisine: "Cuisine camerounaise", rating: 4.7, reviews_count: 218, is_active: true, is_open: true },
+  { id: "mk-r2", name: "Soya d'Or", city: "Douala", neighborhood: "Bonapriso", cuisine: "Grillades & Soya", rating: 4.5, reviews_count: 142, is_active: true, is_open: true },
+  { id: "mk-r3", name: "La Marmite Bamiléké", city: "Douala", neighborhood: "Deido", cuisine: "Spécialités Ouest", rating: 4.8, reviews_count: 305, is_active: true, is_open: true },
+  { id: "mk-r4", name: "Douala Fast Food", city: "Douala", neighborhood: "Bonamoussadi", cuisine: "Fast-food & Burgers", rating: 4.2, reviews_count: 96, is_active: true, is_open: false },
+  { id: "mk-r5", name: "Poisson Braisé du Port", city: "Douala", neighborhood: "Youpwe", cuisine: "Poisson & Fruits de mer", rating: 4.9, reviews_count: 412, is_active: true, is_open: true },
+  { id: "mk-r6", name: "Chez Maman Ndolé", city: "Douala", neighborhood: "New Bell", cuisine: "Ndolé & plats traditionnels", rating: 4.6, reviews_count: 187, is_active: true, is_open: true },
+  { id: "mk-r7", name: "Le Manguier d'Akwa", city: "Douala", neighborhood: "Akwa Nord", cuisine: "Bistro afro-européen", rating: 4.3, reviews_count: 74, is_active: false, is_open: false },
+  { id: "mk-r8", name: "Bonanjo Pizza", city: "Douala", neighborhood: "Bonanjo", cuisine: "Pizza & Pâtes", rating: 4.4, reviews_count: 158, is_active: true, is_open: true },
+  { id: "mk-r9", name: "Saveurs de Logpom", city: "Douala", neighborhood: "Logpom", cuisine: "Cuisine du terroir", rating: 4.5, reviews_count: 121, is_active: true, is_open: true },
+  { id: "mk-r10", name: "Kribi Beach Food (Makepe)", city: "Douala", neighborhood: "Makepe", cuisine: "Crevettes & Poisson", rating: 4.6, reviews_count: 199, is_active: false, is_open: false },
+];
+
 type Details = {
   restaurant: Record<string, any>;
   owner: { full_name: string | null; phone: string | null; city: string | null } | null;
