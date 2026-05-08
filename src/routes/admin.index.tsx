@@ -100,27 +100,100 @@ function Overview() {
           <h2 className="font-display text-lg font-bold">5 dernières commandes</h2>
           <ul className="mt-4 space-y-3">
             {LAST_ORDERS.map((o) => (
-              <li key={o.id} className="rounded-2xl border border-border bg-background/40 p-3">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-mono text-xs font-bold text-primary">{o.id}</span>
-                  {o.status === "livree" ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
-                      <CheckCircle2 className="h-3 w-3" /> Livré
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">
-                      <Clock className="h-3 w-3" /> En cours
-                    </span>
-                  )}
-                </div>
-                <p className="mt-1 truncate text-sm font-semibold">{o.client}</p>
-                <div className="mt-0.5 flex items-center justify-between text-[11px] text-muted-foreground">
-                  <span className="truncate">{o.resto}</span>
-                  <span className="font-bold text-foreground">{o.amount.toLocaleString("fr-FR")} F</span>
-                </div>
+              <li key={o.id}>
+                <button
+                  type="button"
+                  onClick={() => setSelected(o)}
+                  className="w-full rounded-2xl border border-border bg-background/40 p-3 text-left transition hover:border-primary/60 hover:bg-background/70 focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-mono text-xs font-bold text-primary">{o.id}</span>
+                    {o.status === "livree" ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
+                        <CheckCircle2 className="h-3 w-3" /> Livré
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">
+                        <Clock className="h-3 w-3" /> En cours
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1 truncate text-sm font-semibold">{o.client}</p>
+                  <div className="mt-0.5 flex items-center justify-between text-[11px] text-muted-foreground">
+                    <span className="truncate">{o.resto}</span>
+                    <span className="font-bold text-foreground">{o.amount.toLocaleString("fr-FR")} F</span>
+                  </div>
+                </button>
               </li>
             ))}
           </ul>
+        </div>
+      </div>
+
+      {selected && <OrderDetailsPanel order={selected} onClose={() => setSelected(null)} />}
+    </div>
+  );
+}
+
+function OrderDetailsPanel({ order, onClose }: { order: OrderRow; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex" role="dialog" aria-modal="true" aria-label={`Détails commande ${order.id}`}>
+      <button type="button" aria-label="Fermer" onClick={onClose} className="flex-1 bg-background/70 backdrop-blur-sm" />
+      <aside className="flex h-full w-full max-w-md flex-col overflow-y-auto border-l border-border bg-surface shadow-2xl animate-in slide-in-from-right">
+        <div className="flex items-start justify-between border-b border-border p-5">
+          <div>
+            <p className="font-mono text-xs font-bold text-primary">{order.id}</p>
+            <h3 className="mt-1 font-display text-xl font-extrabold">Détails de la commande</h3>
+            <p className="mt-0.5 text-xs text-muted-foreground">{order.date}</p>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-full p-2 hover:bg-background" aria-label="Fermer le panneau">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="space-y-4 p-5">
+          <div className="flex items-center justify-between rounded-2xl border border-border bg-background/40 p-4">
+            <span className="text-xs uppercase tracking-wider text-muted-foreground">Statut</span>
+            {order.status === "livree" ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-400">
+                <CheckCircle2 className="h-3.5 w-3.5" /> Livré
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-3 py-1 text-xs font-bold text-primary">
+                <Clock className="h-3.5 w-3.5" /> En cours
+              </span>
+            )}
+          </div>
+
+          <div className="rounded-2xl border border-border bg-background/40 p-4">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Montant</p>
+            <p className="mt-1 font-display text-2xl font-extrabold text-gradient-gold">{order.amount.toLocaleString("fr-FR")} <span className="text-sm">XAF</span></p>
+            <p className="mt-1 text-[11px] text-muted-foreground inline-flex items-center gap-1"><CreditCard className="h-3 w-3" /> {order.payment}</p>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-background/40 p-4 space-y-2">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Client</p>
+            <p className="text-sm font-semibold inline-flex items-center gap-2"><User className="h-4 w-4 text-primary" /> {order.client}</p>
+            <p className="text-xs text-muted-foreground inline-flex items-center gap-2"><Phone className="h-3.5 w-3.5" /> {order.phone}</p>
+            <p className="text-xs text-muted-foreground inline-flex items-center gap-2"><MapPin className="h-3.5 w-3.5" /> {order.address}</p>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-background/40 p-4">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Restaurant</p>
+            <p className="mt-1 text-sm font-semibold">{order.resto}</p>
+            <ul className="mt-3 space-y-1 text-sm">
+              {order.items.map((it) => (
+                <li key={it} className="flex items-center justify-between border-b border-border/50 py-1 last:border-0">
+                  <span>{it}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </aside>
+    </div>
+  );
+}
         </div>
       </div>
     </div>
