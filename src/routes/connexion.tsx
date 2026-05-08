@@ -699,28 +699,32 @@ function Connexion() {
           )}
 
           {step === "otp" && (
-            <form onSubmit={submitCode} className="space-y-4 animate-fade-up">
-              <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 text-xs">
-                {channel === "whatsapp" ? "💬 Code envoyé par WhatsApp" : channel === "email" ? "📧 Vérifiez votre boîte email ! Le code expire dans 30 min." : "📩 Code envoyé par SMS"} {channel === "email" ? "à" : "à"} <span className="font-semibold">{identifierLabel}</span>. Saisissez les 6 chiffres reçus.
+            <form onSubmit={submitCode} className="space-y-5 animate-fade-up">
+              <div className="text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-600 shadow-[0_0_30px_rgba(251,146,60,0.5)]">
+                  <ShieldCheck className="h-6 w-6 text-white" />
+                </div>
+                <h2 className="font-display text-xl font-bold text-white">Vérification</h2>
+                <p className="mt-1 text-sm text-white/60">
+                  {channel === "whatsapp" ? "Code envoyé par WhatsApp" : channel === "email" ? "Code envoyé par email" : "Code envoyé par SMS"} à
+                </p>
+                <p className="mt-1 text-sm font-semibold text-amber-300">{identifierLabel}</p>
               </div>
 
-              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Code de vérification
-              </label>
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={6}
-                placeholder="••••••"
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-                className="w-full rounded-2xl border border-border bg-background px-4 py-4 text-center text-2xl font-bold tracking-[0.5em] outline-none focus:border-primary"
-                autoFocus
-              />
+              <div>
+                <label className="mb-3 block text-center text-[11px] font-semibold uppercase tracking-[0.25em] text-white/55">
+                  Saisissez les 6 chiffres
+                </label>
+                <OtpInput value={code} onChange={setCode} onComplete={() => {
+                  // submit when 6 digits entered
+                  const form = document.getElementById("otp-form") as HTMLFormElement | null;
+                  form?.requestSubmit();
+                }} />
+                <input id="otp-form-hidden" type="hidden" />
+              </div>
 
               {error && (
-                <div className="flex items-start gap-2 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
+                <div className="flex items-start gap-2 rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-xs text-red-300">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                   <span>{error}</span>
                 </div>
@@ -728,18 +732,21 @@ function Connexion() {
 
               <button
                 type="submit"
-                disabled={loading}
-                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-primary text-sm font-semibold text-primary-foreground shadow-glow active:scale-[0.98] disabled:opacity-60"
+                disabled={loading || code.length !== 6}
+                className="shine-sweep relative inline-flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-xl text-sm font-bold uppercase tracking-[0.18em] text-white shadow-[0_10px_30px_-10px_rgba(249,115,22,0.7)] transition-transform active:scale-[0.98] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d0d0f]"
+                style={{
+                  background: "linear-gradient(90deg, #f59e0b 0%, #f97316 50%, #ea580c 100%)",
+                }}
               >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (<><Check className="h-4 w-4" /> Valider et entrer</>)}
+                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (<><Check className="h-4 w-4" /> Valider</>)}
               </button>
 
-              <div className="flex flex-col items-center gap-1 pt-1">
+              <div className="flex flex-col items-center gap-2 pt-1">
                 <button
                   type="button"
                   onClick={handleResend}
                   disabled={cooldown > 0 || resendCount >= MAX_RESEND || loading}
-                  className="text-xs font-semibold text-primary disabled:text-muted-foreground disabled:cursor-not-allowed hover:underline underline-offset-4"
+                  className="text-sm font-semibold text-amber-300 transition hover:text-amber-200 disabled:text-white/40 disabled:cursor-not-allowed focus:outline-none focus-visible:underline"
                 >
                   {resendCount >= MAX_RESEND
                     ? "Limite de renvois atteinte"
@@ -747,7 +754,7 @@ function Connexion() {
                       ? `Renvoyer le code dans ${cooldown}s`
                       : "Renvoyer le code"}
                 </button>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-[11px] text-white/40">
                   {resendCount}/{MAX_RESEND} tentatives utilisées
                 </p>
               </div>
@@ -755,9 +762,9 @@ function Connexion() {
               <button
                 type="button"
                 onClick={() => { setStep("identify"); setCode(""); setError(null); setResendCount(0); setCooldown(0); }}
-                className="block w-full text-center text-xs text-muted-foreground underline-offset-4 hover:underline"
+                className="block w-full text-center text-xs text-white/60 underline-offset-4 hover:text-white hover:underline focus:outline-none focus-visible:underline"
               >
-                Modifier {mode === "phone" ? "le numéro" : "l'email"}
+                ← Modifier {mode === "phone" ? "le numéro" : "l'email"}
               </button>
             </form>
           )}
