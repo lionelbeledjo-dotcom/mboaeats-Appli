@@ -141,8 +141,20 @@ function CommandesPage() {
                   </div>
                   <div className="flex items-center justify-between gap-3">
                     <span className="font-display text-base font-bold text-gradient-primary">{formatFcfa(o.price)}</span>
-                    <button className="inline-flex items-center gap-2 rounded-full bg-gradient-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-glow transition-transform hover:scale-[1.02]">
-                      <RotateCcw className="h-3.5 w-3.5" /> Commander à nouveau
+                    <button
+                      type="button"
+                      onClick={() => reorder(o)}
+                      disabled={reorderingId === o.id}
+                      className="inline-flex items-center gap-2 rounded-full bg-gradient-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-glow transition-transform hover:scale-[1.02] disabled:opacity-70"
+                    >
+                      {reorderingId === o.id ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : doneId === o.id ? (
+                        <Check className="h-3.5 w-3.5" />
+                      ) : (
+                        <RotateCcw className="h-3.5 w-3.5" />
+                      )}
+                      {doneId === o.id ? "Ajouté au panier" : "Commander à nouveau"}
                     </button>
                   </div>
                 </div>
