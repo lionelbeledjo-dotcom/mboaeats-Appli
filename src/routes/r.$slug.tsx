@@ -6,6 +6,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { getRestaurantBySlug } from "@/server/marketplace.functions";
 import { addToCart, useCart } from "@/hooks/use-cart";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { AddToCartFab } from "@/components/AddToCartFab";
 
 export const Route = createFileRoute("/r/$slug")({
   component: RestoLivePage,
@@ -56,14 +57,17 @@ function RestoLivePage() {
   const [categories, setCategories] = useState<Cat[]>([]);
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeCat, setActiveCat] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
     fetcher({ data: { slug } })
       .then((r) => {
         setResto(r.resto as Resto | null);
-        setCategories((r.categories ?? []) as Cat[]);
+        const cats = (r.categories ?? []) as Cat[];
+        setCategories(cats);
         setDishes((r.dishes ?? []) as Dish[]);
+        if (cats[0]) setActiveCat(cats[0].id);
       })
       .finally(() => setLoading(false));
   }, [fetcher, slug]);
@@ -78,22 +82,22 @@ function RestoLivePage() {
     return map;
   }, [dishes]);
 
-  // Le panier vit côté local et accepte les deux origines (mock + DB).
   const restoCartItems = items.filter((i) => i.restoId === resto?.id);
   const restoSubtotal = restoCartItems.reduce((s, i) => s + i.qty * i.price, 0);
+  const restoCount = restoCartItems.reduce((s, i) => s + i.qty, 0);
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <Loader2 className="h-6 w-6 animate-spin text-black" />
       </div>
     );
   }
   if (!resto) {
     return (
-      <div className="p-10 text-center text-muted-foreground">
+      <div className="bg-white p-10 text-center text-neutral-600">
         Restaurant introuvable.{" "}
-        <Link to="/decouvrir" className="text-primary underline">
+        <Link to="/decouvrir" className="text-black underline">
           Retour
         </Link>
       </div>
@@ -103,66 +107,96 @@ function RestoLivePage() {
   const cover = resto.cover_url ?? resto.image_url ?? "";
 
   return (
-    <div className="min-h-screen bg-background pb-32">
+    <div className="min-h-screen bg-white pb-40">
+      {/* Hero cover */}
       <div className="relative h-56 w-full overflow-hidden md:h-72">
         {cover ? (
           <img src={cover} alt={resto.name} className="h-full w-full object-cover" />
         ) : (
-          <div className="h-full w-full bg-gradient-to-br from-primary/30 to-accent/10" />
+          <div className="h-full w-full bg-gradient-to-br from-neutral-200 to-neutral-100" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-background" />
         <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
           <Link
             to="/decouvrir"
-            className="inline-flex items-center gap-1 rounded-full border border-white/30 bg-black/40 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur"
+            aria-label="Retour"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-black shadow-md backdrop-blur"
           >
-            <ArrowLeft className="h-3.5 w-3.5" /> Retour
+            <ArrowLeft className="h-4 w-4" strokeWidth={2} />
           </Link>
           <FavoriteButton restaurantId={resto.id} />
         </div>
       </div>
 
-      <main className="mx-auto -mt-12 max-w-3xl px-4">
-        <div className="rounded-3xl border border-border bg-card p-5 shadow-glow">
+      {/* Resto info card */}
+      <main className="mx-auto -mt-8 max-w-3xl px-4">
+        <div
+          className="rounded-[1.5rem] border border-neutral-200 bg-white p-5"
+          style={{ boxShadow: "var(--shadow-soft)" }}
+        >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <h1 className="font-display text-2xl font-bold">{resto.name}</h1>
-              <p className="text-sm text-muted-foreground">{resto.cuisine}</p>
+              <h1 className="text-2xl font-bold tracking-tight text-black">{resto.name}</h1>
+              <p className="mt-1 text-sm text-neutral-600">{resto.cuisine}</p>
             </div>
             <span
-              className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                resto.is_open
-                  ? "bg-emerald-500/15 text-emerald-400"
-                  : "bg-muted text-muted-foreground"
+              className={`rounded-full px-3 py-1 text-[11px] font-semibold ${
+                resto.is_open ? "bg-emerald-50 text-emerald-700" : "bg-neutral-100 text-neutral-500"
               }`}
             >
               {resto.is_open ? "● Ouvert" : "Fermé"}
             </span>
           </div>
-          <div className="mt-4 flex flex-wrap items-center gap-4 text-xs">
-            <span className="flex items-center gap-1 font-semibold">
-              <Star className="h-4 w-4 fill-gold text-gold" />
+          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-neutral-700">
+            <span className="flex items-center gap-1 font-semibold text-black">
+              <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" strokeWidth={2} />
               {Number(resto.rating ?? 4.5).toFixed(1)}
-              <span className="text-muted-foreground">
-                ({resto.reviews_count ?? 0})
-              </span>
+              <span className="font-normal text-neutral-500">({resto.reviews_count ?? 0})</span>
             </span>
-            <span className="flex items-center gap-1 text-muted-foreground">
-              <Clock className="h-3.5 w-3.5" /> {resto.eta_min ?? 20}-
-              {resto.eta_max ?? 40} min
+            <span className="flex items-center gap-1 text-neutral-600">
+              <Clock className="h-3.5 w-3.5" strokeWidth={2} /> {resto.eta_min ?? 20}–{resto.eta_max ?? 40} min
             </span>
-            <span className="flex items-center gap-1 text-muted-foreground">
-              <MapPin className="h-3.5 w-3.5" /> {resto.neighborhood ?? resto.city}
+            <span className="flex items-center gap-1 text-neutral-600">
+              <MapPin className="h-3.5 w-3.5" strokeWidth={2} /> {resto.neighborhood ?? resto.city}
             </span>
-            <span className="text-muted-foreground">
+            <span className="text-neutral-600">
               Livraison {(resto.delivery_fee ?? 0).toLocaleString("fr-FR")} F
             </span>
           </div>
         </div>
 
-        <div className="mt-8 space-y-10">
+        {/* Category pills */}
+        {categories.length > 0 && (
+          <div className="-mx-4 mt-6 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex w-max gap-2">
+              {categories.map((cat) => {
+                const active = activeCat === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveCat(cat.id);
+                      const el = document.getElementById(`cat-${cat.id}`);
+                      el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                    className={`rounded-full border px-4 py-2 text-xs font-semibold transition-all ${
+                      active
+                        ? "border-black bg-black text-white"
+                        : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300"
+                    }`}
+                  >
+                    {cat.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Dishes */}
+        <div className="mt-6 space-y-8">
           {categories.length === 0 && (
-            <p className="rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
+            <p className="rounded-2xl border border-dashed border-neutral-200 p-10 text-center text-sm text-neutral-500">
               Menu en cours de mise en ligne.
             </p>
           )}
@@ -170,82 +204,33 @@ function RestoLivePage() {
             const list = grouped.get(cat.id) ?? [];
             if (list.length === 0) return null;
             return (
-              <section key={cat.id}>
-                <div className="mb-3 flex items-baseline justify-between">
-                  <h2 className="font-display text-xl font-bold">{cat.name}</h2>
-                  <span className="text-xs text-muted-foreground">
-                    {list.length} plats
-                  </span>
-                </div>
+              <section key={cat.id} id={`cat-${cat.id}`} className="scroll-mt-24">
+                <h2 className="mb-3 text-lg font-bold text-black">{cat.name}</h2>
                 <ul className="space-y-3">
                   {list.map((dish) => (
-                    <li
+                    <DishCard
                       key={dish.id}
-                      className="flex items-stretch gap-4 rounded-2xl border border-border bg-card p-3"
-                    >
-                      <div className="flex min-w-0 flex-1 flex-col py-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="truncate font-display font-bold">
-                            {dish.name}
-                          </h3>
-                          {dish.is_popular && (
-                            <span className="rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-bold uppercase text-gold">
-                              ★ Top
-                            </span>
-                          )}
-                        </div>
-                        {dish.description && (
-                          <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-                            {dish.description}
-                          </p>
-                        )}
-                        <div className="mt-auto pt-2">
-                          <span className="font-display text-base font-bold text-primary">
-                            {dish.price.toLocaleString("fr-FR")}
-                            <span className="ml-1 text-xs">FCFA</span>
-                          </span>
-                        </div>
-                      </div>
-                      <div className="relative shrink-0">
-                        {dish.image_url ? (
-                          <img
-                            src={dish.image_url}
-                            alt={dish.name}
-                            loading="lazy"
-                            className="h-24 w-24 rounded-xl object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-24 w-24 items-center justify-center rounded-xl bg-gradient-to-br from-primary/15 to-accent/10">
-                            <Flame className="h-6 w-6 text-primary" />
-                          </div>
-                        )}
-                        <button
-                          aria-label={`Ajouter ${dish.name}`}
-                          disabled={!resto.is_open || !dish.is_available}
-                          onClick={() => {
-                            addToCart({
-                              id: `db__${dish.id}`,
-                              dishId: dish.id,
-                              restoId: resto.id,
-                              name: dish.name,
-                              price: dish.price,
-                              qty: 1,
-                              image: dish.image_url ?? undefined,
-                            });
-                            toast.success("Ajouté au panier", {
-                              description: `1 × ${dish.name}`,
-                              action: {
-                                label: "Voir le panier",
-                                onClick: () => navigate({ to: "/checkout" }),
-                              },
-                            });
-                          }}
-                          className="absolute -bottom-2 -right-2 flex h-9 w-9 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-glow transition-transform hover:scale-110 active:scale-95 disabled:opacity-40"
-                        >
-                          <Plus className="h-5 w-5" strokeWidth={2.6} />
-                        </button>
-                      </div>
-                    </li>
+                      dish={dish}
+                      restoOpen={!!resto.is_open}
+                      onAdd={() => {
+                        addToCart({
+                          id: `db__${dish.id}`,
+                          dishId: dish.id,
+                          restoId: resto.id,
+                          name: dish.name,
+                          price: dish.price,
+                          qty: 1,
+                          image: dish.image_url ?? undefined,
+                        });
+                        toast.success("Ajouté au panier", {
+                          description: `1 × ${dish.name}`,
+                          action: {
+                            label: "Voir le panier",
+                            onClick: () => navigate({ to: "/checkout" }),
+                          },
+                        });
+                      }}
+                    />
                   ))}
                 </ul>
               </section>
@@ -254,26 +239,75 @@ function RestoLivePage() {
         </div>
       </main>
 
-      {restoCartItems.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 p-4 backdrop-blur">
-          <div className="mx-auto flex max-w-3xl items-center gap-3">
-            <div className="flex-1">
-              <p className="text-xs text-muted-foreground">
-                {count} article{count > 1 ? "s" : ""} · Sous-total
-              </p>
-              <p className="font-display text-lg font-bold">
-                {subtotal.toLocaleString("fr-FR")} FCFA
-              </p>
-            </div>
-            <button
-              onClick={() => navigate({ to: "/checkout" })}
-              className="rounded-2xl bg-gradient-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-glow"
-            >
-              Commander
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Floating Add-to-cart FAB (uses items for THIS restaurant) */}
+      <AddToCartFab count={restoCount || count} total={restoSubtotal || subtotal} restoId={resto.id} />
     </div>
+  );
+}
+
+function DishCard({
+  dish,
+  restoOpen,
+  onAdd,
+}: {
+  dish: Dish;
+  restoOpen: boolean;
+  onAdd: () => void;
+}) {
+  const cheap = dish.price > 0 && dish.price < 2000;
+  return (
+    <li
+      className="relative flex items-stretch gap-3 rounded-[1.25rem] border border-neutral-200 bg-white p-3"
+      style={{ boxShadow: "var(--shadow-soft)" }}
+    >
+      <div className="relative shrink-0">
+        {dish.image_url ? (
+          <img
+            src={dish.image_url}
+            alt={dish.name}
+            loading="lazy"
+            className="h-24 w-24 rounded-[1rem] object-cover"
+          />
+        ) : (
+          <div className="flex h-24 w-24 items-center justify-center rounded-[1rem] bg-neutral-100">
+            <Flame className="h-6 w-6 text-neutral-400" />
+          </div>
+        )}
+        {/* Badge pill (Most Popular / Under) */}
+        {dish.is_popular && (
+          <span className="absolute -left-1 -top-1 rounded-full bg-black px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+            Top
+          </span>
+        )}
+        {!dish.is_popular && cheap && (
+          <span className="absolute -left-1 -top-1 rounded-full bg-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black ring-1 ring-neutral-200">
+            -2000F
+          </span>
+        )}
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col py-1">
+        <h3 className="truncate text-base font-semibold text-black">{dish.name}</h3>
+        {dish.description && (
+          <p className="mt-0.5 line-clamp-2 text-xs text-neutral-500">{dish.description}</p>
+        )}
+        <div className="mt-auto flex items-center justify-between pt-2">
+          <div className="flex items-baseline gap-2">
+            <span className="text-base font-bold text-black tabular-nums">
+              {dish.price.toLocaleString("fr-FR")}
+              <span className="ml-0.5 text-xs font-medium text-neutral-500">FCFA</span>
+            </span>
+            <span className="text-[11px] text-neutral-400">· ~450 cal</span>
+          </div>
+          <button
+            aria-label={`Ajouter ${dish.name}`}
+            disabled={!restoOpen || !dish.is_available}
+            onClick={onAdd}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-white shadow-md transition-all hover:scale-105 active:scale-95 disabled:opacity-40"
+          >
+            <Plus className="h-4 w-4" strokeWidth={2.5} />
+          </button>
+        </div>
+      </div>
+    </li>
   );
 }
