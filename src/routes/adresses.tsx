@@ -668,6 +668,18 @@ function CoverageMap({
   activeNeighborhood: string | null;
   onSelect?: (neighborhood: string) => void;
 }) {
+  const [query, setQuery] = useState("");
+  const gridRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const filteredZones = useMemo(() => {
+    const q = normalizeText(query);
+    if (!q) return zones;
+    return zones.filter((z) => normalizeText(z.neighborhood).includes(q));
+  }, [zones, query]);
+  const focusFirstPin = () => {
+    const first = gridRef.current?.querySelector<HTMLButtonElement>('[role="radio"]');
+    first?.focus();
+  };
   if (zones.length === 0) return null;
   return (
     <div
