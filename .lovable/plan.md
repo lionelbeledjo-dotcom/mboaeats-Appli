@@ -1,63 +1,135 @@
 ## Objectif
 
-Vous permettre d'accéder à la console **/admin** (restaurants, livreurs, commissions, litiges, paramètres) en vous connectant simplement avec votre numéro **+33 6 60 06 17 23** via OTP, sans avoir besoin du compte email/mot de passe existant.
+Faire passer MboaEats en standard "production réel" avec :
+1. Refonte visuelle des pages restaurant/menu (style fourni)
+2. Authentification réelle Supabase (email/password + Google + OTP email natif)
+3. Refonte panier flottant + checkout pro
+4. Connexion réelle aux tables (`profiles`, `restaurants`, `dishes`, `orders`, `order_items`, `addresses`, `promos`)
 
-## Situation actuelle
+Note : l'image `image_2a188e.jpg` n'a pas pu être (ré)uploadée. J'applique le brief texte (fond blanc, coins très arrondis, cartes photo-gauche / texte-droite, badges pilules noires/blanches, bottom dock flottant noir, Add-to-cart noir flottant, Promotion verte). Tu pourras me corriger après le premier rendu.
 
-- Un seul compte admin existe en base (créé le 6 mai), accessible uniquement via `/admin-login` (email + mot de passe).
-- Vous vous connectez actuellement via `/connexion` (téléphone + OTP SMS), ce qui crée un compte Supabase Auth séparé sans rôle admin.
-- Aucun profil n'existe encore pour `+33660061723` → il faut d'abord créer la session, puis attribuer le rôle.
+---
 
-## Plan d'action
+## 1. Authentification réelle Supabase
 
-### 1. Création d'un mécanisme « Devenir admin »
+**Activations backend** (via tooling Lovable Cloud) :
+- `supabase--configure_auth` : `auto_confirm_email: false`, HIBP activé, signup ouvert.
+- `supabase--configure_social_auth` : enable Google (managed OAuth, sans clés à fournir).
+- Migration : trigger `handle_new_user` qui crée automatiquement une ligne `profiles` (full_name, phone) à chaque signup `auth.users`.
 
-Ajouter une fonction serveur sécurisée `claimAdminByPhone` qui :
-- Exige une session OTP valide (middleware `requireSupabaseAuth`)
-- Vérifie que le numéro de téléphone du compte connecté est dans une **allowlist** hardcodée côté serveur : `+33660061723` (modifiable plus tard)
-- Insère le rôle `admin` dans `user_roles` pour ce `user_id` (idempotent via `on conflict do nothing`)
-- Retourne `{ ok: true }` ou une erreur claire
+**Frontend** (`/connexion`) refonte :
+- Onglets : **Se connecter** / **S'inscrire**.
+- Login : email + mot de passe → `supabase.auth.signInWithPassword`.
+- Signup : Nom complet + Email + Téléphone + Mot de passe → `supabase.auth.signUp` avec `emailRedirectTo: window.location.origin/`, métadonnées `{ full_name, phone }` (récupérées par le trigger).
+- Bouton **Continuer avec Google** (icône SVG officielle multi-couleurs) → `lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin })`.
+- Validation OTP email Supabase native : après signup, écran "Vérifie ton email" + champ code 6 chiffres → `supabase.auth.verifyOtp({ type: 'signup', email, token })`.
+- Conserver l'OTP SMS Twilio existant comme méthode secondaire (onglet "Téléphone") — non supprimé.
+- Inputs : `text-foreground` sur `bg-white`, contraste WCAG AA garanti.
+- Validation Zod côté client (email, téléphone E.164, password ≥ 8 + 1 chiffre + 1 majuscule).
 
-### 2. Bouton d'activation dans la page Connexion
+**Session** :
+- Hook `useAuth()` basé sur `supabase.auth.onAuthStateChange` + `getSession`.
+- Layout `_authenticated` (déjà partiellement présent via session iron) : ajouter garde basée sur la session Supabase pour `/compte.*`, `/checkout`, `/commandes`, `/favoris`.
 
-Après une connexion OTP réussie, si le numéro du compte est dans l'allowlist et qu'il n'a pas encore le rôle admin, afficher un bouton « **Activer l'accès administrateur** » qui appelle `claimAdminByPhone` puis redirige vers `/admin`.
+---
 
-### 3. Élargir le portail d'accès à /admin
+## 2. Refonte design "Menu Intérieur"
 
-Modifier `/admin-login` (et `/admin` `beforeLoad`) pour accepter **toute session Supabase valide** ayant le rôle admin — qu'elle vienne de email/mot de passe OU d'OTP téléphone. Aucun changement nécessaire si le rôle est déjà attribué : la garde actuelle (`user_roles.role = 'admin'`) fonctionne déjà avec n'importe quel type de session.
+**Tokens design** (`src/styles.css`) :
+- `--surface-card: oklch(1 0 0)`, `--ink: oklch(0.18 0 0)`, `--ink-soft: oklch(0.45 0 0)`.
+- `--radius-card: 1.25rem`, `--radius-pill: 999px`.
+- `--shadow-float: 0 12px 32px -12px rgb(0 0 0 / 0.18)`.
+- Vert promo `--promo: oklch(0.72 0.17 152)` (≈ #22C55E).
 
-### 4. Lien direct depuis le menu
+**Page restaurant** (`src/routes/r.$slug.tsx` ou `restaurants.$restoId.tsx`) :
+- Fond blanc, header image en cover arrondi.
+- Section catégories : pilules horizontales scrollables (noir actif / blanc inactif, bordure fine).
+- Cartes plat : layout `flex` photo 96×96 `rounded-2xl` à gauche, à droite Nom (font-semibold), description 1 ligne tronquée, ligne basse `Prix • Calories`. Badge "Most Popular" / "Under 2000 FCFA" en pilule absolue top-left.
+- Plus de design sombre — passage uniforme blanc/noir.
 
-Ajouter un raccourci « **Console admin** » dans le menu profil/dock pour les utilisateurs ayant le rôle admin, afin que vous puissiez accéder à `/admin` en un clic depuis n'importe quelle page.
+**Bottom dock** (`src/components/BottomDock.tsx`) :
+- Container flottant `mx-auto bottom-4`, `bg-black text-white`, `rounded-full`, `shadow-float`.
+- Icônes Lucide stroke-2, blanches, item actif avec dot vert.
+
+**Add-to-cart flottant** :
+- Sur page resto, FAB pleine largeur sticky bas : `bg-black text-white rounded-full h-14`, contenu `Voir le panier · {qty} articles · {total} FCFA`.
+- Cache automatiquement quand panier vide.
+
+---
+
+## 3. Panier & Checkout pro
+
+**Checkout** (`src/routes/checkout.tsx`) :
+- Bloc 1 — **Adresse de livraison** : sélection address par défaut + carte simplifiée (placeholder Mapbox-like statique : div blanche avec dot vert + ligne pointillée vers pin noir, ETA "≈ 15 min" en pilule).
+- Bloc 2 — **Récap articles** : liste compacte qty × nom — prix.
+- Bloc 3 — **Code promo** : input + bouton Appliquer (vérifie `promos` actif, expires_at, min_order). Si OK → ligne verte `Promotion appliquée −{remise}` avec icône check.
+- Bloc 4 — **Total** : sous-total / livraison / promo / total.
+- Bouton final noir flottant `Payer {total} FCFA`.
+- Création réelle de `orders` + `order_items` (RLS user_id = auth.uid). Paiement Campay déjà existant conservé.
+
+---
+
+## 4. Données réelles & cohérence
+
+- `useSessionUser` (existant, basé iron-session) → conservé pour OTP SMS, mais nouvelles pages utilisent `useAuth()` Supabase.
+- `useCart` : déjà local, on persiste `localStorage` (déjà présent), on le branche au checkout réel.
+- Les listings `restaurants` / `dishes` : déjà en place via `marketplace.functions.ts`. Vérifier que le redesign consomme bien ces données.
+- Profil créé automatiquement à signup via trigger SQL.
+
+---
 
 ## Détails techniques
 
-```text
-src/lib/admin-claim.functions.ts   (nouveau)
-  └─ claimAdminByPhone: createServerFn + requireSupabaseAuth
-       allowlist = ["+33660061723"]
-       → supabaseAdmin.from("user_roles").upsert({ user_id, role: "admin" })
+**Migration SQL** (une seule passe) :
+```sql
+create or replace function public.handle_new_user()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  insert into public.profiles (user_id, full_name, phone)
+  values (new.id,
+          new.raw_user_meta_data->>'full_name',
+          new.raw_user_meta_data->>'phone')
+  on conflict (user_id) do nothing;
+  return new;
+end $$;
 
-src/routes/connexion.tsx   (modifié)
-  └─ après verifyOtp, check phone vs allowlist
-     → afficher CTA "Activer l'accès administrateur"
-     → appel claimAdminByPhone → navigate("/admin")
-
-src/components/BottomDock.tsx ou menu profil   (modifié)
-  └─ si user a role=admin → afficher entrée "Console admin" → /admin
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
 ```
 
-## Sécurité
+**Fichiers principaux modifiés/créés** :
+- `src/routes/connexion.tsx` — refonte complète (tabs login/signup + Google + OTP)
+- `src/hooks/useAuth.ts` — nouveau, wrap Supabase Auth
+- `src/components/BottomDock.tsx` — restyle noir flottant
+- `src/components/AddToCartFab.tsx` — nouveau FAB noir
+- `src/routes/r.$slug.tsx` — refonte cartes plats + badges
+- `src/routes/checkout.tsx` — refonte 4 blocs + promo verte
+- `src/styles.css` — nouveaux tokens
+- `src/integrations/lovable/*` — généré par `configure_social_auth`
 
-- L'allowlist vit **uniquement côté serveur** (impossible à manipuler depuis le navigateur).
-- La fonction exige une session OTP vérifiée (le téléphone du token est cryptographiquement lié au compte).
-- RLS sur `user_roles` reste inchangée ; l'insertion passe par `supabaseAdmin` après validation explicite.
-- Aucun impact sur les autres comptes : seul `+33660061723` peut s'auto-promouvoir.
+---
 
-## Résultat
+## Découpage en livraisons (un tour = une étape)
 
-Une fois le plan implémenté :
-1. Vous vous connectez sur `/connexion` avec `+33 6 60 06 17 23` + code SMS.
-2. Un bouton « Activer l'accès administrateur » apparaît → un clic.
-3. Vous arrivez sur `/admin` avec accès complet à : Restaurants, Livreurs, Commissions, Zones, Litiges, Paramètres.
-4. Lors des prochaines connexions, le rôle est déjà actif → un raccourci « Console admin » dans le menu vous y emmène directement.
+```text
+Étape 1 ─ Backend Auth
+  • configure_auth + Google OAuth
+  • migration trigger profiles
+  • hook useAuth + garde _authenticated
+
+Étape 2 ─ Page /connexion refondue
+  • tabs Login/Signup, Google, OTP email
+  • garde l'OTP SMS Twilio en option
+
+Étape 3 ─ Tokens design + BottomDock + Page restaurant
+  • styles.css, BottomDock noir flottant
+  • cartes plats photo+texte, badges pilules
+
+Étape 4 ─ Add-to-cart FAB + Checkout pro
+  • FAB noir bas resto
+  • checkout 4 blocs + promo verte + ordres réels
+```
+
+Je démarre par **l'étape 1 (backend + hook auth)** dès que tu valides ce plan.
