@@ -1,113 +1,90 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, AlertCircle, Check, ArrowRight, ChevronDown } from "lucide-react";
-import { sendOtp, verifyOtp } from "@/lib/otp.functions";
+import { Loader2, AlertCircle, ArrowRight, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { loginWithPassword } from "@/lib/auth.functions";
 import { useAuth } from "@/hooks/useAuth";
 import { invalidateSessionCache } from "@/hooks/useSessionUser";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/connexion")({
   component: Connexion,
   head: () => ({
     meta: [
       { title: "Connexion · MboaEats" },
-      { name: "description", content: "Connectez-vous à MboaEats avec votre numéro de téléphone." },
+      { name: "description", content: "Connectez-vous à MboaEats avec votre email et mot de passe." },
       { name: "robots", content: "noindex,nofollow" },
     ],
   }),
 });
 
-const COUNTRIES = [
-  { code: "CM", dial: "+237", flag: "🇨🇲", name: "Cameroun" },
-  { code: "FR", dial: "+33", flag: "🇫🇷", name: "France" },
-  { code: "BE", dial: "+32", flag: "🇧🇪", name: "Belgique" },
-  { code: "CH", dial: "+41", flag: "🇨🇭", name: "Suisse" },
-  { code: "CA", dial: "+1", flag: "🇨🇦", name: "Canada" },
-  { code: "GB", dial: "+44", flag: "🇬🇧", name: "Royaume-Uni" },
-  { code: "SN", dial: "+221", flag: "🇸🇳", name: "Sénégal" },
-  { code: "CI", dial: "+225", flag: "🇨🇮", name: "Côte d'Ivoire" },
-  { code: "MA", dial: "+212", flag: "🇲🇦", name: "Maroc" },
-];
-
 function Connexion() {
   const navigate = useNavigate();
   const { isAuthenticated, loading: authLoading } = useAuth();
-  const sendOtpFn = useServerFn(sendOtp);
-  const verifyOtpFn = useServerFn(verifyOtp);
+  const loginFn = useServerFn(loginWithPassword);
 
-  const [countryCode, setCountryCode] = useState("CM");
-  const [phone, setPhone] = useState("");
-  const [step, setStep] = useState<"phone" | "otp">("phone");
-  const [code, setCode] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showCountries, setShowCountries] = useState(false);
-  const [devCode, setDevCode] = useState<string | null>(null);
-  const [resendIn, setResendIn] = useState(0);
-
-  const country = COUNTRIES.find((c) => c.code === countryCode) ?? COUNTRIES[0];
-  const fullPhone = `${country.dial}${phone.replace(/\D/g, "")}`;
+  const [errorCode, setErrorCode] = useState<string | null>(null);
+  const [resendBusy, setResendBusy] = useState(false);
+  const [resentOk, setResentOk] = useState(false);
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) navigate({ to: "/", replace: true });
   }, [authLoading, isAuthenticated, navigate]);
 
-  useEffect(() => {
-    if (resendIn <= 0) return;
-    const t = setInterval(() => setResendIn((s) => (s > 0 ? s - 1 : 0)), 1000);
-    return () => clearInterval(t);
-  }, [resendIn]);
-
-  const handleSend = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setDevCode(null);
-    if (phone.replace(/\D/g, "").length < 6) {
-      setError("Numéro invalide");
+    setErrorCode(null);
+    setResentOk(false);
+
+    const trimmed = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setError("Adresse email invalide");
       return;
     }
+    if (password.length < 6) {
+      setError("Mot de passe requis");
+      return;
+    }
+
     setLoading(true);
     try {
-      const res: any = await sendOtpFn({ data: { phone: fullPhone, channel: "sms" } });
-      if (res?.ok === false) {
-        setError(res.error ?? "Échec de l'envoi du SMS");
-        if (typeof res.retryAfter === "number") setResendIn(res.retryAfter);
+      const res = await loginFn({ data: { email: trimmed, password } });
+      if (!res.ok) {
+        setError(res.message);
+        setErrorCode(res.code);
         return;
       }
-      setStep("otp");
-      setResendIn(30);
-      if (res?.devCode) setDevCode(String(res.devCode));
+      // Connexion Supabase côté client pour synchroniser l'état (et permettre supabase queries)
+      await supabase.auth.signInWithPassword({ email: trimmed, password });
+      invalidateSessionCache();
+      navigate({ to: "/", replace: true });
     } catch (err: any) {
-      setError(err?.message ?? "Échec de l'envoi du SMS");
+      setError(err?.message ?? "Erreur de connexion");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    if (!/^\d{6}$/.test(code.trim())) {
-      setError("Saisissez les 6 chiffres reçus.");
-      return;
-    }
-    setLoading(true);
+  const handleResend = async () => {
+    setResendBusy(true);
+    setResentOk(false);
     try {
-      const res: any = await verifyOtpFn({ data: { phone: fullPhone, code: code.trim() } });
-      if (res?.auth?.token_hash) {
-        const { supabase } = await import("@/integrations/supabase/client");
-        const { error: vErr } = await supabase.auth.verifyOtp({
-          type: "magiclink",
-          token_hash: res.auth.token_hash,
-        });
-        if (vErr) throw new Error(vErr.message);
-      }
-      invalidateSessionCache();
-      navigate({ to: "/", replace: true });
-    } catch (err: any) {
-      setError(err?.message ?? "Code invalide");
+      await supabase.auth.resend({
+        type: "signup",
+        email: email.trim().toLowerCase(),
+        options: { emailRedirectTo: `${window.location.origin}/connexion` },
+      });
+      setResentOk(true);
+    } catch {
+      // ignore
     } finally {
-      setLoading(false);
+      setResendBusy(false);
     }
   };
 
@@ -124,146 +101,96 @@ function Connexion() {
 
         {/* Card */}
         <div className="w-full rounded-2xl bg-white p-6 shadow-[0_2px_24px_-8px_rgba(0,0,0,0.08)] ring-1 ring-neutral-100">
-          <h1 className="text-center text-2xl font-bold tracking-tight text-black">
-            {step === "phone" ? "Connexion" : "Vérification"}
-          </h1>
+          <h1 className="text-center text-2xl font-bold tracking-tight text-black">Connexion</h1>
           <p className="mt-1 text-center text-sm text-[#6B6B6B]">
-            {step === "phone"
-              ? "Entrez votre numéro pour recevoir un code"
-              : `Code envoyé au ${fullPhone}`}
+            Entrez vos identifiants pour continuer
           </p>
 
-          {step === "phone" ? (
-            <form onSubmit={handleSend} className="mt-6 space-y-3">
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowCountries((v) => !v)}
-                  className="flex h-12 items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 text-sm font-semibold text-black hover:bg-neutral-50"
-                >
-                  <span className="text-base leading-none">{country.flag}</span>
-                  <span>{country.dial}</span>
-                  <ChevronDown className="h-3.5 w-3.5 text-[#6B6B6B]" />
-                </button>
-                <input
-                  type="tel"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  placeholder="6XX XXX XXX"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="h-12 flex-1 rounded-xl bg-[#F6F6F6] px-4 text-base font-medium text-black placeholder:text-[#9b9b9b] outline-none focus:ring-2 focus:ring-black/10"
-                />
-              </div>
-
-              {showCountries && (
-                <div className="max-h-48 overflow-y-auto rounded-xl border border-neutral-200 bg-white p-2 shadow-sm">
-                  {COUNTRIES.map((c) => (
-                    <button
-                      key={c.code}
-                      type="button"
-                      onClick={() => {
-                        setCountryCode(c.code);
-                        setShowCountries(false);
-                      }}
-                      className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-black hover:bg-neutral-50 ${
-                        c.code === countryCode ? "bg-neutral-50" : ""
-                      }`}
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className="text-base leading-none">{c.flag}</span>
-                        <span>{c.name}</span>
-                      </span>
-                      <span className="text-xs text-[#6B6B6B]">{c.dial}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {error && (
-                <div className="flex items-start gap-2 rounded-xl bg-red-50 p-2.5 text-xs text-red-700">
-                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>{error}</span>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#06C167] text-sm font-bold text-white transition hover:bg-[#05a857] active:scale-[0.99] disabled:opacity-60"
-              >
-                {loading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <>
-                    Recevoir le code
-                    <ArrowRight className="h-4 w-4" />
-                  </>
-                )}
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={handleVerify} className="mt-6 space-y-3">
-              {devCode && (
-                <div className="rounded-xl border border-amber-200 bg-amber-50 p-2.5 text-xs text-amber-800">
-                  🛠️ Mode dev — code : <span className="font-mono font-bold">{devCode}</span>
-                </div>
-              )}
+          <form onSubmit={handleSubmit} className="mt-6 space-y-3" noValidate>
+            <label className="flex h-12 items-center gap-3 rounded-xl bg-[#F6F6F6] px-4 focus-within:ring-2 focus-within:ring-black/10">
+              <Mail className="h-4 w-4 shrink-0 text-[#6B6B6B]" />
               <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={6}
-                placeholder="••••••"
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-                className="w-full rounded-xl bg-[#F6F6F6] px-4 py-3.5 text-center text-2xl font-bold tracking-[0.5em] text-black placeholder:text-[#c4c4c4] outline-none focus:ring-2 focus:ring-black/10"
-                autoFocus
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                placeholder="ton@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="flex-1 bg-transparent text-base font-medium text-black placeholder:text-[#9b9b9b] outline-none"
               />
-              {error && (
-                <div className="flex items-start gap-2 rounded-xl bg-red-50 p-2.5 text-xs text-red-700">
+            </label>
+
+            <label className="flex h-12 items-center gap-3 rounded-xl bg-[#F6F6F6] px-4 focus-within:ring-2 focus-within:ring-black/10">
+              <Lock className="h-4 w-4 shrink-0 text-[#6B6B6B]" />
+              <input
+                type={showPwd ? "text" : "password"}
+                autoComplete="current-password"
+                placeholder="Mot de passe"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="flex-1 bg-transparent text-base font-medium text-black placeholder:text-[#9b9b9b] outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPwd((v) => !v)}
+                className="text-[#6B6B6B] hover:text-black"
+                aria-label={showPwd ? "Masquer" : "Afficher"}
+              >
+                {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </label>
+
+            <div className="flex justify-end">
+              <Link
+                to="/reset-password"
+                className="text-xs font-medium text-[#06C167] hover:underline underline-offset-4"
+              >
+                Mot de passe oublié ?
+              </Link>
+            </div>
+
+            {error && (
+              <div className="space-y-2 rounded-xl bg-red-50 p-3 text-xs text-red-700">
+                <div className="flex items-start gap-2">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>{error}</span>
+                  <span className="font-medium">{error}</span>
                 </div>
-              )}
-              <button
-                type="submit"
-                disabled={loading}
-                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#06C167] text-sm font-bold text-white transition hover:bg-[#05a857] active:scale-[0.99] disabled:opacity-60"
-              >
-                {loading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <>
-                    <Check className="h-4 w-4" /> Valider et entrer
-                  </>
+                {errorCode === "compte_inexistant" && (
+                  <Link
+                    to="/inscription"
+                    className="block rounded-lg bg-white px-3 py-1.5 text-center text-xs font-bold text-[#06C167] ring-1 ring-red-100 hover:bg-red-50"
+                  >
+                    Créer un compte →
+                  </Link>
                 )}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (resendIn > 0 || loading) return;
-                  handleSend(new Event("submit") as unknown as React.FormEvent);
-                }}
-                disabled={resendIn > 0 || loading}
-                className="block w-full text-center text-xs font-medium text-black underline-offset-4 hover:underline disabled:text-[#9b9b9b] disabled:no-underline"
-              >
-                {resendIn > 0 ? `Renvoyer le code dans ${resendIn}s` : "Renvoyer le code"}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setStep("phone");
-                  setCode("");
-                  setError(null);
-                  setDevCode(null);
-                }}
-                className="block w-full text-center text-xs text-[#6B6B6B] underline-offset-4 hover:underline"
-              >
-                Modifier le numéro
-              </button>
-            </form>
-          )}
+                {errorCode === "email_non_confirme" && (
+                  <button
+                    type="button"
+                    onClick={handleResend}
+                    disabled={resendBusy}
+                    className="block w-full rounded-lg bg-white px-3 py-1.5 text-center text-xs font-bold text-[#06C167] ring-1 ring-red-100 hover:bg-red-50 disabled:opacity-60"
+                  >
+                    {resendBusy ? "Envoi..." : resentOk ? "✓ Email renvoyé" : "Renvoyer l'email de confirmation"}
+                  </button>
+                )}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#06C167] text-sm font-bold text-white transition hover:bg-[#05a857] active:scale-[0.99] disabled:opacity-60"
+            >
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  Se connecter
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </button>
+          </form>
         </div>
 
         {/* Signup block */}
@@ -281,9 +208,7 @@ function Connexion() {
 
         <p className="mt-6 text-center text-[11px] text-[#6B6B6B]">
           En continuant tu acceptes nos{" "}
-          <Link to="/cgu" className="underline underline-offset-2 hover:text-black">
-            CGU
-          </Link>{" "}
+          <Link to="/cgu" className="underline underline-offset-2 hover:text-black">CGU</Link>{" "}
           et notre{" "}
           <Link to="/confidentialite" className="underline underline-offset-2 hover:text-black">
             politique de confidentialité

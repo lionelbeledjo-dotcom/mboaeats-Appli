@@ -52,7 +52,7 @@ function InscriptionPage() {
       email: em.data,
       password: p.data,
       options: {
-        emailRedirectTo: `${window.location.origin}/accueil`,
+        emailRedirectTo: `${window.location.origin}/connexion`,
         data: { full_name: n.data, phone: ph.data },
       },
     });
@@ -65,8 +65,8 @@ function InscriptionPage() {
       );
       return;
     }
-    toast.success("Compte créé. Vérifie ton email pour confirmer.");
-    navigate({ to: "/" });
+    toast.success("Compte créé. Vérifiez votre email pour confirmer votre inscription.");
+    navigate({ to: "/connexion" });
   }
 
   return (
