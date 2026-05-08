@@ -357,8 +357,9 @@ function Connexion() {
         <div className="mb-10 flex w-full flex-col items-center sm:mb-12">
           <div className="rounded-2xl bg-[#0A8F4E] px-6 py-5 shadow-[0_12px_32px_-14px_rgba(6,193,103,0.55)] sm:rounded-3xl sm:px-8 sm:py-6">
             <div className="flex flex-col items-start">
-              <span className="mb-2 ml-[2px] inline-flex items-center self-start rounded-full bg-[#06C167] px-2.5 py-[3px] text-[9px] font-extrabold uppercase leading-none tracking-[0.14em] text-white shadow-[0_2px_8px_-2px_rgba(0,0,0,0.25)] sm:ml-[3px] sm:px-3 sm:py-1 sm:text-[10px] sm:tracking-[0.16em]">
-                Livraison Cameroun
+              <span className="mb-2 ml-[2px] inline-flex items-center gap-1.5 self-start rounded-full bg-[#06C167] px-2.5 py-[3px] text-[9px] font-extrabold uppercase leading-none tracking-[0.14em] text-white shadow-[0_2px_8px_-2px_rgba(0,0,0,0.25)] sm:ml-[3px] sm:gap-2 sm:px-3 sm:py-1 sm:text-[10px] sm:tracking-[0.16em]">
+                <span aria-hidden className="text-[12px] leading-none sm:text-[13px]">🇨🇲</span>
+                <span>Livraison Cameroun</span>
               </span>
               <h2
                 aria-label="MboaEats"
