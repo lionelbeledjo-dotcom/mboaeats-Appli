@@ -663,8 +663,8 @@ function Connexion() {
           </a>
         </div>
 
-        <p className="mt-4 text-center text-[11px] text-muted-foreground">
-          Support : <a className="text-primary hover:underline" href="mailto:lionelbrown2728@yahoo.fr">lionelbrown2728@yahoo.fr</a>
+        <p className="mt-4 text-center text-[11px] text-white/55">
+          Support : <a className="text-[#ffb38a] hover:underline" href="mailto:lionelbrown2728@yahoo.fr">lionelbrown2728@yahoo.fr</a>
         </p>
       </div>
     </div>
