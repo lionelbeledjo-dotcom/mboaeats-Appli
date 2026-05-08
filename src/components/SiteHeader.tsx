@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, ShoppingBag, UtensilsCrossed, LifeBuoy, Menu, X, MoreHorizontal, HelpCircle } from "lucide-react";
+import { Home, ShoppingBag, UtensilsCrossed, LifeBuoy, Menu, X } from "lucide-react";
 import { MboaEatsLogo } from "@/components/brand/MboaEatsLogo";
-import { NotificationBell } from "@/components/NotificationBell";
 import {
   DropdownMenu,
   DropdownMenuContent,
