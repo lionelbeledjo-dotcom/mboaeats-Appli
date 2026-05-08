@@ -1,11 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Coins, Download, Loader2 } from "lucide-react";
+import { Coins, Download, Loader2, Trash2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { CommissionConfig } from "@/components/admin/CommissionConfig";
 import { getCommissionsReport } from "@/server/admin.functions";
-import { ErrorState } from "@/components/admin/ErrorState";
+
+const MOCK_REPORT = {
+  totalCommission: 184500,
+  pending: 42000,
+  avgRate: 12,
+  rows: [
+    { id: "m1", reference: "MB-1042", resto: "Chez Tantine",  city: "Douala",     gmv: 18000, rate: 12, commission: 2160, status: "delivered" },
+    { id: "m2", reference: "MB-1043", resto: "Saveurs 237",   city: "Yaoundé",    gmv: 24500, rate: 12, commission: 2940, status: "pending"   },
+    { id: "m3", reference: "MB-1044", resto: "Mami Nyanga",   city: "Douala",     gmv: 12000, rate: 10, commission: 1200, status: "delivered" },
+    { id: "m4", reference: "MB-1045", resto: "Le Wouri Grill",city: "Douala",     gmv: 36000, rate: 12, commission: 4320, status: "pending"   },
+    { id: "m5", reference: "MB-1046", resto: "Bafoussam Bites",city: "Bafoussam", gmv: 9500,  rate: 10, commission: 950,  status: "cancelled" },
+  ],
+};
 
 export const Route = createFileRoute("/admin/commissions")({
   head: () => ({ meta: [{ title: "Commissions · Admin MboaEats" }, { name: "robots", content: "noindex,nofollow" }] }),
