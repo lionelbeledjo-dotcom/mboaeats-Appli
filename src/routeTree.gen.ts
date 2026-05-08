@@ -38,6 +38,7 @@ import { Route as AideRouteImport } from './routes/aide'
 import { Route as AdressesRouteImport } from './routes/adresses'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AccueilRouteImport } from './routes/accueil'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as SuperadminIndexRouteImport } from './routes/superadmin.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TableePaiementRouteImport } from './routes/tablee.paiement'
@@ -210,6 +211,11 @@ const AccueilRoute = AccueilRouteImport.update({
   path: '/accueil',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SuperadminIndexRoute = SuperadminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -344,6 +350,7 @@ const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '/accueil': typeof AccueilRoute
   '/admin': typeof AdminRouteWithChildren
   '/adresses': typeof AdressesRoute
@@ -401,6 +408,7 @@ export interface FileRoutesByFullPath {
   '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/accueil': typeof AccueilRoute
   '/adresses': typeof AdressesRoute
   '/aide': typeof AideRouteWithChildren
@@ -457,6 +465,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/accueil': typeof AccueilRoute
   '/admin': typeof AdminRouteWithChildren
   '/adresses': typeof AdressesRoute
@@ -516,6 +525,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/accueil'
     | '/admin'
     | '/adresses'
@@ -573,6 +583,7 @@ export interface FileRouteTypes {
     | '/restaurants/$restoId/plats/$platId'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/accueil'
     | '/adresses'
     | '/aide'
@@ -628,6 +639,7 @@ export interface FileRouteTypes {
     | '/restaurants/$restoId/plats/$platId'
   id:
     | '__root__'
+    | '/'
     | '/accueil'
     | '/admin'
     | '/adresses'
@@ -686,6 +698,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AccueilRoute: typeof AccueilRoute
   AdminRoute: typeof AdminRouteWithChildren
   AdressesRoute: typeof AdressesRoute
@@ -933,6 +946,13 @@ declare module '@tanstack/react-router' {
       path: '/accueil'
       fullPath: '/accueil'
       preLoaderRoute: typeof AccueilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/superadmin/': {
@@ -1199,6 +1219,7 @@ const RestaurantsRestoIdRouteWithChildren =
   RestaurantsRestoIdRoute._addFileChildren(RestaurantsRestoIdRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AccueilRoute: AccueilRoute,
   AdminRoute: AdminRouteWithChildren,
   AdressesRoute: AdressesRoute,
@@ -1245,12 +1266,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
