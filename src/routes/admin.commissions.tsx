@@ -109,6 +109,7 @@ function Commissions() {
                   <th className="p-4 text-right">Taux</th>
                   <th className="p-4 text-right">Commission</th>
                   <th className="p-4 text-center">Statut</th>
+                  <th className="p-4 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -127,11 +128,20 @@ function Commissions() {
                       <td className="p-4 text-center">
                         <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${tone}`}>{r.status}</span>
                       </td>
+                      <td className="p-4 text-center">
+                        <button
+                          onClick={() => removeRow(r.id)}
+                          className="inline-flex items-center gap-1 rounded-lg border border-destructive/40 bg-destructive/10 px-2 py-1 text-xs font-bold text-destructive hover:bg-destructive/20"
+                          title="Supprimer la ligne"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </td>
                     </tr>
                   );
                 })}
                 {report.rows.length === 0 && (
-                  <tr><td colSpan={7} className="p-10 text-center text-sm text-muted-foreground">Aucune commande sur la période.</td></tr>
+                  <tr><td colSpan={8} className="p-10 text-center text-sm text-muted-foreground">Aucune commande sur la période.</td></tr>
                 )}
               </tbody>
             </table>
