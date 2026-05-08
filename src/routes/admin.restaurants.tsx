@@ -101,7 +101,20 @@ function Restaurants() {
     }
   };
 
-  const counts = useMemo(() => {
+  const handleDelete = async (r: Resto) => {
+    if (!window.confirm(`Supprimer DÉFINITIVEMENT « ${r.name} » et toutes ses données ? Cette action est irréversible.`)) return;
+    setPendingId(r.id);
+    try {
+      await deleteResto({ data: { id: r.id } });
+      toast.success("Restaurant supprimé");
+      setList((cur) => (cur ?? []).filter((x) => x.id !== r.id));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erreur");
+    } finally {
+      setPendingId(null);
+    }
+  };
+
     const all = list ?? [];
     return {
       all: all.length,
