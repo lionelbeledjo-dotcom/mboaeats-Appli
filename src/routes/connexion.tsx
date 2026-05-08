@@ -873,7 +873,7 @@ function OtpInput({
           onPaste={(e) => handlePaste(e, i)}
           onFocus={(e) => e.currentTarget.select()}
           aria-label={`Chiffre ${i + 1}`}
-          className="h-14 w-11 sm:w-12 rounded-xl border border-[#f59e0b]/60 bg-[#1a1a1d] text-center text-2xl font-bold text-white outline-none transition focus:border-[#fbbf24] focus:ring-2 focus:ring-amber-400/40 focus-visible:ring-2 focus-visible:ring-amber-400"
+          className="h-14 w-11 sm:w-12 rounded-xl border border-[#E2E2E2] bg-white text-center text-2xl font-bold text-black outline-none transition focus:border-[#06C167] focus:ring-2 focus:ring-[#06C167]/30 focus-visible:ring-2 focus-visible:ring-[#06C167]/40"
           autoFocus={i === 0}
         />
       ))}
