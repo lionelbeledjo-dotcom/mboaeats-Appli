@@ -836,36 +836,50 @@ function OtpInput({
   const digits = Array.from({ length }, (_, i) => value[i] ?? "");
 
   const focusIndex = (i: number) => {
-    const el = refs.current[Math.max(0, Math.min(length - 1, i))];
-    el?.focus();
-    el?.select();
+    const idx = Math.max(0, Math.min(length - 1, i));
+    const el = refs.current[idx];
+    if (!el) return;
+    el.focus();
+    // requestAnimationFrame ensures select() works after focus on iOS Safari
+    requestAnimationFrame(() => {
+      try { el.select(); } catch {}
+    });
   };
 
-  const setDigit = (i: number, d: string) => {
-    const sanitized = d.replace(/\D/g, "");
+  /** Insert one or many digits starting at index `i`, distributing across cells. */
+  const insertAt = (i: number, raw: string) => {
+    const sanitized = raw.replace(/\D/g, "");
     if (!sanitized) return;
-    const chars = (value + "").split("");
-    chars[i] = sanitized[0];
+    const chars = Array.from({ length }, (_, k) => value[k] ?? "");
+    let cursor = i;
+    for (const ch of sanitized) {
+      if (cursor >= length) break;
+      chars[cursor] = ch;
+      cursor++;
+    }
     const next = chars.join("").slice(0, length);
     onChange(next);
-    if (i < length - 1) focusIndex(i + 1);
-    if (next.length === length) onComplete?.(next);
+    focusIndex(Math.min(length - 1, cursor));
+    if (next.replace(/\s/g, "").length === length) onComplete?.(next);
+  };
+
+  const handleChange = (i: number, raw: string) => {
+    // Browsers (and iOS one-time-code autofill) may deliver several digits at once.
+    insertAt(i, raw);
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>, i: number) => {
-    const txt = e.clipboardData.getData("text").replace(/\D/g, "");
+    const txt = e.clipboardData.getData("text");
     if (!txt) return;
     e.preventDefault();
-    const next = (value.slice(0, i) + txt).slice(0, length);
-    onChange(next);
-    focusIndex(Math.min(length - 1, i + txt.length));
-    if (next.length === length) onComplete?.(next);
+    insertAt(i, txt);
   };
 
   const handleKey = (e: React.KeyboardEvent<HTMLInputElement>, i: number) => {
-    if (e.key === "Backspace") {
+    const key = e.key;
+    if (key === "Backspace") {
       e.preventDefault();
-      const chars = value.split("");
+      const chars = Array.from({ length }, (_, k) => value[k] ?? "");
       if (chars[i]) {
         chars[i] = "";
         onChange(chars.join(""));
@@ -874,12 +888,27 @@ function OtpInput({
         onChange(chars.join(""));
         focusIndex(i - 1);
       }
-    } else if (e.key === "ArrowLeft") {
+    } else if (key === "Delete") {
+      e.preventDefault();
+      const chars = Array.from({ length }, (_, k) => value[k] ?? "");
+      chars[i] = "";
+      onChange(chars.join(""));
+    } else if (key === "ArrowLeft") {
       e.preventDefault();
       focusIndex(i - 1);
-    } else if (e.key === "ArrowRight") {
+    } else if (key === "ArrowRight") {
       e.preventDefault();
       focusIndex(i + 1);
+    } else if (key === "Home") {
+      e.preventDefault();
+      focusIndex(0);
+    } else if (key === "End") {
+      e.preventDefault();
+      focusIndex(length - 1);
+    } else if (/^[0-9]$/.test(key) && digits[i]) {
+      // Overwrite the current cell instead of being blocked by maxLength.
+      e.preventDefault();
+      insertAt(i, key);
     }
   };
 
@@ -891,10 +920,11 @@ function OtpInput({
           ref={(el) => { refs.current[i] = el; }}
           type="text"
           inputMode="numeric"
+          pattern="[0-9]*"
           autoComplete={i === 0 ? "one-time-code" : "off"}
           maxLength={1}
           value={d}
-          onChange={(e) => setDigit(i, e.target.value)}
+          onChange={(e) => handleChange(i, e.target.value)}
           onKeyDown={(e) => handleKey(e, i)}
           onPaste={(e) => handlePaste(e, i)}
           onFocus={(e) => e.currentTarget.select()}
