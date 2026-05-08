@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Loader2, AlertCircle, ArrowRight, Mail, Lock, Eye, EyeOff,
-  Phone, ChevronDown, Check, ShieldCheck,
+  Phone, ChevronDown, Check, ShieldCheck, Pencil,
 } from "lucide-react";
 import { loginWithPassword, accountExists } from "@/lib/auth.functions";
 import { sendOtp, verifyOtp } from "@/lib/otp.functions";
