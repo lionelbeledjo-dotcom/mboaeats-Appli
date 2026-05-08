@@ -95,8 +95,8 @@ export function SiteHeader() {
     <header
       className={cn(
         "sticky top-0 z-40 w-full",
-        "border-b border-white/5",
-        "bg-[hsl(240_10%_8%_/_0.92)] backdrop-blur-xl backdrop-saturate-150",
+        "border-b border-white/10",
+        "bg-black/95 backdrop-blur-xl backdrop-saturate-150 text-white",
         "pt-[calc(env(safe-area-inset-top)+0.5rem)]",
       )}
     >
@@ -228,8 +228,8 @@ export function SiteHeader() {
         role="menu"
         className={cn(
           "absolute inset-x-0 top-full z-40 md:hidden",
-          "origin-top overflow-hidden border-b border-white/5",
-          "bg-[hsl(240_10%_8%_/_0.96)] backdrop-blur-xl",
+          "origin-top overflow-hidden border-b border-white/10",
+          "bg-black/95 backdrop-blur-xl text-white",
           "transition-[max-height,opacity] duration-300 ease-out",
           open ? "max-h-[80vh] opacity-100" : "max-h-0 opacity-0",
         )}
