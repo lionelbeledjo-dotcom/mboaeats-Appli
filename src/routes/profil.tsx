@@ -198,21 +198,23 @@ function ProfilPage() {
 
           <Link
             to="/fidelite"
-            className="mt-4 flex items-center justify-between rounded-2xl border border-gold/40 bg-gradient-to-r from-gold/15 to-primary/10 p-3"
+            className="mt-4 flex items-center justify-between rounded-2xl border border-gold/50 bg-gradient-to-r from-amber-100 to-amber-50 p-3 shadow-[0_8px_24px_-12px_rgba(212,160,23,0.45)] transition-all hover:scale-[1.01] dark:border-amber-500/60 dark:from-amber-950 dark:to-amber-900 dark:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.6)]"
           >
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/20">
-                <Crown className="h-5 w-5 text-gold" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/25 dark:bg-amber-500/20">
+                <Crown className="h-5 w-5 text-amber-700 dark:text-amber-300" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Mboa {loyalty?.currentTier ?? "Pistache"}</p>
-                <p className="font-bold">
+                <p className="text-xs font-semibold text-amber-900/80 dark:text-amber-100/80">
+                  Mboa {loyalty?.currentTier ?? "Pistache"}
+                </p>
+                <p className="font-bold text-neutral-900 dark:text-white">
                   {(loyalty?.points ?? 0).toLocaleString("fr-FR")}{" "}
-                  <span className="text-xs font-normal text-muted-foreground">points</span>
+                  <span className="text-xs font-normal text-amber-900/70 dark:text-amber-100/70">points</span>
                 </p>
               </div>
             </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            <ChevronRight className="h-4 w-4 text-amber-800 dark:text-amber-200" />
           </Link>
         </div>
       </header>
@@ -358,7 +360,7 @@ function ProfilPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</h2>
+      <h2 className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground dark:text-white">{title}</h2>
       <ul className="mt-2 divide-y divide-border/60 rounded-2xl border border-border bg-surface/60">
         {children}
       </ul>
