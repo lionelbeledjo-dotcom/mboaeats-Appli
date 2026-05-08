@@ -29,12 +29,18 @@ const WEEK = [
   { day: "Dim", revenu: 845_000 },
 ];
 
-const LAST_ORDERS = [
-  { id: "MBE-2106", client: "Awa Mbarga", amount: 7_500, status: "en_cours" as const, resto: "Le Wouri Saveurs" },
-  { id: "MBE-2105", client: "Joseph Ngono", amount: 12_300, status: "livree" as const, resto: "Soya d'Or" },
-  { id: "MBE-2104", client: "Linda Etoundi", amount: 4_200, status: "livree" as const, resto: "La Marmite Bamiléké" },
-  { id: "MBE-2103", client: "Patrick Mbida", amount: 9_800, status: "en_cours" as const, resto: "Douala Fast Food" },
-  { id: "MBE-2102", client: "Sylvie Kamga", amount: 15_600, status: "livree" as const, resto: "Poisson Braisé du Port" },
+type OrderRow = {
+  id: string; client: string; amount: number;
+  status: "en_cours" | "livree";
+  resto: string; phone: string; address: string; payment: string; items: string[]; date: string;
+};
+
+const LAST_ORDERS: OrderRow[] = [
+  { id: "MBE-2106", client: "Awa Mbarga", amount: 7_500, status: "en_cours", resto: "Le Wouri Saveurs", phone: "+237 6 99 12 34 56", address: "Akwa, rue Joss · Douala", payment: "Orange Money", items: ["Ndolé royal", "Jus de bissap"], date: "Aujourd'hui · 12:34" },
+  { id: "MBE-2105", client: "Joseph Ngono", amount: 12_300, status: "livree", resto: "Soya d'Or", phone: "+237 6 77 04 88 21", address: "Bonapriso · Douala", payment: "MTN MoMo", items: ["Soya bœuf x3", "Plantain braisé"], date: "Aujourd'hui · 12:10" },
+  { id: "MBE-2104", client: "Linda Etoundi", amount: 4_200, status: "livree", resto: "La Marmite Bamiléké", phone: "+237 6 90 55 41 02", address: "Bonamoussadi · Douala", payment: "Espèces", items: ["Koki maïs", "Eau minérale"], date: "Aujourd'hui · 11:48" },
+  { id: "MBE-2103", client: "Patrick Mbida", amount: 9_800, status: "en_cours", resto: "Douala Fast Food", phone: "+237 6 55 23 19 77", address: "Logpom · Douala", payment: "Carte bancaire", items: ["Burger maison", "Frites", "Sprite"], date: "Aujourd'hui · 11:30" },
+  { id: "MBE-2102", client: "Sylvie Kamga", amount: 15_600, status: "livree", resto: "Poisson Braisé du Port", phone: "+237 6 78 66 90 12", address: "Bali · Douala", payment: "Orange Money", items: ["Bar braisé", "Miondo", "Sauce pimentée"], date: "Aujourd'hui · 11:05" },
 ];
 
 function Overview() {
