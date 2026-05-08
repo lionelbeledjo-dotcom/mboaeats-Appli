@@ -34,8 +34,15 @@ function Commissions() {
   const reload = () => {
     setError(null);
     return fetchReport()
-      .then(setReport)
-      .catch((e) => { setReport(null); setError(e instanceof Error ? e.message : "Erreur réseau"); });
+      .then((r) => setReport(r && r.rows && r.rows.length > 0 ? r : (MOCK_REPORT as Report)))
+      .catch((e) => {
+        setError(e instanceof Error ? e.message : "Erreur réseau");
+        setReport(MOCK_REPORT as Report);
+      });
+  };
+
+  const removeRow = (id: string) => {
+    setReport((cur) => cur ? { ...cur, rows: cur.rows.filter((r: any) => r.id !== id) } : cur);
   };
 
   useEffect(() => {
