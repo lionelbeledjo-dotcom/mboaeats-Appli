@@ -34,6 +34,36 @@ function iconFor(label: string) {
   return <Heart className="h-4 w-4" />;
 }
 
+// --- Validation & formatage du numéro Cameroun (+237) ---
+// Mobiles CM : 9 chiffres, commencent par 6 (préfixes opérateurs 65/66/67/68/69).
+const CM_MOBILE_PREFIXES = ["65", "66", "67", "68", "69"];
+
+/** Garde uniquement les chiffres et retire un éventuel "237" en tête. */
+function normalizeCmDigits(input: string): string {
+  let d = (input || "").replace(/\D/g, "");
+  if (d.startsWith("237")) d = d.slice(3);
+  return d.slice(0, 9);
+}
+
+/** Formate "6XX XX XX XX" au fil de la frappe. */
+function formatCmPhone(input: string): string {
+  const d = normalizeCmDigits(input);
+  const parts = [d.slice(0, 3), d.slice(3, 5), d.slice(5, 7), d.slice(7, 9)].filter(Boolean);
+  return parts.join(" ");
+}
+
+/** Valide un numéro mobile Cameroun (9 chiffres, préfixe 65/66/67/68/69). */
+function validateCmPhone(input: string): { ok: boolean; digits: string; error?: string } {
+  const digits = normalizeCmDigits(input);
+  if (digits.length === 0) return { ok: false, digits, error: "Numéro requis." };
+  if (digits.length < 9) return { ok: false, digits, error: "Le numéro doit contenir 9 chiffres après +237." };
+  if (!digits.startsWith("6")) return { ok: false, digits, error: "Un mobile camerounais commence par 6." };
+  if (!CM_MOBILE_PREFIXES.includes(digits.slice(0, 2))) {
+    return { ok: false, digits, error: "Préfixe invalide (attendu 65, 66, 67, 68 ou 69)." };
+  }
+  return { ok: true, digits };
+}
+
 function AddressesPage() {
   const navigate = useNavigate();
   const [label, setLabel] = useState("Domicile");
