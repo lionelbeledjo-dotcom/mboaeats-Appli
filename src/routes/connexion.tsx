@@ -632,14 +632,31 @@ function Connexion() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="shine-sweep relative inline-flex h-14 w-full items-center justify-center gap-2 overflow-hidden rounded-full text-base font-bold tracking-wide text-white shadow-[0_18px_50px_-15px_rgba(255,80,40,0.7)] ring-1 ring-white/15 transition-transform active:scale-[0.98] disabled:opacity-60"
+                  className="shine-sweep relative inline-flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-xl text-sm font-bold uppercase tracking-[0.18em] text-white shadow-[0_10px_30px_-10px_rgba(249,115,22,0.7)] transition-transform active:scale-[0.98] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d0d0f]"
                   style={{
-                    background:
-                      "linear-gradient(120deg, #ff8a3d 0%, #ff5028 45%, #b21d2a 100%)",
+                    background: "linear-gradient(90deg, #f59e0b 0%, #f97316 50%, #ea580c 100%)",
                   }}
                 >
-                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (mode === "phone" ? "Suivant" : "Continuer")}
+                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "SE CONNECTER"}
                 </button>
+
+                <div className="mt-5 flex flex-col items-center gap-2 text-center">
+                  <button
+                    type="button"
+                    onClick={() => { if (identifierLabel && (phone || email)) setStep("otp"); }}
+                    className="text-sm text-white/70 transition hover:text-amber-300 focus:outline-none focus-visible:underline"
+                  >
+                    Vérifier le code ?
+                  </button>
+                  <a
+                    href="https://wa.me/237699999999?text=Bonjour%20MboaEats%2C%20j%27ai%20besoin%20d%27aide%20pour%20me%20connecter."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-white/70 transition hover:text-amber-300 focus:outline-none focus-visible:underline"
+                  >
+                    Veuillez contacter l'administrateur ?
+                  </a>
+                </div>
 
               </form>
             </>
