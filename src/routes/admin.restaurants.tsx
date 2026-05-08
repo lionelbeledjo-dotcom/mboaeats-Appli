@@ -100,20 +100,6 @@ function Restaurants() {
     if (!window.confirm(`${verb} le restaurant « ${r.name} » ?`)) return;
     setPendingId(r.id);
     try {
-      await setActive({ data: { id: r.id, is_active: next } });
-      toast.success(next ? "Restaurant approuvé et publié" : "Restaurant désactivé");
-      // Mise à jour optimiste pour éviter un round-trip
-      setList((cur) =>
-        (cur ?? []).map((x) => (x.id === r.id ? { ...x, is_active: next } : x))
-      );
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erreur");
-    } finally {
-  const updateStatus = async (r: Resto, next: boolean) => {
-    const verb = next ? "Approuver" : "Désactiver";
-    if (!window.confirm(`${verb} le restaurant « ${r.name} » ?`)) return;
-    setPendingId(r.id);
-    try {
       if (!r.id.startsWith("mk-")) {
         await setActive({ data: { id: r.id, is_active: next } });
       }
