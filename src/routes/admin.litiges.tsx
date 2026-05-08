@@ -31,8 +31,14 @@ function timeAgo(iso: string) {
 function Litiges() {
   const fetchAll = useServerFn(listAllDisputes);
   const doResolve = useServerFn(resolveDispute);
+  const fetchDetails = useServerFn(getDisputeDetails);
+  const updateFn = useServerFn(updateDispute);
+  const deleteFn = useServerFn(deleteDispute);
   const [items, setItems] = useState<Dispute[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [viewing, setViewing] = useState<Dispute | null>(null);
+  const [viewingData, setViewingData] = useState<any>(null);
+  const [editing, setEditing] = useState<Dispute | null>(null);
 
   const reload = () => {
     setError(null);
