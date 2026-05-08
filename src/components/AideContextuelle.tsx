@@ -26,160 +26,275 @@ type HelpSection = {
   faqs: FaqItem[];
 };
 
-const SUPPORT_PHONE = "237699999999"; // wa.me format
+const SUPPORT_PHONE = "33666524101"; // wa.me format
 const SUPPORT_EMAIL = "support@mboaeat.site";
 
 const SECTIONS: Record<string, HelpSection> = {
   home: {
     key: "home",
-    title: "Accueil",
-    intro: "Découvrez les restaurants, plats populaires et offres du moment.",
+    title: "la page d'accueil",
     faqs: [
       {
-        q: "Comment chercher un restaurant ou un plat ?",
-        a: "Utilisez la barre de recherche en haut, ou parcourez les catégories (Burgers, Poulet, Local…). Vous pouvez aussi filtrer par ville (Douala, Yaoundé, Bafoussam).",
+        q: "Comment trouver un restaurant près de moi ?",
+        a: "Cliquez sur la barre de recherche en haut de la page et tapez le nom d'un restaurant ou d'un plat. Vous pouvez aussi filtrer par catégorie (Repas, Boissons, Desserts) ou par note (4+ étoiles).",
       },
       {
-        q: "Pourquoi je ne vois aucun restaurant ?",
-        a: "Vérifiez que votre adresse de livraison est bien définie en haut de page. Si vous êtes en dehors de nos zones couvertes, ajoutez-vous à la liste d'attente via le bouton « Bientôt chez vous ».",
+        q: "Les restaurants affichés sont-ils fiables ?",
+        a: "Tous les restaurants sur MboaTV sont vérifiés par notre équipe. Les notes (1-5 étoiles) sont laissées par de vrais clients.",
       },
       {
-        q: "Comment ça marche en 3 étapes ?",
-        a: "1) Choisissez vos plats. 2) Validez votre adresse et payez par Mobile Money, carte ou à la livraison. 3) Suivez votre commande en temps réel sur la carte.",
+        q: "Comment contacter le support ?",
+        a: "Cliquez sur le bouton « ? » sur n'importe quelle page. En bas du panneau, cliquez sur « Contacter sur WhatsApp » pour ouvrir directement notre WhatsApp : +33 6 66 52 41 01.",
       },
     ],
   },
   connexion: {
     key: "connexion",
-    title: "Connexion / Inscription",
-    intro: "Problème de code ou d'envoi ? Voici les solutions immédiates.",
+    title: "vous connecter",
     faqs: [
       {
-        q: "Je ne reçois pas le code SMS",
-        a: "Vérifiez le format de votre numéro (+237…), votre signal réseau, et le dossier des messages bloqués. Sinon, basculez sur Email — c'est instantané.",
+        q: "Je ne reçois pas le code SMS, que faire ?",
+        a: "Si vous ne recevez pas le SMS, cliquez sur le bouton « Recevoir par WhatsApp » ou essayez la connexion par Email. Si le problème persiste, contactez-nous sur WhatsApp : +33 6 66 52 41 01.",
       },
       {
-        q: "Je ne reçois pas le code WhatsApp",
-        a: "WhatsApp peut être temporairement indisponible. Utilisez l'onglet Email ou contactez le support sur WhatsApp pour une inscription manuelle.",
+        q: "Je ne reçois pas le lien email, que faire ?",
+        a: "Vérifiez votre dossier SPAM/Pourriels. Le lien arrive parfois avec quelques secondes de retard. Si vous ne le recevez toujours pas, contactez-nous.",
       },
       {
-        q: "Quelle méthode est la plus fiable ?",
-        a: "L'email est actuellement la méthode la plus fiable : code reçu en quelques secondes, valable 10 minutes.",
-      },
-      {
-        q: "J'ai changé de numéro",
-        a: "Connectez-vous avec votre email habituel, puis modifiez votre numéro depuis Profil → Préférences.",
+        q: "J'ai oublié mon mot de passe",
+        a: "MboaTV utilise un code à usage unique (OTP) — pas de mot de passe à mémoriser. Cliquez sur « Mot de passe oublié ? » ou demandez un nouveau code par email/SMS/WhatsApp. Le code est valable 30 minutes.",
       },
     ],
   },
   recherche: {
     key: "recherche",
-    title: "Recherche",
+    title: "trouver un restaurant",
     faqs: [
       {
-        q: "La recherche ne trouve pas ce que je cherche",
-        a: "Essayez avec un mot plus court (ex: « ndolè » au lieu de « ndolè aux crevettes »). Vérifiez l'orthographe et la ville sélectionnée.",
+        q: "Comment filtrer les restaurants ?",
+        a: "En haut de la liste, utilisez les filtres :\n• Par catégorie (Ndolé, Soya, Poulet, Boissons…)\n• Par note (4+ étoiles, 3+ étoiles)\n• Par distance (les plus proches d'abord)\n• Par temps de livraison (moins de 30 min)\n• Par prix (€ €€ €€€)",
       },
       {
-        q: "Comment filtrer par catégorie ?",
-        a: "Utilisez les chips de catégories sous la barre de recherche, ou ouvrez la page Découvrir.",
+        q: "Un restaurant est marqué « Fermé », puis-je quand même commander ?",
+        a: "Non, quand un restaurant est fermé vous ne pouvez pas passer de commande. Revenez plus tard — les heures d'ouverture sont affichées sur la fiche du restaurant.",
+      },
+      {
+        q: "Comment voir les plats d'un restaurant ?",
+        a: "Cliquez sur la carte du restaurant pour ouvrir sa fiche complète avec tous les plats, descriptions, photos et prix.",
       },
     ],
   },
   decouvrir: {
     key: "decouvrir",
-    title: "Découvrir",
+    title: "trouver un restaurant",
     faqs: [
       {
-        q: "À quoi servent les catégories ?",
-        a: "Elles regroupent les restaurants et plats par type de cuisine pour vous aider à choisir plus vite.",
+        q: "Comment filtrer les restaurants ?",
+        a: "En haut de la liste, utilisez les filtres :\n• Par catégorie (Ndolé, Soya, Poulet, Boissons…)\n• Par note (4+ étoiles, 3+ étoiles)\n• Par distance (les plus proches d'abord)\n• Par temps de livraison (moins de 30 min)\n• Par prix (€ €€ €€€)",
       },
       {
-        q: "Comment voir les nouveautés ?",
-        a: "Les nouveaux restaurants apparaissent dans la section « Récemment ajoutés » en haut de la page Découvrir.",
+        q: "Un restaurant est marqué « Fermé », puis-je quand même commander ?",
+        a: "Non, quand un restaurant est fermé vous ne pouvez pas passer de commande. Revenez plus tard — les heures d'ouverture sont affichées sur la fiche du restaurant.",
+      },
+      {
+        q: "Comment voir les plats d'un restaurant ?",
+        a: "Cliquez sur la carte du restaurant pour ouvrir sa fiche complète avec tous les plats, descriptions, photos et prix.",
       },
     ],
   },
   restaurants: {
     key: "restaurants",
-    title: "Restaurant",
+    title: "ce restaurant",
     faqs: [
       {
-        q: "Le restaurant est marqué « Fermé »",
-        a: "Vous ne pouvez pas commander quand un restaurant est fermé. Ajoutez-le en favoris pour être prévenu à sa réouverture.",
+        q: "Comment ajouter un plat au panier ?",
+        a: "Sélectionnez le plat qui vous intéresse, choisissez les options (taille, accompagnements) et le nombre d'articles, puis cliquez sur « Ajouter au panier ».",
       },
       {
-        q: "Comment voir les avis ?",
-        a: "Faites défiler vers le bas de la fiche restaurant : la note moyenne et les avis clients y sont affichés.",
+        q: "Je ne trouve pas un plat que j'aime habituellement",
+        a: "Utilisez le champ de recherche dans le menu du restaurant pour trouver un plat spécifique. Si le plat n'existe pas, contactez le restaurant directement — son numéro est affiché en bas de la fiche.",
       },
       {
-        q: "Y a-t-il un montant minimum ?",
-        a: "Oui, chaque restaurant définit son minimum de commande. Il est affiché en haut de la fiche.",
+        q: "Les photos correspondent-elles aux vrais plats ?",
+        a: "Oui, toutes les photos sont fournies par les restaurants eux-mêmes. Si vous recevez quelque chose de très différent, ouvrez un litige depuis « Mes Commandes ».",
+      },
+      {
+        q: "Comment personnaliser un plat (sans oignon, etc.) ?",
+        a: "Certains plats proposent des « notes spéciales ». Cliquez sur le plat et cherchez le champ « Instructions spéciales » pour ajouter votre demande.",
+      },
+    ],
+  },
+  panier: {
+    key: "panier",
+    title: "votre panier",
+    faqs: [
+      {
+        q: "Comment modifier les quantités dans le panier ?",
+        a: "À côté de chaque article, utilisez les boutons [-] et [+] pour ajuster la quantité. Supprimez un article avec l'icône poubelle à droite.",
+      },
+      {
+        q: "Mon panier est vide, pourquoi ?",
+        a: "Le panier se vide automatiquement après 2 heures d'inactivité. Re-ajoutez les articles qui vous intéressent.",
+      },
+      {
+        q: "Je veux commander dans 2 restaurants différents",
+        a: "MboaTV ne permet qu'une commande par restaurant à la fois. Placez votre première commande, puis revenez pour le deuxième restaurant.",
+      },
+      {
+        q: "Le total ne semble pas correct",
+        a: "Le total inclut : prix des plats + frais de service MboaTV (2%) + frais de livraison (selon distance). Le détail est affiché au bas du panier avant validation.",
       },
     ],
   },
   checkout: {
     key: "checkout",
-    title: "Commande / Paiement",
-    intro: "Tout ce qu'il faut savoir avant de valider votre commande.",
+    title: "le paiement",
     faqs: [
       {
-        q: "Quels modes de paiement ?",
-        a: "Mobile Money (MTN, Orange), carte bancaire, et paiement à la livraison (en espèces).",
+        q: "Quels moyens de paiement sont disponibles ?",
+        a: "Nous acceptons :\n• Mobile Money (Orange Money, MTN Mobile Money)\n• Paiement à la livraison (espèces)\n• Carte bancaire (Visa / Mastercard)\nLe moyen disponible dépend du restaurant choisi.",
       },
       {
-        q: "Mon paiement Mobile Money a échoué",
-        a: "Vérifiez votre solde et que le numéro saisi est bien celui de votre compte MoMo. Réessayez après 1 minute. Si le problème persiste, contactez le support.",
+        q: "Mon paiement a échoué, que faire ?",
+        a: "Vérifiez que :\n• Votre solde Mobile Money est suffisant\n• Votre carte est valide et non expirée\n• Votre connexion internet est stable\nSi le problème persiste, essayez « Paiement à la livraison ».",
       },
       {
-        q: "Puis-je modifier ma commande après paiement ?",
-        a: "Oui dans les 2 premières minutes. Au-delà, contactez directement le restaurant via le bouton « Appeler » sur la page de suivi.",
+        q: "Puis-je changer d'adresse de livraison après paiement ?",
+        a: "Non, l'adresse est figée après validation. Contactez immédiatement le support WhatsApp si vous vous êtes trompé.",
       },
       {
-        q: "Comment utiliser un code promo ?",
-        a: "Saisissez votre code dans le champ « Code promo » juste avant de payer. La réduction s'applique automatiquement.",
-      },
-    ],
-  },
-  suivi: {
-    key: "suivi",
-    title: "Suivi de commande",
-    faqs: [
-      {
-        q: "Mon livreur n'avance pas sur la carte",
-        a: "La position se met à jour toutes les 30 secondes. Si le livreur reste bloqué plus de 5 minutes, appelez-le directement depuis la page de suivi.",
-      },
-      {
-        q: "Combien de temps avant la livraison ?",
-        a: "Le temps estimé est affiché en haut. Il dépend du restaurant, du trafic et de votre distance.",
-      },
-      {
-        q: "Je veux annuler ma commande",
-        a: "Possible uniquement avant que le restaurant ne commence la préparation. Cliquez sur « Annuler » en haut de la page de suivi.",
+        q: "Je vois des frais de service, c'est quoi ?",
+        a: "Les frais de service (2% du total) couvrent les coûts de la plateforme MboaTV. Ils sont obligatoires et appliqués sur toutes les commandes.",
       },
     ],
   },
   commandes: {
     key: "commandes",
-    title: "Mes commandes",
+    title: "vos commandes",
     faqs: [
       {
-        q: "Comment recommander rapidement ?",
-        a: "Cliquez sur « Recommander » à côté d'une commande passée — votre panier sera rempli automatiquement.",
+        q: "Comment suivre ma commande en temps réel ?",
+        a: "Cliquez sur la commande en cours pour voir son statut détaillé : Commandée → En préparation → En livraison → Livrée. Avec le nom et le numéro du livreur une fois assigné.",
       },
       {
-        q: "Comment laisser un avis ?",
-        a: "Une fois la commande livrée, ouvrez-la et notez le restaurant + le livreur de 1 à 5 étoiles.",
+        q: "Ma commande est « En préparation » depuis longtemps",
+        a: "Le temps de préparation varie selon le restaurant et l'affluence. Si cela dépasse 45 minutes, contactez le restaurant via le bouton « Appeler le restaurant » ou ouvrez un litige.",
       },
       {
-        q: "Où est ma facture ?",
-        a: "Ouvrez la commande puis cliquez sur « Télécharger la facture » en bas.",
+        q: "Comment annuler une commande ?",
+        a: "Ouvrez la commande → cliquez sur « Annuler la commande ». L'annulation est gratuite avant que le restaurant n'ait confirmé. Après confirmation, des frais peuvent s'appliquer.",
+      },
+      {
+        q: "Ma commande est arrivée mais incomplète",
+        a: "Ouvrez un litige depuis cette commande. Sélectionnez « Plats manquants », ajoutez une photo si possible. Notre équipe traite les litiges en moins de 24h.",
+      },
+    ],
+  },
+  suivi: {
+    key: "suivi",
+    title: "le suivi de commande",
+    faqs: [
+      {
+        q: "Comment suivre ma commande en temps réel ?",
+        a: "Le statut s'actualise automatiquement : Commandée → En préparation → En livraison → Livrée. La position du livreur est mise à jour toutes les 30 secondes.",
+      },
+      {
+        q: "Mon livreur n'avance pas sur la carte",
+        a: "Si le livreur reste bloqué plus de 5 minutes, appelez-le directement depuis la page de suivi avec le bouton « Appeler le livreur ».",
+      },
+      {
+        q: "Je veux annuler ma commande",
+        a: "Possible uniquement avant que le restaurant n'ait commencé la préparation. Cliquez sur « Annuler » en haut de la page de suivi.",
+      },
+    ],
+  },
+  profil: {
+    key: "profil",
+    title: "votre compte",
+    faqs: [
+      {
+        q: "Comment changer mon numéro de téléphone ?",
+        a: "Allez dans Profil → Modifier → Téléphone. Entrez le nouveau numéro et confirmez-le avec le code reçu par SMS ou WhatsApp.",
+      },
+      {
+        q: "Comment changer mon mot de passe ?",
+        a: "Allez dans Profil → Sécurité → « Changer le mot de passe ». Entrez l'ancien puis le nouveau mot de passe.",
+      },
+      {
+        q: "Comment supprimer mon compte ?",
+        a: "Allez dans Profil → Paramètres → « Supprimer mon compte » en bas de page. Cette action est irréversible. Toutes vos données seront supprimées sous 30 jours.",
+      },
+      {
+        q: "Comment mettre à jour mon adresse par défaut ?",
+        a: "Allez dans Profil → Adresses → cliquez sur une adresse → bouton « Définir comme adresse par défaut ».",
+      },
+    ],
+  },
+  adresses: {
+    key: "adresses",
+    title: "vos adresses",
+    faqs: [
+      {
+        q: "Comment ajouter une adresse précise ?",
+        a: "Tapez votre quartier puis ajustez le pin sur la carte. Ajoutez un repère (« en face de la pharmacie X ») pour aider le livreur.",
+      },
+      {
+        q: "Comment mettre à jour mon adresse par défaut ?",
+        a: "Cliquez sur une adresse de la liste → bouton « Définir comme adresse par défaut ».",
+      },
+      {
+        q: "Mon quartier n'est pas dans la liste",
+        a: "Tapez le nom manuellement et placez le pin sur la carte. Si vous êtes hors zone, vous serez prévenu.",
+      },
+    ],
+  },
+  litiges: {
+    key: "litiges",
+    title: "un litige",
+    faqs: [
+      {
+        q: "Comment ouvrir un litige ?",
+        a: "Allez dans Mes Commandes → sélectionnez la commande concernée → cliquez sur « Ouvrir un litige ». Choisissez le type : Plats manquants, Erreur de commande, Retard, Qualité, Livraison abîmée.",
+      },
+      {
+        q: "Combien de temps pour traiter un litige ?",
+        a: "Notre équipe traite les litiges en moins de 24h ouvrées. Vous recevrez une notification WhatsApp quand votre litige sera résolu.",
+      },
+      {
+        q: "Puis-je obtenir un remboursement ?",
+        a: "Oui, selon le type de litige et les preuves fournies, un remboursement partiel ou total peut être accordé. Le remboursement apparaît sous 3-5 jours ouvrés.",
+      },
+      {
+        q: "Je ne suis pas d'accord avec la réponse au litige",
+        a: "Répondez directement dans le litige pour demander une révision. Notre équipe support réexaminera le cas.",
+      },
+    ],
+  },
+  livreur: {
+    key: "livreur",
+    title: "votre activité de livreur",
+    faqs: [
+      {
+        q: "Comment accepter une livraison ?",
+        a: "Quand une commande est assignée, vous recevez une notification. Cliquez sur « Accepter » pour la prendre en charge ou « Refuser » si vous n'êtes pas disponible.",
+      },
+      {
+        q: "Comment changer le statut d'une livraison ?",
+        a: "Dans l'écran de la livraison active, cliquez sur : « Arrivé au restaurant » → « Commande récupérée » → « En route vers le client » → « Livré ».",
+      },
+      {
+        q: "Un client ne répond pas au téléphone",
+        a: "Essayez 3 fois à 5 minutes d'intervalle. Si toujours pas de réponse, cliquez sur « Signaler un problème » et contactez le support.",
+      },
+      {
+        q: "Comment voir mes gains ?",
+        a: "Allez dans Mon Profil → section « Gains » pour voir le total des courses livrées, les pourboires, et le solde disponible.",
       },
     ],
   },
   favoris: {
     key: "favoris",
-    title: "Favoris",
+    title: "vos favoris",
     faqs: [
       {
         q: "Comment ajouter un favori ?",
@@ -191,41 +306,9 @@ const SECTIONS: Record<string, HelpSection> = {
       },
     ],
   },
-  profil: {
-    key: "profil",
-    title: "Profil",
-    faqs: [
-      {
-        q: "Comment changer mon mot de passe ?",
-        a: "MboaTV utilise un code à usage unique (OTP) — pas de mot de passe à mémoriser. À chaque connexion, vous recevez un nouveau code.",
-      },
-      {
-        q: "Comment supprimer mon compte ?",
-        a: "Profil → Préférences → « Supprimer mon compte ». La suppression est définitive sous 7 jours.",
-      },
-      {
-        q: "Mes données sont-elles sécurisées ?",
-        a: "Oui, vos données sont chiffrées et hébergées de manière sécurisée. Voir notre page Confidentialité.",
-      },
-    ],
-  },
-  adresses: {
-    key: "adresses",
-    title: "Adresses",
-    faqs: [
-      {
-        q: "Comment ajouter une adresse précise ?",
-        a: "Tapez votre quartier puis ajustez le pin sur la carte. Ajoutez un repère (« en face de la pharmacie X ») pour aider le livreur.",
-      },
-      {
-        q: "Mon quartier n'est pas dans la liste",
-        a: "Tapez le nom manuellement et placez le pin sur la carte. Si vous êtes hors zone, vous serez prévenu.",
-      },
-    ],
-  },
   fidelite: {
     key: "fidelite",
-    title: "Fidélité",
+    title: "votre fidélité",
     faqs: [
       {
         q: "Comment gagner des points ?",
@@ -239,7 +322,7 @@ const SECTIONS: Record<string, HelpSection> = {
   },
   parrainage: {
     key: "parrainage",
-    title: "Parrainage",
+    title: "le parrainage",
     faqs: [
       {
         q: "Combien je gagne par filleul ?",
@@ -267,7 +350,7 @@ const SECTIONS: Record<string, HelpSection> = {
   },
   tablee: {
     key: "tablee",
-    title: "Mode Tablée",
+    title: "le mode Tablée",
     faqs: [
       {
         q: "C'est quoi la Tablée ?",
@@ -276,20 +359,6 @@ const SECTIONS: Record<string, HelpSection> = {
       {
         q: "Comment inviter des amis ?",
         a: "Créez la Tablée puis partagez le lien d'invitation par WhatsApp.",
-      },
-    ],
-  },
-  livreur: {
-    key: "livreur",
-    title: "Espace Livreur",
-    faqs: [
-      {
-        q: "Comment je suis payé ?",
-        a: "Vos gains sont crédités sur votre compte Mobile Money chaque semaine (lundi).",
-      },
-      {
-        q: "Je n'arrive pas à activer mon statut « En ligne »",
-        a: "Vérifiez que la géolocalisation est activée dans votre navigateur et que votre profil est validé par l'admin.",
       },
     ],
   },
@@ -309,21 +378,25 @@ const SECTIONS: Record<string, HelpSection> = {
   },
   admin: {
     key: "admin",
-    title: "Espace Admin",
+    title: "la console admin",
     faqs: [
       {
-        q: "Comment ajouter un restaurant ?",
-        a: "Admin → Restaurants → bouton « Ajouter ». Renseignez les infos, validez, le restaurant apparaît dans l'app.",
+        q: "Comment approuver un nouveau restaurant ?",
+        a: "Allez dans Restaurants → cliquez sur le restaurant « En attente » → vérifiez les documents KYC → cliquez sur « Approuver ». Le restaurant devient visible sur l'app.",
       },
       {
-        q: "Comment gérer un litige ?",
-        a: "Admin → Litiges. Cliquez sur le ticket, lisez l'historique, contactez les parties et clôturez avec une décision.",
+        q: "Comment suspendre un livreur ?",
+        a: "Allez dans Livreurs → trouvez le livreur → cliquez sur « Suspendre ». Ajoutez une raison (optionnel). Le livreur sera notifié et ne pourra plus accepter de courses.",
+      },
+      {
+        q: "Comment gérer un litige côté admin ?",
+        a: "Allez dans Litiges → sélectionnez le litige → consultez les preuves → choisissez : Rembourser, Fermer sans remboursement, ou Répondre au client.",
       },
     ],
   },
   default: {
     key: "default",
-    title: "Aide",
+    title: "MboaTV",
     intro: "Vous trouverez ici des réponses aux questions les plus fréquentes.",
     faqs: [
       {
@@ -332,7 +405,7 @@ const SECTIONS: Record<string, HelpSection> = {
       },
       {
         q: "Comment contacter le support ?",
-        a: "Utilisez les boutons en bas de ce panneau : WhatsApp pour une réponse rapide, ou email pour un dossier détaillé.",
+        a: "Utilisez les boutons en bas de ce panneau : WhatsApp pour une réponse rapide (+33 6 66 52 41 01), ou email pour un dossier détaillé.",
       },
     ],
   },
@@ -342,9 +415,10 @@ function getSectionForPath(path: string): HelpSection {
   if (path === "/" || path === "") return SECTIONS.home;
   if (path.startsWith("/connexion")) return SECTIONS.connexion;
   if (path.startsWith("/recherche")) return SECTIONS.recherche;
-  if (path.startsWith("/decouvrir")) return SECTIONS.decouvrir;
+  if (path.startsWith("/decouvrir") || path.startsWith("/categorie")) return SECTIONS.decouvrir;
   if (path.startsWith("/restaurant") || path.startsWith("/r/")) return SECTIONS.restaurants;
   if (path.startsWith("/checkout")) return SECTIONS.checkout;
+  if (path.startsWith("/panier")) return SECTIONS.panier;
   if (path.startsWith("/suivi")) return SECTIONS.suivi;
   if (path.startsWith("/commandes")) return SECTIONS.commandes;
   if (path.startsWith("/favoris")) return SECTIONS.favoris;
@@ -356,6 +430,7 @@ function getSectionForPath(path: string): HelpSection {
   if (path.startsWith("/tablee")) return SECTIONS.tablee;
   if (path.startsWith("/livreur") || path.startsWith("/devenir-livreur")) return SECTIONS.livreur;
   if (path.startsWith("/mboa-ai")) return SECTIONS["mboa-ai"];
+  if (path.includes("litige")) return SECTIONS.litiges;
   if (path.startsWith("/admin") || path.startsWith("/superadmin")) return SECTIONS.admin;
   return SECTIONS.default;
 }
