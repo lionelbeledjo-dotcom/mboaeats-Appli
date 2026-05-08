@@ -89,7 +89,7 @@ function Livreurs() {
   async function changeStatus(id: string, status: "available" | "busy" | "offline") {
     setPendingId(id);
     try {
-      await updateStatusFn({ data: { driver_id: id, status } });
+      if (!id.startsWith("mk-")) await updateStatusFn({ data: { driver_id: id, status } });
       setList((prev) => prev?.map((d) => (d.id === id ? { ...d, status, updated_at: new Date().toISOString() } : d)) ?? null);
     } finally { setPendingId(null); }
   }
@@ -99,7 +99,7 @@ function Livreurs() {
     if (!confirm(next ? `Réactiver le livreur ${d.name} ?` : `Désactiver le livreur ${d.name} ? Il ne recevra plus d'offres.`)) return;
     setPendingId(d.id);
     try {
-      await setActiveFn({ data: { driver_id: d.id, active: next } });
+      if (!d.id.startsWith("mk-")) await setActiveFn({ data: { driver_id: d.id, active: next } });
       setList((prev) => prev?.map((x) => (x.id === d.id ? { ...x, is_active: next, status: next ? "available" : "offline" } : x)) ?? null);
     } finally { setPendingId(null); }
   }
@@ -107,6 +107,17 @@ function Livreurs() {
   async function openView(d: Driver) {
     setViewing(d);
     setViewingData(null);
+    if (d.id.startsWith("mk-")) {
+      setViewingData({
+        profile: { full_name: d.name, phone: d.phone, city: d.city },
+        location: { status: d.status, lat: d.lat, lng: d.lng, updated_at: d.updated_at },
+        orders: [
+          { id: "o1", reference: "MBE-2106", status: "en_cours", delivery_fee: 1000 },
+          { id: "o2", reference: "MBE-2098", status: "livree", delivery_fee: 1500 },
+        ],
+      });
+      return;
+    }
     try { setViewingData(await fetchDetails({ data: { id: d.id } })); }
     catch (e) { toast.error(e instanceof Error ? e.message : "Erreur"); }
   }
@@ -115,7 +126,7 @@ function Livreurs() {
     if (!confirm(`Supprimer DÉFINITIVEMENT le livreur ${d.name} ? Position et rôle seront effacés.`)) return;
     setPendingId(d.id);
     try {
-      await deleteFn({ data: { id: d.id } });
+      if (!d.id.startsWith("mk-")) await deleteFn({ data: { id: d.id } });
       toast.success("Livreur supprimé");
       setList((prev) => prev?.filter((x) => x.id !== d.id) ?? null);
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erreur"); }
