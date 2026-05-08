@@ -86,27 +86,89 @@ function detectCountryFromInput(raw: string) {
   }
   return null;
 }
-/** Vivid circular flag — uses HatScripts circle-flags SVG CDN (no extra dep). */
+/**
+ * Vivid circular flag — uses HatScripts circle-flags SVG CDN (no extra dep).
+ *
+ * Caching strategy:
+ *   - The browser HTTP cache already deduplicates identical SVG requests.
+ *   - We add a module-level in-memory Map<code, "ok" | "error"> so that:
+ *       * once a flag has loaded, we mark it ok and skip onLoad work,
+ *       * once a flag has failed, every subsequent <CircleFlag/> with that
+ *         code renders the fallback synchronously (no flash, no re-fetch).
+ *   - prefetchFlags() can warm the cache for a list of country codes by
+ *     creating offscreen Image objects (uses the same HTTP cache).
+ */
+type FlagStatus = "ok" | "error";
+const flagStatusCache = new Map<string, FlagStatus>();
+
+function flagUrl(code: string) {
+  return `https://hatscripts.github.io/circle-flags/flags/${code.toLowerCase()}.svg`;
+}
+
+function prefetchFlags(codes: string[]) {
+  if (typeof window === "undefined") return;
+  for (const raw of codes) {
+    const cc = raw.toLowerCase();
+    if (flagStatusCache.has(cc)) continue;
+    const img = new Image();
+    img.decoding = "async";
+    img.onload = () => flagStatusCache.set(cc, "ok");
+    img.onerror = () => flagStatusCache.set(cc, "error");
+    img.src = flagUrl(cc);
+  }
+}
+
 function CircleFlag({ code, size = 24, className = "" }: { code: string; size?: number; className?: string }) {
   const cc = code.toLowerCase();
+  const cached = flagStatusCache.get(cc);
+  const [failed, setFailed] = useState<boolean>(cached === "error");
+
+  // If the cache flips to "error" between renders for the same code, honor it.
+  useEffect(() => {
+    if (cached === "error" && !failed) setFailed(true);
+  }, [cached, failed]);
+
+  const wrapper = `inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#F1F1F4] ring-1 ring-black/5 shadow-[0_1px_3px_rgba(0,0,0,0.18)] ${className}`;
+
+  if (failed) {
+    return (
+      <span
+        className={wrapper}
+        style={{ width: size, height: size }}
+        role="img"
+        aria-label={`Drapeau ${cc.toUpperCase()}`}
+        title={cc.toUpperCase()}
+      >
+        <span
+          className="font-display font-extrabold text-[#4B5563]"
+          style={{ fontSize: Math.max(9, Math.round(size * 0.42)) }}
+        >
+          {cc.toUpperCase()}
+        </span>
+      </span>
+    );
+  }
+
   return (
-    <span
-      className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-white ring-1 ring-black/5 shadow-[0_1px_3px_rgba(0,0,0,0.18)] ${className}`}
-      style={{ width: size, height: size }}
-      aria-hidden="true"
-    >
+    <span className={wrapper} style={{ width: size, height: size }} aria-hidden="true">
       <img
-        src={`https://hatscripts.github.io/circle-flags/flags/${cc}.svg`}
+        src={flagUrl(cc)}
         alt=""
         width={size}
         height={size}
         loading="lazy"
         decoding="async"
+        onLoad={() => { if (flagStatusCache.get(cc) !== "ok") flagStatusCache.set(cc, "ok"); }}
+        onError={() => {
+          flagStatusCache.set(cc, "error");
+          setFailed(true);
+        }}
         className="block h-full w-full object-cover"
       />
     </span>
   );
 }
+
 
 function Connexion() {
   const navigate = useNavigate();
@@ -117,6 +179,10 @@ function Connexion() {
   const getDeliveryConfigFn = useServerFn(getOtpDeliveryConfig);
   const [mode, setMode] = useState<Mode>("phone");
   const [step, setStep] = useState<Step>("identify");
+
+  // Warm the in-memory + HTTP cache for all flag SVGs once.
+  useEffect(() => { prefetchFlags(COUNTRIES.map((c) => c.code)); }, []);
+
 
   const [countryCode, setCountryCode] = useState("CM");
   const [phone, setPhone] = useState("");
