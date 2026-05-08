@@ -491,11 +491,11 @@ function Connexion() {
                   </>
                 ) : (
                   <>
-                    <label className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
+                    <label className="block text-[13px] font-black uppercase tracking-[0.34em] text-white/56">
                       Adresse email
                     </label>
-                    <div className="flex items-center gap-2 rounded-2xl border border-[#f59e0b]/60 bg-white/[0.06] backdrop-blur-2xl px-3 py-1.5 focus-within:border-[#fbbf24] focus-within:ring-2 focus-within:ring-amber-400/40">
-                      <Mail className="h-4 w-4 text-[#f59e0b]" />
+                    <div className="flex h-[68px] items-center gap-3 rounded-[28px] border border-[#d89109] bg-[#2a2a2e]/95 px-5 backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_16px_48px_-26px_rgba(255,148,18,0.72)] transition focus-within:border-[#ffb000] focus-within:ring-[3px] focus-within:ring-[#ff9d00]/34">
+                      <Mail className="h-5 w-5 text-[#ffad05]" />
                       <input
                         type="email"
                         inputMode="email"
@@ -503,7 +503,7 @@ function Connexion() {
                         placeholder="vous@exemple.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="flex-1 bg-transparent py-2.5 text-base text-white outline-none placeholder:text-white/40"
+                        className="min-w-0 flex-1 bg-transparent text-[20px] font-semibold text-white outline-none placeholder:text-white/36"
                         autoFocus
                       />
                     </div>
@@ -524,14 +524,14 @@ function Connexion() {
 
                 {mode === "phone" && !smsTrial && (
                   <div>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    <p className="mb-3 text-[13px] font-black uppercase tracking-[0.2em] text-white/36">
                       Recevoir le code par
                     </p>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-3">
                       <button
                         type="button"
                         onClick={() => { setChannel("sms"); setError(null); setShowWhatsAppFallback(false); }}
-                        className={`flex items-center justify-center gap-2 rounded-2xl border p-3 text-sm font-semibold transition ${channel === "sms" ? "border-primary bg-primary/10 text-foreground" : "border-border bg-background text-muted-foreground hover:bg-muted/40"}`}
+                        className={`flex h-[72px] items-center justify-center gap-2 rounded-[28px] border text-[20px] font-semibold transition ${channel === "sms" ? "border-[#ff5b05] bg-[#3a1e18] text-[#17120f] shadow-[inset_0_0_0_1px_rgba(255,102,0,0.2)]" : "border-white/12 bg-white/[0.04] text-white/45 hover:bg-white/[0.07]"}`}
                       >
                         <MessageCircle className="h-4 w-4" /> SMS
                       </button>
@@ -539,13 +539,13 @@ function Connexion() {
                         <button
                           type="button"
                           onClick={() => { setChannel("whatsapp"); setError(null); setShowWhatsAppFallback(false); }}
-                          className={`flex items-center justify-center gap-2 rounded-2xl border p-3 text-sm font-semibold transition ${channel === "whatsapp" ? "border-primary bg-primary/10 text-foreground" : "border-border bg-background text-muted-foreground hover:bg-muted/40"}`}
+                          className={`flex h-[72px] items-center justify-center gap-2 rounded-[28px] border text-[20px] font-semibold transition ${channel === "whatsapp" ? "border-[#ff5b05] bg-[#3a1e18] text-white" : "border-white/12 bg-white/[0.04] text-white/45 hover:bg-white/[0.07]"}`}
                         >
                           <Send className="h-4 w-4" /> WhatsApp
                         </button>
                       ) : (
                         <div
-                          className="flex flex-col items-center justify-center gap-0.5 rounded-2xl border border-dashed border-border bg-muted/20 p-3 text-center text-[11px] font-medium text-muted-foreground"
+                          className="flex h-[72px] flex-col items-center justify-center gap-0.5 rounded-[28px] border border-dashed border-white/50 bg-white/[0.2] text-center text-[13px] font-bold text-white/28"
                           aria-disabled
                           title="WhatsApp pas encore activé sur ce compte"
                         >
