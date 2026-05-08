@@ -169,6 +169,25 @@ export function SiteHeader() {
 
         {/* Actions droite */}
         <div className="flex shrink-0 items-center gap-1 sm:gap-3">
+          {/* Aide rapide */}
+          <Link
+            to="/aide"
+            aria-label="Aide & support"
+            className={cn(
+              "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
+              "border border-white/10 bg-white/5 text-white",
+              "transition-all duration-300 ease-out hover:bg-white/10 active:scale-95",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cm-green/60",
+            )}
+          >
+            <HelpCircle className="h-5 w-5" strokeWidth={2.25} />
+          </Link>
+
+          {/* Cloche notifications */}
+          <div className="[&_button]:h-10 [&_button]:w-10 [&_button]:border-white/10 [&_button]:bg-white/5 [&_button]:text-white [&_button:hover]:bg-white/10">
+            <NotificationBell />
+          </div>
+
           {/* CTA desktop / tablette */}
           <Link
             to="/commandes"
