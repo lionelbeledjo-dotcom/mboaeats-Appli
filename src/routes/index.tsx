@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
-  Search, MapPin, Star, Clock, Flame, Bell, ChevronRight, Plus, Users, ArrowRight,
+  Search, MapPin, Star, Clock, Flame, Bell, ChevronRight, Plus, Users, ArrowRight, Bike,
 } from "lucide-react";
 
 import { restaurants as realRestaurants, getRestaurant } from "@/data/restaurants";
