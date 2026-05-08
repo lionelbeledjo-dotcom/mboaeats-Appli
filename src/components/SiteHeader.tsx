@@ -129,6 +129,68 @@ export function SiteHeader() {
             Commander
           </Link>
 
+          {/* Dropdown "..." mobile (accès rapide Restaurants & Support) */}
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              aria-label="Plus d'options"
+              className={cn(
+                "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full md:hidden",
+                "border border-white/10 bg-white/5 text-white",
+                "transition-all duration-300 ease-out hover:bg-white/10 active:scale-95",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cm-green/60",
+                "data-[state=open]:bg-white/10 data-[state=open]:ring-2 data-[state=open]:ring-brand-cm-green/60",
+              )}
+            >
+              <MoreHorizontal className="h-5 w-5" strokeWidth={2.25} />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              sideOffset={10}
+              className={cn(
+                "w-56 rounded-2xl border-white/10 p-1.5",
+                "bg-[hsl(240_10%_8%_/_0.96)] backdrop-blur-xl text-white",
+                "shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)]",
+              )}
+            >
+              <DropdownMenuLabel className="px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+                Accès rapide
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-white/10" />
+              {NAV_ITEMS.filter((i) => i.to === "/restaurant" || i.to === "/aide").map(
+                ({ to, label, icon: Icon, exact }) => {
+                  const active = isActive(to, exact);
+                  return (
+                    <DropdownMenuItem key={to} asChild>
+                      <Link
+                        to={to as any}
+                        className={cn(
+                          "flex w-full cursor-pointer items-center gap-3 rounded-xl px-2.5 py-2.5 text-sm font-semibold",
+                          "focus:bg-white/10 focus:text-white",
+                          active
+                            ? "bg-brand-cm-green/15 text-brand-cm-green"
+                            : "text-white/85",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                            active ? "bg-brand-cm-green/20" : "bg-white/5",
+                          )}
+                        >
+                          <Icon className="h-4 w-4" strokeWidth={2.25} />
+                        </span>
+                        <span className="min-w-0 flex-1 truncate">{label}</span>
+                        {active && (
+                          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-cm-green shadow-[0_0_10px_rgba(6,193,103,0.7)]" />
+                        )}
+                      </Link>
+                    </DropdownMenuItem>
+                  );
+                },
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {/* Burger mobile */}
           <button
             type="button"
