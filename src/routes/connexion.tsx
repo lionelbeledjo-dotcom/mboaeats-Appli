@@ -646,8 +646,8 @@ function Connexion() {
 
         {/* Lien admin retiré de l'interface publique. Accès via /admin/login uniquement. */}
 
-        <div className="mt-6 rounded-2xl border border-border bg-card/60 p-4 text-center text-xs text-muted-foreground backdrop-blur">
-          <p className="mb-2 font-semibold text-foreground">Vous ne recevez pas de code ?</p>
+        <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-center text-xs text-white/60 backdrop-blur-xl">
+          <p className="mb-2 font-semibold text-white">Vous ne recevez pas de code ?</p>
           <p className="mb-3">Contactez-nous sur WhatsApp, on vous inscrit manuellement en quelques minutes.</p>
           <a
             href={`https://wa.me/237699999999?text=${encodeURIComponent(
