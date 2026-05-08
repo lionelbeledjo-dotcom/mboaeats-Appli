@@ -253,6 +253,16 @@ function AddressesPage() {
       // l'utilisateur peut ne pas être connecté — on garde l'état local
     }
 
+    // Mémorise la dernière ville/quartier valides pour le prochain accès
+    try {
+      window.localStorage.setItem(
+        "mboaeats:lastAddress",
+        JSON.stringify({ city, neighborhood: coveredZone?.neighborhood ?? neighborhood.trim() }),
+      );
+    } catch {
+      // ignore storage errors (mode privé, quota, etc.)
+    }
+
     toast.success("Adresse enregistrée ✅", {
       description: `${optimistic.label} · ${optimistic.city}`,
       duration: 1800,
