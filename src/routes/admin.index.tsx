@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import {
-  TrendingUp, ShoppingBag, UserPlus, Bike, CheckCircle2, Clock,
+  TrendingUp, ShoppingBag, UserPlus, Bike, CheckCircle2, Clock, X, User, MapPin, Phone, CreditCard,
 } from "lucide-react";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
@@ -28,15 +29,22 @@ const WEEK = [
   { day: "Dim", revenu: 845_000 },
 ];
 
-const LAST_ORDERS = [
-  { id: "MBE-2106", client: "Awa Mbarga", amount: 7_500, status: "en_cours" as const, resto: "Le Wouri Saveurs" },
-  { id: "MBE-2105", client: "Joseph Ngono", amount: 12_300, status: "livree" as const, resto: "Soya d'Or" },
-  { id: "MBE-2104", client: "Linda Etoundi", amount: 4_200, status: "livree" as const, resto: "La Marmite Bamiléké" },
-  { id: "MBE-2103", client: "Patrick Mbida", amount: 9_800, status: "en_cours" as const, resto: "Douala Fast Food" },
-  { id: "MBE-2102", client: "Sylvie Kamga", amount: 15_600, status: "livree" as const, resto: "Poisson Braisé du Port" },
+type OrderRow = {
+  id: string; client: string; amount: number;
+  status: "en_cours" | "livree";
+  resto: string; phone: string; address: string; payment: string; items: string[]; date: string;
+};
+
+const LAST_ORDERS: OrderRow[] = [
+  { id: "MBE-2106", client: "Awa Mbarga", amount: 7_500, status: "en_cours", resto: "Le Wouri Saveurs", phone: "+237 6 99 12 34 56", address: "Akwa, rue Joss · Douala", payment: "Orange Money", items: ["Ndolé royal", "Jus de bissap"], date: "Aujourd'hui · 12:34" },
+  { id: "MBE-2105", client: "Joseph Ngono", amount: 12_300, status: "livree", resto: "Soya d'Or", phone: "+237 6 77 04 88 21", address: "Bonapriso · Douala", payment: "MTN MoMo", items: ["Soya bœuf x3", "Plantain braisé"], date: "Aujourd'hui · 12:10" },
+  { id: "MBE-2104", client: "Linda Etoundi", amount: 4_200, status: "livree", resto: "La Marmite Bamiléké", phone: "+237 6 90 55 41 02", address: "Bonamoussadi · Douala", payment: "Espèces", items: ["Koki maïs", "Eau minérale"], date: "Aujourd'hui · 11:48" },
+  { id: "MBE-2103", client: "Patrick Mbida", amount: 9_800, status: "en_cours", resto: "Douala Fast Food", phone: "+237 6 55 23 19 77", address: "Logpom · Douala", payment: "Carte bancaire", items: ["Burger maison", "Frites", "Sprite"], date: "Aujourd'hui · 11:30" },
+  { id: "MBE-2102", client: "Sylvie Kamga", amount: 15_600, status: "livree", resto: "Poisson Braisé du Port", phone: "+237 6 78 66 90 12", address: "Bali · Douala", payment: "Orange Money", items: ["Bar braisé", "Miondo", "Sauce pimentée"], date: "Aujourd'hui · 11:05" },
 ];
 
 function Overview() {
+  const [selected, setSelected] = useState<OrderRow | null>(null);
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-6">
       <div>
@@ -92,29 +100,97 @@ function Overview() {
           <h2 className="font-display text-lg font-bold">5 dernières commandes</h2>
           <ul className="mt-4 space-y-3">
             {LAST_ORDERS.map((o) => (
-              <li key={o.id} className="rounded-2xl border border-border bg-background/40 p-3">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-mono text-xs font-bold text-primary">{o.id}</span>
-                  {o.status === "livree" ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
-                      <CheckCircle2 className="h-3 w-3" /> Livré
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">
-                      <Clock className="h-3 w-3" /> En cours
-                    </span>
-                  )}
-                </div>
-                <p className="mt-1 truncate text-sm font-semibold">{o.client}</p>
-                <div className="mt-0.5 flex items-center justify-between text-[11px] text-muted-foreground">
-                  <span className="truncate">{o.resto}</span>
-                  <span className="font-bold text-foreground">{o.amount.toLocaleString("fr-FR")} F</span>
-                </div>
+              <li key={o.id}>
+                <button
+                  type="button"
+                  onClick={() => setSelected(o)}
+                  className="w-full rounded-2xl border border-border bg-background/40 p-3 text-left transition hover:border-primary/60 hover:bg-background/70 focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-mono text-xs font-bold text-primary">{o.id}</span>
+                    {o.status === "livree" ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
+                        <CheckCircle2 className="h-3 w-3" /> Livré
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">
+                        <Clock className="h-3 w-3" /> En cours
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1 truncate text-sm font-semibold">{o.client}</p>
+                  <div className="mt-0.5 flex items-center justify-between text-[11px] text-muted-foreground">
+                    <span className="truncate">{o.resto}</span>
+                    <span className="font-bold text-foreground">{o.amount.toLocaleString("fr-FR")} F</span>
+                  </div>
+                </button>
               </li>
             ))}
           </ul>
         </div>
       </div>
+
+      {selected && <OrderDetailsPanel order={selected} onClose={() => setSelected(null)} />}
+    </div>
+  );
+}
+
+function OrderDetailsPanel({ order, onClose }: { order: OrderRow; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex" role="dialog" aria-modal="true" aria-label={`Détails commande ${order.id}`}>
+      <button type="button" aria-label="Fermer" onClick={onClose} className="flex-1 bg-background/70 backdrop-blur-sm" />
+      <aside className="flex h-full w-full max-w-md flex-col overflow-y-auto border-l border-border bg-surface shadow-2xl animate-in slide-in-from-right">
+        <div className="flex items-start justify-between border-b border-border p-5">
+          <div>
+            <p className="font-mono text-xs font-bold text-primary">{order.id}</p>
+            <h3 className="mt-1 font-display text-xl font-extrabold">Détails de la commande</h3>
+            <p className="mt-0.5 text-xs text-muted-foreground">{order.date}</p>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-full p-2 hover:bg-background" aria-label="Fermer le panneau">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="space-y-4 p-5">
+          <div className="flex items-center justify-between rounded-2xl border border-border bg-background/40 p-4">
+            <span className="text-xs uppercase tracking-wider text-muted-foreground">Statut</span>
+            {order.status === "livree" ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-400">
+                <CheckCircle2 className="h-3.5 w-3.5" /> Livré
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-3 py-1 text-xs font-bold text-primary">
+                <Clock className="h-3.5 w-3.5" /> En cours
+              </span>
+            )}
+          </div>
+
+          <div className="rounded-2xl border border-border bg-background/40 p-4">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Montant</p>
+            <p className="mt-1 font-display text-2xl font-extrabold text-gradient-gold">{order.amount.toLocaleString("fr-FR")} <span className="text-sm">XAF</span></p>
+            <p className="mt-1 text-[11px] text-muted-foreground inline-flex items-center gap-1"><CreditCard className="h-3 w-3" /> {order.payment}</p>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-background/40 p-4 space-y-2">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Client</p>
+            <p className="text-sm font-semibold inline-flex items-center gap-2"><User className="h-4 w-4 text-primary" /> {order.client}</p>
+            <p className="text-xs text-muted-foreground inline-flex items-center gap-2"><Phone className="h-3.5 w-3.5" /> {order.phone}</p>
+            <p className="text-xs text-muted-foreground inline-flex items-center gap-2"><MapPin className="h-3.5 w-3.5" /> {order.address}</p>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-background/40 p-4">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Restaurant</p>
+            <p className="mt-1 text-sm font-semibold">{order.resto}</p>
+            <ul className="mt-3 space-y-1 text-sm">
+              {order.items.map((it) => (
+                <li key={it} className="flex items-center justify-between border-b border-border/50 py-1 last:border-0">
+                  <span>{it}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </aside>
     </div>
   );
 }
