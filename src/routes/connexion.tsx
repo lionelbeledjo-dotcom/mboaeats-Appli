@@ -379,20 +379,30 @@ function Connexion() {
           {step === "identify" && (
             <>
               {/* Mode tabs */}
-              <div className="mb-6 grid h-[48px] grid-cols-2 gap-1 rounded-full border border-[#E2E2E2] bg-[#F5F5F5] p-1">
+              <div className="mb-6 grid h-[52px] grid-cols-2 gap-2 rounded-full bg-[#F6F6F6] p-1">
                 <button
                   type="button"
                   onClick={() => { setMode("phone"); setError(null); }}
-                  className={`flex min-h-[44px] items-center justify-center gap-2 rounded-full px-3 text-[14px] font-bold transition ${mode === "phone" ? "bg-white text-black shadow-sm" : "text-[#6B6B6B] hover:text-black"}`}
+                  aria-pressed={mode === "phone"}
+                  className={`flex min-h-[44px] items-center justify-center gap-2 rounded-full px-3 text-[14px] font-bold transition ${
+                    mode === "phone"
+                      ? "bg-white text-[#2D2D2D] shadow-[0_2px_6px_-2px_rgba(0,122,255,0.25)] ring-1 ring-[#007AFF]"
+                      : "bg-[#F6F6F6] text-[#6B6B6B] hover:text-[#2D2D2D]"
+                  }`}
                 >
-                  <Phone className="h-3.5 w-3.5" /> Téléphone
+                  <Phone strokeWidth={2} className={`h-4 w-4 ${mode === "phone" ? "text-[#007AFF]" : "text-[#9A9A9A]"}`} /> Téléphone
                 </button>
                 <button
                   type="button"
                   onClick={() => { setMode("email"); setError(null); }}
-                  className={`flex min-h-[44px] items-center justify-center gap-2 rounded-full px-3 text-[14px] font-bold transition ${mode === "email" ? "bg-white text-black shadow-sm" : "text-[#6B6B6B] hover:text-black"}`}
+                  aria-pressed={mode === "email"}
+                  className={`flex min-h-[44px] items-center justify-center gap-2 rounded-full px-3 text-[14px] font-bold transition ${
+                    mode === "email"
+                      ? "bg-white text-[#2D2D2D] shadow-[0_2px_6px_-2px_rgba(142,68,173,0.25)] ring-1 ring-[#8E44AD]"
+                      : "bg-[#F6F6F6] text-[#6B6B6B] hover:text-[#2D2D2D]"
+                  }`}
                 >
-                  <Mail className="h-3.5 w-3.5" /> Email
+                  <Mail strokeWidth={2} className={`h-4 w-4 ${mode === "email" ? "text-[#8E44AD]" : "text-[#9A9A9A]"}`} /> Email
                 </button>
               </div>
 
