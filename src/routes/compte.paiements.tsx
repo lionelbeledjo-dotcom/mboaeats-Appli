@@ -56,7 +56,7 @@ function PaiementsPage() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-30 glass">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3 md:px-8">
-          <Link to="/aide" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+          <Link to="/aide" hash="categories" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" /> Retour
           </Link>
           <span className="font-display font-bold">Paiement</span>
