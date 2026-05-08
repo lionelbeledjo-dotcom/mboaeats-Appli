@@ -18,6 +18,15 @@ const InitiateSchema = z.object({
   metadata: z.record(z.string(), z.any()).optional(),
 });
 
+const InitiateCardSchema = z.object({
+  amount: z.number().int().positive().max(10_000_000),
+  purpose: z.string().min(1).max(40).default("order"),
+  return_url: z.string().url(),
+  metadata: z.record(z.string(), z.any()).optional(),
+});
+
+const PollSchema = z.object({ reference: z.string().min(6).max(120) });
+
 const VerifySchema = z.object({
   reference: z.string().min(6).max(120),
   otp: z.string().regex(/^\d{4,8}$/).optional(),
