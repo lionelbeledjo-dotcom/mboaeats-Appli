@@ -380,7 +380,11 @@ function AddressesPage() {
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
-            <CityDeliveryPanel city={city} info={cityInfo} />
+            <CityDeliveryPanel
+              city={city}
+              info={cityInfo}
+              activeNeighborhood={coveredZone?.neighborhood ?? null}
+            />
             {!cityInfo.loading && cityInfo.zones.length === 0 && (
               <p className="mt-2 rounded-xl border border-destructive/40 bg-destructive/10 p-2.5 text-[11px] font-medium text-destructive">
                 {city} n'est pas encore desservie. Choisissez une autre ville pour continuer.
