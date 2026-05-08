@@ -176,7 +176,7 @@ function Restaurants() {
   }, [list, filter, q, city]);
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-6">
+    <div className="mx-auto max-w-7xl space-y-4 p-3 sm:space-y-6 sm:p-6">
       {/* Header */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
