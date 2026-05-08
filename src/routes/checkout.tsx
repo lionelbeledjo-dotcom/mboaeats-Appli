@@ -70,6 +70,7 @@ function Checkout() {
   const [showExtras, setShowExtras] = useState(false);
   const [extrasSeen, setExtrasSeen] = useState(false);
   const [cardLink, setCardLink] = useState<string | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<"idle" | "pending" | "succeeded" | "failed">("idle");
 
   // Détection MboaPass (livraison gratuite)
   useEffect(() => {
@@ -89,6 +90,25 @@ function Checkout() {
     const t = setTimeout(() => setSeconds((s) => s - 1), 1000);
     return () => clearTimeout(t);
   }, [step, pending, seconds]);
+
+  // Realtime : suivi du statut paiement (mis à jour par le webhook Campay)
+  useEffect(() => {
+    if (!reference) return;
+    const channel = supabase
+      .channel(`pay-${reference}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "payments", filter: `reference=eq.${reference}` },
+        (payload) => {
+          const s = (payload.new as { status?: string })?.status;
+          if (s === "succeeded") setPaymentStatus("succeeded");
+          else if (s === "failed") setPaymentStatus("failed");
+          else if (s === "pending") setPaymentStatus("pending");
+        },
+      )
+      .subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [reference]);
 
   const ensureLiveOrder = async (): Promise<string | null> => {
     if (!isLiveOrder || !liveRestoId) return null;
@@ -120,8 +140,9 @@ function Checkout() {
     }
     setLandmarkErr(null);
 
+    let activeOrderId: string | null = liveOrderId;
     try {
-      await ensureLiveOrder();
+      activeOrderId = (await ensureLiveOrder()) ?? liveOrderId;
     } catch (e) {
       setTopError(e instanceof Error ? e.message : "Impossible de créer la commande");
       return;
@@ -130,13 +151,14 @@ function Checkout() {
     if (method === "cash") return setStep("success");
     if (method === "card") {
       setPending(true);
+      setPaymentStatus("pending");
       try {
         const res = await initiateCard({
           data: {
             amount: total,
             purpose: "order",
             return_url: typeof window !== "undefined" ? window.location.href : "https://mboaeats.lovable.app/checkout",
-            metadata: { landmark, cart: cart.map((c) => c.name) },
+            metadata: { landmark, cart: cart.map((c) => c.name), order_id: activeOrderId },
           },
         });
         if (!res.ok || !res.link) throw new Error(res.error ?? "Échec d'initiation carte");
@@ -148,12 +170,14 @@ function Checkout() {
         window.open(res.link, "_blank", "noopener,noreferrer");
       } catch (e) {
         setPending(false);
+        setPaymentStatus("failed");
         setTopError(e instanceof Error ? e.message : "Erreur paiement carte");
       }
       return;
     }
 
     setPending(true);
+    setPaymentStatus("pending");
     try {
       const cleanMsisdn = phone.replace(/\D/g, "");
       const res = await initiate({
@@ -162,7 +186,7 @@ function Checkout() {
           msisdn: `237${cleanMsisdn}`,
           amount: total,
           purpose: "order",
-          metadata: { landmark, cart: cart.map((c) => c.name) },
+          metadata: { landmark, cart: cart.map((c) => c.name), order_id: activeOrderId },
         },
       });
       if (!res.ok) throw new Error(res.error ?? "Échec d'initiation");
@@ -171,6 +195,7 @@ function Checkout() {
       setSeconds(20);
     } catch (e) {
       setPending(false);
+      setPaymentStatus("failed");
       setTopError(e instanceof Error ? e.message : "Erreur paiement");
     }
   };
@@ -188,6 +213,7 @@ function Checkout() {
 
   const confirm = async () => {
     setPending(false);
+    setPaymentStatus(method === "cash" ? "idle" : "succeeded");
     setStep("success");
     try {
       const orderId = liveOrderId ?? (await ensureLiveOrder());
@@ -259,7 +285,7 @@ function Checkout() {
           {step === "success" && <SuccessScreen method={method} total={total} />}
         </section>
 
-        <Summary cartItems={cartItems} subtotal={subtotal} delivery={delivery} total={total} hasPass={hasPass} landmark={landmark} promo={promo} setPromo={setPromo} />
+        <Summary cartItems={cartItems} subtotal={subtotal} delivery={delivery} total={total} hasPass={hasPass} landmark={landmark} promo={promo} setPromo={setPromo} paymentStatus={paymentStatus} method={method} reference={reference} />
       </main>
 
       {showExtras && (
@@ -556,10 +582,13 @@ function SuccessScreen({ method, total }: { method: Method; total: number }) {
   );
 }
 
-function Summary({ cartItems, subtotal, delivery, total, hasPass, landmark, promo, setPromo }: {
+function Summary({ cartItems, subtotal, delivery, total, hasPass, landmark, promo, setPromo, paymentStatus, method, reference }: {
   cartItems: CartItem[]; subtotal: number; delivery: number; total: number; hasPass: boolean; landmark: string;
   promo: { code: string; discount: number } | null;
   setPromo: (p: { code: string; discount: number } | null) => void;
+  paymentStatus: "idle" | "pending" | "succeeded" | "failed";
+  method: Method;
+  reference: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState("");
@@ -593,8 +622,16 @@ function Summary({ cartItems, subtotal, delivery, total, hasPass, landmark, prom
 
   return (
     <aside className="rounded-3xl border border-border bg-card p-5 h-fit md:sticky md:top-20 shadow-card">
-      <h3 className="font-display text-lg font-bold">Ta commande</h3>
-      <p className="text-xs text-muted-foreground">{cartItems.length} article{cartItems.length > 1 ? "s" : ""}</p>
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <h3 className="font-display text-lg font-bold">Ta commande</h3>
+          <p className="text-xs text-muted-foreground">{cartItems.length} article{cartItems.length > 1 ? "s" : ""}</p>
+        </div>
+        <PaymentStatusBadge status={paymentStatus} method={method} />
+      </div>
+      {paymentStatus !== "idle" && reference && (
+        <p className="mt-2 text-[11px] text-muted-foreground">Réf. paiement : <span className="font-mono">{reference}</span></p>
+      )}
       <ul className="mt-4 space-y-3 text-sm">
         {cartItems.map((i) => (
           <li
@@ -931,5 +968,34 @@ function ExtrasModal({ onSkip, onClose }: { onSkip: () => void; onClose: () => v
         </button>
       </div>
     </div>
+  );
+}
+
+function PaymentStatusBadge({ status, method }: { status: "idle" | "pending" | "succeeded" | "failed"; method: Method }) {
+  if (status === "idle") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full border border-border bg-background/40 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
+        En attente de paiement
+      </span>
+    );
+  }
+  if (status === "pending") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold text-amber-500">
+        <Loader2 className="h-3 w-3 animate-spin" /> Paiement en cours
+      </span>
+    );
+  }
+  if (status === "succeeded") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-500">
+        <Check className="h-3 w-3" /> {method === "cash" ? "Confirmée" : "Payée"}
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full border border-destructive/40 bg-destructive/10 px-2.5 py-1 text-[11px] font-semibold text-destructive">
+      <AlertCircle className="h-3 w-3" /> Échec
+    </span>
   );
 }
