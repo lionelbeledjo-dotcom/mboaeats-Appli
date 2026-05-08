@@ -31,15 +31,38 @@ export const Route = createFileRoute("/api/public/campay-webhook")({
 
         const newStatus = status === "SUCCESSFUL" ? "succeeded" : status === "FAILED" ? "failed" : "pending";
 
+        // Récupérer la metadata existante (contient potentiellement order_id)
+        const { data: existing } = await supabaseAdmin
+          .from("payments")
+          .select("metadata, status")
+          .eq("reference", externalRef)
+          .maybeSingle();
+        const prevMeta = (existing?.metadata as Record<string, unknown> | null) ?? {};
+        const orderId = (prevMeta.order_id as string | undefined) ?? null;
+
         const { error } = await supabaseAdmin
           .from("payments")
           .update({
             status: newStatus,
             provider_tx_id: providerTxId ?? null,
-            metadata: payload as never,
+            metadata: { ...prevMeta, webhook: payload } as never,
           })
           .eq("reference", externalRef);
         if (error) return new Response(error.message, { status: 500 });
+
+        // Si succès et qu'on a une commande liée → marquer payée + journaliser
+        if (newStatus === "succeeded" && orderId && existing?.status !== "succeeded") {
+          await supabaseAdmin
+            .from("orders")
+            .update({ status: "paid", paid_at: new Date().toISOString() })
+            .eq("id", orderId)
+            .neq("status", "paid");
+          await supabaseAdmin.from("order_events").insert({
+            order_id: orderId,
+            event_type: "paid",
+            payload: { reference: externalRef, source: "campay_webhook", provider_tx_id: providerTxId },
+          });
+        }
 
         return new Response("ok");
       },
