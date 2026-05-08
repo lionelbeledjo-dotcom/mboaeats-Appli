@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { Star, Clock, MapPin, Flame, Plus, Search, Heart, Bike } from "lucide-react";
+import { Star, Clock, MapPin, Flame, Plus, Search, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { SmartBack } from "@/components/SmartBack";
 import { RestaurantSkeleton } from "@/components/Skeleton";
