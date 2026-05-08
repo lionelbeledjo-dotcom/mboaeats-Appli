@@ -23,19 +23,37 @@ export const Route = createFileRoute("/connexion")({
 });
 
 const COUNTRIES = [
-  { code: "FR", dial: "+33", flag: "🇫🇷", name: "France" },
-  { code: "CM", dial: "+237", flag: "🇨🇲", name: "Cameroun" },
-  { code: "BE", dial: "+32", flag: "🇧🇪", name: "Belgique" },
-  { code: "CH", dial: "+41", flag: "🇨🇭", name: "Suisse" },
-  { code: "CA", dial: "+1", flag: "🇨🇦", name: "Canada" },
-  { code: "GB", dial: "+44", flag: "🇬🇧", name: "Royaume-Uni" },
-  { code: "DE", dial: "+49", flag: "🇩🇪", name: "Allemagne" },
-  { code: "ES", dial: "+34", flag: "🇪🇸", name: "Espagne" },
-  { code: "IT", dial: "+39", flag: "🇮🇹", name: "Italie" },
-  { code: "SN", dial: "+221", flag: "🇸🇳", name: "Sénégal" },
-  { code: "CI", dial: "+225", flag: "🇨🇮", name: "Côte d'Ivoire" },
-  { code: "MA", dial: "+212", flag: "🇲🇦", name: "Maroc" },
+  { code: "FR", iso: "fr", dial: "+33", flag: "🇫🇷", name: "France" },
+  { code: "CM", iso: "cm", dial: "+237", flag: "🇨🇲", name: "Cameroun" },
+  { code: "BE", iso: "be", dial: "+32", flag: "🇧🇪", name: "Belgique" },
+  { code: "CH", iso: "ch", dial: "+41", flag: "🇨🇭", name: "Suisse" },
+  { code: "CA", iso: "ca", dial: "+1", flag: "🇨🇦", name: "Canada" },
+  { code: "GB", iso: "gb", dial: "+44", flag: "🇬🇧", name: "Royaume-Uni" },
+  { code: "DE", iso: "de", dial: "+49", flag: "🇩🇪", name: "Allemagne" },
+  { code: "ES", iso: "es", dial: "+34", flag: "🇪🇸", name: "Espagne" },
+  { code: "IT", iso: "it", dial: "+39", flag: "🇮🇹", name: "Italie" },
+  { code: "SN", iso: "sn", dial: "+221", flag: "🇸🇳", name: "Sénégal" },
+  { code: "CI", iso: "ci", dial: "+225", flag: "🇨🇮", name: "Côte d'Ivoire" },
+  { code: "MA", iso: "ma", dial: "+212", flag: "🇲🇦", name: "Maroc" },
 ];
+
+function FlagCircle({ iso, alt, size = 24 }: { iso: string; alt: string; size?: number }) {
+  return (
+    <span
+      className="inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-white ring-1 ring-neutral-200"
+      style={{ width: size, height: size }}
+    >
+      <img
+        src={`https://hatscripts.github.io/circle-flags/flags/${iso}.svg`}
+        alt={alt}
+        width={size}
+        height={size}
+        loading="lazy"
+        className="h-full w-full object-cover"
+      />
+    </span>
+  );
+}
 
 type Tab = "email" | "phone";
 
@@ -318,26 +336,30 @@ function Connexion() {
             Choisissez votre méthode de connexion
           </p>
 
-          {/* Tabs */}
-          <div className="mt-5 grid grid-cols-2 gap-1 rounded-full bg-[#F1F1F1] p-1">
-            <button
-              type="button"
-              onClick={() => { setTab("email"); resetMessages(); }}
-              className={`inline-flex h-10 items-center justify-center gap-2 rounded-full text-sm font-bold transition ${
-                tab === "email" ? "bg-white text-black shadow-sm" : "text-[#6B6B6B]"
-              }`}
-            >
-              <Mail className="h-4 w-4" /> Email
-            </button>
-            <button
-              type="button"
-              onClick={() => { setTab("phone"); resetMessages(); }}
-              className={`inline-flex h-10 items-center justify-center gap-2 rounded-full text-sm font-bold transition ${
-                tab === "phone" ? "bg-white text-black shadow-sm" : "text-[#6B6B6B]"
-              }`}
-            >
-              <Phone className="h-4 w-4" /> Téléphone (SMS)
-            </button>
+          {/* Tabs — Pills */}
+          <div className="mt-5 flex items-center gap-2">
+            {([
+              { key: "email", label: "Email", Icon: Mail },
+              { key: "phone", label: "Téléphone (SMS)", Icon: Phone },
+            ] as const).map(({ key, label, Icon }) => {
+              const active = tab === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => { setTab(key); resetMessages(); }}
+                  aria-pressed={active}
+                  className={`inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full text-sm font-bold transition ${
+                    active
+                      ? "bg-white text-black ring-1 ring-neutral-200 shadow-[0_4px_14px_-6px_rgba(0,0,0,0.15)]"
+                      : "bg-[#F6F6F6] text-[#8a8a8a] ring-1 ring-transparent hover:text-black"
+                  }`}
+                >
+                  <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
+                  {label}
+                </button>
+              );
+            })}
           </div>
 
           {/* ── EMAIL TAB ── */}
@@ -419,21 +441,21 @@ function Connexion() {
           {/* ── PHONE TAB ── */}
           {tab === "phone" && otpStep === "phone" && (
             <div className="mt-6 space-y-3">
-              <div className="flex items-stretch gap-2">
+              <div className="flex items-stretch gap-3">
                 <button
                   type="button"
                   onClick={() => setShowCountries((v) => !v)}
-                  className="flex h-12 items-center gap-2 rounded-xl bg-[#F6F6F6] px-3 text-sm font-semibold text-black ring-1 ring-transparent transition hover:bg-[#EFEFEF] focus:outline-none focus:ring-[#06C167]"
+                  className="flex h-14 items-center gap-2 rounded-2xl bg-[#F6F6F6] px-3.5 text-sm font-semibold text-black ring-1 ring-neutral-200 transition hover:bg-[#EFEFEF] focus:outline-none focus:ring-2 focus:ring-[#06C167]"
                   aria-expanded={showCountries}
+                  aria-label={`Indicatif ${country.name} ${country.dial}`}
                 >
-                  <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-white text-base ring-1 ring-neutral-200">
-                    {country.flag}
-                  </span>
-                  <span>{country.dial}</span>
-                  <ChevronDown className="h-3.5 w-3.5 text-[#6B6B6B]" />
+                  <FlagCircle iso={country.iso} alt={country.name} size={26} />
+                  <span className="text-[15px] tracking-tight">{country.dial}</span>
+                  <ChevronDown className={`h-4 w-4 text-[#6B6B6B] transition-transform ${showCountries ? "rotate-180" : ""}`} strokeWidth={1.75} />
                 </button>
 
-                <label className="flex h-12 flex-1 items-center gap-3 rounded-xl bg-[#F6F6F6] px-4 ring-1 ring-transparent transition focus-within:bg-white focus-within:ring-[#06C167]">
+                <label className="flex h-14 flex-1 items-center gap-3 rounded-2xl bg-[#F9F9F9] px-5 ring-1 ring-neutral-200 transition focus-within:bg-white focus-within:ring-2 focus-within:ring-[#06C167]">
+                  <Phone className="h-[18px] w-[18px] shrink-0 text-[#9b9b9b]" strokeWidth={1.75} />
                   <input
                     type="tel"
                     inputMode="tel"
@@ -441,24 +463,22 @@ function Connexion() {
                     placeholder="Entrez votre numéro"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="flex-1 bg-transparent text-base font-medium text-black placeholder:text-[#9b9b9b] outline-none"
+                    className="flex-1 bg-transparent text-lg font-semibold tracking-tight text-black placeholder:text-[15px] placeholder:font-medium placeholder:text-[#9b9b9b] outline-none"
                   />
                 </label>
               </div>
 
               {showCountries && (
-                <div className="max-h-56 overflow-y-auto rounded-xl bg-white p-1.5 ring-1 ring-neutral-200">
+                <div className="max-h-56 overflow-y-auto rounded-2xl bg-white p-1.5 ring-1 ring-neutral-200 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.15)]">
                   {COUNTRIES.map((c) => (
                     <button
                       key={c.code}
                       type="button"
                       onClick={() => { setCountryCode(c.code); setShowCountries(false); }}
-                      className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm hover:bg-[#F6F6F6] ${c.code === countryCode ? "bg-[#F6F6F6]" : ""}`}
+                      className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm transition hover:bg-[#F6F6F6] ${c.code === countryCode ? "bg-[#F6F6F6]" : ""}`}
                     >
-                      <span className="flex items-center gap-2 text-black">
-                        <span className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-white text-base ring-1 ring-neutral-200">
-                          {c.flag}
-                        </span>
+                      <span className="flex items-center gap-3 text-black">
+                        <FlagCircle iso={c.iso} alt={c.name} size={22} />
                         <span className="font-medium">{c.name}</span>
                       </span>
                       <span className="text-xs text-[#6B6B6B]">{c.dial}</span>
