@@ -1218,6 +1218,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      user_exists_by_email: { Args: { _email: string }; Returns: boolean }
     }
     Enums: {
       app_role:
