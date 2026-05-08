@@ -682,22 +682,21 @@ function Connexion() {
           {step === "otp" && (
             <form id="otp-form" onSubmit={submitCode} className="space-y-5 animate-fade-up">
               <div className="text-center">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-600 shadow-[0_0_30px_rgba(251,146,60,0.5)]">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#06C167] shadow-[0_8px_22px_-8px_rgba(6,193,103,0.55)]">
                   <ShieldCheck className="h-6 w-6 text-white" />
                 </div>
-                <h2 className="font-display text-xl font-bold text-white">Vérification</h2>
-                <p className="mt-1 text-sm text-white/60">
+                <h2 className="font-display text-xl font-bold text-black">Vérification</h2>
+                <p className="mt-1 text-sm text-[#6B6B6B]">
                   {channel === "whatsapp" ? "Code envoyé par WhatsApp" : channel === "email" ? "Code envoyé par email" : "Code envoyé par SMS"} à
                 </p>
-                <p className="mt-1 text-sm font-semibold text-amber-300">{identifierLabel}</p>
+                <p className="mt-1 text-sm font-semibold text-[#06C167]">{identifierLabel}</p>
               </div>
 
               <div>
-                <label className="mb-3 block text-center text-[11px] font-semibold uppercase tracking-[0.25em] text-white/55">
+                <label className="mb-3 block text-center text-[11px] font-bold uppercase tracking-[0.25em] text-[#6B6B6B]">
                   Saisissez les 6 chiffres
                 </label>
                 <OtpInput value={code} onChange={setCode} onComplete={() => {
-                  // submit when 6 digits entered
                   const form = document.getElementById("otp-form") as HTMLFormElement | null;
                   form?.requestSubmit();
                 }} />
@@ -705,7 +704,7 @@ function Connexion() {
               </div>
 
               {error && (
-                <div className="flex items-start gap-2 rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-xs text-red-300">
+                <div className="flex items-start gap-2 rounded-xl border border-red-300 bg-red-50 p-3 text-xs text-red-600">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                   <span>{error}</span>
                 </div>
@@ -714,10 +713,7 @@ function Connexion() {
               <button
                 type="submit"
                 disabled={loading || code.length !== 6}
-                className="shine-sweep relative inline-flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-xl text-sm font-bold uppercase tracking-[0.18em] text-white shadow-[0_10px_30px_-10px_rgba(249,115,22,0.7)] transition-transform active:scale-[0.98] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d0d0f]"
-                style={{
-                  background: "linear-gradient(90deg, #f59e0b 0%, #f97316 50%, #ea580c 100%)",
-                }}
+                className="relative inline-flex min-h-[44px] h-[52px] w-full items-center justify-center gap-2 overflow-hidden rounded-[14px] bg-[#06C167] text-sm font-bold uppercase tracking-[0.18em] text-white shadow-[0_10px_24px_-12px_rgba(6,193,103,0.65)] transition hover:bg-[#05a557] active:scale-[0.99] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               >
                 {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (<><Check className="h-4 w-4" /> Valider</>)}
               </button>
@@ -727,7 +723,7 @@ function Connexion() {
                   type="button"
                   onClick={handleResend}
                   disabled={cooldown > 0 || resendCount >= MAX_RESEND || loading}
-                  className="text-sm font-semibold text-amber-300 transition hover:text-amber-200 disabled:text-white/40 disabled:cursor-not-allowed focus:outline-none focus-visible:underline"
+                  className="text-sm font-semibold text-[#06C167] transition hover:text-[#05a557] disabled:text-[#9A9A9A] disabled:cursor-not-allowed focus:outline-none focus-visible:underline"
                 >
                   {resendCount >= MAX_RESEND
                     ? "Limite de renvois atteinte"
@@ -735,7 +731,7 @@ function Connexion() {
                       ? `Renvoyer le code dans ${cooldown}s`
                       : "Renvoyer le code"}
                 </button>
-                <p className="text-[11px] text-white/40">
+                <p className="text-[11px] text-[#9A9A9A]">
                   {resendCount}/{MAX_RESEND} tentatives utilisées
                 </p>
               </div>
@@ -743,7 +739,7 @@ function Connexion() {
               <button
                 type="button"
                 onClick={() => { setStep("identify"); setCode(""); setError(null); setResendCount(0); setCooldown(0); }}
-                className="block w-full text-center text-xs text-white/60 underline-offset-4 hover:text-white hover:underline focus:outline-none focus-visible:underline"
+                className="block w-full text-center text-xs text-[#6B6B6B] underline-offset-4 hover:text-black hover:underline focus:outline-none focus-visible:underline"
               >
                 ← Modifier {mode === "phone" ? "le numéro" : "l'email"}
               </button>
