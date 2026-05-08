@@ -575,9 +575,27 @@ function Connexion() {
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (<><Check className="h-4 w-4" /> Valider et entrer</>)}
               </button>
 
+              <div className="flex flex-col items-center gap-1 pt-1">
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={cooldown > 0 || resendCount >= MAX_RESEND || loading}
+                  className="text-xs font-semibold text-primary disabled:text-muted-foreground disabled:cursor-not-allowed hover:underline underline-offset-4"
+                >
+                  {resendCount >= MAX_RESEND
+                    ? "Limite de renvois atteinte"
+                    : cooldown > 0
+                      ? `Renvoyer le code dans ${cooldown}s`
+                      : "Renvoyer le code"}
+                </button>
+                <p className="text-[11px] text-muted-foreground">
+                  {resendCount}/{MAX_RESEND} tentatives utilisées
+                </p>
+              </div>
+
               <button
                 type="button"
-                onClick={() => { setStep("identify"); setCode(""); setError(null); }}
+                onClick={() => { setStep("identify"); setCode(""); setError(null); setResendCount(0); setCooldown(0); }}
                 className="block w-full text-center text-xs text-muted-foreground underline-offset-4 hover:underline"
               >
                 Modifier {mode === "phone" ? "le numéro" : "l'email"}
