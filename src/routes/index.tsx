@@ -149,10 +149,10 @@ function Index() {
         {/* Section title */}
         <div className="mt-6 mb-3 flex items-center justify-between">
           <h2 className="text-base font-bold" style={{ color: "#1A1A1A" }}>
-            Popular near you
+            Populaires près de chez vous
           </h2>
           <Link to="/decouvrir" className="text-xs font-semibold" style={{ color: "#00B14F" }}>
-            See all
+            Tout voir
           </Link>
         </div>
 
