@@ -45,6 +45,7 @@ import { Route as RestaurantsRestoIdRouteImport } from './routes/restaurants.$re
 import { Route as RSlugRouteImport } from './routes/r.$slug'
 import { Route as ComptePaiementsRouteImport } from './routes/compte.paiements'
 import { Route as CompteLivraisonRouteImport } from './routes/compte.livraison'
+import { Route as CompteCommandesRouteImport } from './routes/compte.commandes'
 import { Route as CategorieSlugRouteImport } from './routes/categorie.$slug'
 import { Route as AideCategoryRouteImport } from './routes/aide.$category'
 import { Route as AdminLoginRouteImport } from './routes/admin_.login'
@@ -241,6 +242,11 @@ const CompteLivraisonRoute = CompteLivraisonRouteImport.update({
   path: '/compte/livraison',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompteCommandesRoute = CompteCommandesRouteImport.update({
+  id: '/compte/commandes',
+  path: '/compte/commandes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CategorieSlugRoute = CategorieSlugRouteImport.update({
   id: '/categorie/$slug',
   path: '/categorie/$slug',
@@ -357,6 +363,7 @@ export interface FileRoutesByFullPath {
   '/admin/login': typeof AdminLoginRoute
   '/aide/$category': typeof AideCategoryRoute
   '/categorie/$slug': typeof CategorieSlugRoute
+  '/compte/commandes': typeof CompteCommandesRoute
   '/compte/livraison': typeof CompteLivraisonRoute
   '/compte/paiements': typeof ComptePaiementsRoute
   '/r/$slug': typeof RSlugRoute
@@ -408,6 +415,7 @@ export interface FileRoutesByTo {
   '/admin/login': typeof AdminLoginRoute
   '/aide/$category': typeof AideCategoryRoute
   '/categorie/$slug': typeof CategorieSlugRoute
+  '/compte/commandes': typeof CompteCommandesRoute
   '/compte/livraison': typeof CompteLivraisonRoute
   '/compte/paiements': typeof ComptePaiementsRoute
   '/r/$slug': typeof RSlugRoute
@@ -462,6 +470,7 @@ export interface FileRoutesById {
   '/admin_/login': typeof AdminLoginRoute
   '/aide/$category': typeof AideCategoryRoute
   '/categorie/$slug': typeof CategorieSlugRoute
+  '/compte/commandes': typeof CompteCommandesRoute
   '/compte/livraison': typeof CompteLivraisonRoute
   '/compte/paiements': typeof ComptePaiementsRoute
   '/r/$slug': typeof RSlugRoute
@@ -517,6 +526,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/aide/$category'
     | '/categorie/$slug'
+    | '/compte/commandes'
     | '/compte/livraison'
     | '/compte/paiements'
     | '/r/$slug'
@@ -568,6 +578,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/aide/$category'
     | '/categorie/$slug'
+    | '/compte/commandes'
     | '/compte/livraison'
     | '/compte/paiements'
     | '/r/$slug'
@@ -621,6 +632,7 @@ export interface FileRouteTypes {
     | '/admin_/login'
     | '/aide/$category'
     | '/categorie/$slug'
+    | '/compte/commandes'
     | '/compte/livraison'
     | '/compte/paiements'
     | '/r/$slug'
@@ -667,6 +679,7 @@ export interface RootRouteChildren {
   TableeRoute: typeof TableeRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
   CategorieSlugRoute: typeof CategorieSlugRoute
+  CompteCommandesRoute: typeof CompteCommandesRoute
   CompteLivraisonRoute: typeof CompteLivraisonRoute
   ComptePaiementsRoute: typeof ComptePaiementsRoute
   RSlugRoute: typeof RSlugRoute
@@ -932,6 +945,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompteLivraisonRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/compte/commandes': {
+      id: '/compte/commandes'
+      path: '/compte/commandes'
+      fullPath: '/compte/commandes'
+      preLoaderRoute: typeof CompteCommandesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/categorie/$slug': {
       id: '/categorie/$slug'
       path: '/categorie/$slug'
@@ -1148,6 +1168,7 @@ const rootRouteChildren: RootRouteChildren = {
   TableeRoute: TableeRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
   CategorieSlugRoute: CategorieSlugRoute,
+  CompteCommandesRoute: CompteCommandesRoute,
   CompteLivraisonRoute: CompteLivraisonRoute,
   ComptePaiementsRoute: ComptePaiementsRoute,
   RSlugRoute: RSlugRoute,
