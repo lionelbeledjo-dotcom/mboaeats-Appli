@@ -43,8 +43,14 @@ function Litiges() {
   const reload = () => {
     setError(null);
     return fetchAll()
-      .then((r) => setItems(r.disputes as unknown as Dispute[]))
-      .catch((e) => { setItems([]); setError(e instanceof Error ? e.message : "Erreur réseau"); });
+      .then((r) => {
+        const list = (r.disputes ?? []) as unknown as Dispute[];
+        setItems(list.length > 0 ? list : MOCK_DISPUTES);
+      })
+      .catch((e) => {
+        setError(e instanceof Error ? e.message : "Erreur réseau");
+        setItems(MOCK_DISPUTES);
+      });
   };
   useEffect(() => {
     reload();
