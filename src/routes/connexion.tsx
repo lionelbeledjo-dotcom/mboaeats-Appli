@@ -11,7 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { invalidateSessionCache } from "@/hooks/useSessionUser";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { DeliveryBadge } from "@/components/brand/DeliveryBadge";
+import { MboaEatsLogo } from "@/components/brand/MboaEatsLogo";
 
 export const Route = createFileRoute("/connexion")({
   component: Connexion,
@@ -359,18 +359,7 @@ function Connexion() {
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col items-center justify-center px-5 py-10">
         {/* Logo MboaEats */}
         <div className="mb-10 flex w-full flex-col items-center sm:mb-12">
-          <div className="rounded-2xl bg-[#0A8F4E] px-6 py-5 shadow-[0_12px_32px_-14px_rgba(6,193,103,0.55)] sm:rounded-3xl sm:px-8 sm:py-6">
-            <div className="flex flex-col items-start">
-              <DeliveryBadge className="mb-2 ml-[2px] sm:ml-[3px]" />
-              <h2
-                aria-label="MboaEats"
-                className="text-[40px] font-black leading-none tracking-tight drop-shadow-[0_2px_6px_rgba(0,0,0,0.20)] sm:text-[56px]"
-              >
-                <span className="text-white">Mboa</span>
-                <span className="text-[#06C167]">Eats</span>
-              </h2>
-            </div>
-          </div>
+          <MboaEatsLogo size="lg" />
         </div>
 
         {/* Card */}
