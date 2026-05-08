@@ -209,7 +209,10 @@ function Checkout() {
               method={method} setMethod={setMethod}
               phone={phone} setPhone={setPhone}
               landmark={landmark} setLandmark={setLandmark} landmarkErr={landmarkErr}
-              onPay={start} total={total}
+              onPay={() => {
+                if (!extrasSeen && cartItems.length > 0) setShowExtras(true);
+                else start();
+              }} total={total}
             />
           )}
           {step === "ussd" && (
