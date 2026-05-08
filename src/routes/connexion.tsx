@@ -368,9 +368,9 @@ function Connexion() {
           <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-[24px] bg-[#06C167] shadow-[0_10px_30px_-12px_rgba(6,193,103,0.55)]">
             <Flame className="h-10 w-10 text-white" strokeWidth={2.4} />
           </div>
-          <h1 className="font-display text-[34px] font-black leading-none text-[#06C167]">MboaEats</h1>
+          <h1 className="font-display text-[34px] font-black leading-none text-[#047A45]">MboaEats</h1>
           <h2 className="mt-3 text-[20px] font-bold leading-none text-black">Mboa Console</h2>
-          <p className="mt-2 text-[15px] font-normal leading-snug text-[#6B6B6B]">
+          <p className="mt-2 text-[15px] font-normal leading-snug text-[#4B5563]">
             Veuillez vous connecter pour continuer
           </p>
         </div>
@@ -387,7 +387,7 @@ function Connexion() {
                   className={`flex min-h-[44px] items-center justify-center gap-2 rounded-full px-3 text-[14px] font-bold transition ${
                     mode === "phone"
                       ? "bg-white text-[#2D2D2D] shadow-[0_2px_6px_-2px_rgba(0,122,255,0.25)] ring-1 ring-[#007AFF]"
-                      : "bg-[#F6F6F6] text-[#6B6B6B] hover:text-[#2D2D2D]"
+                      : "bg-[#F6F6F6] text-[#4B5563] hover:text-[#1F2937]"
                   }`}
                 >
                   <Phone strokeWidth={2} className={`h-4 w-4 ${mode === "phone" ? "text-[#007AFF]" : "text-[#9A9A9A]"}`} /> Téléphone
@@ -399,7 +399,7 @@ function Connexion() {
                   className={`flex min-h-[44px] items-center justify-center gap-2 rounded-full px-3 text-[14px] font-bold transition ${
                     mode === "email"
                       ? "bg-white text-[#2D2D2D] shadow-[0_2px_6px_-2px_rgba(142,68,173,0.25)] ring-1 ring-[#8E44AD]"
-                      : "bg-[#F6F6F6] text-[#6B6B6B] hover:text-[#2D2D2D]"
+                      : "bg-[#F6F6F6] text-[#4B5563] hover:text-[#1F2937]"
                   }`}
                 >
                   <Mail strokeWidth={2} className={`h-4 w-4 ${mode === "email" ? "text-[#8E44AD]" : "text-[#9A9A9A]"}`} /> Email
@@ -546,7 +546,7 @@ function Connexion() {
 
                 {mode === "phone" && smsTrial && !whatsappAvailable && (
                   <div className="rounded-xl border border-amber-500/40 bg-amber-50 p-3 text-xs text-black">
-                    ⚠️ SMS et WhatsApp temporairement indisponibles. Utilisez votre <button type="button" onClick={() => setMode("email")} className="font-semibold text-[#06C167] underline">email</button> pour vous connecter immédiatement.
+                    ⚠️ SMS et WhatsApp temporairement indisponibles. Utilisez votre <button type="button" onClick={() => setMode("email")} className="font-semibold text-[#047A45] underline">email</button> pour vous connecter immédiatement.
                   </div>
                 )}
 
@@ -583,7 +583,7 @@ function Connexion() {
                         </button>
                       ) : (
                         <div
-                          className="flex h-[52px] flex-col items-center justify-center gap-0.5 rounded-full border border-dashed border-[#A8D5BA] bg-[#F5FBF7] text-center text-[13px] font-semibold text-[#6B6B6B]"
+                          className="flex h-[52px] flex-col items-center justify-center gap-0.5 rounded-full border border-dashed border-[#A8D5BA] bg-[#F5FBF7] text-center text-[13px] font-semibold text-[#4B5563]"
                           aria-disabled
                           title="WhatsApp pas encore activé sur ce compte"
                         >
@@ -638,7 +638,7 @@ function Connexion() {
                         <button
                           type="button"
                           onClick={() => { setMode("email"); setError(null); setShowWhatsAppFallback(false); }}
-                          className="inline-flex items-center gap-1.5 rounded-full bg-[#06C167] px-3 py-1.5 text-[11px] font-semibold text-white"
+                          className="inline-flex items-center gap-1.5 rounded-full bg-[#047A45] px-3 py-1.5 text-[11px] font-semibold text-white"
                         >
                           <Mail className="h-3 w-3" /> Utiliser mon email
                         </button>
@@ -662,7 +662,7 @@ function Connexion() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="relative inline-flex min-h-[44px] h-[56px] w-full items-center justify-center gap-2 overflow-hidden rounded-[14px] bg-gradient-to-b from-[#06C167] to-[#04A056] text-[15px] font-bold uppercase tracking-[0.16em] text-white shadow-[0_10px_24px_-12px_rgba(6,193,103,0.65)] transition hover:from-[#05B85E] hover:to-[#03934E] active:scale-[0.99] disabled:opacity-60 disabled:animate-none animate-soft-pulse focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                  className="relative inline-flex min-h-[44px] h-[56px] w-full items-center justify-center gap-2 overflow-hidden rounded-[14px] bg-gradient-to-b from-[#06A04E] to-[#03843F] text-[15px] font-bold uppercase tracking-[0.16em] text-white shadow-[0_10px_24px_-12px_rgba(6,193,103,0.65)] transition hover:from-[#058B43] hover:to-[#02703B] active:scale-[0.99] disabled:opacity-60 disabled:animate-none animate-soft-pulse focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
                   {loading ? <Loader2 strokeWidth={2} className="h-5 w-5 animate-spin" /> : (<>SE CONNECTER <ArrowRight strokeWidth={2} className="h-5 w-5" /></>)}
                 </button>
@@ -671,7 +671,7 @@ function Connexion() {
                   <button
                     type="button"
                     onClick={() => { if (identifierLabel && (phone || email)) setStep("otp"); }}
-                    className="text-[14px] font-medium text-[#6B6B6B] transition hover:text-[#06C167] focus:outline-none focus-visible:underline"
+                    className="text-[14px] font-medium text-[#4B5563] transition hover:text-[#047A45] focus:outline-none focus-visible:underline"
                   >
                     Vérifier le code ?
                   </button>
@@ -679,7 +679,7 @@ function Connexion() {
                     href="https://wa.me/237699999999?text=Bonjour%20MboaEats%2C%20j%27ai%20besoin%20d%27aide%20pour%20me%20connecter."
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[14px] font-medium text-[#6B6B6B] transition hover:text-[#06C167] focus:outline-none focus-visible:underline"
+                    className="text-[14px] font-medium text-[#4B5563] transition hover:text-[#047A45] focus:outline-none focus-visible:underline"
                   >
                     Veuillez contacter l'administrateur ?
                   </a>
@@ -735,7 +735,7 @@ function Connexion() {
                 <p className="mt-1 text-sm text-[#6B6B6B]">
                   {channel === "whatsapp" ? "Code envoyé par WhatsApp" : channel === "email" ? "Code envoyé par email" : "Code envoyé par SMS"} à
                 </p>
-                <p className="mt-1 text-sm font-semibold text-[#06C167]">{identifierLabel}</p>
+                <p className="mt-1 text-sm font-semibold text-[#047A45]">{identifierLabel}</p>
               </div>
 
               <div>
@@ -759,7 +759,7 @@ function Connexion() {
               <button
                 type="submit"
                 disabled={loading || code.length !== 6}
-                className="relative inline-flex min-h-[44px] h-[52px] w-full items-center justify-center gap-2 overflow-hidden rounded-[14px] bg-[#06C167] text-sm font-bold uppercase tracking-[0.18em] text-white shadow-[0_10px_24px_-12px_rgba(6,193,103,0.65)] transition hover:bg-[#05a557] active:scale-[0.99] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                className="relative inline-flex min-h-[44px] h-[52px] w-full items-center justify-center gap-2 overflow-hidden rounded-[14px] bg-[#047A45] text-sm font-bold uppercase tracking-[0.18em] text-white shadow-[0_10px_24px_-12px_rgba(4,122,69,0.55)] transition hover:bg-[#03613A] active:scale-[0.99] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               >
                 {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (<><Check className="h-4 w-4" /> Valider</>)}
               </button>
@@ -769,7 +769,7 @@ function Connexion() {
                   type="button"
                   onClick={handleResend}
                   disabled={cooldown > 0 || resendCount >= MAX_RESEND || loading}
-                  className="text-sm font-semibold text-[#06C167] transition hover:text-[#05a557] disabled:text-[#9A9A9A] disabled:cursor-not-allowed focus:outline-none focus-visible:underline"
+                  className="text-sm font-semibold text-[#047A45] transition hover:text-[#05a557] disabled:text-[#9A9A9A] disabled:cursor-not-allowed focus:outline-none focus-visible:underline"
                 >
                   {resendCount >= MAX_RESEND
                     ? "Limite de renvois atteinte"
