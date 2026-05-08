@@ -78,7 +78,7 @@ function Index() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#D9E8D8" }}>
-      <div className="mx-auto max-w-md px-4 pb-28 pt-4">
+      <div className="mx-auto max-w-md px-4 pb-28 pt-[calc(env(safe-area-inset-top)+1rem)]">
         {/* Top bar */}
         <header className="mb-4 flex items-center justify-between gap-3">
           <HamburgerMenu />
