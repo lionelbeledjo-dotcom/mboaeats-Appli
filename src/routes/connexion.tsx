@@ -289,7 +289,30 @@ function Connexion() {
     }
   };
 
-  const verifyCode = async (code: string) => {
+  // ── Phone: resend OTP (cooldown + dedicated loading) ─────
+  const resendSms = async () => {
+    if (resendIn > 0 || resendingSms) return;
+    setResendOk(false);
+    setError(null);
+    setErrorCode(null);
+    setResendingSms(true);
+    try {
+      const res: any = await sendOtpFn({ data: { phone: fullPhone, channel: "sms" } });
+      if (res?.ok === false) {
+        setError(res.error ?? "Échec de l'envoi du SMS");
+        if (typeof res.retryAfter === "number") setResendIn(res.retryAfter);
+        return;
+      }
+      setOtpCode("");
+      setResendIn(30);
+      setResendOk(true);
+      if (res?.devCode) setDevCode(String(res.devCode));
+      setTimeout(() => setResendOk(false), 2500);
+    } catch (err: any) {
+      setError(err?.message ?? "Erreur lors du renvoi");
+    } finally {
+      setResendingSms(false);
+    }
     resetMessages();
     if (!/^\d{6}$/.test(code)) {
       setError("Saisissez les 6 chiffres reçus.");
