@@ -46,6 +46,27 @@ export function removeFromCart(id: string) {
   playCartSound("remove");
 }
 
+export function setQty(id: string, qty: number) {
+  if (qty <= 0) return removeFromCart(id);
+  const items = read();
+  const idx = items.findIndex((i) => i.id === id);
+  if (idx < 0) return;
+  const prev = items[idx].qty;
+  items[idx].qty = qty;
+  write(items);
+  if (qty > prev) playCartSound("add");
+  else playCartSound("remove");
+}
+
+export function getCartItems(): CartItem[] {
+  return read();
+}
+
+export function restoreCartItems(items: CartItem[]) {
+  write(items);
+  playCartSound("add");
+}
+
 export function clearCart() {
   write([]);
 }
@@ -85,6 +106,7 @@ export function useCart() {
     count,
     add: useCallback((it: CartItem) => addToCart(it), []),
     remove: useCallback((id: string) => removeFromCart(id), []),
+    setQty: useCallback((id: string, qty: number) => setQty(id, qty), []),
     clear: useCallback(() => clearCart(), []),
   };
 }

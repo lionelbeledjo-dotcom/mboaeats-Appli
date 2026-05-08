@@ -4,7 +4,8 @@ import { toast } from "sonner";
 import { SmartBack } from "@/components/SmartBack";
 import { RestaurantSkeleton } from "@/components/Skeleton";
 import { getRestaurant, type Restaurant } from "@/data/restaurants";
-import { addToCart } from "@/hooks/use-cart";
+import { addToCart, useCart, setQty as setCartQty } from "@/hooks/use-cart";
+import { QuantityStepper } from "@/components/QuantityStepper";
 
 export const Route = createFileRoute("/restaurants/$restoId")({
   loader: ({ params }) => {
@@ -38,6 +39,8 @@ export const Route = createFileRoute("/restaurants/$restoId")({
 function RestaurantPage() {
   const { restaurant } = Route.useLoaderData() as { restaurant: Restaurant };
   const navigate = useNavigate();
+  const { items: cartItems } = useCart();
+  const qtyOf = (dishId: string) => cartItems.find((i) => i.id === `${dishId}__default`)?.qty ?? 0;
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
@@ -202,10 +205,21 @@ function RestaurantPage() {
                               },
                             });
                           }}
-                          className="absolute -bottom-2 -right-2 flex h-9 w-9 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-glow transition-transform hover:scale-110 active:scale-95"
+                          className={`absolute -bottom-2 -right-2 flex h-9 w-9 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-glow transition-transform hover:scale-110 active:scale-95 ${qtyOf(dish.id) > 0 ? "hidden" : ""}`}
                         >
                           <Plus className="h-5 w-5" strokeWidth={2.6} />
                         </button>
+                        {qtyOf(dish.id) > 0 && (
+                          <div className="absolute -bottom-3 -right-2">
+                            <QuantityStepper
+                              size="sm"
+                              qty={qtyOf(dish.id)}
+                              onInc={() => setCartQty(`${dish.id}__default`, qtyOf(dish.id) + 1)}
+                              onDec={() => setCartQty(`${dish.id}__default`, qtyOf(dish.id) - 1)}
+                              ariaLabel={`Quantité de ${dish.name}`}
+                            />
+                          </div>
+                        )}
                       </div>
                     </Link>
                   </li>

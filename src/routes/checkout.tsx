@@ -2,14 +2,16 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   ArrowLeft, Smartphone, CreditCard, Banknote, Check, Loader2, ShieldCheck,
-  Lock, ChevronRight, Webhook, MapPin, Tag, Crown, AlertCircle,
+  Lock, ChevronRight, Webhook, MapPin, Tag, Crown, AlertCircle, X, Plus, Sparkles,
 } from "lucide-react";
+import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { initiatePayment, verifyPayment, getActiveMboaPass } from "@/server/payments.functions";
 import { createOrder, markOrderPaid } from "@/server/marketplace.functions";
-import { useCart, clearCart } from "@/hooks/use-cart";
+import { useCart, clearCart, addToCart, setQty as setCartQty, removeFromCart, type CartItem } from "@/hooks/use-cart";
+import { QuantityStepper } from "@/components/QuantityStepper";
 
 export const Route = createFileRoute("/checkout")({
   component: Checkout,
@@ -23,6 +25,14 @@ export const Route = createFileRoute("/checkout")({
 
 type Method = "momo" | "orange" | "card" | "cash";
 type Step = "choose" | "ussd" | "otp" | "card" | "success";
+
+const UPSELL_ITEMS: { id: string; name: string; price: number; image: string; emoji: string }[] = [
+  { id: "upsell__cocacola", name: "Coca-Cola 33cl", price: 700, emoji: "🥤", image: "https://images.unsplash.com/photo-1554866585-cd94860890b7?w=400&q=80" },
+  { id: "upsell__frites", name: "Frites maison", price: 1500, emoji: "🍟", image: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=400&q=80" },
+  { id: "upsell__beignet", name: "Beignet sucré", price: 500, emoji: "🥯", image: "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=400&q=80" },
+  { id: "upsell__sauce", name: "Sauce piment maison", price: 300, emoji: "🌶️", image: "https://images.unsplash.com/photo-1599577180589-0a3a6c4f0c5b?w=400&q=80" },
+];
+
 
 const landmarkSchema = z.string().trim().min(8, "Décrivez un repère visible (≥ 8 caractères)").max(140);
 
@@ -55,6 +65,8 @@ function Checkout() {
   const [pending, setPending] = useState(false);
   const [seconds, setSeconds] = useState(20);
   const [liveOrderId, setLiveOrderId] = useState<string | null>(null);
+  const [showExtras, setShowExtras] = useState(false);
+  const [extrasSeen, setExtrasSeen] = useState(false);
 
   // Détection MboaPass (livraison gratuite)
   useEffect(() => {
@@ -197,7 +209,10 @@ function Checkout() {
               method={method} setMethod={setMethod}
               phone={phone} setPhone={setPhone}
               landmark={landmark} setLandmark={setLandmark} landmarkErr={landmarkErr}
-              onPay={start} total={total}
+              onPay={() => {
+                if (!extrasSeen && cartItems.length > 0) setShowExtras(true);
+                else start();
+              }} total={total}
             />
           )}
           {step === "ussd" && (
@@ -210,8 +225,15 @@ function Checkout() {
           {step === "success" && <SuccessScreen method={method} total={total} />}
         </section>
 
-        <Summary cart={cart} subtotal={subtotal} delivery={delivery} total={total} hasPass={hasPass} landmark={landmark} promo={promo} setPromo={setPromo} />
+        <Summary cartItems={cartItems} subtotal={subtotal} delivery={delivery} total={total} hasPass={hasPass} landmark={landmark} promo={promo} setPromo={setPromo} />
       </main>
+
+      {showExtras && (
+        <ExtrasModal
+          onSkip={() => { setShowExtras(false); setExtrasSeen(true); start(); }}
+          onClose={() => { setShowExtras(false); setExtrasSeen(true); }}
+        />
+      )}
     </div>
   );
 }
@@ -443,8 +465,8 @@ function SuccessScreen({ method, total }: { method: Method; total: number }) {
   );
 }
 
-function Summary({ cart, subtotal, delivery, total, hasPass, landmark, promo, setPromo }: {
-  cart: { name: string; qty: number; price: number }[]; subtotal: number; delivery: number; total: number; hasPass: boolean; landmark: string;
+function Summary({ cartItems, subtotal, delivery, total, hasPass, landmark, promo, setPromo }: {
+  cartItems: CartItem[]; subtotal: number; delivery: number; total: number; hasPass: boolean; landmark: string;
   promo: { code: string; discount: number } | null;
   setPromo: (p: { code: string; discount: number } | null) => void;
 }) {
@@ -468,17 +490,61 @@ function Summary({ cart, subtotal, delivery, total, hasPass, landmark, promo, se
     setCode("");
   };
 
+  const handleRemove = (item: CartItem) => {
+    const snapshot = { ...item };
+    removeFromCart(item.id);
+    toast("Article retiré", {
+      description: item.name,
+      action: { label: "Annuler", onClick: () => addToCart(snapshot) },
+      duration: 5000,
+    });
+  };
+
   return (
-    <aside className="rounded-3xl border border-border bg-surface/60 p-5 h-fit md:sticky md:top-20">
+    <aside className="rounded-3xl border border-border bg-card p-5 h-fit md:sticky md:top-20 shadow-card">
       <h3 className="font-display text-lg font-bold">Ta commande</h3>
-      <p className="text-xs text-muted-foreground">Chez Mama Bello · Akwa</p>
-      <ul className="mt-4 space-y-2 text-sm">
-        {cart.map((i) => (
-          <li key={i.name} className="flex justify-between">
-            <span><span className="text-muted-foreground">{i.qty}×</span> {i.name}</span>
-            <span>{(i.qty * i.price).toLocaleString("fr-FR")} F</span>
+      <p className="text-xs text-muted-foreground">{cartItems.length} article{cartItems.length > 1 ? "s" : ""}</p>
+      <ul className="mt-4 space-y-3 text-sm">
+        {cartItems.map((i) => (
+          <li
+            key={i.id}
+            className="group relative flex items-center gap-3 rounded-2xl border border-border/60 bg-background p-2 pr-3 animate-fade-up"
+          >
+            <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-muted">
+              {i.image ? (
+                <img src={i.image} alt={i.name} className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-xl">🍽️</div>
+              )}
+              <button
+                type="button"
+                aria-label={`Retirer ${i.name}`}
+                onClick={() => handleRemove(i)}
+                className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-md transition-transform hover:scale-110 active:scale-95"
+              >
+                <X className="h-3.5 w-3.5" strokeWidth={3} />
+              </button>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-semibold">{i.name}</p>
+              <p className="text-xs text-muted-foreground">{(i.qty * i.price).toLocaleString("fr-FR")} F</p>
+              <div className="mt-1.5">
+                <QuantityStepper
+                  size="sm"
+                  qty={i.qty}
+                  onInc={() => setCartQty(i.id, i.qty + 1)}
+                  onDec={() => setCartQty(i.id, i.qty - 1)}
+                  ariaLabel={`Quantité ${i.name}`}
+                />
+              </div>
+            </div>
           </li>
         ))}
+        {cartItems.length === 0 && (
+          <li className="rounded-2xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
+            Ton panier est vide. <Link to="/" className="font-semibold text-primary">Découvrir des restos</Link>
+          </li>
+        )}
       </ul>
       <div className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
         <div className="flex justify-between text-muted-foreground"><span>Sous-total</span><span>{subtotal.toLocaleString("fr-FR")} F</span></div>
@@ -662,6 +728,114 @@ function OtpScreen({ method, phone, total, onSubmit, onSuccess, onBack }: {
 
       <div className="mt-4 flex items-center gap-2 text-[11px] text-muted-foreground">
         <Lock className="h-3 w-3 text-primary" /> Code à usage unique · Expire après 5 minutes · Webhook officiel {brand}
+      </div>
+    </div>
+  );
+}
+
+function ExtrasModal({ onSkip, onClose }: { onSkip: () => void; onClose: () => void }) {
+  const { items: cartItems } = useCart();
+  const restoId = cartItems[0]?.restoId ?? "extras";
+
+  const addExtra = (e: typeof UPSELL_ITEMS[number]) => {
+    addToCart({
+      id: e.id,
+      dishId: e.id,
+      restoId,
+      name: e.name,
+      price: e.price,
+      qty: 1,
+      image: e.image,
+    });
+    toast.success(`${e.name} ajouté`, { duration: 1500 });
+  };
+
+  const qtyOf = (id: string) => cartItems.find((i) => i.id === id)?.qty ?? 0;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Suggestions complémentaires"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm animate-fade-in sm:items-center"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-background p-6 shadow-glow animate-fade-up sm:rounded-3xl"
+      >
+        <button
+          type="button"
+          aria-label="Fermer"
+          onClick={onClose}
+          className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-muted-foreground hover:text-foreground"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
+        <div className="flex items-center gap-2 text-primary">
+          <Sparkles className="h-4 w-4" />
+          <span className="text-xs font-semibold uppercase tracking-wider">Avant de payer</span>
+        </div>
+        <h2 className="mt-1 font-display text-2xl font-extrabold leading-tight">
+          Ajouter une touche finale&nbsp;?
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Les clients ont aussi commandé ces petits plus.
+        </p>
+
+        <ul className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-2">
+          {UPSELL_ITEMS.map((e) => {
+            const q = qtyOf(e.id);
+            return (
+              <li
+                key={e.id}
+                className="relative flex flex-col rounded-2xl border border-border bg-card p-3 shadow-card transition hover:border-primary/40"
+              >
+                <div className="flex h-24 w-full items-center justify-center overflow-hidden rounded-xl bg-muted text-4xl">
+                  <span aria-hidden>{e.emoji}</span>
+                </div>
+                <p className="mt-2 line-clamp-1 text-sm font-semibold">{e.name}</p>
+                <p className="text-xs text-muted-foreground">{e.price.toLocaleString("fr-FR")} F</p>
+                <div className="mt-2 flex justify-end">
+                  {q > 0 ? (
+                    <QuantityStepper
+                      size="sm"
+                      qty={q}
+                      onInc={() => setCartQty(e.id, q + 1)}
+                      onDec={() => setCartQty(e.id, q - 1)}
+                      ariaLabel={`Quantité ${e.name}`}
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => addExtra(e)}
+                      aria-label={`Ajouter ${e.name}`}
+                      className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-glow transition-transform hover:scale-110 active:scale-95"
+                    >
+                      <Plus className="h-5 w-5" strokeWidth={2.8} />
+                    </button>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+
+        <button
+          type="button"
+          onClick={onSkip}
+          className="mt-6 w-full rounded-2xl bg-gradient-primary py-4 text-base font-bold text-primary-foreground shadow-glow transition-transform hover:scale-[1.01]"
+        >
+          Continuer vers le paiement
+        </button>
+        <button
+          type="button"
+          onClick={onSkip}
+          className="mt-2 w-full rounded-xl py-3 text-sm font-semibold text-muted-foreground hover:text-foreground"
+        >
+          Non merci, je valide ma commande
+        </button>
       </div>
     </div>
   );

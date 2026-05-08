@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
-  Search, MapPin, Star, Clock, Flame, Bell, ChevronRight, Plus, Users, ArrowRight,
+  Search, MapPin, Star, Clock, Flame, Bell, ChevronRight, Plus, Users, ArrowRight, Bike,
 } from "lucide-react";
 
 import { restaurants as realRestaurants, getRestaurant } from "@/data/restaurants";
@@ -244,6 +244,10 @@ function Restaurants({ city }: { city: string }) {
               <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
                 <span className="inline-flex items-center gap-1">
                   <Clock className="h-3.5 w-3.5" /> {r.eta}
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <Bike className="h-3.5 w-3.5 text-primary" />
+                  <span className="font-semibold text-foreground">800 F</span>
                 </span>
                 <span className="font-semibold text-foreground">dès {r.price}</span>
               </div>
