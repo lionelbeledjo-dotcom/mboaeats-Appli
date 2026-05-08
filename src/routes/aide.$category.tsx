@@ -172,13 +172,13 @@ export const Route = createFileRoute("/aide/$category")({
   notFoundComponent: () => (
     <div className="mx-auto max-w-md p-8 text-center">
       <h1 className="font-display text-2xl font-bold">Catégorie introuvable</h1>
-      <Link to="/aide" className="mt-4 inline-block text-primary hover:underline">← Retour à l'aide</Link>
+      <Link to="/aide" hash="categories" className="mt-4 inline-block text-primary hover:underline">← Retour aux catégories</Link>
     </div>
   ),
   errorComponent: ({ error }) => (
     <div className="mx-auto max-w-md p-8 text-center">
       <p className="text-destructive">{error.message}</p>
-      <Link to="/aide" className="mt-4 inline-block text-primary hover:underline">← Retour à l'aide</Link>
+      <Link to="/aide" hash="categories" className="mt-4 inline-block text-primary hover:underline">← Retour aux catégories</Link>
     </div>
   ),
   component: CategoryPage,
