@@ -193,7 +193,11 @@ function MenusPage() {
         </div>
       </div>
 
-      {error && <ErrorState message={error} onRetry={() => restoId && reload(restoId)} />}
+      {error && (
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+          Données indisponibles ({error}). Affichage de menus de démonstration.
+        </div>
+      )}
 
       {/* Categories */}
       <section className="rounded-3xl border border-border bg-surface/60 p-5">
