@@ -50,7 +50,7 @@ const SECTIONS: Record<string, HelpSection> = {
   },
   connexion: {
     key: "connexion",
-    title: "vous connecter",
+    title: "la connexion",
     faqs: [
       {
         q: "Je ne reçois pas le code SMS, que faire ?",
