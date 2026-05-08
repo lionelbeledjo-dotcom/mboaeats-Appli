@@ -113,6 +113,7 @@ function Livreurs() {
     finally { setPendingId(null); }
   }
 
+  const tabs: { key: Filter; label: string; count: number }[] = [
     { key: "all", label: "Tous", count: counts.all },
     { key: "online", label: "En ligne", count: counts.online },
     { key: "offline", label: "Hors ligne", count: counts.offline },
