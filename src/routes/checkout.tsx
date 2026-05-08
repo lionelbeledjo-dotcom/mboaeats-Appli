@@ -594,15 +594,15 @@ function Summary({ cartItems, subtotal, delivery, total, hasPass, landmark, prom
         </p>
       )}
       {promo ? (
-        <div className="mt-4 flex items-center justify-between rounded-xl border border-gold/40 bg-gold/5 px-3 py-2 text-xs">
-          <span className="font-semibold text-gold">✓ {promo.code} appliqué</span>
+        <div className="mt-4 flex items-center justify-between rounded-xl border border-[oklch(var(--promo)/0.4)] bg-[oklch(var(--promo)/0.08)] px-3 py-2 text-xs">
+          <span className="flex items-center gap-1.5 font-semibold text-[oklch(var(--promo))]"><Check className="h-3 w-3" /> {promo.code} appliqué</span>
           <button type="button" onClick={() => setPromo(null)} className="text-muted-foreground hover:text-foreground">Retirer</button>
         </div>
       ) : !open ? (
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gold/40 bg-gold/5 py-2 text-xs font-semibold text-gold transition-colors hover:bg-gold/10"
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[oklch(var(--promo)/0.4)] bg-[oklch(var(--promo)/0.05)] py-2 text-xs font-semibold text-[oklch(var(--promo))] transition-colors hover:bg-[oklch(var(--promo)/0.1)]"
         >
           <Tag className="h-3 w-3" /> Ajouter un code promo
         </button>
