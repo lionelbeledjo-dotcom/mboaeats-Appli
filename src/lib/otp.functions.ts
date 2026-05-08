@@ -189,10 +189,8 @@ async function sendTwilioMessage(opts: {
     // 21211 : numéro destinataire invalide
     // 21614 : numéro non SMS-capable
     // 63007/63016 : WhatsApp — destinataire non opt-in / hors fenêtre 24h
-    if (code === 21608) {
-      throw new Error(
-        "Ce numéro n'est pas autorisé (compte Twilio en mode Test). Activez un compte payant ou vérifiez ce numéro dans Twilio. Sinon, essayez WhatsApp."
-      );
+    if (code === 21608 || (res.status === 400 && /trial accounts cannot send messages to unverified numbers/i.test(msg))) {
+      throw new Error(SMS_TRIAL_FALLBACK_MESSAGE);
     }
     if (code === 21211 || code === 21614) {
       throw new Error("Numéro invalide ou non compatible SMS. Réessayez ou utilisez WhatsApp.");
@@ -203,7 +201,11 @@ async function sendTwilioMessage(opts: {
       );
     }
 
-    throw new Error(`Erreur d'envoi (code ${code}). ${msg}. Réessayez ou utilisez ${channel === "sms" ? "WhatsApp" : "SMS"}.`);
+    throw new Error(
+      channel === "sms"
+        ? SMS_TRIAL_FALLBACK_MESSAGE
+        : `Impossible d'envoyer le code par WhatsApp (code ${code}). Réessayez.`
+    );
   }
 
   return data;
@@ -218,7 +220,7 @@ export const sendOtp = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const phone = normalizePhone(data.phone);
-    const channel: OtpChannel = data.channel ?? "sms";
+    const channel: OtpChannel = isTwilioTrialMode() ? "whatsapp" : (data.channel ?? "sms");
 
     // Rate limit: max 1 code in last 30s
     const since = new Date(Date.now() - 30_000).toISOString();
@@ -280,6 +282,12 @@ export const sendOtp = createServerFn({ method: "POST" })
 
     return { ok: true, expiresIn: OTP_TTL_SECONDS, channel };
   });
+
+export const getOtpDeliveryConfig = createServerFn({ method: "GET" })
+  .handler(async () => ({
+    twilioTrial: isTwilioTrialMode(),
+    defaultChannel: isTwilioTrialMode() ? "whatsapp" : "sms",
+  }));
 
 export const verifyOtp = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ phone: z.string(), code: z.string().regex(/^\d{6}$/) }).parse(d))
