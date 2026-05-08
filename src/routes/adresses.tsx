@@ -123,7 +123,7 @@ function AddressesPage() {
 
   const startEdit = (a: Saved) => {
     setEditingId(a.id);
-    setEditDraft({ ...a, phone: a.phone.replace(/^\+237\s*/, "") });
+    setEditDraft({ ...a, phone: formatCmPhone(a.phone.replace(/^\+237\s*/, "")) });
   };
   const cancelEdit = () => {
     setEditingId(null);
