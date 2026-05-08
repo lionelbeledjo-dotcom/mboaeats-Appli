@@ -132,6 +132,12 @@ function MenusPage() {
 
   const handleDeleteCat = async (c: Category) => {
     if (!confirm(`Supprimer la catégorie « ${c.name} » ? Les plats seront détachés (non supprimés).`)) return;
+    if (c.id.startsWith("mc-")) {
+      setCats((cur) => (cur ?? []).filter((x) => x.id !== c.id));
+      setDishes((cur) => (cur ?? []).map((d) => (d.category_id === c.id ? { ...d, category_id: null } : d)));
+      toast.success("Catégorie supprimée (démo)");
+      return;
+    }
     try {
       await deleteCat({ data: { id: c.id } });
       toast.success("Catégorie supprimée");
@@ -142,6 +148,11 @@ function MenusPage() {
 
   const handleDeleteDish = async (d: Dish) => {
     if (!confirm(`Supprimer le plat « ${d.name} » ?`)) return;
+    if (d.id.startsWith("md")) {
+      setDishes((cur) => (cur ?? []).filter((x) => x.id !== d.id));
+      toast.success("Plat supprimé (démo)");
+      return;
+    }
     try {
       await deleteDishFn({ data: { id: d.id } });
       toast.success("Plat supprimé");
