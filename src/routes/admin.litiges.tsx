@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { AlertTriangle, MessageCircle, Check, X, Clock, Loader2 } from "lucide-react";
+import { AlertTriangle, MessageCircle, Check, X, Clock, Loader2, Eye, Pencil, Trash2, Save } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { listAllDisputes, resolveDispute } from "@/server/admin.functions";
+import { listAllDisputes, resolveDispute, getDisputeDetails, updateDispute, deleteDispute } from "@/server/admin.functions";
 import { ErrorState } from "@/components/admin/ErrorState";
+import { Modal, Field, inputCls } from "@/components/admin/Modal";
 
 export const Route = createFileRoute("/admin/litiges")({
   head: () => ({ meta: [{ title: "Litiges · Admin MboaEats" }, { name: "robots", content: "noindex,nofollow" }] }),
