@@ -247,7 +247,15 @@ function Checkout() {
           {step === "otp" && (
             <OtpScreen method={method} phone={phone} total={total} onSubmit={submitOtp} onSuccess={confirm} onBack={() => setStep("ussd")} />
           )}
-          {step === "card" && <CardScreen total={total} onConfirm={confirm} />}
+          {step === "card" && reference && (
+            <CardScreen
+              total={total}
+              link={cardLink}
+              reference={reference}
+              poll={(ref) => pollStatus({ data: { reference: ref } })}
+              onSuccess={confirm}
+            />
+          )}
           {step === "success" && <SuccessScreen method={method} total={total} />}
         </section>
 
