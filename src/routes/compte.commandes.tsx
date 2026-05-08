@@ -1,5 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, RotateCcw, Star, Utensils } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { ArrowLeft, Check, Loader2, RotateCcw, Star, Utensils } from "lucide-react";
+import { addToCart, clearCart } from "@/hooks/use-cart";
 
 export const Route = createFileRoute("/compte/commandes")({
   component: CommandesPage,
