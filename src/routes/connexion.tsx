@@ -428,7 +428,7 @@ function Connexion() {
                         ✨ Solutions immédiates
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {mode === "phone" && channel !== "whatsapp" && (
+                        {mode === "phone" && channel !== "whatsapp" && whatsappAvailable && (
                           <button
                             type="button"
                             onClick={() => sendCode("whatsapp")}
