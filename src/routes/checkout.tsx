@@ -582,10 +582,13 @@ function SuccessScreen({ method, total }: { method: Method; total: number }) {
   );
 }
 
-function Summary({ cartItems, subtotal, delivery, total, hasPass, landmark, promo, setPromo }: {
+function Summary({ cartItems, subtotal, delivery, total, hasPass, landmark, promo, setPromo, paymentStatus, method, reference }: {
   cartItems: CartItem[]; subtotal: number; delivery: number; total: number; hasPass: boolean; landmark: string;
   promo: { code: string; discount: number } | null;
   setPromo: (p: { code: string; discount: number } | null) => void;
+  paymentStatus: "idle" | "pending" | "succeeded" | "failed";
+  method: Method;
+  reference: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState("");
