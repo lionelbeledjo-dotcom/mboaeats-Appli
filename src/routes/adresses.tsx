@@ -194,6 +194,18 @@ function AddressesPage() {
       toast.error("Merci de remplir tous les champs.");
       return;
     }
+    if (!cityHasCoverage) {
+      toast.error("Ville non desservie", {
+        description: `Aucune zone de livraison active à ${city} pour le moment.`,
+      });
+      return;
+    }
+    if (!neighborhoodCovered) {
+      toast.error("Quartier hors zone de livraison", {
+        description: `Choisissez un quartier desservi à ${city}.`,
+      });
+      return;
+    }
     const v = validateCmPhone(phone);
     if (!v.ok) {
       toast.error("Numéro invalide", { description: v.error });
