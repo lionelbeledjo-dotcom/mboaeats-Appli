@@ -352,9 +352,20 @@ function AdminHeader({
   );
 }
 
+// Couleur "vraie" (saturée) par tonalité — visible sur fond blanc (mobile) ET fond sombre (desktop)
+const ICON_BG: Record<string, string> = {
+  blue:   "bg-blue-500",
+  green:  "bg-emerald-500",
+  yellow: "bg-amber-500",
+  purple: "bg-violet-500",
+  orange: "bg-orange-500",
+  indigo: "bg-indigo-500",
+  red:    "bg-red-500",
+};
+
 function AdminSidebar() {
-  const { state } = useSidebar();
-  const collapsed = state === "collapsed";
+  const { state, isMobile, setOpenMobile } = useSidebar();
+  const collapsed = state === "collapsed" && !isMobile;
   const path = useRouterState({ select: (r) => r.location.pathname });
   const navigate = useNavigate();
 
@@ -366,28 +377,71 @@ function AdminSidebar() {
   const isActive = (item: typeof navItems[number]) =>
     item.exact ? path === item.url : path.startsWith(item.url);
 
+  // Sur mobile (sheet blanc) : fond blanc / texte noir / icônes colorées dans des chips.
+  // Sur desktop (panneau sombre) : on conserve le rendu "premium" actuel.
   return (
     <Sidebar collapsible="icon">
-      <SidebarContent>
-        <div className="flex items-center gap-2 px-3 pt-4 pb-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-primary shadow-glow">
-            <LayoutDashboard className="h-4 w-4 text-primary-foreground" />
+      <SidebarContent className={isMobile ? "bg-white text-neutral-900" : undefined}>
+        <div className={`flex items-center gap-3 px-4 pt-5 pb-3 ${isMobile ? "border-b border-neutral-100" : ""}`}>
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-primary shadow-glow">
+            <LayoutDashboard className="h-5 w-5 text-primary-foreground" />
           </div>
           {!collapsed && (
             <div>
-              <p className="font-display text-sm font-bold">Mboa Console</p>
-              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Admin</p>
+              <p className={`font-display text-base font-extrabold ${isMobile ? "text-neutral-900" : ""}`}>
+                Mboa Console
+              </p>
+              <p className={`text-[10px] uppercase tracking-widest ${isMobile ? "text-neutral-500" : "text-muted-foreground"}`}>
+                Admin
+              </p>
             </div>
           )}
         </div>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Pilotage</SidebarGroupLabel>
+          <SidebarGroupLabel className={isMobile ? "text-neutral-500" : undefined}>
+            Pilotage
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => {
                 const active = isActive(item);
                 const tone = TONES[item.tone];
+                const iconBg = ICON_BG[item.tone];
+
+                if (isMobile) {
+                  // Look "App mobile" : fond blanc, texte noir profond, chips colorés.
+                  return (
+                    <SidebarMenuItem key={item.url}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={active}
+                        className="h-12 rounded-2xl px-3 text-[15px] font-semibold text-neutral-900 hover:bg-neutral-100 data-[active=true]:bg-neutral-100"
+                      >
+                        <Link
+                          to={item.url}
+                          onClick={() => setOpenMobile(false)}
+                          className="flex w-full items-center gap-3"
+                        >
+                          <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white shadow-md ${iconBg}`}>
+                            <item.icon className="h-5 w-5" strokeWidth={2.4} />
+                          </span>
+                          <span className="flex-1 truncate">{item.title}</span>
+                          {item.badge && (
+                            <span className="rounded-full bg-red-500 px-2 py-0.5 text-[11px] font-bold text-white shadow-sm">
+                              {item.badge}
+                            </span>
+                          )}
+                          {active && (
+                            <span className="ml-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500" aria-hidden />
+                          )}
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                }
+
+                // Rendu desktop (sombre, premium)
                 return (
                   <SidebarMenuItem key={item.url}>
                     <SidebarMenuButton asChild isActive={active}>
@@ -426,21 +480,45 @@ function AdminSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Compte</SidebarGroupLabel>
+          <SidebarGroupLabel className={isMobile ? "text-neutral-500" : undefined}>
+            Compte
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link to="/admin/parametres" className="flex items-center gap-2">
-                    <Settings className="h-4 w-4" />
+                <SidebarMenuButton
+                  asChild
+                  className={isMobile ? "h-12 rounded-2xl px-3 text-[15px] font-semibold text-neutral-900 hover:bg-neutral-100" : undefined}
+                >
+                  <Link
+                    to="/admin/parametres"
+                    onClick={() => isMobile && setOpenMobile(false)}
+                    className="flex items-center gap-3"
+                  >
+                    {isMobile ? (
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-neutral-800 text-white shadow-md">
+                        <Settings className="h-5 w-5" strokeWidth={2.4} />
+                      </span>
+                    ) : (
+                      <Settings className="h-4 w-4" />
+                    )}
                     {!collapsed && <span>Paramètres</span>}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <button type="button" onClick={handleLogout} className="flex w-full items-center gap-2 text-destructive">
-                    <LogOut className="h-4 w-4" />
+                <SidebarMenuButton
+                  asChild
+                  className={isMobile ? "h-12 rounded-2xl px-3 text-[15px] font-semibold text-red-600 hover:bg-red-50" : undefined}
+                >
+                  <button type="button" onClick={handleLogout} className="flex w-full items-center gap-3 text-destructive">
+                    {isMobile ? (
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-500 text-white shadow-md">
+                        <LogOut className="h-5 w-5" strokeWidth={2.4} />
+                      </span>
+                    ) : (
+                      <LogOut className="h-4 w-4" />
+                    )}
                     {!collapsed && <span>Se déconnecter</span>}
                   </button>
                 </SidebarMenuButton>
