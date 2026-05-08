@@ -557,8 +557,8 @@ function Connexion() {
                   </div>
                 )}
 
-                <p className="flex items-start gap-2 text-[11px] leading-snug text-muted-foreground">
-                  <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+                <p className="flex items-start gap-3 text-[13px] leading-snug text-white/32">
+                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#ff5b05]" />
                   Un code à 6 chiffres vous sera envoyé par {mode === "phone" ? (channel === "whatsapp" ? "WhatsApp" : "SMS") : "email"} pour confirmer votre identité.
                 </p>
 
@@ -624,19 +624,19 @@ function Connexion() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="shine-sweep relative inline-flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-xl text-sm font-bold uppercase tracking-[0.18em] text-white shadow-[0_10px_30px_-10px_rgba(249,115,22,0.7)] transition-transform active:scale-[0.98] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d0d0f]"
+                  className="shine-sweep relative inline-flex h-[60px] w-full items-center justify-center gap-2 overflow-hidden rounded-[24px] text-[17px] font-black uppercase tracking-[0.22em] text-white shadow-[0_18px_34px_-18px_rgba(255,104,5,0.95)] transition-transform active:scale-[0.98] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#111113]"
                   style={{
-                    background: "linear-gradient(90deg, #f59e0b 0%, #f97316 50%, #ea580c 100%)",
+                    background: "linear-gradient(90deg, #ffd28a 0%, #ff8b13 36%, #ff6908 68%, #f45b06 100%)",
                   }}
                 >
                   {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "SE CONNECTER"}
                 </button>
 
-                <div className="mt-5 flex flex-col items-center gap-2 text-center">
+                <div className="mt-9 flex flex-col items-center gap-4 text-center">
                   <button
                     type="button"
                     onClick={() => { if (identifierLabel && (phone || email)) setStep("otp"); }}
-                    className="text-sm text-white/70 transition hover:text-amber-300 focus:outline-none focus-visible:underline"
+                    className="text-[16px] font-medium text-white/58 transition hover:text-amber-300 focus:outline-none focus-visible:underline"
                   >
                     Vérifier le code ?
                   </button>
@@ -644,7 +644,7 @@ function Connexion() {
                     href="https://wa.me/237699999999?text=Bonjour%20MboaEats%2C%20j%27ai%20besoin%20d%27aide%20pour%20me%20connecter."
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-white/70 transition hover:text-amber-300 focus:outline-none focus-visible:underline"
+                    className="text-[16px] font-medium text-white/58 transition hover:text-amber-300 focus:outline-none focus-visible:underline"
                   >
                     Veuillez contacter l'administrateur ?
                   </a>
@@ -764,7 +764,7 @@ function Connexion() {
 
         {/* Lien admin retiré de l'interface publique. Accès via /admin/login uniquement. */}
 
-        <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-center text-xs text-white/60 backdrop-blur-xl">
+        <div className="sr-only mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-center text-xs text-white/60 backdrop-blur-xl">
           <p className="mb-2 font-semibold text-white">Vous ne recevez pas de code ?</p>
           <p className="mb-3">Contactez-nous sur WhatsApp, on vous inscrit manuellement en quelques minutes.</p>
           <a
@@ -781,7 +781,7 @@ function Connexion() {
           </a>
         </div>
 
-        <p className="mt-4 text-center text-[11px] text-white/55">
+        <p className="sr-only mt-4 text-center text-[11px] text-white/55">
           Support : <a className="text-[#ffb38a] hover:underline" href="mailto:lionelbrown2728@yahoo.fr">lionelbrown2728@yahoo.fr</a>
         </p>
       </div>
