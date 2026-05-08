@@ -1219,6 +1219,7 @@ export type Database = {
         }[]
       }
       user_exists_by_email: { Args: { _email: string }; Returns: boolean }
+      user_exists_by_phone: { Args: { _phone: string }; Returns: boolean }
     }
     Enums: {
       app_role:
