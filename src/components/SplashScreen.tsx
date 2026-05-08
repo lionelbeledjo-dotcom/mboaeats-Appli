@@ -53,7 +53,7 @@ export function SplashScreen() {
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-white"
     >
       <div className="splash-logo-anim">
-        <MboaEatsLogo size="xl" />
+        <MboaEatsLogo size="xl" align="center" variant="filled" badgeSize="md" />
       </div>
 
       <style>{`
