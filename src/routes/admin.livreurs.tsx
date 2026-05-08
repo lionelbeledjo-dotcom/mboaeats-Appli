@@ -272,7 +272,7 @@ function Livreurs() {
               );
             })}
             {list && filtered.length === 0 && (
-              <tr><td colSpan={6} className="p-10 text-center text-sm text-muted-foreground">
+              <tr><td colSpan={7} className="p-10 text-center text-sm text-muted-foreground">
                 {counts.all === 0 ? "Aucun livreur enregistré pour l'instant." : "Aucun livreur ne correspond à ces filtres."}
               </td></tr>
             )}
