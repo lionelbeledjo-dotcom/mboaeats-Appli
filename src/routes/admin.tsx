@@ -219,27 +219,27 @@ function AdminHeader({
           </span>
         </div>
 
-        {/* Recherche desktop inline */}
+        {/* Recherche desktop inline — dark cohérent */}
         <button
           type="button"
           onClick={() => setSearchOpen(true)}
-          className="hidden h-11 items-center gap-2 rounded-full border border-border bg-background px-4 text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground md:inline-flex"
+          className="hidden h-11 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 text-sm text-white/60 transition-all hover:border-brand-cm-green/50 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cm-green/60 md:inline-flex"
         >
-          <Search className="h-4 w-4" />
+          <Search className="h-4 w-4" strokeWidth={2.25} />
           <span>Rechercher commande, resto, livreur…</span>
-          <kbd className="ml-3 rounded-md border border-border bg-muted/40 px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+          <kbd className="ml-3 rounded-md border border-white/10 bg-black/40 px-1.5 py-0.5 text-[10px] font-semibold text-white/70">
             ⌘K
           </kbd>
         </button>
 
-        {/* Loupe mobile (fonctionnelle) */}
+        {/* Loupe mobile (fonctionnelle) — dark cohérent */}
         <button
           type="button"
           onClick={() => setSearchOpen(true)}
           aria-label="Ouvrir la recherche"
-          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border bg-background text-foreground transition-colors hover:bg-muted/50 active:scale-95 md:hidden"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-all hover:bg-white/10 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cm-green/60 md:hidden"
         >
-          <Search className="h-5 w-5" strokeWidth={2.2} />
+          <Search className="h-5 w-5" strokeWidth={2.25} />
         </button>
 
         {/* Statut admin */}
