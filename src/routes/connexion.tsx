@@ -336,26 +336,30 @@ function Connexion() {
             Choisissez votre méthode de connexion
           </p>
 
-          {/* Tabs */}
-          <div className="mt-5 grid grid-cols-2 gap-1 rounded-full bg-[#F1F1F1] p-1">
-            <button
-              type="button"
-              onClick={() => { setTab("email"); resetMessages(); }}
-              className={`inline-flex h-10 items-center justify-center gap-2 rounded-full text-sm font-bold transition ${
-                tab === "email" ? "bg-white text-black shadow-sm" : "text-[#6B6B6B]"
-              }`}
-            >
-              <Mail className="h-4 w-4" /> Email
-            </button>
-            <button
-              type="button"
-              onClick={() => { setTab("phone"); resetMessages(); }}
-              className={`inline-flex h-10 items-center justify-center gap-2 rounded-full text-sm font-bold transition ${
-                tab === "phone" ? "bg-white text-black shadow-sm" : "text-[#6B6B6B]"
-              }`}
-            >
-              <Phone className="h-4 w-4" /> Téléphone (SMS)
-            </button>
+          {/* Tabs — Pills */}
+          <div className="mt-5 flex items-center gap-2">
+            {([
+              { key: "email", label: "Email", Icon: Mail },
+              { key: "phone", label: "Téléphone (SMS)", Icon: Phone },
+            ] as const).map(({ key, label, Icon }) => {
+              const active = tab === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => { setTab(key); resetMessages(); }}
+                  aria-pressed={active}
+                  className={`inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full text-sm font-bold transition ${
+                    active
+                      ? "bg-white text-black ring-1 ring-neutral-200 shadow-[0_4px_14px_-6px_rgba(0,0,0,0.15)]"
+                      : "bg-[#F6F6F6] text-[#8a8a8a] ring-1 ring-transparent hover:text-black"
+                  }`}
+                >
+                  <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
+                  {label}
+                </button>
+              );
+            })}
           </div>
 
           {/* ── EMAIL TAB ── */}
