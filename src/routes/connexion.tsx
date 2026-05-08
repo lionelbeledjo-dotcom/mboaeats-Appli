@@ -401,7 +401,7 @@ function Connexion() {
                       Adresse email
                     </label>
                     <div className="flex items-center gap-2 rounded-2xl border border-[#d4af6c]/45 bg-white/[0.06] backdrop-blur-2xl px-3 py-1.5 focus-within:border-[#d4af6c]/80">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <Mail className="h-4 w-4 text-[#d4af6c]" />
                       <input
                         type="email"
                         inputMode="email"
@@ -409,7 +409,7 @@ function Connexion() {
                         placeholder="vous@exemple.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="flex-1 bg-transparent py-2.5 text-base outline-none placeholder:text-muted-foreground"
+                        className="flex-1 bg-transparent py-2.5 text-base text-white outline-none placeholder:text-white/40"
                         autoFocus
                       />
                     </div>
