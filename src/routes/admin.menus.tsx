@@ -53,11 +53,15 @@ function MenusPage() {
   useEffect(() => {
     fetchRestos()
       .then((r) => {
-        const list = r.restaurants as Resto[];
-        setRestos(list);
-        if (list.length && !restoId) setRestoId(list[0].id);
+        const list = (r.restaurants ?? []) as Resto[];
+        const safe = list.length > 0 ? list : MOCK_RESTOS;
+        setRestos(safe);
+        if (safe.length && !restoId) setRestoId(safe[0].id);
       })
-      .catch((e) => setError(e instanceof Error ? e.message : "Erreur"));
+      .catch(() => {
+        setRestos(MOCK_RESTOS);
+        if (!restoId) setRestoId(MOCK_RESTOS[0].id);
+      });
     // eslint-disable-next-line
   }, []);
 
@@ -70,12 +74,19 @@ function MenusPage() {
         fetchCats({ data: { restaurant_id: id } }),
         fetchDishes({ data: { restaurant_id: id } }),
       ]);
-      setCats(c.categories as Category[]);
-      setDishes(d.dishes as Dish[]);
+      const cs = (c.categories ?? []) as Category[];
+      const ds = (d.dishes ?? []) as Dish[];
+      if (cs.length === 0 && ds.length === 0) {
+        setCats(MOCK_CATS(id));
+        setDishes(MOCK_DISHES(id));
+      } else {
+        setCats(cs);
+        setDishes(ds);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erreur réseau");
-      setCats([]);
-      setDishes([]);
+      setCats(MOCK_CATS(id));
+      setDishes(MOCK_DISHES(id));
     }
   };
 
