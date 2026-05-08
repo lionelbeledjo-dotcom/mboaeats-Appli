@@ -263,6 +263,89 @@ function Livreurs() {
       <p className="text-xs text-muted-foreground inline-flex items-center gap-1">
         <CheckCircle2 className="h-3 w-3 text-emerald-400" /> Mises à jour en temps réel via les positions des livreurs.
       </p>
+
+      {viewing && (
+        <Modal title={`Livreur · ${viewing.name}`} onClose={() => { setViewing(null); setViewingData(null); }}>
+          {!viewingData ? (
+            <div className="flex justify-center p-8"><Loader2 className="h-5 w-5 animate-spin" /></div>
+          ) : (
+            <div className="space-y-4 text-sm">
+              <div className="grid grid-cols-2 gap-3">
+                <Info label="Nom" value={viewingData.profile?.full_name ?? "—"} />
+                <Info label="Téléphone" value={viewingData.profile?.phone ?? "—"} />
+                <Info label="Ville" value={viewingData.profile?.city ?? "—"} />
+                <Info label="Statut" value={viewingData.location?.status ?? "—"} />
+                <Info label="Position" value={viewingData.location?.lat ? `${viewingData.location.lat.toFixed(4)}, ${viewingData.location.lng.toFixed(4)}` : "—"} />
+                <Info label="Dernière maj" value={viewingData.location?.updated_at ? new Date(viewingData.location.updated_at).toLocaleString("fr-FR") : "—"} />
+              </div>
+              <div>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Dernières courses ({viewingData.orders?.length ?? 0})</p>
+                <div className="space-y-1 max-h-60 overflow-y-auto">
+                  {(viewingData.orders ?? []).map((o: any) => (
+                    <div key={o.id} className="flex items-center justify-between rounded-lg border border-border bg-background/40 px-3 py-2 text-xs">
+                      <span className="font-mono">{o.reference}</span>
+                      <span className="text-muted-foreground">{o.status}</span>
+                      <span className="font-bold">{(o.delivery_fee ?? 0).toLocaleString("fr-FR")} F</span>
+                    </div>
+                  ))}
+                  {(viewingData.orders ?? []).length === 0 && <p className="text-xs text-muted-foreground">Aucune course récente.</p>}
+                </div>
+              </div>
+            </div>
+          )}
+        </Modal>
+      )}
+
+      {editing && (
+        <EditDriverModal
+          driver={editing}
+          onClose={() => setEditing(null)}
+          onSave={async (patch) => {
+            await updateProfile({ data: { id: editing.id, ...patch } });
+            toast.success("Profil mis à jour");
+            setList((prev) => prev?.map((x) => (x.id === editing.id ? { ...x, name: patch.full_name ?? x.name, phone: patch.phone ?? x.phone, city: patch.city ?? x.city } : x)) ?? null);
+            setEditing(null);
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+function Info({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="font-medium">{value}</p>
+    </div>
+  );
+}
+
+function EditDriverModal({ driver, onClose, onSave }: { driver: Driver; onClose: () => void; onSave: (patch: { full_name: string; phone: string | null; city: string | null }) => Promise<void> }) {
+  const [full_name, setName] = useState(driver.name);
+  const [phone, setPhone] = useState(driver.phone ?? "");
+  const [city, setCity] = useState(driver.city ?? "");
+  const [saving, setSaving] = useState(false);
+  const submit = async () => {
+    setSaving(true);
+    try { await onSave({ full_name, phone: phone || null, city: city || null }); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Erreur"); }
+    finally { setSaving(false); }
+  };
+  return (
+    <Modal title={`Éditer · ${driver.name}`} onClose={onClose} footer={
+      <>
+        <button onClick={onClose} className="rounded-xl border border-border px-4 py-2 text-sm font-semibold">Annuler</button>
+        <button onClick={submit} disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-4 py-2 text-sm font-bold text-primary-foreground disabled:opacity-60">
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Enregistrer
+        </button>
+      </>
+    }>
+      <div className="space-y-4">
+        <Field label="Nom complet"><input className={inputCls} value={full_name} onChange={(e) => setName(e.target.value)} /></Field>
+        <Field label="Téléphone"><input className={inputCls} value={phone} onChange={(e) => setPhone(e.target.value)} /></Field>
+        <Field label="Ville"><input className={inputCls} value={city} onChange={(e) => setCity(e.target.value)} /></Field>
+      </div>
+    </Modal>
   );
 }
