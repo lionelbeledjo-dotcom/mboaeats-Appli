@@ -235,6 +235,7 @@ function Connexion() {
       }
       await supabase.auth.signInWithPassword({ email: trimmed, password });
       invalidateSessionCache();
+      toast.success("Connexion réussie 🎉");
       navigate({ to: "/", replace: true });
     } catch (err: any) {
       setError(err?.message ?? "Erreur de connexion");
