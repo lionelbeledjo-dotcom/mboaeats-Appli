@@ -732,3 +732,111 @@ function OtpScreen({ method, phone, total, onSubmit, onSuccess, onBack }: {
     </div>
   );
 }
+
+function ExtrasModal({ onSkip, onClose }: { onSkip: () => void; onClose: () => void }) {
+  const { items: cartItems } = useCart();
+  const restoId = cartItems[0]?.restoId ?? "extras";
+
+  const addExtra = (e: typeof UPSELL_ITEMS[number]) => {
+    addToCart({
+      id: e.id,
+      dishId: e.id,
+      restoId,
+      name: e.name,
+      price: e.price,
+      qty: 1,
+      image: e.image,
+    });
+    toast.success(`${e.name} ajouté`, { duration: 1500 });
+  };
+
+  const qtyOf = (id: string) => cartItems.find((i) => i.id === id)?.qty ?? 0;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Suggestions complémentaires"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm animate-fade-in sm:items-center"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-background p-6 shadow-glow animate-fade-up sm:rounded-3xl"
+      >
+        <button
+          type="button"
+          aria-label="Fermer"
+          onClick={onClose}
+          className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-muted-foreground hover:text-foreground"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
+        <div className="flex items-center gap-2 text-primary">
+          <Sparkles className="h-4 w-4" />
+          <span className="text-xs font-semibold uppercase tracking-wider">Avant de payer</span>
+        </div>
+        <h2 className="mt-1 font-display text-2xl font-extrabold leading-tight">
+          Ajouter une touche finale&nbsp;?
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Les clients ont aussi commandé ces petits plus.
+        </p>
+
+        <ul className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-2">
+          {UPSELL_ITEMS.map((e) => {
+            const q = qtyOf(e.id);
+            return (
+              <li
+                key={e.id}
+                className="relative flex flex-col rounded-2xl border border-border bg-card p-3 shadow-card transition hover:border-primary/40"
+              >
+                <div className="flex h-24 w-full items-center justify-center overflow-hidden rounded-xl bg-muted text-4xl">
+                  <span aria-hidden>{e.emoji}</span>
+                </div>
+                <p className="mt-2 line-clamp-1 text-sm font-semibold">{e.name}</p>
+                <p className="text-xs text-muted-foreground">{e.price.toLocaleString("fr-FR")} F</p>
+                <div className="mt-2 flex justify-end">
+                  {q > 0 ? (
+                    <QuantityStepper
+                      size="sm"
+                      qty={q}
+                      onInc={() => setCartQty(e.id, q + 1)}
+                      onDec={() => setCartQty(e.id, q - 1)}
+                      ariaLabel={`Quantité ${e.name}`}
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => addExtra(e)}
+                      aria-label={`Ajouter ${e.name}`}
+                      className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-glow transition-transform hover:scale-110 active:scale-95"
+                    >
+                      <Plus className="h-5 w-5" strokeWidth={2.8} />
+                    </button>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+
+        <button
+          type="button"
+          onClick={onSkip}
+          className="mt-6 w-full rounded-2xl bg-gradient-primary py-4 text-base font-bold text-primary-foreground shadow-glow transition-transform hover:scale-[1.01]"
+        >
+          Continuer vers le paiement
+        </button>
+        <button
+          type="button"
+          onClick={onSkip}
+          className="mt-2 w-full rounded-xl py-3 text-sm font-semibold text-muted-foreground hover:text-foreground"
+        >
+          Non merci, je valide ma commande
+        </button>
+      </div>
+    </div>
+  );
+}
