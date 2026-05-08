@@ -70,6 +70,7 @@ function Checkout() {
   const [showExtras, setShowExtras] = useState(false);
   const [extrasSeen, setExtrasSeen] = useState(false);
   const [cardLink, setCardLink] = useState<string | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<"idle" | "pending" | "succeeded" | "failed">("idle");
 
   // Détection MboaPass (livraison gratuite)
   useEffect(() => {
