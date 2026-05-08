@@ -1,12 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { Loader2, Mail, Lock, User as UserIcon, Phone, ArrowRight, Check, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Loader2, Mail, Lock, User as UserIcon, Phone, ArrowLeft, ArrowRight, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
-import { sendOtp, verifyOtp } from "@/lib/otp.functions";
+import QuickLogin from "@/components/QuickLogin";
 
 export const Route = createFileRoute("/connexion")({
   component: Connexion,
@@ -51,14 +51,18 @@ function Connexion() {
 
   // Redirect when authenticated
   useEffect(() => {
-    if (!authLoading && isAuthenticated) navigate({ to: "/" });
+    if (!authLoading && isAuthenticated) navigate({ to: "/profil" });
   }, [authLoading, isAuthenticated, navigate]);
 
   return (
     <div className="min-h-screen bg-white">
       <div className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-8">
-        <Link to="/" className="text-sm font-medium text-neutral-600 hover:text-black">
-          ← Accueil
+        <Link
+          to="/"
+          className="inline-flex w-fit items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-black"
+        >
+          <ArrowLeft className="h-4 w-4" strokeWidth={2.5} />
+          <span>Accueil</span>
         </Link>
 
         <div className="mt-8 mb-6">
@@ -88,9 +92,9 @@ function Connexion() {
           ))}
         </div>
 
-        {tab === "login" && <LoginForm />}
-        {tab === "signup" && <SignupForm onVerified={() => navigate({ to: "/" })} />}
-        {tab === "phone" && <PhoneForm onSuccess={() => navigate({ to: "/" })} />}
+        {tab === "login" && <LoginForm onSuccess={() => navigate({ to: "/profil" })} />}
+        {tab === "signup" && <SignupForm onVerified={() => navigate({ to: "/profil" })} />}
+        {tab === "phone" && <QuickLogin />}
 
         {tab !== "phone" && (
           <>
@@ -105,8 +109,12 @@ function Connexion() {
 
         <p className="mt-auto pt-8 text-center text-xs text-neutral-500">
           En continuant tu acceptes nos{" "}
-          <Link to="/confidentialite" className="underline">
-            CGU et politique de confidentialité
+          <Link to="/cgu" className="font-medium text-neutral-700 underline underline-offset-2 hover:text-black">
+            CGU
+          </Link>{" "}
+          et notre{" "}
+          <Link to="/confidentialite" className="font-medium text-neutral-700 underline underline-offset-2 hover:text-black">
+            politique de confidentialité
           </Link>
           .
         </p>
