@@ -2,14 +2,16 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   ArrowLeft, Smartphone, CreditCard, Banknote, Check, Loader2, ShieldCheck,
-  Lock, ChevronRight, Webhook, MapPin, Tag, Crown, AlertCircle,
+  Lock, ChevronRight, Webhook, MapPin, Tag, Crown, AlertCircle, X, Plus, Sparkles,
 } from "lucide-react";
+import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { initiatePayment, verifyPayment, getActiveMboaPass } from "@/server/payments.functions";
 import { createOrder, markOrderPaid } from "@/server/marketplace.functions";
-import { useCart, clearCart } from "@/hooks/use-cart";
+import { useCart, clearCart, addToCart, setQty as setCartQty, removeFromCart, type CartItem } from "@/hooks/use-cart";
+import { QuantityStepper } from "@/components/QuantityStepper";
 
 export const Route = createFileRoute("/checkout")({
   component: Checkout,
