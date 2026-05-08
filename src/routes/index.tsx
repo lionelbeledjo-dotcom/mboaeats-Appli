@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { Search, Star, Clock, Plus, MapPin, Bell } from "lucide-react";
+import { HamburgerMenu } from "@/components/HamburgerMenu";
 
 import { restaurants as realRestaurants, getRestaurant } from "@/data/restaurants";
 
@@ -79,12 +80,13 @@ function Index() {
     <div className="min-h-screen" style={{ backgroundColor: "#D9E8D8" }}>
       <div className="mx-auto max-w-md px-4 pb-28 pt-4">
         {/* Top bar */}
-        <header className="mb-4 flex items-center justify-between">
-          <div>
+        <header className="mb-4 flex items-center justify-between gap-3">
+          <HamburgerMenu />
+          <div className="flex-1 min-w-0">
             <p className="text-xs font-medium" style={{ color: "#888888" }}>
               Deliver to
             </p>
-            <button className="flex items-center gap-1 text-sm font-bold" style={{ color: "#1A1A1A" }}>
+            <button className="flex items-center gap-1 text-sm font-bold truncate" style={{ color: "#1A1A1A" }}>
               <MapPin className="h-4 w-4" style={{ color: "#00B14F" }} />
               Douala, CM
             </button>
