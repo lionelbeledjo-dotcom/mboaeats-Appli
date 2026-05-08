@@ -346,7 +346,51 @@ function Restaurants() {
           onClose={() => { setOpenId(null); setDetails(null); }}
         />
       )}
+
+      {editing && (
+        <EditRestoModal
+          resto={editing}
+          onClose={() => setEditing(null)}
+          onSave={async (patch) => {
+            await updateResto({ data: { id: editing.id, ...patch } });
+            toast.success("Restaurant mis à jour");
+            setList((cur) => (cur ?? []).map((x) => (x.id === editing.id ? { ...x, ...patch } as Resto : x)));
+            setEditing(null);
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+function EditRestoModal({ resto, onClose, onSave }: { resto: Resto; onClose: () => void; onSave: (patch: { name: string; cuisine: string; city: string; neighborhood: string | null }) => Promise<void> }) {
+  const [name, setName] = useState(resto.name);
+  const [cuisine, setCuisine] = useState(resto.cuisine);
+  const [city, setCity] = useState(resto.city);
+  const [neighborhood, setNeighborhood] = useState(resto.neighborhood ?? "");
+  const [saving, setSaving] = useState(false);
+  const submit = async () => {
+    setSaving(true);
+    try { await onSave({ name, cuisine, city, neighborhood: neighborhood || null }); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Erreur"); }
+    finally { setSaving(false); }
+  };
+  return (
+    <Modal title={`Éditer · ${resto.name}`} onClose={onClose} footer={
+      <>
+        <button onClick={onClose} className="rounded-xl border border-border px-4 py-2 text-sm font-semibold">Annuler</button>
+        <button onClick={submit} disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-4 py-2 text-sm font-bold text-primary-foreground disabled:opacity-60">
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Enregistrer
+        </button>
+      </>
+    }>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Field label="Nom"><input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} /></Field>
+        <Field label="Cuisine"><input className={inputCls} value={cuisine} onChange={(e) => setCuisine(e.target.value)} /></Field>
+        <Field label="Ville"><input className={inputCls} value={city} onChange={(e) => setCity(e.target.value)} /></Field>
+        <Field label="Quartier"><input className={inputCls} value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} /></Field>
+      </div>
+    </Modal>
   );
 }
 
