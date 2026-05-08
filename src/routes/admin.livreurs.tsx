@@ -223,6 +223,12 @@ function Livreurs() {
                           <Phone className="h-3.5 w-3.5" />
                         </a>
                       )}
+                      <button onClick={() => openView(d)} disabled={isPending} className="rounded-lg border border-border bg-background p-1.5 hover:border-primary disabled:opacity-50" title="Voir">
+                        <Eye className="h-3.5 w-3.5" />
+                      </button>
+                      <button onClick={() => setEditing(d)} disabled={isPending} className="rounded-lg border border-border bg-background p-1.5 hover:border-primary disabled:opacity-50" title="Éditer">
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
                       <button
                         onClick={() => toggleActive(d)}
                         disabled={isPending}
@@ -236,6 +242,9 @@ function Livreurs() {
                         {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> :
                           d.is_active ? <PowerOff className="h-3.5 w-3.5" /> : <Power className="h-3.5 w-3.5" />}
                         {d.is_active ? "Désactiver" : "Réactiver"}
+                      </button>
+                      <button onClick={() => handleDelete(d)} disabled={isPending} className="rounded-lg border border-destructive/40 bg-destructive/10 p-1.5 text-destructive hover:bg-destructive/20 disabled:opacity-50" title="Supprimer">
+                        <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </div>
                   </td>
