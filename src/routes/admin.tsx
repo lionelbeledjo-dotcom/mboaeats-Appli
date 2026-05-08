@@ -139,24 +139,37 @@ function AdminLayout() {
       <div className="min-h-screen flex w-full bg-background text-foreground">
         <AdminSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="sticky top-0 z-30 h-14 flex items-center gap-3 border-b border-border bg-surface/70 px-4 backdrop-blur">
-            <SidebarTrigger className="text-muted-foreground" />
-            <Link to="/" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+          <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-surface/80 px-3 backdrop-blur sm:gap-3 sm:px-4">
+            <SidebarTrigger
+              aria-label="Ouvrir le menu de navigation"
+              className="h-11 w-11 shrink-0 rounded-xl text-foreground hover:bg-muted/40 md:h-9 md:w-9 md:text-muted-foreground"
+            >
+              <Menu className="h-5 w-5" />
+            </SidebarTrigger>
+            <Link to="/" className="hidden items-center gap-1 text-xs text-muted-foreground hover:text-foreground sm:inline-flex">
               <ArrowLeft className="h-3.5 w-3.5" /> Site
             </Link>
+            <span className="font-display text-sm font-bold sm:hidden">Mboa Console</span>
             <div className="ml-auto flex items-center gap-2">
-              <div className="hidden md:flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-xs">
+              <div className="hidden items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-xs md:flex">
                 <Search className="h-3.5 w-3.5 text-muted-foreground" />
                 <input placeholder="Rechercher commande, resto, livreur…" className="w-72 bg-transparent outline-none" />
               </div>
+              <button
+                type="button"
+                aria-label="Rechercher"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-muted-foreground hover:text-foreground md:hidden"
+              >
+                <Search className="h-4 w-4" />
+              </button>
               {loading ? (
-                <div className="flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5">
+                <div className="flex items-center gap-2 rounded-full border border-border bg-background px-2.5 py-1.5 sm:px-3">
                   <span className="h-2 w-2 animate-pulse rounded-full bg-muted-foreground" />
-                  <span className="text-xs font-semibold text-muted-foreground">Vérification…</span>
+                  <span className="hidden text-xs font-semibold text-muted-foreground sm:inline">Vérification…</span>
                 </div>
               ) : isAdmin ? (
                 <div
-                  className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5"
+                  className="flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1.5 sm:gap-2 sm:px-3"
                   title={adminInfo?.email ?? "Admin connecté"}
                 >
                   <span className="relative flex h-2 w-2">
@@ -164,7 +177,7 @@ function AdminLayout() {
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
                   </span>
                   <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-                  <span className="text-xs font-semibold text-primary">
+                  <span className="hidden text-xs font-semibold text-primary sm:inline">
                     Admin connecté
                     {adminInfo?.email && (
                       <span className="ml-1 hidden font-normal text-muted-foreground lg:inline">
@@ -176,11 +189,11 @@ function AdminLayout() {
               ) : (
                 <Link
                   to="/admin/login"
-                  className="flex items-center gap-2 rounded-full border border-destructive/40 bg-destructive/10 px-3 py-1.5 hover:bg-destructive/20"
+                  className="flex items-center gap-1.5 rounded-full border border-destructive/40 bg-destructive/10 px-2.5 py-1.5 hover:bg-destructive/20 sm:gap-2 sm:px-3"
                   title="Vous n'êtes pas admin"
                 >
                   <ShieldAlert className="h-3.5 w-3.5 text-destructive" />
-                  <span className="text-xs font-semibold text-destructive">Non admin · Se connecter</span>
+                  <span className="hidden text-xs font-semibold text-destructive sm:inline">Non admin · Se connecter</span>
                 </Link>
               )}
             </div>
