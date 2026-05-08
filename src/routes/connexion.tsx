@@ -186,6 +186,7 @@ function Connexion() {
       } else {
         setError("Ce canal n'est pas disponible.");
       }
+      if (cooldown === 0) setCooldown(RESEND_COOLDOWN);
     } catch (err: any) {
       const msg = err?.message ?? "Échec de l'envoi du code";
       setError(msg);
