@@ -313,8 +313,11 @@ function GoogleButton() {
         onClick={async () => {
           setBusy(true);
           setErr(null);
+          toast.loading("Connexion Google en cours...", { id: "google-auth" });
           const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
           if ((r as { error?: unknown }).error) {
+            toast.dismiss("google-auth");
+            toast.error("Connexion Google indisponible");
             setErr("Connexion Google indisponible");
             setBusy(false);
           }
