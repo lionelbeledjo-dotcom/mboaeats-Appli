@@ -128,7 +128,30 @@ function Checkout() {
     }
 
     if (method === "cash") return setStep("success");
-    if (method === "card") return setStep("card");
+    if (method === "card") {
+      setPending(true);
+      try {
+        const res = await initiateCard({
+          data: {
+            amount: total,
+            purpose: "order",
+            return_url: typeof window !== "undefined" ? window.location.href : "https://mboaeats.lovable.app/checkout",
+            metadata: { landmark, cart: cart.map((c) => c.name) },
+          },
+        });
+        if (!res.ok || !res.link) throw new Error(res.error ?? "Échec d'initiation carte");
+        setReference(res.reference);
+        setCardLink(res.link);
+        setStep("card");
+        setPending(false);
+        // Ouvre la page sécurisée Campay dans un nouvel onglet
+        window.open(res.link, "_blank", "noopener,noreferrer");
+      } catch (e) {
+        setPending(false);
+        setTopError(e instanceof Error ? e.message : "Erreur paiement carte");
+      }
+      return;
+    }
 
     setPending(true);
     try {
