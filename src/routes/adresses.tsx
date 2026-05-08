@@ -138,27 +138,8 @@ function AddressesPage() {
   useEffect(() => {
     let active = true;
     (async () => {
-      try {
-        const { data } = await supabase.auth.getUser();
-        if (!data.user) {
-          if (active) setLoadingList(false);
-          return;
-        }
-        const res = await listMyAddresses();
-        if (!active) return;
-        const list = (res?.addresses ?? []).map((a: any) => ({
-          id: a.id,
-          label: a.label ?? "Adresse",
-          city: a.city ?? "",
-          neighborhood: a.neighborhood ?? "",
-          phone: "",
-        }));
-        setSaved(list);
-      } catch {
-        // silencieux : on continue avec une liste vide
-      } finally {
-        if (active) setLoadingList(false);
-      }
+      await reloadList();
+      if (active) setLoadingList(false);
     })();
     return () => { active = false; };
   }, []);
