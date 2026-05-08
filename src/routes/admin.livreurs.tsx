@@ -169,7 +169,8 @@ function Livreurs() {
           <thead className="bg-background/40 text-xs uppercase tracking-wider text-muted-foreground">
             <tr>
               <th className="p-4 text-left">Livreur</th>
-              <th className="p-4 text-left">Position</th>
+              <th className="p-4 text-left">Véhicule</th>
+              <th className="p-4 text-left">Course actuelle</th>
               <th className="p-4 text-right">Courses (7j)</th>
               <th className="p-4 text-right">Gains (7j)</th>
               <th className="p-4 text-center">Statut</th>
