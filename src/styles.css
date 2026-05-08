@@ -62,7 +62,7 @@
   --secondary-foreground: oklch(0.22 0.02 280);
 
   --muted: oklch(0.96 0.005 80);
-  --muted-foreground: oklch(0.48 0.02 280);
+  --muted-foreground: oklch(0.48 0 0);        /* #6B6B6B Uber grey */
 
   --accent: oklch(0.66 0.22 36);
   --accent-foreground: oklch(0.99 0.01 80);
