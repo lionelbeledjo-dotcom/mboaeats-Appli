@@ -13,6 +13,28 @@ export type LoginResult =
   | { ok: true }
   | { ok: false; code: "compte_inexistant" | "email_non_confirme" | "identifiants_invalides" | "erreur"; message: string };
 
+export const accountExists = createServerFn({ method: "POST" })
+  .inputValidator((d) =>
+    z
+      .object({
+        kind: z.enum(["email", "phone"]),
+        identifier: z.string().trim().min(3),
+      })
+      .parse(d)
+  )
+  .handler(async ({ data }) => {
+    if (data.kind === "email") {
+      const email = data.identifier.toLowerCase();
+      const { data: exists, error } = await supabaseAdmin.rpc("user_exists_by_email", { _email: email });
+      if (error) return { ok: false as const, exists: false, message: "Erreur serveur." };
+      return { ok: true as const, exists: !!exists };
+    }
+    const phone = data.identifier.replace(/[^\d+]/g, "");
+    const { data: exists, error } = await supabaseAdmin.rpc("user_exists_by_phone", { _phone: phone });
+    if (error) return { ok: false as const, exists: false, message: "Erreur serveur." };
+    return { ok: true as const, exists: !!exists };
+  });
+
 export const loginWithPassword = createServerFn({ method: "POST" })
   .inputValidator((data) => loginSchema.parse(data))
   .handler(async ({ data }): Promise<LoginResult> => {
