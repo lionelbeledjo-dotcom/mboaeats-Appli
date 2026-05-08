@@ -34,6 +34,36 @@ function iconFor(label: string) {
   return <Heart className="h-4 w-4" />;
 }
 
+// --- Validation & formatage du numéro Cameroun (+237) ---
+// Mobiles CM : 9 chiffres, commencent par 6 (préfixes opérateurs 65/66/67/68/69).
+const CM_MOBILE_PREFIXES = ["65", "66", "67", "68", "69"];
+
+/** Garde uniquement les chiffres et retire un éventuel "237" en tête. */
+function normalizeCmDigits(input: string): string {
+  let d = (input || "").replace(/\D/g, "");
+  if (d.startsWith("237")) d = d.slice(3);
+  return d.slice(0, 9);
+}
+
+/** Formate "6XX XX XX XX" au fil de la frappe. */
+function formatCmPhone(input: string): string {
+  const d = normalizeCmDigits(input);
+  const parts = [d.slice(0, 3), d.slice(3, 5), d.slice(5, 7), d.slice(7, 9)].filter(Boolean);
+  return parts.join(" ");
+}
+
+/** Valide un numéro mobile Cameroun (9 chiffres, préfixe 65/66/67/68/69). */
+function validateCmPhone(input: string): { ok: boolean; digits: string; error?: string } {
+  const digits = normalizeCmDigits(input);
+  if (digits.length === 0) return { ok: false, digits, error: "Numéro requis." };
+  if (digits.length < 9) return { ok: false, digits, error: "Le numéro doit contenir 9 chiffres après +237." };
+  if (!digits.startsWith("6")) return { ok: false, digits, error: "Un mobile camerounais commence par 6." };
+  if (!CM_MOBILE_PREFIXES.includes(digits.slice(0, 2))) {
+    return { ok: false, digits, error: "Préfixe invalide (attendu 65, 66, 67, 68 ou 69)." };
+  }
+  return { ok: true, digits };
+}
+
 function AddressesPage() {
   const navigate = useNavigate();
   const [label, setLabel] = useState("Domicile");
@@ -93,7 +123,7 @@ function AddressesPage() {
 
   const startEdit = (a: Saved) => {
     setEditingId(a.id);
-    setEditDraft({ ...a, phone: a.phone.replace(/^\+237\s*/, "") });
+    setEditDraft({ ...a, phone: formatCmPhone(a.phone.replace(/^\+237\s*/, "")) });
   };
   const cancelEdit = () => {
     setEditingId(null);
@@ -105,9 +135,12 @@ function AddressesPage() {
       toast.error("Label et rue/quartier sont requis.");
       return;
     }
-    const phoneFull = editDraft.phone.trim()
-      ? `+237 ${editDraft.phone.replace(/\D/g, "")}`
-      : "";
+    const v = validateCmPhone(editDraft.phone);
+    if (!v.ok) {
+      toast.error("Numéro invalide", { description: v.error });
+      return;
+    }
+    const phoneFull = `+237 ${formatCmPhone(v.digits)}`;
     setSavingEdit(true);
     const updated: Saved = {
       ...editDraft,
@@ -146,11 +179,16 @@ function AddressesPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!label.trim() || !neighborhood.trim() || !phone.trim()) {
+    if (!label.trim() || !neighborhood.trim()) {
       toast.error("Merci de remplir tous les champs.");
       return;
     }
-    const phoneFull = `+237 ${phone.replace(/\D/g, "")}`;
+    const v = validateCmPhone(phone);
+    if (!v.ok) {
+      toast.error("Numéro invalide", { description: v.error });
+      return;
+    }
+    const phoneFull = `+237 ${formatCmPhone(v.digits)}`;
     setSaving(true);
 
     // Simule l'enregistrement local immédiat
@@ -255,21 +293,40 @@ function AddressesPage() {
             </select>
           </Field>
 
-          <Field label="Numéro de téléphone de livraison" hint="Format Cameroun (+237)">
-            <div className="flex items-stretch overflow-hidden rounded-2xl border border-border bg-background focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30">
-              <span className="inline-flex items-center gap-1.5 border-r border-border bg-surface px-3 text-sm font-semibold text-muted-foreground">
-                <Phone className="h-3.5 w-3.5" /> +237
-              </span>
-              <input
-                type="tel"
-                inputMode="numeric"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/[^\d ]/g, "").slice(0, 13))}
-                placeholder="6 99 12 34 56"
-                className="flex-1 bg-transparent px-4 py-3 text-sm outline-none placeholder:text-muted-foreground/60"
-                required
-              />
-            </div>
+          <Field label="Numéro de téléphone de livraison" hint="Mobile Cameroun · 9 chiffres (6XX XX XX XX)">
+            {(() => {
+              const v = validateCmPhone(phone);
+              const showError = phone.length > 0 && !v.ok;
+              return (
+                <>
+                  <div
+                    className={`flex items-stretch overflow-hidden rounded-2xl border bg-background transition ${
+                      showError
+                        ? "border-destructive focus-within:ring-2 focus-within:ring-destructive/30"
+                        : "border-border focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30"
+                    }`}
+                  >
+                    <span className="inline-flex items-center gap-1.5 border-r border-border bg-surface px-3 text-sm font-semibold text-muted-foreground">
+                      <Phone className="h-3.5 w-3.5" /> +237
+                    </span>
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      autoComplete="tel-national"
+                      value={phone}
+                      onChange={(e) => setPhone(formatCmPhone(e.target.value))}
+                      placeholder="6 99 12 34 56"
+                      maxLength={12}
+                      className="flex-1 bg-transparent px-4 py-3 text-sm outline-none placeholder:text-muted-foreground/60"
+                      required
+                    />
+                  </div>
+                  {showError && (
+                    <p className="mt-1.5 text-[11px] font-medium text-destructive">{v.error}</p>
+                  )}
+                </>
+              );
+            })()}
           </Field>
 
           <button
@@ -334,21 +391,40 @@ function AddressesPage() {
                             <option key={c} value={c}>{c}</option>
                           ))}
                         </select>
-                        <div className="flex items-stretch overflow-hidden rounded-xl border border-border bg-background focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30">
-                          <span className="inline-flex items-center gap-1 border-r border-border bg-surface px-2 text-xs font-semibold text-muted-foreground">
-                            <Phone className="h-3 w-3" /> +237
-                          </span>
-                          <input
-                            type="tel"
-                            inputMode="numeric"
-                            value={editDraft!.phone}
-                            onChange={(e) =>
-                              setEditDraft({ ...editDraft!, phone: e.target.value.replace(/[^\d ]/g, "").slice(0, 13) })
-                            }
-                            placeholder="6 99 12 34 56"
-                            className="flex-1 bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/60"
-                          />
-                        </div>
+                        {(() => {
+                          const v = validateCmPhone(editDraft!.phone);
+                          const showError = editDraft!.phone.length > 0 && !v.ok;
+                          return (
+                            <>
+                              <div
+                                className={`flex items-stretch overflow-hidden rounded-xl border bg-background transition ${
+                                  showError
+                                    ? "border-destructive focus-within:ring-2 focus-within:ring-destructive/30"
+                                    : "border-border focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30"
+                                }`}
+                              >
+                                <span className="inline-flex items-center gap-1 border-r border-border bg-surface px-2 text-xs font-semibold text-muted-foreground">
+                                  <Phone className="h-3 w-3" /> +237
+                                </span>
+                                <input
+                                  type="tel"
+                                  inputMode="numeric"
+                                  autoComplete="tel-national"
+                                  value={editDraft!.phone}
+                                  onChange={(e) =>
+                                    setEditDraft({ ...editDraft!, phone: formatCmPhone(e.target.value) })
+                                  }
+                                  placeholder="6 99 12 34 56"
+                                  maxLength={12}
+                                  className="flex-1 bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/60"
+                                />
+                              </div>
+                              {showError && (
+                                <p className="-mt-1 text-[10px] font-medium text-destructive">{v.error}</p>
+                              )}
+                            </>
+                          );
+                        })()}
                         <div className="flex gap-2 pt-1">
                           <button
                             type="button"
