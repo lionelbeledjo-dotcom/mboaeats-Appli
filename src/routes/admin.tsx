@@ -184,6 +184,10 @@ function AdminHeader({
   }, []);
 
   const handleBack = () => {
+    if (isAdminHome) {
+      router.navigate({ to: "/" });
+      return;
+    }
     if (typeof window !== "undefined" && window.history.length > 1) {
       router.history.back();
     } else {
@@ -193,7 +197,7 @@ function AdminHeader({
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b border-border bg-surface/85 px-3 backdrop-blur sm:gap-3 sm:px-5">
+      <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b border-border bg-surface/85 px-3 pt-[env(safe-area-inset-top)] backdrop-blur sm:gap-3 sm:px-5">
         {/* Hamburger (vraies 3 barres) */}
         <button
           type="button"
@@ -204,17 +208,16 @@ function AdminHeader({
           <Menu className="h-6 w-6" strokeWidth={2.4} />
         </button>
 
-        {/* Retour (caché sur la page racine /admin) */}
-        {!isAdminHome && (
-          <button
-            type="button"
-            onClick={handleBack}
-            aria-label="Retour"
-            className="group inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border bg-background text-foreground transition-all hover:bg-muted/50 active:scale-95"
-          >
-            <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-0.5" strokeWidth={2.4} />
-          </button>
-        )}
+        {/* Retour — toujours visible (sortie de l'espace admin sur la racine) */}
+        <button
+          type="button"
+          onClick={handleBack}
+          aria-label={isAdminHome ? "Quitter l'espace admin" : "Retour"}
+          title={isAdminHome ? "Quitter l'espace admin" : "Retour"}
+          className="group inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border bg-background text-foreground transition-all hover:bg-muted/50 active:scale-95"
+        >
+          <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-0.5" strokeWidth={2.4} />
+        </button>
 
         {/* Titre */}
         <div className="flex min-w-0 flex-1 items-center gap-2">
