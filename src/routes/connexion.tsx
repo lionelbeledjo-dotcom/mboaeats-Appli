@@ -315,51 +315,55 @@ function Connexion() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0c0a14] text-white">
-      {/* Radiant atmosphere — deep charcoal + violet/orange/brick glows */}
-      <div className="pointer-events-none absolute inset-0">
-        <div
-          aria-hidden
-          className="absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(60% 50% at 50% 30%, rgba(255,90,40,0.28), transparent 65%), radial-gradient(45% 40% at 20% 80%, rgba(120,40,200,0.32), transparent 70%), radial-gradient(50% 45% at 85% 75%, rgba(180,30,40,0.28), transparent 70%), linear-gradient(180deg, #0e0a1a 0%, #0a0610 100%)",
-          }}
-        />
-        <div className="absolute -top-32 left-1/2 h-[640px] w-[640px] -translate-x-1/2 rounded-full bg-[#ff6a3d]/20 blur-[160px] animate-radiant-a" />
-        <div className="absolute bottom-[-120px] right-[-80px] h-[460px] w-[460px] rounded-full bg-[#7a2cff]/25 blur-[180px] animate-radiant-b" />
-        <div className="absolute top-1/3 -left-32 h-[420px] w-[420px] rounded-full bg-[#c41a2a]/20 blur-[160px] animate-radiant-a" />
-        {/* Subtle grain */}
-        <div
-          aria-hidden
-          className="absolute inset-0 opacity-[0.06] mix-blend-overlay"
-          style={{
-            backgroundImage:
-              "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
-          }}
-        />
+    <div className="relative min-h-screen overflow-hidden bg-[#0d0d0f] text-white">
+      {/* Radiant amber decorations top */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[360px] overflow-hidden">
+        <svg
+          className="absolute inset-0 h-full w-full"
+          viewBox="0 0 400 360"
+          fill="none"
+          preserveAspectRatio="xMidYMin slice"
+          aria-hidden="true"
+        >
+          <defs>
+            <linearGradient id="amberStrokeC" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#fbbf24" />
+              <stop offset="100%" stopColor="#f97316" />
+            </linearGradient>
+            <radialGradient id="amberGlowC" cx="50%" cy="0%" r="65%">
+              <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.32" />
+              <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <rect width="400" height="360" fill="url(#amberGlowC)" />
+          <path d="M -40 90 Q 120 20 280 100 T 460 70" stroke="url(#amberStrokeC)" strokeWidth="1.5" opacity="0.7" fill="none" />
+          <path d="M -40 140 Q 140 70 300 150 T 480 120" stroke="url(#amberStrokeC)" strokeWidth="1" opacity="0.5" fill="none" />
+          <path d="M -40 40 Q 100 -10 240 50 T 460 20" stroke="url(#amberStrokeC)" strokeWidth="1" opacity="0.4" fill="none" />
+          <circle cx="340" cy="70" r="80" stroke="url(#amberStrokeC)" strokeWidth="1.2" opacity="0.6" fill="none" />
+          <circle cx="340" cy="70" r="115" stroke="url(#amberStrokeC)" strokeWidth="0.8" opacity="0.35" fill="none" />
+          <circle cx="60" cy="50" r="48" stroke="#fbbf24" strokeWidth="0.8" opacity="0.4" fill="none" />
+          <line x1="20" y1="200" x2="120" y2="200" stroke="#fbbf24" strokeWidth="1" opacity="0.3" />
+          <line x1="280" y1="220" x2="380" y2="220" stroke="#f97316" strokeWidth="1" opacity="0.4" />
+        </svg>
       </div>
 
       <div className="relative mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-10">
-        {/* Brand — logo with radiant glow */}
+        {/* Brand — logo + tagline */}
         <div className="mb-10 flex flex-col items-center gap-4 animate-fade-in">
           <div className="relative">
             <div
               aria-hidden
-              className="absolute inset-0 -z-10 rounded-3xl blur-2xl opacity-80"
-              style={{
-                background:
-                  "conic-gradient(from 120deg, #ff6a3d, #c41a2a, #7a2cff, #ff6a3d)",
-              }}
+              className="absolute inset-0 -z-10 rounded-3xl blur-2xl opacity-70"
+              style={{ background: "radial-gradient(circle, #f97316 0%, transparent 70%)" }}
             />
-            <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-[#0c0a14]/70 backdrop-blur-xl ring-1 ring-white/15 shadow-[0_8px_40px_-8px_rgba(255,106,61,0.55)]">
-              <Flame className="h-8 w-8 text-[#ffb38a]" strokeWidth={2} />
+            <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-amber-400 to-orange-600 shadow-[0_0_40px_rgba(251,146,60,0.5)]">
+              <Flame className="h-8 w-8 text-white" strokeWidth={2} />
             </div>
           </div>
           <div className="text-center">
-            <h1 className="font-display text-3xl font-bold tracking-tight text-white">Bienvenue au Mboa</h1>
-            <p className="mt-2 text-[11px] uppercase tracking-[0.3em] text-white/55">
-              Connectez-vous pour commander
+            <h1 className="font-display text-3xl font-bold tracking-tight text-white">MboaEats</h1>
+            <p className="mt-2 text-sm font-light text-white/60">
+              Veuillez vous connecter pour continuer
             </p>
           </div>
         </div>
@@ -392,7 +396,7 @@ function Connexion() {
                       Numéro de téléphone
                     </label>
                     {/* Glassmorphism block — copper border + gold separator */}
-                    <div className="group relative flex items-stretch overflow-hidden rounded-2xl border border-[#d4af6c]/45 bg-white/[0.06] backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_40px_-20px_rgba(212,175,108,0.4)] focus-within:border-[#d4af6c]/80">
+                    <div className="group relative flex items-stretch overflow-hidden rounded-2xl border border-[#f59e0b]/60 bg-white/[0.06] backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_40px_-20px_rgba(212,175,108,0.4)] focus-within:border-[#fbbf24] focus-within:ring-2 focus-within:ring-amber-400/40">
                       <button
                         ref={countryTriggerRef}
                         type="button"
@@ -410,17 +414,17 @@ function Connexion() {
                         aria-haspopup="listbox"
                         aria-expanded={showCountries}
                         aria-controls="country-listbox"
-                        className="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af6c] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c0a14] rounded-l-2xl"
+                        className="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f59e0b] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d0d0f] rounded-l-2xl"
                       >
                         <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-white/10 text-base leading-none ring-1 ring-white/15">
                           {country.flag}
                         </span>
                         <span className="font-display text-base font-bold tracking-wide">{country.dial}</span>
-                        <ChevronDown className={`h-3.5 w-3.5 text-[#d4af6c] transition-transform ${showCountries ? "rotate-180" : ""}`} strokeWidth={2.4} />
+                        <ChevronDown className={`h-3.5 w-3.5 text-[#f59e0b] transition-transform ${showCountries ? "rotate-180" : ""}`} strokeWidth={2.4} />
                       </button>
                       <span
                         aria-hidden
-                        className="my-3 w-px bg-gradient-to-b from-transparent via-[#d4af6c]/70 to-transparent"
+                        className="my-3 w-px bg-gradient-to-b from-transparent via-[#f59e0b]/70 to-transparent"
                       />
                       <input
                         type="tel"
@@ -429,14 +433,14 @@ function Connexion() {
                         placeholder="Entrez votre numéro de téléphone"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="flex-1 bg-transparent px-4 py-3 text-base text-white outline-none placeholder:text-white/40 focus-visible:ring-2 focus-visible:ring-[#d4af6c]/60 rounded-r-2xl"
+                        className="flex-1 bg-transparent px-4 py-3 text-base text-white outline-none placeholder:text-white/40 focus-visible:ring-2 focus-visible:ring-[#f59e0b]/60 rounded-r-2xl"
                         autoFocus
                       />
                     </div>
 
                     {showCountries && (
                       <div
-                        className="rounded-2xl border border-white/10 bg-[#0c0a14]/90 p-2 backdrop-blur-2xl shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)]"
+                        className="rounded-2xl border border-white/10 bg-[#0d0d0f]/90 p-2 backdrop-blur-2xl shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)]"
                         onKeyDown={handleCountryListKeyDown}
                       >
                         <input
@@ -452,7 +456,7 @@ function Connexion() {
                               ? `country-opt-${filteredCountries[highlightedCountry].code}`
                               : undefined
                           }
-                          className="mb-2 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-[#d4af6c]/70 focus-visible:ring-2 focus-visible:ring-[#d4af6c]"
+                          className="mb-2 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-[#f59e0b]/70 focus-visible:ring-2 focus-visible:ring-[#f59e0b]"
                         />
                         <div
                           ref={countryListRef}
@@ -476,7 +480,7 @@ function Connexion() {
                                 tabIndex={-1}
                                 onMouseEnter={() => setHighlightedCountry(idx)}
                                 onClick={() => selectCountry(c.code)}
-                                className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-white/90 transition focus:outline-none ${active ? "bg-[#d4af6c]/20 ring-1 ring-[#d4af6c]/60" : "hover:bg-white/10"} ${selected ? "bg-white/10" : ""}`}
+                                className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-white/90 transition focus:outline-none ${active ? "bg-[#f59e0b]/20 ring-1 ring-[#f59e0b]/60" : "hover:bg-white/10"} ${selected ? "bg-white/10" : ""}`}
                               >
                                 <span className="flex items-center gap-2">
                                   <span className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-white/10 text-base leading-none ring-1 ring-white/15">{c.flag}</span>
@@ -498,8 +502,8 @@ function Connexion() {
                     <label className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
                       Adresse email
                     </label>
-                    <div className="flex items-center gap-2 rounded-2xl border border-[#d4af6c]/45 bg-white/[0.06] backdrop-blur-2xl px-3 py-1.5 focus-within:border-[#d4af6c]/80">
-                      <Mail className="h-4 w-4 text-[#d4af6c]" />
+                    <div className="flex items-center gap-2 rounded-2xl border border-[#f59e0b]/60 bg-white/[0.06] backdrop-blur-2xl px-3 py-1.5 focus-within:border-[#fbbf24] focus-within:ring-2 focus-within:ring-amber-400/40">
+                      <Mail className="h-4 w-4 text-[#f59e0b]" />
                       <input
                         type="email"
                         inputMode="email"
@@ -628,14 +632,31 @@ function Connexion() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="shine-sweep relative inline-flex h-14 w-full items-center justify-center gap-2 overflow-hidden rounded-full text-base font-bold tracking-wide text-white shadow-[0_18px_50px_-15px_rgba(255,80,40,0.7)] ring-1 ring-white/15 transition-transform active:scale-[0.98] disabled:opacity-60"
+                  className="shine-sweep relative inline-flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-xl text-sm font-bold uppercase tracking-[0.18em] text-white shadow-[0_10px_30px_-10px_rgba(249,115,22,0.7)] transition-transform active:scale-[0.98] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d0d0f]"
                   style={{
-                    background:
-                      "linear-gradient(120deg, #ff8a3d 0%, #ff5028 45%, #b21d2a 100%)",
+                    background: "linear-gradient(90deg, #f59e0b 0%, #f97316 50%, #ea580c 100%)",
                   }}
                 >
-                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (mode === "phone" ? "Suivant" : "Continuer")}
+                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "SE CONNECTER"}
                 </button>
+
+                <div className="mt-5 flex flex-col items-center gap-2 text-center">
+                  <button
+                    type="button"
+                    onClick={() => { if (identifierLabel && (phone || email)) setStep("otp"); }}
+                    className="text-sm text-white/70 transition hover:text-amber-300 focus:outline-none focus-visible:underline"
+                  >
+                    Vérifier le code ?
+                  </button>
+                  <a
+                    href="https://wa.me/237699999999?text=Bonjour%20MboaEats%2C%20j%27ai%20besoin%20d%27aide%20pour%20me%20connecter."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-white/70 transition hover:text-amber-300 focus:outline-none focus-visible:underline"
+                  >
+                    Veuillez contacter l'administrateur ?
+                  </a>
+                </div>
 
               </form>
             </>
