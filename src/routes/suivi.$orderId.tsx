@@ -1,8 +1,8 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
-  CheckCircle2, ChefHat, Package, PackageCheck, Truck, Home,
-  MapPin, ArrowLeft, Phone, MessageCircle, Star, Navigation,
+  CheckCircle2, ChefHat, Package, Truck, Home,
+  MapPin, ArrowLeft, Phone, MessageCircle, Star,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getOrder } from "@/server/marketplace.functions";
