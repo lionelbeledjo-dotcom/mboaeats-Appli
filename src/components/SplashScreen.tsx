@@ -1,18 +1,31 @@
 import { useEffect, useState } from "react";
-import { MboaEatsLogo } from "@/components/brand/MboaEatsLogo";
 
 const STORAGE_KEY = "mboaeats:splash:shown";
-const VISIBLE_MS = 2500;
-const EXIT_MS = 600;
+
+// Timings (ms)
+const LETTERS = "MboaEats";
+const LETTER_STAGGER = 90; // décalage entre chaque lettre
+const LETTER_DURATION = 380; // durée d'apparition d'une lettre
+const TYPEWRITER_TOTAL = (LETTERS.length - 1) * LETTER_STAGGER + LETTER_DURATION; // ≈ 1010ms
+const BADGE_DELAY = TYPEWRITER_TOTAL + 120; // démarre juste après la dernière lettre
+const BADGE_DURATION = 500;
+const HOLD_AFTER_COMPLETE = 1000; // 1s de pause une fois le logo complet
+const VISIBLE_MS = BADGE_DELAY + BADGE_DURATION + HOLD_AFTER_COMPLETE; // ≈ 2630ms
+const EXIT_MS = 650;
+
+const MBOA = "Mboa";
+const EATS = "Eats";
 
 /**
- * Full-screen splash shown once per browser session on initial app launch.
- * - Fade-in + zoom of the MboaEats logo
- * - Stays 2.5s
- * - Slide-up + fade-out (600ms) then unmounts and reveals the route below
+ * Splash plein écran joué une fois par session.
+ * - Fond blanc pur (#FFFFFF)
+ * - Le mot "MboaEats" s'écrit lettre par lettre (machine à écrire fluide)
+ * - "Mboa" : blanc avec contour gris léger pour rester lisible sur blanc
+ * - "Eats" : vert UberEats (#06C167)
+ * - Badge "🇨🇲 LIVRAISON CAMEROUN" en fade-in au-dessus une fois le mot terminé
+ * - Pause 1s puis sortie en zoom-out + fade
  */
 export function SplashScreen() {
-  // Decide synchronously on the client whether to show, to avoid a flash.
   const [show, setShow] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     try {
@@ -47,35 +60,102 @@ export function SplashScreen() {
       aria-live="polite"
       style={{
         transition: `transform ${EXIT_MS}ms cubic-bezier(0.65,0,0.35,1), opacity ${EXIT_MS}ms ease-out`,
-        transform: exiting ? "translateY(-100%)" : "translateY(0)",
+        transform: exiting ? "scale(1.12)" : "scale(1)",
         opacity: exiting ? 0 : 1,
       }}
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-white"
+      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-5 bg-white"
     >
-      <div className="splash-logo-anim">
-        <MboaEatsLogo size="xl" align="center" variant="filled" badgeSize="md" />
+      {/* Texte accessible (lecteurs d'écran) — la version visuelle ci-dessous est aria-hidden */}
+      <span className="sr-only">MboaEats — Livraison Cameroun</span>
+
+      {/* Badge 🇨🇲 LIVRAISON CAMEROUN */}
+      <div className="splash-badge" aria-hidden="true">
+        <span className="text-base leading-none" role="img" aria-label="Drapeau du Cameroun">🇨🇲</span>
+        <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-neutral-700">
+          Livraison Cameroun
+        </span>
       </div>
 
+      {/* Mot animé lettre par lettre */}
+      <h1
+        className="splash-word font-display select-none text-5xl font-extrabold tracking-tight sm:text-6xl md:text-7xl"
+        aria-hidden="true"
+      >
+        {MBOA.split("").map((ch, i) => (
+          <span
+            key={`m-${i}`}
+            className="splash-letter splash-letter--mboa"
+            style={{ animationDelay: `${i * LETTER_STAGGER}ms` }}
+          >
+            {ch}
+          </span>
+        ))}
+        {EATS.split("").map((ch, i) => (
+          <span
+            key={`e-${i}`}
+            className="splash-letter splash-letter--eats"
+            style={{ animationDelay: `${(MBOA.length + i) * LETTER_STAGGER}ms` }}
+          >
+            {ch}
+          </span>
+        ))}
+      </h1>
+
       <style>{`
-        @keyframes splashLogoIn {
-          0% {
-            opacity: 0;
-            transform: scale(0.86);
-          }
-          60% {
-            opacity: 1;
-          }
-          100% {
-            opacity: 1;
-            transform: scale(1.02);
-          }
+        @keyframes splashLetterIn {
+          0%   { opacity: 0; transform: translateY(14px) scale(0.92); filter: blur(4px); }
+          60%  { opacity: 1; filter: blur(0); }
+          100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
-        .splash-logo-anim {
-          animation: splashLogoIn 1500ms cubic-bezier(0.16, 1, 0.3, 1) both;
-          will-change: transform, opacity;
+        @keyframes splashBadgeIn {
+          0%   { opacity: 0; transform: translateY(-6px) scale(0.96); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
         }
+
+        .splash-word {
+          display: inline-flex;
+          line-height: 1;
+        }
+        .splash-letter {
+          display: inline-block;
+          opacity: 0;
+          animation: splashLetterIn ${LETTER_DURATION}ms cubic-bezier(0.16, 1, 0.3, 1) both;
+          will-change: transform, opacity, filter;
+        }
+        .splash-letter--mboa {
+          color: #ffffff;
+          /* Contour gris léger + ombre douce pour rester lisible sur fond blanc */
+          -webkit-text-stroke: 1.25px #1f2937; /* gris-800 */
+          text-shadow:
+            0 1px 0 rgba(15, 23, 42, 0.08),
+            0 6px 18px rgba(15, 23, 42, 0.10);
+        }
+        .splash-letter--eats {
+          color: #06c167; /* Vert UberEats */
+        }
+
+        .splash-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.45rem 0.9rem;
+          border-radius: 9999px;
+          background: #f8fafc; /* slate-50 */
+          border: 1px solid rgba(15, 23, 42, 0.08);
+          box-shadow: 0 6px 16px -8px rgba(15, 23, 42, 0.18);
+          opacity: 0;
+          animation: splashBadgeIn ${BADGE_DURATION}ms cubic-bezier(0.16, 1, 0.3, 1) both;
+          animation-delay: ${BADGE_DELAY}ms;
+        }
+
         @media (prefers-reduced-motion: reduce) {
-          .splash-logo-anim { animation: none; }
+          .splash-letter,
+          .splash-badge {
+            animation: none;
+            opacity: 1;
+            transform: none;
+            filter: none;
+          }
         }
       `}</style>
     </div>
