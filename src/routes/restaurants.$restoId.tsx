@@ -39,6 +39,8 @@ export const Route = createFileRoute("/restaurants/$restoId")({
 function RestaurantPage() {
   const { restaurant } = Route.useLoaderData() as { restaurant: Restaurant };
   const navigate = useNavigate();
+  const { items: cartItems } = useCart();
+  const qtyOf = (dishId: string) => cartItems.find((i) => i.id === `${dishId}__default`)?.qty ?? 0;
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
