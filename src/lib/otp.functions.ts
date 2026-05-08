@@ -291,10 +291,18 @@ export const sendOtp = createServerFn({ method: "POST" })
   });
 
 export const getOtpDeliveryConfig = createServerFn({ method: "GET" })
-  .handler(async () => ({
-    twilioTrial: isTwilioTrialMode(),
-    defaultChannel: isTwilioTrialMode() ? "whatsapp" : "sms",
-  }));
+  .handler(async () => {
+    const whatsappAvailable = Boolean(
+      process.env.TWILIO_WHATSAPP_FROM || process.env.TWILIO_MESSAGING_SERVICE_SID
+    );
+    const trial = isTwilioTrialMode();
+    return {
+      twilioTrial: trial,
+      whatsappAvailable,
+      emailAvailable: true,
+      defaultChannel: whatsappAvailable && trial ? "whatsapp" : "email",
+    };
+  });
 
 export const verifyOtp = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ phone: z.string(), code: z.string().regex(/^\d{6}$/) }).parse(d))

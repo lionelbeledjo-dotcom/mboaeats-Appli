@@ -92,6 +92,7 @@ function Connexion() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [smsTrial, setSmsTrial] = useState(false);
+  const [whatsappAvailable, setWhatsappAvailable] = useState(false);
   const [showWhatsAppFallback, setShowWhatsAppFallback] = useState(false);
 
   useEffect(() => {
@@ -99,9 +100,13 @@ function Connexion() {
     getDeliveryConfigFn()
       .then((cfg: any) => {
         if (!active) return;
+        const waOk = Boolean(cfg?.whatsappAvailable);
+        setWhatsappAvailable(waOk);
         if (cfg?.twilioTrial) {
           setSmsTrial(true);
-          setChannel("whatsapp");
+          // Si WhatsApp n'est pas dispo non plus, bascule vers email par défaut
+          if (waOk) setChannel("whatsapp");
+          else setMode("email");
         }
       })
       .catch(() => {});
