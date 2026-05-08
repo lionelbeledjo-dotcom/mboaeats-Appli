@@ -392,31 +392,61 @@ function Connexion() {
                 </p>
 
                 {error && (
-                  <div className="space-y-2 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
-                    <div className="flex items-start gap-2">
+                  <div className="space-y-3 rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-xs">
+                    <div className="flex items-start gap-2 text-destructive">
                       <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                      <span>{error}</span>
-                    </div>
-                    {showWhatsAppFallback && (
-                      <div className="flex flex-wrap gap-2 pt-1">
-                        <button
-                          type="button"
-                          onClick={() => sendCode("whatsapp")}
-                          disabled={loading}
-                          className="inline-flex items-center gap-1.5 rounded-full bg-gradient-primary px-3 py-1.5 text-[11px] font-semibold text-primary-foreground shadow-glow disabled:opacity-60"
-                        >
-                          <Send className="h-3 w-3" /> Recevoir par WhatsApp
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => sendCode("sms")}
-                          disabled={loading}
-                          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-[11px] font-semibold text-muted-foreground"
-                        >
-                          Réessayer
-                        </button>
+                      <div className="space-y-1">
+                        <p className="font-semibold">Impossible d'envoyer le code</p>
+                        <p className="opacity-90">{error}</p>
                       </div>
-                    )}
+                    </div>
+
+                    <div className="space-y-2 rounded-lg bg-background/60 p-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground">
+                        ✨ Solutions immédiates
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {mode === "phone" && channel !== "whatsapp" && (
+                          <button
+                            type="button"
+                            onClick={() => sendCode("whatsapp")}
+                            disabled={loading}
+                            className="inline-flex items-center gap-1.5 rounded-full bg-[#25D366] px-3 py-1.5 text-[11px] font-semibold text-white shadow disabled:opacity-60"
+                          >
+                            <Send className="h-3 w-3" /> Essayer WhatsApp
+                          </button>
+                        )}
+                        {mode === "phone" && channel !== "sms" && (
+                          <button
+                            type="button"
+                            onClick={() => sendCode("sms")}
+                            disabled={loading}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-[11px] font-semibold text-foreground"
+                          >
+                            <MessageCircle className="h-3 w-3" /> Essayer SMS
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => { setMode("email"); setError(null); setShowWhatsAppFallback(false); }}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-[11px] font-semibold text-primary-foreground"
+                        >
+                          <Mail className="h-3 w-3" /> Utiliser mon email
+                        </button>
+                        <a
+                          href={`https://wa.me/237699999999?text=${encodeURIComponent(
+                            `Bonjour MboaEats, je n'arrive pas à recevoir mon code de connexion. Mon numéro est : ${
+                              mode === "phone" && phone ? formatPhoneForOtp(country.dial, phone) : email || "(non renseigné)"
+                            }`
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-[#25D366] bg-background px-3 py-1.5 text-[11px] font-semibold text-[#25D366]"
+                        >
+                          <Send className="h-3 w-3" /> Aide humaine
+                        </a>
+                      </div>
+                    </div>
                   </div>
                 )}
 
