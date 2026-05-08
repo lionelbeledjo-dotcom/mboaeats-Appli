@@ -26,6 +26,14 @@ export const Route = createFileRoute("/checkout")({
 type Method = "momo" | "orange" | "card" | "cash";
 type Step = "choose" | "ussd" | "otp" | "card" | "success";
 
+const UPSELL_ITEMS: { id: string; name: string; price: number; image: string; emoji: string }[] = [
+  { id: "upsell__cocacola", name: "Coca-Cola 33cl", price: 700, emoji: "🥤", image: "https://images.unsplash.com/photo-1554866585-cd94860890b7?w=400&q=80" },
+  { id: "upsell__frites", name: "Frites maison", price: 1500, emoji: "🍟", image: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=400&q=80" },
+  { id: "upsell__beignet", name: "Beignet sucré", price: 500, emoji: "🥯", image: "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=400&q=80" },
+  { id: "upsell__sauce", name: "Sauce piment maison", price: 300, emoji: "🌶️", image: "https://images.unsplash.com/photo-1599577180589-0a3a6c4f0c5b?w=400&q=80" },
+];
+
+
 const landmarkSchema = z.string().trim().min(8, "Décrivez un repère visible (≥ 8 caractères)").max(140);
 
 function Checkout() {
