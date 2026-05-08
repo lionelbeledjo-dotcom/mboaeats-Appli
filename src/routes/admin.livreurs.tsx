@@ -25,11 +25,17 @@ function Livreurs() {
   const fetchAll = useServerFn(listAllDrivers);
   const updateStatusFn = useServerFn(setDriverStatus);
   const setActiveFn = useServerFn(setDriverActive);
+  const fetchDetails = useServerFn(getDriverDetails);
+  const updateProfile = useServerFn(updateDriverProfile);
+  const deleteFn = useServerFn(deleteDriver);
   const [list, setList] = useState<Driver[] | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
   const [q, setQ] = useState("");
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [viewing, setViewing] = useState<Driver | null>(null);
+  const [viewingData, setViewingData] = useState<any>(null);
+  const [editing, setEditing] = useState<Driver | null>(null);
 
   const reload = () => {
     setError(null);
