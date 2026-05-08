@@ -245,6 +245,10 @@ function Restaurants({ city }: { city: string }) {
                 <span className="inline-flex items-center gap-1">
                   <Clock className="h-3.5 w-3.5" /> {r.eta}
                 </span>
+                <span className="inline-flex items-center gap-1">
+                  <Bike className="h-3.5 w-3.5 text-primary" />
+                  <span className="font-semibold text-foreground">800 F</span>
+                </span>
                 <span className="font-semibold text-foreground">dès {r.price}</span>
               </div>
             </div>
