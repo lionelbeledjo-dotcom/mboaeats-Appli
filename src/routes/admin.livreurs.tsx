@@ -141,19 +141,19 @@ function Livreurs() {
   ];
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-6">
+    <div className="mx-auto max-w-7xl space-y-4 p-3 sm:space-y-6 sm:p-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-3xl font-extrabold">Livreurs</h1>
+          <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Livreurs</h1>
           <p className="text-sm text-muted-foreground">{counts.all} livreurs · {counts.online} en ligne · {counts.inactive} désactivés</p>
         </div>
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Rechercher (nom, téléphone, ville)…"
-            className="rounded-xl border border-border bg-surface/60 py-2 pl-9 pr-3 text-sm outline-none focus:border-primary"
+            className="w-full rounded-xl border border-border bg-surface/60 py-2.5 pl-9 pr-3 text-sm outline-none focus:border-primary sm:w-auto sm:py-2"
           />
         </div>
       </div>
@@ -175,7 +175,76 @@ function Livreurs() {
       {error && <ErrorState message={error} onRetry={reload} />}
       {!list && !error && <div className="flex justify-center p-16"><Loader2 className="h-5 w-5 animate-spin" /></div>}
 
-      <div className="overflow-hidden rounded-3xl border border-border bg-surface/60">
+      {/* Mobile cards */}
+      <div className="grid gap-3 md:hidden">
+        {filtered.map((d) => {
+          const isPending = pendingId === d.id;
+          const fromTo = (d as any).from && (d as any).to && (d as any).to !== "—"
+            ? `${(d as any).from} → ${(d as any).to}` : `Disponible · ${(d as any).from ?? "—"}`;
+          return (
+            <div key={d.id} className={`rounded-2xl border border-border bg-surface/60 p-4 ${!d.is_active ? "opacity-60" : ""}`}>
+              <div className="flex items-start gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-primary">
+                  <Bike className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold">{d.name}</p>
+                  <p className="truncate text-xs text-muted-foreground">{d.phone ?? "—"} · {d.city ?? "—"}</p>
+                  <p className="mt-1 inline-flex items-center gap-1 rounded-md bg-primary/10 px-1.5 py-0.5 text-[11px] font-semibold text-primary">
+                    <MapPin className="h-3 w-3" /> {fromTo}
+                  </p>
+                </div>
+                {d.is_active ? (
+                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                    d.status === "busy" ? "bg-primary/15 text-primary" :
+                    d.status === "available" ? "bg-emerald-500/15 text-emerald-400" :
+                    "bg-surface text-muted-foreground"
+                  }`}>{d.status}</span>
+                ) : (
+                  <span className="shrink-0 rounded-full bg-destructive/15 px-2 py-0.5 text-[10px] font-bold text-destructive">Désactivé</span>
+                )}
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                <div className="rounded-lg bg-background/40 p-2"><p className="text-[10px] uppercase text-muted-foreground">Courses (7j)</p><p className="font-bold">{d.courses}</p></div>
+                <div className="rounded-lg bg-background/40 p-2"><p className="text-[10px] uppercase text-muted-foreground">Gains (7j)</p><p className="font-bold">{d.earned.toLocaleString("fr-FR")} F</p></div>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {d.phone && (
+                  <a href={`tel:${d.phone}`} className="inline-flex h-11 min-w-11 items-center justify-center rounded-xl border border-border bg-background px-3 text-xs font-semibold">
+                    <Phone className="h-4 w-4" />
+                  </a>
+                )}
+                <button onClick={() => openView(d)} disabled={isPending} className="inline-flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border border-border bg-background px-3 text-xs font-semibold disabled:opacity-50">
+                  <Eye className="h-4 w-4" /> Voir
+                </button>
+                <button onClick={() => setEditing(d)} disabled={isPending} className="inline-flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border border-border bg-background px-3 text-xs font-semibold disabled:opacity-50">
+                  <Pencil className="h-4 w-4" /> Éditer
+                </button>
+                <button
+                  onClick={() => toggleActive(d)}
+                  disabled={isPending}
+                  className={`inline-flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl px-3 text-xs font-bold disabled:opacity-50 ${
+                    d.is_active ? "border border-destructive/30 bg-destructive/10 text-destructive" : "bg-gradient-primary text-primary-foreground"
+                  }`}
+                >
+                  {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : d.is_active ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
+                  {d.is_active ? "Désactiver" : "Réactiver"}
+                </button>
+                <button onClick={() => handleDelete(d)} disabled={isPending} className="inline-flex h-11 min-w-11 items-center justify-center rounded-xl border border-destructive/40 bg-destructive/10 text-destructive disabled:opacity-50">
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          );
+        })}
+        {list && filtered.length === 0 && (
+          <p className="rounded-2xl border border-dashed border-border bg-surface/30 p-8 text-center text-sm text-muted-foreground">
+            {counts.all === 0 ? "Aucun livreur enregistré pour l'instant." : "Aucun livreur ne correspond à ces filtres."}
+          </p>
+        )}
+      </div>
+
+      <div className="hidden overflow-hidden rounded-3xl border border-border bg-surface/60 md:block">
         <table className="w-full text-sm">
           <thead className="bg-background/40 text-xs uppercase tracking-wider text-muted-foreground">
             <tr>

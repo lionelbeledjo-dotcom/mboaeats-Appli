@@ -46,37 +46,39 @@ const LAST_ORDERS: OrderRow[] = [
 function Overview() {
   const [selected, setSelected] = useState<OrderRow | null>(null);
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-6">
+    <div className="mx-auto max-w-7xl space-y-4 p-3 sm:space-y-6 sm:p-6">
       <div>
-        <h1 className="font-display text-3xl font-extrabold">Vue d'ensemble</h1>
-        <p className="text-sm text-muted-foreground">Activité MboaEats · Douala · Aperçu en direct</p>
+        <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Vue d'ensemble</h1>
+        <p className="text-xs text-muted-foreground sm:text-sm">Activité MboaEats · Douala · Aperçu en direct</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:gap-4 lg:grid-cols-4">
         {KPIS.map((k) => (
-          <div key={k.label} className="rounded-3xl border border-border bg-surface/60 p-5">
-            <div className="flex items-center justify-between">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-background">
-                <k.icon className={`h-5 w-5 ${k.accent === "gold" ? "text-gold" : "text-primary"}`} />
-              </span>
-              {k.suffix && <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{k.suffix}</span>}
+          <div key={k.label} className="flex items-center gap-3 rounded-2xl border border-border bg-surface/60 p-4 sm:block sm:rounded-3xl sm:p-5">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-background sm:h-10 sm:w-10">
+              <k.icon className={`h-5 w-5 ${k.accent === "gold" ? "text-gold" : "text-primary"}`} />
+            </span>
+            <div className="min-w-0 flex-1 sm:mt-4">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground sm:text-xs">{k.label}</p>
+                {k.suffix && <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{k.suffix}</span>}
+              </div>
+              <p className={`mt-0.5 font-display text-xl font-extrabold sm:mt-1 sm:text-2xl ${k.accent === "gold" ? "text-gradient-gold" : "text-gradient-primary"}`}>{k.value}</p>
+              <p className="mt-0.5 truncate text-[11px] text-muted-foreground sm:mt-1">{k.hint}</p>
             </div>
-            <p className="mt-4 text-xs uppercase tracking-wider text-muted-foreground">{k.label}</p>
-            <p className={`mt-1 font-display text-2xl font-extrabold ${k.accent === "gold" ? "text-gradient-gold" : "text-gradient-primary"}`}>{k.value}</p>
-            <p className="mt-1 text-[11px] text-muted-foreground">{k.hint}</p>
           </div>
         ))}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="rounded-3xl border border-border bg-surface/60 p-5 lg:col-span-2">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+        <div className="min-w-0 rounded-2xl border border-border bg-surface/60 p-3 sm:rounded-3xl sm:p-5 lg:col-span-2">
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg font-bold">Revenus de la semaine</h2>
+            <h2 className="font-display text-base font-bold sm:text-lg">Revenus de la semaine</h2>
             <span className="text-xs text-muted-foreground">FCFA</span>
           </div>
-          <div className="mt-4 h-72">
+          <div className="mt-3 h-56 w-full sm:mt-4 sm:h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={WEEK} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+              <LineChart data={WEEK} margin={{ top: 10, right: 8, left: -18, bottom: 0 }}>
                 <defs>
                   <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
                     <stop offset="0%" stopColor="hsl(var(--primary))" />
@@ -84,8 +86,8 @@ function Overview() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} width={36} />
                 <Tooltip
                   contentStyle={{ background: "hsl(var(--background))", border: "1px solid hsl(var(--border))", borderRadius: 12, fontSize: 12 }}
                   formatter={(v: number) => [`${v.toLocaleString("fr-FR")} F`, "Revenus"]}
@@ -96,7 +98,7 @@ function Overview() {
           </div>
         </div>
 
-        <div className="rounded-3xl border border-border bg-surface/60 p-5">
+        <div className="rounded-2xl border border-border bg-surface/60 p-3 sm:rounded-3xl sm:p-5">
           <h2 className="font-display text-lg font-bold">5 dernières commandes</h2>
           <ul className="mt-4 space-y-3">
             {LAST_ORDERS.map((o) => (
