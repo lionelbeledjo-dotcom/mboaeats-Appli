@@ -598,14 +598,25 @@ function Connexion() {
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (<><Check className="h-4 w-4" /> Valider et entrer</>)}
               </button>
 
-              <button
-                type="button"
-                onClick={() => sendCode("sms")}
-                disabled={resendIn > 0 || loading}
-                className="block w-full text-center text-xs font-bold text-[#06C167] underline-offset-4 hover:underline disabled:text-[#9b9b9b] disabled:no-underline"
-              >
-                {resendIn > 0 ? `Renvoyer le code dans ${resendIn}s` : "Renvoyer le code"}
-              </button>
+              <div className="flex flex-col items-center gap-1.5 pt-1">
+                <button
+                  type="button"
+                  onClick={resendSms}
+                  disabled={resendIn > 0 || resendingSms || loading}
+                  className="inline-flex items-center gap-2 text-xs font-bold text-[#06C167] underline-offset-4 hover:underline disabled:text-[#9b9b9b] disabled:no-underline"
+                >
+                  {resendingSms ? (
+                    <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Envoi du SMS…</>
+                  ) : resendIn > 0 ? (
+                    <>Renvoyer le code dans <span className="tabular-nums">{resendIn}s</span></>
+                  ) : (
+                    "Renvoyer le code"
+                  )}
+                </button>
+                {resendOk && !resendingSms && (
+                  <span className="text-[11px] font-medium text-[#06C167]">✓ Nouveau code envoyé</span>
+                )}
+              </div>
             </form>
           )}
         </div>
