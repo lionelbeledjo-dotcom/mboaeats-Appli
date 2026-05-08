@@ -471,7 +471,7 @@ function Connexion() {
           {step === "otp" && (
             <form onSubmit={submitCode} className="space-y-4 animate-fade-up">
               <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 text-xs">
-                {channel === "whatsapp" ? "💬 Code envoyé par WhatsApp" : channel === "email" ? "📧 Code envoyé par email" : "📩 Code envoyé par SMS"} à <span className="font-semibold">{identifierLabel}</span>. Saisissez les 6 chiffres reçus.
+                {channel === "whatsapp" ? "💬 Code envoyé par WhatsApp" : channel === "email" ? "📧 Vérifiez votre boîte email ! Le code expire dans 30 min." : "📩 Code envoyé par SMS"} {channel === "email" ? "à" : "à"} <span className="font-semibold">{identifierLabel}</span>. Saisissez les 6 chiffres reçus.
               </div>
 
               <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -516,6 +516,23 @@ function Connexion() {
         </div>
 
         {/* Lien admin retiré de l'interface publique. Accès via /admin/login uniquement. */}
+
+        <div className="mt-6 rounded-2xl border border-border bg-card/60 p-4 text-center text-xs text-muted-foreground backdrop-blur">
+          <p className="mb-2 font-semibold text-foreground">Vous ne recevez pas de code ?</p>
+          <p className="mb-3">Contactez-nous sur WhatsApp, on vous inscrit manuellement en quelques minutes.</p>
+          <a
+            href={`https://wa.me/237699999999?text=${encodeURIComponent(
+              `Bonjour MboaEats, j'ai besoin de m'inscrire mais je ne reçois pas de code. Mon numéro est : ${
+                mode === "phone" && phone ? formatPhoneForOtp(country.dial, phone) : "+__________"
+              }`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-[#25D366] px-4 py-2 text-xs font-semibold text-white shadow hover:opacity-90"
+          >
+            <Send className="h-3.5 w-3.5" /> Demander de l'aide sur WhatsApp
+          </a>
+        </div>
 
         <p className="mt-4 text-center text-[11px] text-muted-foreground">
           Support : <a className="text-primary hover:underline" href="mailto:lionelbrown2728@yahoo.fr">lionelbrown2728@yahoo.fr</a>
