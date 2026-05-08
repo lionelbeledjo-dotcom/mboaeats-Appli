@@ -269,16 +269,15 @@ function Connexion() {
     }
   };
 
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const verifyCode = async (code: string) => {
     resetMessages();
-    if (!/^\d{6}$/.test(otpCode.trim())) {
+    if (!/^\d{6}$/.test(code)) {
       setError("Saisissez les 6 chiffres reçus.");
       return;
     }
     setLoading(true);
     try {
-      const res: any = await verifyOtpFn({ data: { phone: fullPhone, code: otpCode.trim() } });
+      const res: any = await verifyOtpFn({ data: { phone: fullPhone, code } });
       if (res?.auth?.token_hash) {
         const { error: vErr } = await supabase.auth.verifyOtp({
           type: "magiclink",
@@ -290,9 +289,15 @@ function Connexion() {
       navigate({ to: "/", replace: true });
     } catch (err: any) {
       setError(err?.message ?? "Code invalide");
+      setOtpCode("");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleVerifyOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    void verifyCode(otpCode.trim());
   };
 
   return (
