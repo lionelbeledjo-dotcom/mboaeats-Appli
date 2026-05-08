@@ -1,11 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
-  MapPin, ArrowLeft, Home, Briefcase, Heart, Loader2, Phone, Check, Save, Pencil, X,
+  MapPin, ArrowLeft, Home, Briefcase, Heart, Loader2, Phone, Check, Save, Pencil, X, Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { listMyAddresses, upsertMyAddress } from "@/server/account.functions";
+import { listMyAddresses, upsertMyAddress, deleteMyAddress } from "@/server/account.functions";
 
 export const Route = createFileRoute("/adresses")({
   head: () => ({
