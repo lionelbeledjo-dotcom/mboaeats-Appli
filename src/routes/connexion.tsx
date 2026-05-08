@@ -315,88 +315,80 @@ function Connexion() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0d0d0f] text-white">
-      {/* Radiant amber decorations top */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[360px] overflow-hidden">
-        <svg
-          className="absolute inset-0 h-full w-full"
-          viewBox="0 0 400 360"
-          fill="none"
-          preserveAspectRatio="xMidYMin slice"
-          aria-hidden="true"
-        >
-          <defs>
-            <linearGradient id="amberStrokeC" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#fbbf24" />
-              <stop offset="100%" stopColor="#f97316" />
-            </linearGradient>
-            <radialGradient id="amberGlowC" cx="50%" cy="0%" r="65%">
-              <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.32" />
-              <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
-            </radialGradient>
-          </defs>
-          <rect width="400" height="360" fill="url(#amberGlowC)" />
-          <path d="M -40 90 Q 120 20 280 100 T 460 70" stroke="url(#amberStrokeC)" strokeWidth="1.5" opacity="0.7" fill="none" />
-          <path d="M -40 140 Q 140 70 300 150 T 480 120" stroke="url(#amberStrokeC)" strokeWidth="1" opacity="0.5" fill="none" />
-          <path d="M -40 40 Q 100 -10 240 50 T 460 20" stroke="url(#amberStrokeC)" strokeWidth="1" opacity="0.4" fill="none" />
-          <circle cx="340" cy="70" r="80" stroke="url(#amberStrokeC)" strokeWidth="1.2" opacity="0.6" fill="none" />
-          <circle cx="340" cy="70" r="115" stroke="url(#amberStrokeC)" strokeWidth="0.8" opacity="0.35" fill="none" />
-          <circle cx="60" cy="50" r="48" stroke="#fbbf24" strokeWidth="0.8" opacity="0.4" fill="none" />
-          <line x1="20" y1="200" x2="120" y2="200" stroke="#fbbf24" strokeWidth="1" opacity="0.3" />
-          <line x1="280" y1="220" x2="380" y2="220" stroke="#f97316" strokeWidth="1" opacity="0.4" />
-        </svg>
+    <div className="relative min-h-screen overflow-hidden bg-[#07080a] text-white" style={{ colorScheme: "dark" }}>
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[446px] bg-[#1a1007]" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-[446px]"
+        style={{
+          background:
+            "radial-gradient(circle at 50% 10%, rgba(255,143,18,0.26), transparent 34%), radial-gradient(circle at 85% 20%, rgba(255,128,0,0.18), transparent 38%), linear-gradient(180deg, #221609 0%, #120d09 100%)",
+        }}
+      />
+      <svg
+        className="pointer-events-none absolute inset-x-0 top-0 h-[446px] w-full"
+        viewBox="0 0 1296 446"
+        fill="none"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        <path d="M-34 91C159 45 389 41 562 91C742 143 871 245 1040 240C1145 237 1235 196 1324 129" stroke="#b16f0c" strokeWidth="3" opacity="0.62" />
+        <path d="M-18 235C193 178 423 166 609 223C776 274 868 394 1035 426C1133 445 1228 435 1323 410" stroke="#f0a20b" strokeWidth="4" opacity="0.85" />
+        <path d="M-34 407C139 357 305 342 472 352C713 366 846 463 1030 464C1164 465 1241 424 1329 351" stroke="#c0770c" strokeWidth="3" opacity="0.72" />
+        <circle cx="177" cy="160" r="157" stroke="#c89213" strokeWidth="3" opacity="0.55" />
+        <circle cx="1007" cy="225" r="172" stroke="#d89416" strokeWidth="4" opacity="0.76" />
+        <circle cx="1210" cy="222" r="376" stroke="#d98f18" strokeWidth="4" opacity="0.7" />
+        <path d="M-20 84C167 37 362 46 527 86C714 132 833 225 1027 239C1136 247 1232 219 1324 166" stroke="#c06f0c" strokeWidth="2" opacity="0.55" />
+      </svg>
+
+      <div className="absolute right-[7.6%] top-4 z-10 flex items-start gap-[-4px]">
+        <button type="button" aria-label="Aide" className="flex h-[50px] w-[50px] items-center justify-center rounded-full bg-[#ff7308] text-2xl font-black text-white shadow-[0_12px_30px_rgba(255,112,8,0.35)] ring-1 ring-orange-300/20">
+          <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full border-2 border-white text-[15px] leading-none">?</span>
+        </button>
+        <span className="-ml-3 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 ring-[3px] ring-white" aria-hidden />
       </div>
 
-      <div className="relative mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-10">
-        {/* Brand — logo + tagline */}
-        <div className="mb-10 flex flex-col items-center gap-4 animate-fade-in">
-          <div className="relative">
-            <div
-              aria-hidden
-              className="absolute inset-0 -z-10 rounded-3xl blur-2xl opacity-70"
-              style={{ background: "radial-gradient(circle, #f97316 0%, transparent 70%)" }}
-            />
-            <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-amber-400 to-orange-600 shadow-[0_0_40px_rgba(251,146,60,0.5)]">
-              <Flame className="h-8 w-8 text-white" strokeWidth={2} />
-            </div>
+      <div className="relative z-[1] mx-auto flex min-h-screen w-full max-w-[548px] flex-col px-6 pt-[46px]">
+        <div className="mb-[28px] flex flex-col items-center text-center">
+          <div className="relative mb-6 flex h-20 w-20 items-center justify-center rounded-[31px] bg-gradient-to-br from-[#ffa414] via-[#ff850c] to-[#ff5b05] shadow-[0_0_58px_rgba(255,128,10,0.42)]">
+            <div className="absolute inset-[-28px] -z-10 rounded-full bg-[#ff8908]/20 blur-3xl" aria-hidden />
+            <Flame className="h-10 w-10 text-white" strokeWidth={2.35} />
           </div>
-          <div className="text-center">
-            <h1 className="font-display text-3xl font-bold tracking-tight text-white">MboaEats</h1>
-            <p className="mt-2 text-sm font-light text-white/60">
-              Veuillez vous connecter pour continuer
-            </p>
-          </div>
+          <h1 className="font-display text-[38px] font-black leading-none text-white drop-shadow-sm">MboaEats</h1>
+          <p className="mt-4 text-[17px] font-light leading-none text-white/66">
+            Veuillez vous connecter pour continuer
+          </p>
         </div>
 
-        <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.8)] backdrop-blur-2xl animate-fade-up">
+        <div className="rounded-[32px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(74,56,30,0.94)_0%,rgba(25,25,27,0.98)_42%,rgba(18,18,20,1)_100%)] p-[30px] shadow-[0_34px_90px_-28px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl animate-fade-up">
           {step === "identify" && (
             <>
               {/* Mode tabs */}
-              <div className="mb-5 grid grid-cols-2 gap-1 rounded-full border border-white/10 bg-white/5 p-1 backdrop-blur">
+              <div className="mb-7 grid h-[52px] grid-cols-2 gap-2 rounded-full border border-[#806d49]/55 bg-[#625238]/85 p-[5px] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur">
                 <button
                   type="button"
                   onClick={() => { setMode("phone"); setError(null); }}
-                  className={`flex items-center justify-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition ${mode === "phone" ? "bg-white/10 text-white shadow-[inset_0_0_0_1px_rgba(212,175,108,0.5)]" : "text-white/55"}`}
+                  className={`flex items-center justify-center gap-2 rounded-full px-3 text-[14px] font-extrabold transition ${mode === "phone" ? "bg-[#756b58] text-white shadow-[inset_0_0_0_1.5px_rgba(215,169,83,0.72)]" : "text-white/48 hover:text-white/75"}`}
                 >
                   <Phone className="h-3.5 w-3.5" /> Téléphone
                 </button>
                 <button
                   type="button"
                   onClick={() => { setMode("email"); setError(null); }}
-                  className={`flex items-center justify-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition ${mode === "email" ? "bg-white/10 text-white shadow-[inset_0_0_0_1px_rgba(212,175,108,0.5)]" : "text-white/55"}`}
+                  className={`flex items-center justify-center gap-2 rounded-full px-3 text-[14px] font-extrabold transition ${mode === "email" ? "bg-[#756b58] text-white shadow-[inset_0_0_0_1.5px_rgba(215,169,83,0.72)]" : "text-white/48 hover:text-white/75"}`}
                 >
                   <Mail className="h-3.5 w-3.5" /> Email
                 </button>
               </div>
 
-              <form onSubmit={submitIdentify} className="space-y-5">
+              <form onSubmit={submitIdentify} className="space-y-[26px]">
                 {mode === "phone" ? (
                   <>
-                    <label className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
+                    <label className="block text-[13px] font-black uppercase tracking-[0.34em] text-white/56">
                       Numéro de téléphone
                     </label>
                     {/* Glassmorphism block — copper border + gold separator */}
-                    <div className="group relative flex items-stretch overflow-hidden rounded-2xl border border-[#f59e0b]/60 bg-white/[0.06] backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_40px_-20px_rgba(212,175,108,0.4)] focus-within:border-[#fbbf24] focus-within:ring-2 focus-within:ring-amber-400/40">
+                    <div className="group relative flex h-[68px] items-stretch overflow-hidden rounded-[28px] border border-[#d89109] bg-[#2a2a2e]/95 backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_0_0_1px_rgba(255,166,0,0.05),0_16px_48px_-26px_rgba(255,148,18,0.72)] transition focus-within:border-[#ffb000] focus-within:ring-[3px] focus-within:ring-[#ff9d00]/34">
                       <button
                         ref={countryTriggerRef}
                         type="button"
@@ -414,17 +406,17 @@ function Connexion() {
                         aria-haspopup="listbox"
                         aria-expanded={showCountries}
                         aria-controls="country-listbox"
-                        className="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f59e0b] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d0d0f] rounded-l-2xl"
+                        className="flex shrink-0 items-center gap-3 px-[20px] text-sm font-semibold text-white transition hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb000] focus-visible:ring-offset-2 focus-visible:ring-offset-[#111113] rounded-l-[28px]"
                       >
-                        <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-white/10 text-base leading-none ring-1 ring-white/15">
-                          {country.flag}
+                        <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-[#5f5f65] text-[14px] font-black leading-none tracking-tight ring-1 ring-white/10">
+                          {country.code}
                         </span>
-                        <span className="font-display text-base font-bold tracking-wide">{country.dial}</span>
-                        <ChevronDown className={`h-3.5 w-3.5 text-[#f59e0b] transition-transform ${showCountries ? "rotate-180" : ""}`} strokeWidth={2.4} />
+                        <span className="font-display text-[21px] font-black tracking-wide">{country.dial}</span>
+                        <ChevronDown className={`h-4 w-4 text-[#ffad05] transition-transform ${showCountries ? "rotate-180" : ""}`} strokeWidth={3} />
                       </button>
                       <span
                         aria-hidden
-                        className="my-3 w-px bg-gradient-to-b from-transparent via-[#f59e0b]/70 to-transparent"
+                        className="my-[14px] w-px bg-gradient-to-b from-transparent via-white/18 to-transparent"
                       />
                       <input
                         type="tel"
@@ -433,7 +425,7 @@ function Connexion() {
                         placeholder="Entrez votre numéro de téléphone"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="flex-1 bg-transparent px-4 py-3 text-base text-white outline-none placeholder:text-white/40 focus-visible:ring-2 focus-visible:ring-[#f59e0b]/60 rounded-r-2xl"
+                        className="min-w-0 flex-1 bg-transparent px-5 text-[20px] font-semibold text-white outline-none placeholder:text-white/36 focus-visible:ring-2 focus-visible:ring-[#ffb000]/70 rounded-r-[28px]"
                         autoFocus
                       />
                     </div>
@@ -499,11 +491,11 @@ function Connexion() {
                   </>
                 ) : (
                   <>
-                    <label className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
+                    <label className="block text-[13px] font-black uppercase tracking-[0.34em] text-white/56">
                       Adresse email
                     </label>
-                    <div className="flex items-center gap-2 rounded-2xl border border-[#f59e0b]/60 bg-white/[0.06] backdrop-blur-2xl px-3 py-1.5 focus-within:border-[#fbbf24] focus-within:ring-2 focus-within:ring-amber-400/40">
-                      <Mail className="h-4 w-4 text-[#f59e0b]" />
+                    <div className="flex h-[68px] items-center gap-3 rounded-[28px] border border-[#d89109] bg-[#2a2a2e]/95 px-5 backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_16px_48px_-26px_rgba(255,148,18,0.72)] transition focus-within:border-[#ffb000] focus-within:ring-[3px] focus-within:ring-[#ff9d00]/34">
+                      <Mail className="h-5 w-5 text-[#ffad05]" />
                       <input
                         type="email"
                         inputMode="email"
@@ -511,7 +503,7 @@ function Connexion() {
                         placeholder="vous@exemple.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="flex-1 bg-transparent py-2.5 text-base text-white outline-none placeholder:text-white/40"
+                        className="min-w-0 flex-1 bg-transparent text-[20px] font-semibold text-white outline-none placeholder:text-white/36"
                         autoFocus
                       />
                     </div>
@@ -532,14 +524,14 @@ function Connexion() {
 
                 {mode === "phone" && !smsTrial && (
                   <div>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    <p className="mb-3 text-[13px] font-black uppercase tracking-[0.2em] text-white/36">
                       Recevoir le code par
                     </p>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-3">
                       <button
                         type="button"
                         onClick={() => { setChannel("sms"); setError(null); setShowWhatsAppFallback(false); }}
-                        className={`flex items-center justify-center gap-2 rounded-2xl border p-3 text-sm font-semibold transition ${channel === "sms" ? "border-primary bg-primary/10 text-foreground" : "border-border bg-background text-muted-foreground hover:bg-muted/40"}`}
+                        className={`flex h-[72px] items-center justify-center gap-2 rounded-[28px] border text-[20px] font-semibold transition ${channel === "sms" ? "border-[#ff5b05] bg-[#3a1e18] text-[#17120f] shadow-[inset_0_0_0_1px_rgba(255,102,0,0.2)]" : "border-white/12 bg-white/[0.04] text-white/45 hover:bg-white/[0.07]"}`}
                       >
                         <MessageCircle className="h-4 w-4" /> SMS
                       </button>
@@ -547,13 +539,13 @@ function Connexion() {
                         <button
                           type="button"
                           onClick={() => { setChannel("whatsapp"); setError(null); setShowWhatsAppFallback(false); }}
-                          className={`flex items-center justify-center gap-2 rounded-2xl border p-3 text-sm font-semibold transition ${channel === "whatsapp" ? "border-primary bg-primary/10 text-foreground" : "border-border bg-background text-muted-foreground hover:bg-muted/40"}`}
+                          className={`flex h-[72px] items-center justify-center gap-2 rounded-[28px] border text-[20px] font-semibold transition ${channel === "whatsapp" ? "border-[#ff5b05] bg-[#3a1e18] text-white" : "border-white/12 bg-white/[0.04] text-white/45 hover:bg-white/[0.07]"}`}
                         >
                           <Send className="h-4 w-4" /> WhatsApp
                         </button>
                       ) : (
                         <div
-                          className="flex flex-col items-center justify-center gap-0.5 rounded-2xl border border-dashed border-border bg-muted/20 p-3 text-center text-[11px] font-medium text-muted-foreground"
+                          className="flex h-[72px] flex-col items-center justify-center gap-0.5 rounded-[28px] border border-dashed border-white/50 bg-white/[0.2] text-center text-[13px] font-bold text-white/28"
                           aria-disabled
                           title="WhatsApp pas encore activé sur ce compte"
                         >
@@ -565,8 +557,8 @@ function Connexion() {
                   </div>
                 )}
 
-                <p className="flex items-start gap-2 text-[11px] leading-snug text-muted-foreground">
-                  <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+                <p className="flex items-start gap-3 text-[13px] leading-snug text-white/32">
+                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#ff5b05]" />
                   Un code à 6 chiffres vous sera envoyé par {mode === "phone" ? (channel === "whatsapp" ? "WhatsApp" : "SMS") : "email"} pour confirmer votre identité.
                 </p>
 
@@ -632,19 +624,19 @@ function Connexion() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="shine-sweep relative inline-flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-xl text-sm font-bold uppercase tracking-[0.18em] text-white shadow-[0_10px_30px_-10px_rgba(249,115,22,0.7)] transition-transform active:scale-[0.98] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d0d0f]"
+                  className="shine-sweep relative inline-flex h-[60px] w-full items-center justify-center gap-2 overflow-hidden rounded-[24px] text-[17px] font-black uppercase tracking-[0.22em] text-white shadow-[0_18px_34px_-18px_rgba(255,104,5,0.95)] transition-transform active:scale-[0.98] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#111113]"
                   style={{
-                    background: "linear-gradient(90deg, #f59e0b 0%, #f97316 50%, #ea580c 100%)",
+                    background: "linear-gradient(90deg, #ffd28a 0%, #ff8b13 36%, #ff6908 68%, #f45b06 100%)",
                   }}
                 >
                   {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "SE CONNECTER"}
                 </button>
 
-                <div className="mt-5 flex flex-col items-center gap-2 text-center">
+                <div className="mt-9 flex flex-col items-center gap-4 text-center">
                   <button
                     type="button"
                     onClick={() => { if (identifierLabel && (phone || email)) setStep("otp"); }}
-                    className="text-sm text-white/70 transition hover:text-amber-300 focus:outline-none focus-visible:underline"
+                    className="text-[16px] font-medium text-white/58 transition hover:text-amber-300 focus:outline-none focus-visible:underline"
                   >
                     Vérifier le code ?
                   </button>
@@ -652,7 +644,7 @@ function Connexion() {
                     href="https://wa.me/237699999999?text=Bonjour%20MboaEats%2C%20j%27ai%20besoin%20d%27aide%20pour%20me%20connecter."
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-white/70 transition hover:text-amber-300 focus:outline-none focus-visible:underline"
+                    className="text-[16px] font-medium text-white/58 transition hover:text-amber-300 focus:outline-none focus-visible:underline"
                   >
                     Veuillez contacter l'administrateur ?
                   </a>
@@ -772,7 +764,7 @@ function Connexion() {
 
         {/* Lien admin retiré de l'interface publique. Accès via /admin/login uniquement. */}
 
-        <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-center text-xs text-white/60 backdrop-blur-xl">
+        <div className="hidden mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-center text-xs text-white/60 backdrop-blur-xl">
           <p className="mb-2 font-semibold text-white">Vous ne recevez pas de code ?</p>
           <p className="mb-3">Contactez-nous sur WhatsApp, on vous inscrit manuellement en quelques minutes.</p>
           <a
@@ -789,7 +781,7 @@ function Connexion() {
           </a>
         </div>
 
-        <p className="mt-4 text-center text-[11px] text-white/55">
+        <p className="hidden mt-4 text-center text-[11px] text-white/55">
           Support : <a className="text-[#ffb38a] hover:underline" href="mailto:lionelbrown2728@yahoo.fr">lionelbrown2728@yahoo.fr</a>
         </p>
       </div>
