@@ -596,7 +596,13 @@ function Connexion() {
           )}
 
           {tab === "phone" && otpStep === "otp" && (
-            <form onSubmit={handleVerifyOtp} className="mt-6 space-y-4">
+            <form
+              onSubmit={handleVerifyOtp}
+              className="mt-6 space-y-4"
+              role="tabpanel"
+              id="panel-phone-otp"
+              aria-labelledby="tab-phone"
+            >
               <div className="flex items-center justify-between gap-3 rounded-xl bg-[#F6F6F6] p-3 text-xs text-black">
                 <span className="truncate">
                   📩 Code envoyé au <span className="font-bold">{fullPhone}</span>
