@@ -23,19 +23,37 @@ export const Route = createFileRoute("/connexion")({
 });
 
 const COUNTRIES = [
-  { code: "FR", dial: "+33", flag: "🇫🇷", name: "France" },
-  { code: "CM", dial: "+237", flag: "🇨🇲", name: "Cameroun" },
-  { code: "BE", dial: "+32", flag: "🇧🇪", name: "Belgique" },
-  { code: "CH", dial: "+41", flag: "🇨🇭", name: "Suisse" },
-  { code: "CA", dial: "+1", flag: "🇨🇦", name: "Canada" },
-  { code: "GB", dial: "+44", flag: "🇬🇧", name: "Royaume-Uni" },
-  { code: "DE", dial: "+49", flag: "🇩🇪", name: "Allemagne" },
-  { code: "ES", dial: "+34", flag: "🇪🇸", name: "Espagne" },
-  { code: "IT", dial: "+39", flag: "🇮🇹", name: "Italie" },
-  { code: "SN", dial: "+221", flag: "🇸🇳", name: "Sénégal" },
-  { code: "CI", dial: "+225", flag: "🇨🇮", name: "Côte d'Ivoire" },
-  { code: "MA", dial: "+212", flag: "🇲🇦", name: "Maroc" },
+  { code: "FR", iso: "fr", dial: "+33", flag: "🇫🇷", name: "France" },
+  { code: "CM", iso: "cm", dial: "+237", flag: "🇨🇲", name: "Cameroun" },
+  { code: "BE", iso: "be", dial: "+32", flag: "🇧🇪", name: "Belgique" },
+  { code: "CH", iso: "ch", dial: "+41", flag: "🇨🇭", name: "Suisse" },
+  { code: "CA", iso: "ca", dial: "+1", flag: "🇨🇦", name: "Canada" },
+  { code: "GB", iso: "gb", dial: "+44", flag: "🇬🇧", name: "Royaume-Uni" },
+  { code: "DE", iso: "de", dial: "+49", flag: "🇩🇪", name: "Allemagne" },
+  { code: "ES", iso: "es", dial: "+34", flag: "🇪🇸", name: "Espagne" },
+  { code: "IT", iso: "it", dial: "+39", flag: "🇮🇹", name: "Italie" },
+  { code: "SN", iso: "sn", dial: "+221", flag: "🇸🇳", name: "Sénégal" },
+  { code: "CI", iso: "ci", dial: "+225", flag: "🇨🇮", name: "Côte d'Ivoire" },
+  { code: "MA", iso: "ma", dial: "+212", flag: "🇲🇦", name: "Maroc" },
 ];
+
+function FlagCircle({ iso, alt, size = 24 }: { iso: string; alt: string; size?: number }) {
+  return (
+    <span
+      className="inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-white ring-1 ring-neutral-200"
+      style={{ width: size, height: size }}
+    >
+      <img
+        src={`https://hatscripts.github.io/circle-flags/flags/${iso}.svg`}
+        alt={alt}
+        width={size}
+        height={size}
+        loading="lazy"
+        className="h-full w-full object-cover"
+      />
+    </span>
+  );
+}
 
 type Tab = "email" | "phone";
 
