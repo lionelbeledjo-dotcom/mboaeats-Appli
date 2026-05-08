@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  MapPin, ArrowLeft, Home, Briefcase, Heart, Loader2, Phone, Check, Save, Pencil, X, Trash2, Clock, Bike, Wand2, Info,
+  MapPin, ArrowLeft, Home, Briefcase, Heart, Loader2, Phone, Check, Save, Pencil, X, Trash2, Clock, Bike, Wand2, Info, Search,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -668,6 +668,18 @@ function CoverageMap({
   activeNeighborhood: string | null;
   onSelect?: (neighborhood: string) => void;
 }) {
+  const [query, setQuery] = useState("");
+  const gridRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const filteredZones = useMemo(() => {
+    const q = normalizeText(query);
+    if (!q) return zones;
+    return zones.filter((z) => normalizeText(z.neighborhood).includes(q));
+  }, [zones, query]);
+  const focusFirstPin = () => {
+    const first = gridRef.current?.querySelector<HTMLButtonElement>('[role="radio"]');
+    first?.focus();
+  };
   if (zones.length === 0) return null;
   return (
     <div
@@ -697,12 +709,79 @@ function CoverageMap({
         </div>
       </div>
 
+      <div className="relative mt-3">
+        <label htmlFor={`zone-search-${city}`} className="sr-only">
+          Rechercher un quartier à {city}
+        </label>
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+          <input
+            id={`zone-search-${city}`}
+            ref={inputRef}
+            type="search"
+            inputMode="search"
+            autoComplete="off"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowDown") {
+                e.preventDefault();
+                focusFirstPin();
+              } else if (e.key === "Enter" && filteredZones.length > 0) {
+                e.preventDefault();
+                onSelect?.(filteredZones[0].neighborhood);
+                setQuery("");
+              } else if (e.key === "Escape" && query) {
+                e.preventDefault();
+                setQuery("");
+              }
+            }}
+            placeholder={`Rechercher parmi ${zones.length} quartiers…`}
+            aria-label={`Rechercher un quartier à ${city}`}
+            aria-controls={`zone-grid-${city}`}
+            aria-describedby={`zone-search-help-${city}`}
+            className="w-full rounded-xl border border-border bg-background/80 py-2 pl-9 pr-9 text-xs outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => { setQuery(""); inputRef.current?.focus(); }}
+              aria-label="Effacer la recherche"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          )}
+        </div>
+        <p id={`zone-search-help-${city}`} className="sr-only">
+          Tapez pour filtrer. Flèche bas pour naviguer dans les quartiers, Entrée pour sélectionner le premier résultat, Échap pour effacer.
+        </p>
+        <div className="mt-1.5 flex items-center justify-between text-[10px] text-muted-foreground" aria-live="polite">
+          <span>
+            {query
+              ? `${filteredZones.length} résultat${filteredZones.length > 1 ? "s" : ""} sur ${zones.length}`
+              : `${zones.length} quartiers desservis`}
+          </span>
+          {query && filteredZones.length > 0 && (
+            <span className="italic">Entrée pour choisir « {filteredZones[0].neighborhood} »</span>
+          )}
+        </div>
+      </div>
+
+      {filteredZones.length === 0 ? (
+        <div className="relative mt-3 rounded-xl border border-dashed border-border bg-background/60 p-4 text-center">
+          <p className="text-xs font-medium text-foreground">Aucun quartier ne correspond à « {query} »</p>
+          <p className="mt-1 text-[10px] text-muted-foreground">Essayez une orthographe différente ou effacez la recherche.</p>
+        </div>
+      ) : (
       <div
+        ref={gridRef}
+        id={`zone-grid-${city}`}
         className="relative mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4"
         role="radiogroup"
         aria-label={`Quartiers desservis à ${city}. Utilisez les flèches pour naviguer, Entrée ou Espace pour sélectionner.`}
       >
-        {zones.map((z, i) => {
+        {filteredZones.map((z, i) => {
           const t = etaTier(z.eta_minutes);
           const isActive = !!activeNeighborhood && normalizeText(activeNeighborhood) === normalizeText(z.neighborhood);
           const tierLabel = z.eta_minutes <= 25 ? "rapide" : z.eta_minutes <= 35 ? "standard" : "étendu";
@@ -718,13 +797,21 @@ function CoverageMap({
               onClick={() => onSelect?.(z.neighborhood)}
               onKeyDown={(e) => {
                 const cols = window.matchMedia("(min-width: 640px)").matches ? 4 : 3;
+                const len = filteredZones.length;
                 let next = -1;
-                if (e.key === "ArrowRight") next = (i + 1) % zones.length;
-                else if (e.key === "ArrowLeft") next = (i - 1 + zones.length) % zones.length;
-                else if (e.key === "ArrowDown") next = Math.min(i + cols, zones.length - 1);
-                else if (e.key === "ArrowUp") next = Math.max(i - cols, 0);
+                if (e.key === "ArrowRight") next = (i + 1) % len;
+                else if (e.key === "ArrowLeft") next = (i - 1 + len) % len;
+                else if (e.key === "ArrowDown") next = Math.min(i + cols, len - 1);
+                else if (e.key === "ArrowUp") {
+                  if (i - cols < 0) {
+                    e.preventDefault();
+                    inputRef.current?.focus();
+                    return;
+                  }
+                  next = i - cols;
+                }
                 else if (e.key === "Home") next = 0;
-                else if (e.key === "End") next = zones.length - 1;
+                else if (e.key === "End") next = len - 1;
                 else if (e.key === " " || e.key === "Enter") {
                   e.preventDefault();
                   onSelect?.(z.neighborhood);
@@ -760,6 +847,7 @@ function CoverageMap({
           );
         })}
       </div>
+      )}
 
       {activeNeighborhood && (
         <p className="relative mt-2 text-[10px] font-medium text-emerald-400">
