@@ -495,6 +495,29 @@ const CITY_HOURS: Record<string, string> = {
   Limbe: "09h00 – 22h00",
 };
 
+function normalizeText(s: string): string {
+  return (s || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+/** Cherche un quartier couvert qui correspond (inclusion bidirectionnelle) au texte saisi. */
+function findCoveredZone(input: string, zones: Zone[]): Zone | null {
+  const q = normalizeText(input);
+  if (!q) return null;
+  // Match exact normalisé d'abord
+  const exact = zones.find((z) => normalizeText(z.neighborhood) === q);
+  if (exact) return exact;
+  // Sinon : la saisie contient le nom d'un quartier (ex. "Bonapriso, près de…")
+  return zones.find((z) => {
+    const n = normalizeText(z.neighborhood);
+    return q.includes(n) || n.includes(q);
+  }) ?? null;
+}
+
 function useCityDelivery(city: string): CityInfo {
   const [zones, setZones] = useState<Zone[]>([]);
   const [loading, setLoading] = useState(true);
