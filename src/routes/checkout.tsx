@@ -69,6 +69,7 @@ function Checkout() {
   const [liveOrderId, setLiveOrderId] = useState<string | null>(null);
   const [showExtras, setShowExtras] = useState(false);
   const [extrasSeen, setExtrasSeen] = useState(false);
+  const [cardLink, setCardLink] = useState<string | null>(null);
 
   // Détection MboaPass (livraison gratuite)
   useEffect(() => {
