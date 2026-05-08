@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
-  MapPin, ArrowLeft, Home, Briefcase, Heart, Loader2, Phone, Check, Save, Pencil, X, Trash2, Clock, Bike,
+  MapPin, ArrowLeft, Home, Briefcase, Heart, Loader2, Phone, Check, Save, Pencil, X, Trash2, Clock, Bike, Wand2, Info,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -297,39 +297,7 @@ function AddressesPage() {
           </Field>
 
           <Field label="Numéro de téléphone de livraison" hint="Mobile Cameroun · 9 chiffres (6XX XX XX XX)">
-            {(() => {
-              const v = validateCmPhone(phone);
-              const showError = phone.length > 0 && !v.ok;
-              return (
-                <>
-                  <div
-                    className={`flex items-stretch overflow-hidden rounded-2xl border bg-background transition ${
-                      showError
-                        ? "border-destructive focus-within:ring-2 focus-within:ring-destructive/30"
-                        : "border-border focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30"
-                    }`}
-                  >
-                    <span className="inline-flex items-center gap-1.5 border-r border-border bg-surface px-3 text-sm font-semibold text-muted-foreground">
-                      <Phone className="h-3.5 w-3.5" /> +237
-                    </span>
-                    <input
-                      type="tel"
-                      inputMode="numeric"
-                      autoComplete="tel-national"
-                      value={phone}
-                      onChange={(e) => setPhone(formatCmPhone(e.target.value))}
-                      placeholder="6 99 12 34 56"
-                      maxLength={12}
-                      className="flex-1 bg-transparent px-4 py-3 text-sm outline-none placeholder:text-muted-foreground/60"
-                      required
-                    />
-                  </div>
-                  {showError && (
-                    <p className="mt-1.5 text-[11px] font-medium text-destructive">{v.error}</p>
-                  )}
-                </>
-              );
-            })()}
+            <PhoneField value={phone} onChange={setPhone} required />
           </Field>
 
           <button
@@ -394,40 +362,11 @@ function AddressesPage() {
                             <option key={c} value={c}>{c}</option>
                           ))}
                         </select>
-                        {(() => {
-                          const v = validateCmPhone(editDraft!.phone);
-                          const showError = editDraft!.phone.length > 0 && !v.ok;
-                          return (
-                            <>
-                              <div
-                                className={`flex items-stretch overflow-hidden rounded-xl border bg-background transition ${
-                                  showError
-                                    ? "border-destructive focus-within:ring-2 focus-within:ring-destructive/30"
-                                    : "border-border focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30"
-                                }`}
-                              >
-                                <span className="inline-flex items-center gap-1 border-r border-border bg-surface px-2 text-xs font-semibold text-muted-foreground">
-                                  <Phone className="h-3 w-3" /> +237
-                                </span>
-                                <input
-                                  type="tel"
-                                  inputMode="numeric"
-                                  autoComplete="tel-national"
-                                  value={editDraft!.phone}
-                                  onChange={(e) =>
-                                    setEditDraft({ ...editDraft!, phone: formatCmPhone(e.target.value) })
-                                  }
-                                  placeholder="6 99 12 34 56"
-                                  maxLength={12}
-                                  className="flex-1 bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/60"
-                                />
-                              </div>
-                              {showError && (
-                                <p className="-mt-1 text-[10px] font-medium text-destructive">{v.error}</p>
-                              )}
-                            </>
-                          );
-                        })()}
+                        <PhoneField
+                          size="sm"
+                          value={editDraft!.phone}
+                          onChange={(next) => setEditDraft({ ...editDraft!, phone: next })}
+                        />
                         <div className="flex gap-2 pt-1">
                           <button
                             type="button"
@@ -637,5 +576,108 @@ function CityDeliveryPanel({ city, info }: { city: string; info: CityInfo }) {
         </>
       )}
     </div>
+  );
+}
+
+// Champ téléphone +237 réutilisable : auto-format, bouton "Reformater",
+// aide contextuelle (chiffres restants, préfixe attendu) et état d'erreur.
+function PhoneField({
+  value,
+  onChange,
+  size = "md",
+  required,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+  size?: "sm" | "md";
+  required?: boolean;
+}) {
+  const v = validateCmPhone(value);
+  const digits = v.digits;
+  const isEmpty = value.length === 0;
+  const showError = !isEmpty && !v.ok && digits.length === 9;
+  // "Différent du format canonique ?" → propose le bouton de reformat.
+  const canonical = formatCmPhone(value);
+  const needsReformat = !isEmpty && value !== canonical;
+
+  // Aide contextuelle progressive
+  let hint: string | null = null;
+  if (!isEmpty && !v.ok) {
+    if (digits.length === 0) hint = "Tapez votre numéro mobile (sans le +237).";
+    else if (digits.length > 0 && !digits.startsWith("6"))
+      hint = "Un mobile camerounais commence par 6.";
+    else if (digits.length < 9) hint = `Encore ${9 - digits.length} chiffre${9 - digits.length > 1 ? "s" : ""}…`;
+    else hint = v.error ?? null;
+  } else if (v.ok) {
+    hint = "Numéro valide ✓";
+  }
+
+  const pad = size === "sm" ? "px-3 py-2 text-sm" : "px-4 py-3 text-sm";
+  const radius = size === "sm" ? "rounded-xl" : "rounded-2xl";
+  const iconSize = size === "sm" ? "h-3 w-3" : "h-3.5 w-3.5";
+
+  return (
+    <>
+      <div
+        className={`flex items-stretch overflow-hidden border bg-background transition ${radius} ${
+          showError
+            ? "border-destructive focus-within:ring-2 focus-within:ring-destructive/30"
+            : v.ok
+            ? "border-emerald-500/60 focus-within:ring-2 focus-within:ring-emerald-500/30"
+            : "border-border focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30"
+        }`}
+      >
+        <span
+          className={`inline-flex items-center gap-1.5 border-r border-border bg-surface ${
+            size === "sm" ? "px-2 text-xs" : "px-3 text-sm"
+          } font-semibold text-muted-foreground`}
+        >
+          <Phone className={iconSize} /> +237
+        </span>
+        <input
+          type="tel"
+          inputMode="numeric"
+          autoComplete="tel-national"
+          value={value}
+          onChange={(e) => onChange(formatCmPhone(e.target.value))}
+          placeholder="6 99 12 34 56"
+          maxLength={12}
+          required={required}
+          className={`flex-1 bg-transparent ${pad} outline-none placeholder:text-muted-foreground/60`}
+        />
+        {needsReformat && (
+          <button
+            type="button"
+            onClick={() => onChange(canonical)}
+            title="Reformater le numéro"
+            aria-label="Reformater le numéro"
+            className="inline-flex items-center gap-1 border-l border-border bg-surface/70 px-2.5 text-[11px] font-semibold text-primary hover:bg-surface"
+          >
+            <Wand2 className="h-3 w-3" /> Corriger
+          </button>
+        )}
+        {!needsReformat && !isEmpty && (
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            title="Effacer"
+            aria-label="Effacer"
+            className="inline-flex items-center border-l border-border bg-surface/70 px-2.5 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        )}
+      </div>
+      {hint && (
+        <p
+          className={`mt-1.5 inline-flex items-center gap-1 text-[11px] font-medium ${
+            showError ? "text-destructive" : v.ok ? "text-emerald-400" : "text-muted-foreground"
+          }`}
+        >
+          {v.ok ? <Check className="h-3 w-3" /> : <Info className="h-3 w-3" />}
+          {hint}
+        </p>
+      )}
+    </>
   );
 }
