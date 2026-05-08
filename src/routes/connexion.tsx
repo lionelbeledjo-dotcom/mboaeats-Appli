@@ -315,60 +315,52 @@ function Connexion() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0d0d0f] text-white">
-      {/* Radiant amber decorations top */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[360px] overflow-hidden">
-        <svg
-          className="absolute inset-0 h-full w-full"
-          viewBox="0 0 400 360"
-          fill="none"
-          preserveAspectRatio="xMidYMin slice"
-          aria-hidden="true"
-        >
-          <defs>
-            <linearGradient id="amberStrokeC" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#fbbf24" />
-              <stop offset="100%" stopColor="#f97316" />
-            </linearGradient>
-            <radialGradient id="amberGlowC" cx="50%" cy="0%" r="65%">
-              <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.32" />
-              <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
-            </radialGradient>
-          </defs>
-          <rect width="400" height="360" fill="url(#amberGlowC)" />
-          <path d="M -40 90 Q 120 20 280 100 T 460 70" stroke="url(#amberStrokeC)" strokeWidth="1.5" opacity="0.7" fill="none" />
-          <path d="M -40 140 Q 140 70 300 150 T 480 120" stroke="url(#amberStrokeC)" strokeWidth="1" opacity="0.5" fill="none" />
-          <path d="M -40 40 Q 100 -10 240 50 T 460 20" stroke="url(#amberStrokeC)" strokeWidth="1" opacity="0.4" fill="none" />
-          <circle cx="340" cy="70" r="80" stroke="url(#amberStrokeC)" strokeWidth="1.2" opacity="0.6" fill="none" />
-          <circle cx="340" cy="70" r="115" stroke="url(#amberStrokeC)" strokeWidth="0.8" opacity="0.35" fill="none" />
-          <circle cx="60" cy="50" r="48" stroke="#fbbf24" strokeWidth="0.8" opacity="0.4" fill="none" />
-          <line x1="20" y1="200" x2="120" y2="200" stroke="#fbbf24" strokeWidth="1" opacity="0.3" />
-          <line x1="280" y1="220" x2="380" y2="220" stroke="#f97316" strokeWidth="1" opacity="0.4" />
-        </svg>
+    <div className="relative min-h-screen overflow-hidden bg-[#07080a] text-white" style={{ colorScheme: "dark" }}>
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[446px] bg-[#1a1007]" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-[446px]"
+        style={{
+          background:
+            "radial-gradient(circle at 50% 10%, rgba(255,143,18,0.26), transparent 34%), radial-gradient(circle at 85% 20%, rgba(255,128,0,0.18), transparent 38%), linear-gradient(180deg, #221609 0%, #120d09 100%)",
+        }}
+      />
+      <svg
+        className="pointer-events-none absolute inset-x-0 top-0 h-[446px] w-full"
+        viewBox="0 0 1296 446"
+        fill="none"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        <path d="M-34 91C159 45 389 41 562 91C742 143 871 245 1040 240C1145 237 1235 196 1324 129" stroke="#b16f0c" strokeWidth="3" opacity="0.62" />
+        <path d="M-18 235C193 178 423 166 609 223C776 274 868 394 1035 426C1133 445 1228 435 1323 410" stroke="#f0a20b" strokeWidth="4" opacity="0.85" />
+        <path d="M-34 407C139 357 305 342 472 352C713 366 846 463 1030 464C1164 465 1241 424 1329 351" stroke="#c0770c" strokeWidth="3" opacity="0.72" />
+        <circle cx="177" cy="160" r="157" stroke="#c89213" strokeWidth="3" opacity="0.55" />
+        <circle cx="1007" cy="225" r="172" stroke="#d89416" strokeWidth="4" opacity="0.76" />
+        <circle cx="1210" cy="222" r="376" stroke="#d98f18" strokeWidth="4" opacity="0.7" />
+        <path d="M-20 84C167 37 362 46 527 86C714 132 833 225 1027 239C1136 247 1232 219 1324 166" stroke="#c06f0c" strokeWidth="2" opacity="0.55" />
+      </svg>
+
+      <div className="absolute right-[7.6%] top-4 z-10 flex items-start gap-[-4px]">
+        <button type="button" aria-label="Aide" className="flex h-[50px] w-[50px] items-center justify-center rounded-full bg-[#ff7308] text-2xl font-black text-white shadow-[0_12px_30px_rgba(255,112,8,0.35)] ring-1 ring-orange-300/20">
+          <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full border-2 border-white text-[15px] leading-none">?</span>
+        </button>
+        <span className="-ml-3 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 ring-[3px] ring-white" aria-hidden />
       </div>
 
-      <div className="relative mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-10">
-        {/* Brand — logo + tagline */}
-        <div className="mb-10 flex flex-col items-center gap-4 animate-fade-in">
-          <div className="relative">
-            <div
-              aria-hidden
-              className="absolute inset-0 -z-10 rounded-3xl blur-2xl opacity-70"
-              style={{ background: "radial-gradient(circle, #f97316 0%, transparent 70%)" }}
-            />
-            <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-amber-400 to-orange-600 shadow-[0_0_40px_rgba(251,146,60,0.5)]">
-              <Flame className="h-8 w-8 text-white" strokeWidth={2} />
-            </div>
+      <div className="relative z-[1] mx-auto flex min-h-screen w-full max-w-[548px] flex-col px-6 pt-[46px]">
+        <div className="mb-[50px] flex flex-col items-center text-center">
+          <div className="relative mb-6 flex h-20 w-20 items-center justify-center rounded-[31px] bg-gradient-to-br from-[#ffa414] via-[#ff850c] to-[#ff5b05] shadow-[0_0_58px_rgba(255,128,10,0.42)]">
+            <div className="absolute inset-[-28px] -z-10 rounded-full bg-[#ff8908]/20 blur-3xl" aria-hidden />
+            <Flame className="h-10 w-10 text-white" strokeWidth={2.35} />
           </div>
-          <div className="text-center">
-            <h1 className="font-display text-3xl font-bold tracking-tight text-white">MboaEats</h1>
-            <p className="mt-2 text-sm font-light text-white/60">
-              Veuillez vous connecter pour continuer
-            </p>
-          </div>
+          <h1 className="font-display text-[38px] font-black leading-none text-white drop-shadow-sm">MboaEats</h1>
+          <p className="mt-4 text-[17px] font-light leading-none text-white/66">
+            Veuillez vous connecter pour continuer
+          </p>
         </div>
 
-        <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.8)] backdrop-blur-2xl animate-fade-up">
+        <div className="rounded-[32px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(74,56,30,0.94)_0%,rgba(25,25,27,0.98)_42%,rgba(18,18,20,1)_100%)] p-[30px] shadow-[0_34px_90px_-28px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl animate-fade-up">
           {step === "identify" && (
             <>
               {/* Mode tabs */}
