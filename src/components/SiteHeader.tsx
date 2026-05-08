@@ -1,8 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, ShoppingBag, UtensilsCrossed, LifeBuoy, Menu, X } from "lucide-react";
+import { Home, ShoppingBag, UtensilsCrossed, LifeBuoy, Menu, X, MoreHorizontal } from "lucide-react";
 import { MboaEatsLogo } from "@/components/brand/MboaEatsLogo";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+
+const MORE_ITEMS = NAV_ITEMS_PLACEHOLDER; // replaced below
 
 const NAV_ITEMS: ReadonlyArray<{
   to: string;
