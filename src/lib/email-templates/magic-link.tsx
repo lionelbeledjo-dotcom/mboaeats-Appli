@@ -1,18 +1,19 @@
 import * as React from 'react'
 import {
-  Body, Button, Container, Head, Heading, Html, Img, Link, Preview, Section, Text,
+  Body, Container, Head, Heading, Html, Img, Link, Preview, Section, Text,
 } from '@react-email/components'
 import { LOGO_URL, SUPPORT_EMAIL, styles } from './_brand'
 
 interface MagicLinkEmailProps {
   siteName: string
   confirmationUrl: string
+  token?: string
 }
 
-export const MagicLinkEmail = ({ siteName, confirmationUrl }: MagicLinkEmailProps) => (
+export const MagicLinkEmail = ({ siteName, token }: MagicLinkEmailProps) => (
   <Html lang="fr" dir="ltr">
     <Head />
-    <Preview>Votre lien de connexion {siteName}</Preview>
+    <Preview>Votre code de connexion {siteName} : {token ?? '------'}</Preview>
     <Body style={styles.main}>
       <Container style={styles.container}>
         <Section style={styles.header}>
@@ -20,15 +21,14 @@ export const MagicLinkEmail = ({ siteName, confirmationUrl }: MagicLinkEmailProp
           <Text style={styles.brandName}>{siteName}</Text>
         </Section>
         <Section style={styles.card}>
-          <Heading style={styles.h1}>Votre lien de connexion</Heading>
+          <Heading style={styles.h1}>Votre code de connexion</Heading>
           <Text style={styles.text}>
-            Cliquez sur le bouton ci-dessous pour vous connecter à {siteName}. Ce lien expire rapidement.
+            Saisissez ce code à 6 chiffres dans l'application {siteName} pour vous connecter.
+            Il est valable 10 minutes.
           </Text>
-          <Section style={{ textAlign: 'center', margin: '8px 0 24px' }}>
-            <Button style={styles.button} href={confirmationUrl}>Me connecter</Button>
-          </Section>
+          <Text style={styles.code}>{token ?? '------'}</Text>
           <Text style={{ ...styles.text, fontSize: '13px', margin: 0 }}>
-            Vous n'avez pas demandé ce lien ? Ignorez cet email en toute sécurité.
+            Vous n'avez pas demandé ce code ? Ignorez cet email — votre compte reste sécurisé.
           </Text>
         </Section>
         <Text style={styles.footer}>
