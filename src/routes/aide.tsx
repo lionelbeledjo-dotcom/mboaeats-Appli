@@ -95,7 +95,7 @@ function Aide() {
 
       <main className="mx-auto max-w-5xl space-y-10 px-4 py-10 md:px-8">
         {/* Categories */}
-        <section>
+        <section id="categories" className="scroll-mt-24">
           <h2 className="font-display text-xl font-bold">Parcourez par catégorie</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {categories.map((c) => (
