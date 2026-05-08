@@ -662,9 +662,9 @@ function Connexion() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="relative inline-flex min-h-[44px] h-[56px] w-full items-center justify-center gap-2 overflow-hidden rounded-[14px] bg-[#06C167] text-[15px] font-bold uppercase tracking-[0.16em] text-white shadow-[0_10px_24px_-12px_rgba(6,193,103,0.65)] transition hover:bg-[#05a557] active:scale-[0.99] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                  className="relative inline-flex min-h-[44px] h-[56px] w-full items-center justify-center gap-2 overflow-hidden rounded-[14px] bg-gradient-to-b from-[#06C167] to-[#04A056] text-[15px] font-bold uppercase tracking-[0.16em] text-white shadow-[0_10px_24px_-12px_rgba(6,193,103,0.65)] transition hover:from-[#05B85E] hover:to-[#03934E] active:scale-[0.99] disabled:opacity-60 disabled:animate-none animate-soft-pulse focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
-                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (<>SE CONNECTER <ArrowRight className="h-5 w-5" /></>)}
+                  {loading ? <Loader2 strokeWidth={2} className="h-5 w-5 animate-spin" /> : (<>SE CONNECTER <ArrowRight strokeWidth={2} className="h-5 w-5" /></>)}
                 </button>
 
                 <div className="mt-6 flex flex-col items-center gap-3 text-center">
