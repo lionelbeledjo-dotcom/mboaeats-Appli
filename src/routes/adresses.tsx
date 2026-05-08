@@ -661,10 +661,12 @@ function CoverageMap({
   city,
   zones,
   activeNeighborhood,
+  onSelect,
 }: {
   city: string;
   zones: Zone[];
   activeNeighborhood: string | null;
+  onSelect?: (neighborhood: string) => void;
 }) {
   if (zones.length === 0) return null;
   return (
