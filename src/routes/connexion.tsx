@@ -125,13 +125,12 @@ function Connexion() {
     setError(null);
     setLoading(true);
     try {
-      if (mode === "phone" && channel === "sms") {
+      if (mode === "phone" && (channel === "sms" || channel === "whatsapp")) {
         const fullPhone = formatPhoneForOtp(country.dial, phone);
-        await sendOtpFn({ data: { phone: fullPhone } });
+        await sendOtpFn({ data: { phone: fullPhone, channel } });
         setStep("otp");
       } else {
-        // Autres canaux (WhatsApp, email) — non encore branchés
-        setError("Ce canal n'est pas encore disponible. Choisissez SMS.");
+        setError("Ce canal n'est pas encore disponible. Choisissez SMS ou WhatsApp.");
       }
     } catch (err: any) {
       setError(err?.message ?? "Échec de l'envoi du code");
@@ -149,7 +148,7 @@ function Connexion() {
     }
     setLoading(true);
     try {
-      if (mode === "phone" && channel === "sms") {
+      if (mode === "phone" && (channel === "sms" || channel === "whatsapp")) {
         const fullPhone = formatPhoneForOtp(country.dial, phone);
         const res: any = await verifyOtpFn({ data: { phone: fullPhone, code: code.trim() } });
         // Ouvre une vraie session Supabase Auth pour que les endpoints protégés fonctionnent
@@ -376,7 +375,7 @@ function Connexion() {
           {step === "otp" && (
             <form onSubmit={submitCode} className="space-y-4 animate-fade-up">
               <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 text-xs">
-                📩 Code envoyé par SMS au <span className="font-semibold">{identifierLabel}</span>. Saisissez les 6 chiffres reçus.
+                {channel === "whatsapp" ? "💬 Code envoyé par WhatsApp" : "📩 Code envoyé par SMS"} au <span className="font-semibold">{identifierLabel}</span>. Saisissez les 6 chiffres reçus.
               </div>
 
               <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
