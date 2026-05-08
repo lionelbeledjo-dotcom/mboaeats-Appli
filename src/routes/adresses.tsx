@@ -647,10 +647,6 @@ function useCityDelivery(city: string): CityInfo {
   };
 }
 
-function CityDeliveryPanel({ city, info }: { city: string; info: CityInfo }) {
-  const hours = CITY_HOURS[city] ?? "09h00 – 22h00";
-  return (
-    <div className="mt-3 rounded-2xl border border-border bg-surface/40 p-3">
 function etaTier(eta: number): { dot: string; ring: string; label: string } {
   if (eta <= 25) return { dot: "bg-emerald-500", ring: "ring-emerald-500/40", label: "Rapide" };
   if (eta <= 35) return { dot: "bg-amber-500", ring: "ring-amber-500/40", label: "Standard" };
