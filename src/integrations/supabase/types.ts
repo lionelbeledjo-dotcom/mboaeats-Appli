@@ -876,7 +876,7 @@ export type Database = {
           created_at: string
           id: string
           metadata: Json
-          msisdn: string
+          msisdn: string | null
           otp_code: string | null
           provider: string
           provider_tx_id: string | null
@@ -891,7 +891,7 @@ export type Database = {
           created_at?: string
           id?: string
           metadata?: Json
-          msisdn: string
+          msisdn?: string | null
           otp_code?: string | null
           provider: string
           provider_tx_id?: string | null
@@ -906,7 +906,7 @@ export type Database = {
           created_at?: string
           id?: string
           metadata?: Json
-          msisdn?: string
+          msisdn?: string | null
           otp_code?: string | null
           provider?: string
           provider_tx_id?: string | null
