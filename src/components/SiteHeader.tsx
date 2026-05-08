@@ -52,7 +52,7 @@ export function SiteHeader() {
               return (
                 <li key={to}>
                   <Link
-                    to={to}
+                    to={to as any}
                     className={cn(
                       "group relative inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold tracking-tight",
                       "text-white/70 transition-all duration-300 ease-out",
@@ -114,7 +114,7 @@ export function SiteHeader() {
             return (
               <li key={to} className="shrink-0">
                 <Link
-                  to={to}
+                  to={to as any}
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all duration-200",
                     active
