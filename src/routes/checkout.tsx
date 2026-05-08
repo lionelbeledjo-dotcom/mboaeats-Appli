@@ -91,6 +91,25 @@ function Checkout() {
     return () => clearTimeout(t);
   }, [step, pending, seconds]);
 
+  // Realtime : suivi du statut paiement (mis à jour par le webhook Campay)
+  useEffect(() => {
+    if (!reference) return;
+    const channel = supabase
+      .channel(`pay-${reference}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "payments", filter: `reference=eq.${reference}` },
+        (payload) => {
+          const s = (payload.new as { status?: string })?.status;
+          if (s === "succeeded") setPaymentStatus("succeeded");
+          else if (s === "failed") setPaymentStatus("failed");
+          else if (s === "pending") setPaymentStatus("pending");
+        },
+      )
+      .subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [reference]);
+
   const ensureLiveOrder = async (): Promise<string | null> => {
     if (!isLiveOrder || !liveRestoId) return null;
     if (liveOrderId) return liveOrderId;
