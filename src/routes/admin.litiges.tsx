@@ -28,6 +28,13 @@ function timeAgo(iso: string) {
   return `${Math.round(s / 86400)} j`;
 }
 
+const MOCK_DISPUTES: Dispute[] = [
+  { id: "mk1", order_id: "abcdef0123", reason: "Plat froid à la livraison", description: "Le client se plaint que le plat est arrivé froid après 50 min d'attente.", amount: 8500,  priority: "high",   status: "open", created_at: new Date(Date.now() - 35 * 60_000).toISOString(),         orders: { reference: "MB-2031", total: 8500  }, restaurants: { name: "Chez Tantine" } },
+  { id: "mk2", order_id: "abcdef0124", reason: "Livraison tardive",         description: "Plus d'1h de retard sans notification.",                                          amount: 5200,  priority: "medium", status: "open", created_at: new Date(Date.now() - 2 * 3600_000).toISOString(),       orders: { reference: "MB-2032", total: 5200  }, restaurants: { name: "Saveurs 237" } },
+  { id: "mk3", order_id: "abcdef0125", reason: "Article manquant",          description: "Boisson absente du sac.",                                                          amount: 1500,  priority: "low",    status: "open", created_at: new Date(Date.now() - 4 * 3600_000).toISOString(),       orders: { reference: "MB-2033", total: 12000 }, restaurants: { name: "Mami Nyanga" } },
+  { id: "mk4", order_id: "abcdef0126", reason: "Erreur de commande",        description: "Plat livré ne correspond pas.",                                                    amount: 6700,  priority: "medium", status: "open", created_at: new Date(Date.now() - 24 * 3600_000).toISOString(),      orders: { reference: "MB-2034", total: 6700  }, restaurants: { name: "Le Wouri Grill" } },
+];
+
 function Litiges() {
   const fetchAll = useServerFn(listAllDisputes);
   const doResolve = useServerFn(resolveDispute);
