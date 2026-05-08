@@ -1,16 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, ShoppingBag, UtensilsCrossed, LifeBuoy, Menu, X, MoreHorizontal, HelpCircle } from "lucide-react";
+import { Home, ShoppingBag, UtensilsCrossed, LifeBuoy, Menu, X } from "lucide-react";
 import { MboaEatsLogo } from "@/components/brand/MboaEatsLogo";
-import { NotificationBell } from "@/components/NotificationBell";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 
@@ -105,21 +96,20 @@ export function SiteHeader() {
       className={cn(
         "sticky top-0 z-40 w-full",
         "border-b border-white/5",
-        "bg-[hsl(240_10%_8%_/_0.72)] backdrop-blur-xl backdrop-saturate-150",
-        "supports-[backdrop-filter]:bg-[hsl(240_10%_8%_/_0.55)]",
-        "pt-[env(safe-area-inset-top)]",
+        "bg-[hsl(240_10%_8%_/_0.92)] backdrop-blur-xl backdrop-saturate-150",
+        "pt-[calc(env(safe-area-inset-top)+0.5rem)]",
       )}
     >
       {/* Filets lumineux décoratifs */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-cm-green/60 to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-1.5 px-2.5 sm:h-20 sm:gap-4 sm:px-6 lg:px-8">
-        {/* Logo */}
+      <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-2 px-3 py-2 sm:min-h-20 sm:gap-4 sm:px-6 sm:py-3 lg:px-8">
+        {/* Logo — centré verticalement, respire à gauche */}
         <Link
           to="/"
           aria-label="MboaEats — Accueil"
-          className="group inline-flex min-w-0 shrink items-center transition-transform duration-300 hover:scale-[1.03] active:scale-[0.98]"
+          className="group inline-flex min-w-0 shrink items-center self-center transition-transform duration-300 hover:scale-[1.03] active:scale-[0.98]"
         >
           <MboaEatsLogo size="sm" align="start" variant="ghost" badgeSize="sm" />
         </Link>
@@ -168,26 +158,7 @@ export function SiteHeader() {
         </nav>
 
         {/* Actions droite */}
-        <div className="flex shrink-0 items-center gap-1 sm:gap-3">
-          {/* Aide rapide */}
-          <Link
-            to="/aide"
-            aria-label="Aide & support"
-            className={cn(
-              "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
-              "border border-white/10 bg-white/5 text-white",
-              "transition-all duration-300 ease-out hover:bg-white/10 active:scale-95",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cm-green/60",
-            )}
-          >
-            <HelpCircle className="h-5 w-5" strokeWidth={2.25} />
-          </Link>
-
-          {/* Cloche notifications */}
-          <div className="[&_button]:h-10 [&_button]:w-10 [&_button]:border-white/10 [&_button]:bg-white/5 [&_button]:text-white [&_button:hover]:bg-white/10">
-            <NotificationBell />
-          </div>
-
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           {/* CTA desktop / tablette */}
           <Link
             to="/commandes"
@@ -202,68 +173,6 @@ export function SiteHeader() {
             Commander
           </Link>
 
-          {/* Dropdown "..." mobile (accès rapide Restaurants & Support) */}
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              aria-label="Plus d'options"
-              className={cn(
-                "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full md:hidden",
-                "border border-white/10 bg-white/5 text-white",
-                "transition-all duration-300 ease-out hover:bg-white/10 active:scale-95",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cm-green/60",
-                "data-[state=open]:bg-white/10 data-[state=open]:ring-2 data-[state=open]:ring-brand-cm-green/60",
-              )}
-            >
-              <MoreHorizontal className="h-5 w-5" strokeWidth={2.25} />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              sideOffset={10}
-              className={cn(
-                "w-56 rounded-2xl border-white/10 p-1.5",
-                "bg-[hsl(240_10%_8%_/_0.96)] backdrop-blur-xl text-white",
-                "shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)]",
-              )}
-            >
-              <DropdownMenuLabel className="px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/50">
-                Accès rapide
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-white/10" />
-              {NAV_ITEMS.filter((i) => i.to === "/restaurant" || i.to === "/aide").map(
-                ({ to, label, icon: Icon, exact }) => {
-                  const active = isActive(to, exact);
-                  return (
-                    <DropdownMenuItem key={to} asChild>
-                      <Link
-                        to={to as any}
-                        className={cn(
-                          "flex w-full cursor-pointer items-center gap-3 rounded-xl px-2.5 py-2.5 text-sm font-semibold",
-                          "focus:bg-white/10 focus:text-white",
-                          active
-                            ? "bg-brand-cm-green/15 text-brand-cm-green"
-                            : "text-white/85",
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-                            active ? "bg-brand-cm-green/20" : "bg-white/5",
-                          )}
-                        >
-                          <Icon className="h-4 w-4" strokeWidth={2.25} />
-                        </span>
-                        <span className="min-w-0 flex-1 truncate">{label}</span>
-                        {active && (
-                          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-cm-green shadow-[0_0_10px_rgba(6,193,103,0.7)]" />
-                        )}
-                      </Link>
-                    </DropdownMenuItem>
-                  );
-                },
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
           {/* Burger mobile */}
           <button
             ref={burgerRef}
@@ -274,7 +183,7 @@ export function SiteHeader() {
             aria-controls="mobile-nav-panel"
             aria-haspopup="menu"
             className={cn(
-              "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full md:hidden",
+              "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full md:hidden",
               "border border-white/10 bg-white/5 text-white",
               "transition-all duration-300 ease-out hover:bg-white/10 active:scale-95",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cm-green/60",

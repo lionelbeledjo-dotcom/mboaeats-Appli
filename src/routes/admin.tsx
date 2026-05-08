@@ -184,15 +184,8 @@ function AdminHeader({
   }, []);
 
   const handleBack = () => {
-    if (isAdminHome) {
-      router.navigate({ to: "/" });
-      return;
-    }
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      router.history.back();
-    } else {
-      router.navigate({ to: "/admin" });
-    }
+    // Sortie de l'espace admin → toujours rediriger vers le Profil utilisateur
+    router.navigate({ to: "/profil" });
   };
 
   return (
