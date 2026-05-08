@@ -368,8 +368,29 @@ function Connexion() {
             Choisissez votre méthode de connexion
           </p>
 
-          {/* Tabs — Pills */}
-          <div className="mt-5 flex items-center gap-2">
+          {/* Tabs — Pills (ARIA tablist) */}
+          <div
+            role="tablist"
+            aria-label="Méthode de connexion"
+            className="mt-5 flex items-center gap-2"
+            onKeyDown={(e) => {
+              if (e.key !== "ArrowRight" && e.key !== "ArrowLeft" && e.key !== "Home" && e.key !== "End") return;
+              e.preventDefault();
+              const order: Tab[] = ["email", "phone"];
+              const idx = order.indexOf(tab);
+              let next = idx;
+              if (e.key === "ArrowRight") next = (idx + 1) % order.length;
+              else if (e.key === "ArrowLeft") next = (idx - 1 + order.length) % order.length;
+              else if (e.key === "Home") next = 0;
+              else if (e.key === "End") next = order.length - 1;
+              const nextKey = order[next];
+              setTab(nextKey);
+              resetMessages();
+              requestAnimationFrame(() => {
+                document.getElementById(`tab-${nextKey}`)?.focus();
+              });
+            }}
+          >
             {([
               { key: "email", label: "Email", Icon: Mail },
               { key: "phone", label: "Téléphone (SMS)", Icon: Phone },
@@ -378,16 +399,20 @@ function Connexion() {
               return (
                 <button
                   key={key}
+                  id={`tab-${key}`}
                   type="button"
+                  role="tab"
+                  aria-selected={active}
+                  aria-controls={`panel-${key}`}
+                  tabIndex={active ? 0 : -1}
                   onClick={() => { setTab(key); resetMessages(); }}
-                  aria-pressed={active}
-                  className={`inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full text-sm font-bold transition ${
+                  className={`inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full text-sm font-bold transition ${FOCUS_RING} ${
                     active
                       ? "bg-white text-black ring-1 ring-neutral-200 shadow-[0_4px_14px_-6px_rgba(0,0,0,0.15)]"
                       : "bg-[#F6F6F6] text-[#8a8a8a] ring-1 ring-transparent hover:text-black"
                   }`}
                 >
-                  <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
+                  <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden="true" />
                   {label}
                 </button>
               );
