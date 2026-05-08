@@ -66,9 +66,24 @@ function validateCmPhone(input: string): { ok: boolean; digits: string; error?: 
 
 function AddressesPage() {
   const navigate = useNavigate();
+  // Préremplit avec la dernière ville/quartier valides mémorisés
+  const lastPrefs = (() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = window.localStorage.getItem("mboaeats:lastAddress");
+      return raw ? (JSON.parse(raw) as { city?: string; neighborhood?: string }) : null;
+    } catch {
+      return null;
+    }
+  })();
+  const initialCity =
+    lastPrefs?.city && (CITIES as readonly string[]).includes(lastPrefs.city)
+      ? (lastPrefs.city as (typeof CITIES)[number])
+      : "Douala";
+
   const [label, setLabel] = useState("Domicile");
-  const [neighborhood, setNeighborhood] = useState("");
-  const [city, setCity] = useState<(typeof CITIES)[number]>("Douala");
+  const [neighborhood, setNeighborhood] = useState(lastPrefs?.neighborhood ?? "");
+  const [city, setCity] = useState<(typeof CITIES)[number]>(initialCity);
   const [phone, setPhone] = useState("");
   const [saving, setSaving] = useState(false);
 
