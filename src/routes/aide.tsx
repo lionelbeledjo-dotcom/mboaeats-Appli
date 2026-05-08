@@ -21,11 +21,11 @@ const SUPPORT_PHONE_INTL = "+33660061723";
 const WHATSAPP = "33660061723";
 
 const categories = [
-  { slug: "paiement", icon: CreditCard, label: "Paiement", color: "from-primary/20 to-primary/5" },
-  { slug: "livraison", icon: Bike, label: "Livraison", color: "from-gold/20 to-gold/5" },
-  { slug: "commande", icon: Utensils, label: "Commande", color: "from-emerald-500/20 to-emerald-500/5" },
-  { slug: "compte-securite", icon: ShieldCheck, label: "Compte & sécurité", color: "from-blue-500/20 to-blue-500/5" },
-];
+  { slug: "paiement", to: "/compte/paiements", icon: CreditCard, label: "Paiement", color: "from-primary/20 to-primary/5" },
+  { slug: "livraison", to: "/compte/livraison", icon: Bike, label: "Livraison", color: "from-gold/20 to-gold/5" },
+  { slug: "commande", to: "/compte/commandes", icon: Utensils, label: "Commande", color: "from-emerald-500/20 to-emerald-500/5" },
+  { slug: "compte-securite", to: "/compte/securite", icon: ShieldCheck, label: "Compte & sécurité", color: "from-blue-500/20 to-blue-500/5" },
+] as const;
 
 const faqs = [
   {
