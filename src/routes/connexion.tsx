@@ -364,31 +364,31 @@ function Connexion() {
           {step === "identify" && (
             <>
               {/* Mode tabs */}
-              <div className="mb-5 grid grid-cols-2 gap-1 rounded-full border border-white/10 bg-white/5 p-1 backdrop-blur">
+              <div className="mb-7 grid h-[52px] grid-cols-2 gap-2 rounded-full border border-[#806d49]/55 bg-[#625238]/85 p-[5px] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur">
                 <button
                   type="button"
                   onClick={() => { setMode("phone"); setError(null); }}
-                  className={`flex items-center justify-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition ${mode === "phone" ? "bg-white/10 text-white shadow-[inset_0_0_0_1px_rgba(212,175,108,0.5)]" : "text-white/55"}`}
+                  className={`flex items-center justify-center gap-2 rounded-full px-3 text-[14px] font-extrabold transition ${mode === "phone" ? "bg-[#756b58] text-white shadow-[inset_0_0_0_1.5px_rgba(215,169,83,0.72)]" : "text-white/48 hover:text-white/75"}`}
                 >
                   <Phone className="h-3.5 w-3.5" /> Téléphone
                 </button>
                 <button
                   type="button"
                   onClick={() => { setMode("email"); setError(null); }}
-                  className={`flex items-center justify-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition ${mode === "email" ? "bg-white/10 text-white shadow-[inset_0_0_0_1px_rgba(212,175,108,0.5)]" : "text-white/55"}`}
+                  className={`flex items-center justify-center gap-2 rounded-full px-3 text-[14px] font-extrabold transition ${mode === "email" ? "bg-[#756b58] text-white shadow-[inset_0_0_0_1.5px_rgba(215,169,83,0.72)]" : "text-white/48 hover:text-white/75"}`}
                 >
                   <Mail className="h-3.5 w-3.5" /> Email
                 </button>
               </div>
 
-              <form onSubmit={submitIdentify} className="space-y-5">
+              <form onSubmit={submitIdentify} className="space-y-[26px]">
                 {mode === "phone" ? (
                   <>
-                    <label className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
+                    <label className="block text-[13px] font-black uppercase tracking-[0.34em] text-white/56">
                       Numéro de téléphone
                     </label>
                     {/* Glassmorphism block — copper border + gold separator */}
-                    <div className="group relative flex items-stretch overflow-hidden rounded-2xl border border-[#f59e0b]/60 bg-white/[0.06] backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_40px_-20px_rgba(212,175,108,0.4)] focus-within:border-[#fbbf24] focus-within:ring-2 focus-within:ring-amber-400/40">
+                    <div className="group relative flex h-[68px] items-stretch overflow-hidden rounded-[28px] border border-[#d89109] bg-[#2a2a2e]/95 backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_0_0_1px_rgba(255,166,0,0.05),0_16px_48px_-26px_rgba(255,148,18,0.72)] transition focus-within:border-[#ffb000] focus-within:ring-[3px] focus-within:ring-[#ff9d00]/34">
                       <button
                         ref={countryTriggerRef}
                         type="button"
@@ -406,17 +406,17 @@ function Connexion() {
                         aria-haspopup="listbox"
                         aria-expanded={showCountries}
                         aria-controls="country-listbox"
-                        className="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f59e0b] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d0d0f] rounded-l-2xl"
+                        className="flex shrink-0 items-center gap-3 px-[20px] text-sm font-semibold text-white transition hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb000] focus-visible:ring-offset-2 focus-visible:ring-offset-[#111113] rounded-l-[28px]"
                       >
-                        <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-white/10 text-base leading-none ring-1 ring-white/15">
+                        <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-[#5f5f65] text-[14px] font-black leading-none ring-1 ring-white/10">
                           {country.flag}
                         </span>
-                        <span className="font-display text-base font-bold tracking-wide">{country.dial}</span>
-                        <ChevronDown className={`h-3.5 w-3.5 text-[#f59e0b] transition-transform ${showCountries ? "rotate-180" : ""}`} strokeWidth={2.4} />
+                        <span className="font-display text-[21px] font-black tracking-wide">{country.dial}</span>
+                        <ChevronDown className={`h-4 w-4 text-[#ffad05] transition-transform ${showCountries ? "rotate-180" : ""}`} strokeWidth={3} />
                       </button>
                       <span
                         aria-hidden
-                        className="my-3 w-px bg-gradient-to-b from-transparent via-[#f59e0b]/70 to-transparent"
+                        className="my-[14px] w-px bg-gradient-to-b from-transparent via-white/18 to-transparent"
                       />
                       <input
                         type="tel"
@@ -425,7 +425,7 @@ function Connexion() {
                         placeholder="Entrez votre numéro de téléphone"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="flex-1 bg-transparent px-4 py-3 text-base text-white outline-none placeholder:text-white/40 focus-visible:ring-2 focus-visible:ring-[#f59e0b]/60 rounded-r-2xl"
+                        className="min-w-0 flex-1 bg-transparent px-5 text-[20px] font-semibold text-white outline-none placeholder:text-white/36 focus-visible:ring-2 focus-visible:ring-[#ffb000]/70 rounded-r-[28px]"
                         autoFocus
                       />
                     </div>
