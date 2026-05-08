@@ -709,12 +709,79 @@ function CoverageMap({
         </div>
       </div>
 
+      <div className="relative mt-3">
+        <label htmlFor={`zone-search-${city}`} className="sr-only">
+          Rechercher un quartier à {city}
+        </label>
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+          <input
+            id={`zone-search-${city}`}
+            ref={inputRef}
+            type="search"
+            inputMode="search"
+            autoComplete="off"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowDown") {
+                e.preventDefault();
+                focusFirstPin();
+              } else if (e.key === "Enter" && filteredZones.length > 0) {
+                e.preventDefault();
+                onSelect?.(filteredZones[0].neighborhood);
+                setQuery("");
+              } else if (e.key === "Escape" && query) {
+                e.preventDefault();
+                setQuery("");
+              }
+            }}
+            placeholder={`Rechercher parmi ${zones.length} quartiers…`}
+            aria-label={`Rechercher un quartier à ${city}`}
+            aria-controls={`zone-grid-${city}`}
+            aria-describedby={`zone-search-help-${city}`}
+            className="w-full rounded-xl border border-border bg-background/80 py-2 pl-9 pr-9 text-xs outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => { setQuery(""); inputRef.current?.focus(); }}
+              aria-label="Effacer la recherche"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          )}
+        </div>
+        <p id={`zone-search-help-${city}`} className="sr-only">
+          Tapez pour filtrer. Flèche bas pour naviguer dans les quartiers, Entrée pour sélectionner le premier résultat, Échap pour effacer.
+        </p>
+        <div className="mt-1.5 flex items-center justify-between text-[10px] text-muted-foreground" aria-live="polite">
+          <span>
+            {query
+              ? `${filteredZones.length} résultat${filteredZones.length > 1 ? "s" : ""} sur ${zones.length}`
+              : `${zones.length} quartiers desservis`}
+          </span>
+          {query && filteredZones.length > 0 && (
+            <span className="italic">Entrée pour choisir « {filteredZones[0].neighborhood} »</span>
+          )}
+        </div>
+      </div>
+
+      {filteredZones.length === 0 ? (
+        <div className="relative mt-3 rounded-xl border border-dashed border-border bg-background/60 p-4 text-center">
+          <p className="text-xs font-medium text-foreground">Aucun quartier ne correspond à « {query} »</p>
+          <p className="mt-1 text-[10px] text-muted-foreground">Essayez une orthographe différente ou effacez la recherche.</p>
+        </div>
+      ) : (
       <div
+        ref={gridRef}
+        id={`zone-grid-${city}`}
         className="relative mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4"
         role="radiogroup"
         aria-label={`Quartiers desservis à ${city}. Utilisez les flèches pour naviguer, Entrée ou Espace pour sélectionner.`}
       >
-        {zones.map((z, i) => {
+        {filteredZones.map((z, i) => {
           const t = etaTier(z.eta_minutes);
           const isActive = !!activeNeighborhood && normalizeText(activeNeighborhood) === normalizeText(z.neighborhood);
           const tierLabel = z.eta_minutes <= 25 ? "rapide" : z.eta_minutes <= 35 ? "standard" : "étendu";
