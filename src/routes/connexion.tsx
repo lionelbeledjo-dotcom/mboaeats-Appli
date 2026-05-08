@@ -125,13 +125,12 @@ function Connexion() {
     setError(null);
     setLoading(true);
     try {
-      if (mode === "phone" && channel === "sms") {
+      if (mode === "phone" && (channel === "sms" || channel === "whatsapp")) {
         const fullPhone = formatPhoneForOtp(country.dial, phone);
-        await sendOtpFn({ data: { phone: fullPhone } });
+        await sendOtpFn({ data: { phone: fullPhone, channel } });
         setStep("otp");
       } else {
-        // Autres canaux (WhatsApp, email) — non encore branchés
-        setError("Ce canal n'est pas encore disponible. Choisissez SMS.");
+        setError("Ce canal n'est pas encore disponible. Choisissez SMS ou WhatsApp.");
       }
     } catch (err: any) {
       setError(err?.message ?? "Échec de l'envoi du code");
