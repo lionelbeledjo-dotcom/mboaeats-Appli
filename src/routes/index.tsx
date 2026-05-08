@@ -113,7 +113,7 @@ function Index() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Would you like to eat something?"
+            placeholder="Que voulez-vous manger ?"
             className="flex-1 bg-transparent text-sm outline-none"
             style={{ color: "#1A1A1A" }}
           />
