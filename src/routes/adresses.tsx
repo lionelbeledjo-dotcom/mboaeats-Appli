@@ -700,10 +700,12 @@ function CoverageMap({
           const t = etaTier(z.eta_minutes);
           const isActive = activeNeighborhood && normalizeText(activeNeighborhood) === normalizeText(z.neighborhood);
           return (
-            <div
+            <button
+              type="button"
               key={`${z.neighborhood}-${i}`}
-              title={`${z.neighborhood} · ${z.eta_minutes} min · ${z.base_fee} FCFA`}
-              className={`group relative flex flex-col items-center gap-1 rounded-xl border bg-background/70 p-2 text-center transition ${
+              onClick={() => onSelect?.(z.neighborhood)}
+              title={`${z.neighborhood} · ${z.eta_minutes} min · ${z.base_fee} FCFA — Cliquez pour sélectionner`}
+              className={`group relative flex flex-col items-center gap-1 rounded-xl border bg-background/70 p-2 text-center transition cursor-pointer hover:scale-[1.03] hover:bg-background active:scale-95 ${
                 isActive
                   ? "border-primary shadow-glow ring-2 ring-primary/40"
                   : "border-border hover:border-primary/50"
@@ -720,7 +722,7 @@ function CoverageMap({
               </span>
               <span className="line-clamp-1 text-[10px] font-semibold text-foreground">{z.neighborhood}</span>
               <span className="text-[9px] text-muted-foreground">{z.eta_minutes}′ · {z.base_fee}F</span>
-            </div>
+            </button>
           );
         })}
       </div>
