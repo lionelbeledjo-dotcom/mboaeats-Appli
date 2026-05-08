@@ -229,16 +229,28 @@ export const sendOtp = createServerFn({ method: "POST" })
     const phone = normalizePhone(data.phone);
     const channel: OtpChannel = isTwilioTrialMode() ? "whatsapp" : (data.channel ?? "sms");
 
-    // Rate limit: max 1 code in last 30s
-    const since = new Date(Date.now() - 30_000).toISOString();
-    const { data: recent } = await supabaseAdmin
-      .from("otp_codes")
-      .select("id")
-      .eq("phone", phone)
-      .gte("created_at", since)
-      .limit(1);
-    if (recent && recent.length > 0) {
-      throw new Error("Veuillez patienter avant de demander un nouveau code.");
+    // Mode développement : on saute le rate limit et on laisse la possibilité
+    // de renvoyer le code en clair pour permettre le test sans SMS réel.
+    const isDev = process.env.NODE_ENV !== "production";
+
+    // Rate limit: max 1 code in last 30s (désactivé en dev)
+    if (!isDev) {
+      const since = new Date(Date.now() - 30_000).toISOString();
+      const { data: recent } = await supabaseAdmin
+        .from("otp_codes")
+        .select("id")
+        .eq("phone", phone)
+        .gte("created_at", since)
+        .limit(1);
+      if (recent && recent.length > 0) {
+        // On retourne plutôt qu'on lance, pour que le client puisse afficher
+        // un message poli et que l'overlay runtime-error ne se déclenche pas.
+        return {
+          ok: false as const,
+          error: "Veuillez patienter avant de demander un nouveau code.",
+          retryAfter: 30,
+        };
+      }
     }
 
     const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
@@ -274,20 +286,32 @@ export const sendOtp = createServerFn({ method: "POST" })
     // on l'utilise. Sinon, fallback sur un message texte brandé.
     const TWILIO_WHATSAPP_OTP_CONTENT_SID = process.env.TWILIO_WHATSAPP_OTP_CONTENT_SID;
 
-    if (channel === "whatsapp") {
-      await sendTwilioMessage({
-        to: phone,
-        body: waBody,
-        channel,
-        contentSid: TWILIO_WHATSAPP_OTP_CONTENT_SID || undefined,
-        contentVariables: TWILIO_WHATSAPP_OTP_CONTENT_SID ? { "1": code } : undefined,
-      });
+    // En dev, on évite l'appel Twilio (qui peut échouer faute de credentials)
+    // et on renvoie le code directement pour que le testeur puisse continuer.
+    if (!isDev) {
+      if (channel === "whatsapp") {
+        await sendTwilioMessage({
+          to: phone,
+          body: waBody,
+          channel,
+          contentSid: TWILIO_WHATSAPP_OTP_CONTENT_SID || undefined,
+          contentVariables: TWILIO_WHATSAPP_OTP_CONTENT_SID ? { "1": code } : undefined,
+        });
+      } else {
+        await sendTwilioMessage({ to: phone, body: smsBody, channel });
+      }
     } else {
-      await sendTwilioMessage({ to: phone, body: smsBody, channel });
+      // Trace serveur pour faciliter le debug.
+      console.log(`[DEV OTP] phone=${phone} code=${code} channel=${channel}`);
     }
 
-
-    return { ok: true, expiresIn: OTP_TTL_SECONDS, channel };
+    return {
+      ok: true as const,
+      expiresIn: OTP_TTL_SECONDS,
+      channel,
+      // Le code en clair n'est exposé QUE en développement.
+      ...(isDev ? { devCode: code } : {}),
+    };
   });
 
 export const getOtpDeliveryConfig = createServerFn({ method: "GET" })
