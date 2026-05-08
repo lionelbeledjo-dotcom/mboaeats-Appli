@@ -742,10 +742,12 @@ function CityDeliveryPanel({
   city,
   info,
   activeNeighborhood = null,
+  onSelectNeighborhood,
 }: {
   city: string;
   info: CityInfo;
   activeNeighborhood?: string | null;
+  onSelectNeighborhood?: (neighborhood: string) => void;
 }) {
   const hours = CITY_HOURS[city] ?? "09h00 – 22h00";
   return (
@@ -775,7 +777,11 @@ function CityDeliveryPanel({
             </span>
           </div>
 
-          <CoverageMap city={city} zones={info.zones} activeNeighborhood={activeNeighborhood} />
+          <p className="mt-2 text-[10px] text-muted-foreground">
+            💡 Astuce : cliquez sur un quartier ci-dessous pour le sélectionner automatiquement.
+          </p>
+
+          <CoverageMap city={city} zones={info.zones} activeNeighborhood={activeNeighborhood} onSelect={onSelectNeighborhood} />
 
           <details className="mt-2 group">
             <summary className="cursor-pointer text-[11px] font-semibold text-muted-foreground hover:text-foreground">
