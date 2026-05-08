@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import {
-  TrendingUp, ShoppingBag, UserPlus, Bike, CheckCircle2, Clock, X, User, MapPin, Phone, CreditCard,
+  TrendingUp, ShoppingBag, UserPlus, Bike, CheckCircle2, Clock, X, User, MapPin, Phone, CreditCard, Download,
 } from "lucide-react";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
@@ -135,6 +135,61 @@ function Overview() {
   );
 }
 
+async function exportInvoicePdf(order: OrderRow) {
+  const { jsPDF } = await import("jspdf");
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const w = doc.internal.pageSize.getWidth();
+  let y = 20;
+
+  doc.setFont("helvetica", "bold"); doc.setFontSize(20);
+  doc.text("MboaEats", 15, y);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+  doc.text("Facture simplifiée", w - 15, y, { align: "right" });
+  y += 6;
+  doc.setFontSize(9); doc.setTextColor(120);
+  doc.text("Douala · Cameroun", 15, y);
+  doc.text(order.date, w - 15, y, { align: "right" });
+  y += 8;
+  doc.setDrawColor(220); doc.line(15, y, w - 15, y); y += 10;
+
+  doc.setTextColor(0); doc.setFont("helvetica", "bold"); doc.setFontSize(12);
+  doc.text(`Commande ${order.id}`, 15, y);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+  doc.text(`Statut : ${order.status === "livree" ? "Livré" : "En cours"}`, w - 15, y, { align: "right" });
+  y += 8;
+
+  doc.setFont("helvetica", "bold"); doc.text("Client", 15, y); y += 5;
+  doc.setFont("helvetica", "normal");
+  doc.text(order.client, 15, y); y += 5;
+  doc.text(order.phone, 15, y); y += 5;
+  doc.text(order.address, 15, y); y += 8;
+
+  doc.setFont("helvetica", "bold"); doc.text("Restaurant", 15, y); y += 5;
+  doc.setFont("helvetica", "normal"); doc.text(order.resto, 15, y); y += 8;
+
+  doc.setFont("helvetica", "bold");
+  doc.text("Article", 15, y); doc.text("Qté", w - 45, y); doc.text("Montant", w - 15, y, { align: "right" });
+  y += 2; doc.line(15, y, w - 15, y); y += 6;
+  doc.setFont("helvetica", "normal");
+  const unit = Math.round(order.amount / Math.max(1, order.items.length));
+  order.items.forEach((it) => {
+    doc.text(it, 15, y); doc.text("1", w - 45, y);
+    doc.text(`${unit.toLocaleString("fr-FR")} XAF`, w - 15, y, { align: "right" });
+    y += 6;
+  });
+  y += 2; doc.line(15, y, w - 15, y); y += 8;
+
+  doc.setFont("helvetica", "bold"); doc.setFontSize(12);
+  doc.text("Total", 15, y);
+  doc.text(`${order.amount.toLocaleString("fr-FR")} XAF`, w - 15, y, { align: "right" });
+  y += 7;
+  doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(120);
+  doc.text(`Mode de paiement : ${order.payment}`, 15, y); y += 12;
+  doc.text("Merci pour votre commande sur MboaEats.", 15, y);
+
+  doc.save(`facture-${order.id}.pdf`);
+}
+
 function OrderDetailsPanel({ order, onClose }: { order: OrderRow; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex" role="dialog" aria-modal="true" aria-label={`Détails commande ${order.id}`}>
@@ -146,9 +201,18 @@ function OrderDetailsPanel({ order, onClose }: { order: OrderRow; onClose: () =>
             <h3 className="mt-1 font-display text-xl font-extrabold">Détails de la commande</h3>
             <p className="mt-0.5 text-xs text-muted-foreground">{order.date}</p>
           </div>
-          <button type="button" onClick={onClose} className="rounded-full p-2 hover:bg-background" aria-label="Fermer le panneau">
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => exportInvoicePdf(order)}
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground shadow-glow transition hover:opacity-90"
+            >
+              <Download className="h-3.5 w-3.5" /> Exporter PDF
+            </button>
+            <button type="button" onClick={onClose} className="rounded-full p-2 hover:bg-background" aria-label="Fermer le panneau">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         <div className="space-y-4 p-5">
