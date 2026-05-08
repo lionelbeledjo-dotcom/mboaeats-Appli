@@ -97,7 +97,7 @@ export function SiteHeader() {
         "sticky top-0 z-40 w-full",
         "border-b border-white/10",
         "bg-black/95 backdrop-blur-xl backdrop-saturate-150 text-white",
-        "pt-[calc(env(safe-area-inset-top)+0.5rem)]",
+        "pt-[calc(env(safe-area-inset-top)+0.875rem)]",
       )}
     >
       {/* Filets lumineux décoratifs */}
