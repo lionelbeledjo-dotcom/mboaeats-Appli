@@ -21,6 +21,16 @@ type Driver = {
 
 type Filter = "all" | "online" | "offline" | "inactive";
 
+const NOW = new Date().toISOString();
+const MOCK_DRIVERS: (Driver & { vehicle: string; from: string; to: string })[] = [
+  { id: "mk-d1", name: "Samuel Mbappé", phone: "+237 6 91 12 34 56", city: "Douala", status: "busy", is_active: true, lat: 4.0511, lng: 9.7679, updated_at: NOW, courses: 32, earned: 48_500, vehicle: "Moto", from: "Akwa", to: "Logpom" },
+  { id: "mk-d2", name: "Patrick Eyenga", phone: "+237 6 77 45 22 11", city: "Douala", status: "busy", is_active: true, lat: 4.0613, lng: 9.7510, updated_at: NOW, courses: 21, earned: 31_200, vehicle: "Moto", from: "Bonapriso", to: "Bonamoussadi" },
+  { id: "mk-d3", name: "Christelle Nkomo", phone: "+237 6 55 88 90 12", city: "Douala", status: "available", is_active: true, lat: 4.0721, lng: 9.7398, updated_at: NOW, courses: 15, earned: 22_800, vehicle: "Vélo", from: "Bonanjo", to: "—" },
+  { id: "mk-d4", name: "Jean-Marc Tchoumi", phone: "+237 6 22 11 33 99", city: "Douala", status: "busy", is_active: true, lat: 4.0468, lng: 9.7825, updated_at: NOW, courses: 28, earned: 42_000, vehicle: "Moto", from: "Deido", to: "Makepe" },
+  { id: "mk-d5", name: "Éric Mbida", phone: "+237 6 78 65 43 21", city: "Douala", status: "busy", is_active: true, lat: 4.0397, lng: 9.7142, updated_at: NOW, courses: 19, earned: 27_600, vehicle: "Moto", from: "Youpwe", to: "New Bell" },
+  { id: "mk-d6", name: "Brice Ondoa", phone: "+237 6 91 00 77 88", city: "Douala", status: "available", is_active: true, lat: 4.0892, lng: 9.7654, updated_at: NOW, courses: 11, earned: 16_400, vehicle: "Vélo", from: "Akwa Nord", to: "—" },
+];
+
 function Livreurs() {
   const fetchAll = useServerFn(listAllDrivers);
   const updateStatusFn = useServerFn(setDriverStatus);
