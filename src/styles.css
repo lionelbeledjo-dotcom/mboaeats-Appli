@@ -5,8 +5,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-display: "Sora", system-ui, sans-serif;
-  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-display: "Inter", "Roboto", system-ui, sans-serif;
+  --font-sans: "Inter", "Roboto", system-ui, sans-serif;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -31,6 +31,7 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-gold: var(--gold);
   --color-gold-foreground: var(--gold-foreground);
+  --color-uber-green: var(--uber-green);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
@@ -47,7 +48,7 @@
   --background: oklch(1 0 0);                 /* #FFFFFF */
   --surface: oklch(0.985 0.003 80);           /* near-white */
   --surface-elevated: oklch(0.97 0.004 80);   /* #F5F5F5 */
-  --foreground: oklch(0.18 0.02 280);         /* near-black */
+  --foreground: oklch(0.14 0 0);              /* near #000 */
 
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.18 0.02 280);
@@ -62,12 +63,13 @@
   --secondary-foreground: oklch(0.22 0.02 280);
 
   --muted: oklch(0.96 0.005 80);
-  --muted-foreground: oklch(0.48 0.02 280);
+  --muted-foreground: oklch(0.48 0 0);        /* #6B6B6B Uber grey */
 
   --accent: oklch(0.66 0.22 36);
   --accent-foreground: oklch(0.99 0.01 80);
 
   --gold: oklch(0.72 0.16 75);
+  --uber-green: oklch(0.62 0.16 152);          /* #05A357 */
   --gold-foreground: oklch(0.18 0.04 280);
 
   --destructive: oklch(0.62 0.22 25);
@@ -82,17 +84,17 @@
   --gradient-hero: radial-gradient(ellipse at top right, oklch(0.66 0.22 36 / 0.12), transparent 60%),
                    radial-gradient(ellipse at bottom left, oklch(0.7 0.18 55 / 0.10), transparent 60%),
                    linear-gradient(180deg, oklch(1 0 0), oklch(0.97 0.004 80));
-  --shadow-glow: 0 14px 38px -14px oklch(0.66 0.22 36 / 0.35);
-  --shadow-card: 0 6px 20px -10px oklch(0.2 0.02 280 / 0.18);
-  --shadow-gold: 0 0 24px oklch(0.82 0.16 85 / 0.30);
+  --shadow-glow: 0 8px 24px -12px oklch(0.66 0.22 36 / 0.25);
+  --shadow-card: 0 1px 2px oklch(0.2 0 0 / 0.06), 0 4px 12px -8px oklch(0.2 0 0 / 0.10);
+  --shadow-gold: 0 0 16px oklch(0.82 0.16 85 / 0.20);
 }
 
 @font-face {
-  font-family: "Sora";
+  font-family: "Inter";
   font-style: normal;
-  font-weight: 400 800;
+  font-weight: 100 900;
   font-display: swap;
-  src: url("https://fonts.gstatic.com/s/sora/v12/xMQOuFFYT72X5wkB_18qmnndmSdSnk-DKQJRBg.woff2") format("woff2");
+  src: url("https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2") format("woff2");
 }
 
 @layer base {
@@ -114,7 +116,8 @@
 
   h1, h2, h3, h4 {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
+    color: oklch(0.14 0 0);
   }
 }
 
