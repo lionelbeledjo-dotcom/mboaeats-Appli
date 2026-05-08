@@ -536,15 +536,6 @@ function CardScreen({ total, link, reference, poll, onSuccess }: {
   );
 }
 
-function Field({ label, placeholder }: { label: string; placeholder: string }) {
-  return (
-    <label className="block">
-      <span className="text-xs font-semibold text-muted-foreground">{label}</span>
-      <input placeholder={placeholder} className="mt-1 w-full rounded-xl border border-border bg-background/50 px-3 py-3 text-sm outline-none focus:border-primary" />
-    </label>
-  );
-}
-
 function SuccessScreen({ method, total }: { method: Method; total: number }) {
   const label = method === "cash" ? "Commande confirmée" : "Paiement réussi";
   return (
