@@ -455,7 +455,7 @@ function Connexion() {
                 <button
                   type="button"
                   onClick={() => setShowPwd((v) => !v)}
-                  className="text-[#6B6B6B] hover:text-black"
+                  className="rounded-md p-1 text-[#6B6B6B] hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                   aria-label={showPwd ? "Masquer" : "Afficher"}
                 >
                   {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -463,7 +463,7 @@ function Connexion() {
               </label>
 
               <div className="flex justify-end">
-                <Link to="/reset-password" className="text-xs font-medium text-[#06C167] hover:underline underline-offset-4">
+                <Link to="/reset-password" className="rounded-md text-xs font-medium text-[#06C167] hover:underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-white">
                   Mot de passe oublié ?
                 </Link>
               </div>
@@ -484,7 +484,7 @@ function Connexion() {
                       type="button"
                       onClick={handleResendConfirm}
                       disabled={resendBusy}
-                      className="block w-full rounded-lg bg-white px-3 py-1.5 text-center text-xs font-bold text-[#06C167] ring-1 ring-red-100 hover:bg-red-50 disabled:opacity-60"
+                      className="block w-full rounded-lg bg-white px-3 py-1.5 text-center text-xs font-bold text-[#06C167] ring-1 ring-red-100 hover:bg-red-50 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                     >
                       {resendBusy ? "Envoi..." : resentOk ? "✓ Email renvoyé" : "Renvoyer l'email de confirmation"}
                     </button>
@@ -495,7 +495,7 @@ function Connexion() {
               <button
                 type="submit"
                 disabled={loading}
-                className="mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#06C167] text-sm font-bold text-white transition hover:bg-[#05a857] active:scale-[0.99] disabled:opacity-60"
+                className="mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#06C167] text-sm font-bold text-white transition hover:bg-[#05a857] active:scale-[0.99] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (<>Se connecter <ArrowRight className="h-4 w-4" /></>)}
               </button>
@@ -514,7 +514,7 @@ function Connexion() {
                 <button
                   type="button"
                   onClick={() => setShowCountries((v) => !v)}
-                  className="flex h-14 items-center gap-2 rounded-2xl bg-[#F6F6F6] px-3.5 text-sm font-semibold text-black ring-1 ring-neutral-200 transition hover:bg-[#EFEFEF] focus:outline-none focus:ring-2 focus:ring-[#06C167]"
+                  className="flex h-14 items-center gap-2 rounded-2xl bg-[#F6F6F6] px-3.5 text-sm font-semibold text-black ring-1 ring-neutral-200 transition hover:bg-[#EFEFEF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                   aria-expanded={showCountries}
                   aria-label={`Indicatif ${country.name} ${country.dial}`}
                 >
@@ -544,7 +544,7 @@ function Connexion() {
                       key={c.code}
                       type="button"
                       onClick={() => { setCountryCode(c.code); setShowCountries(false); }}
-                      className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm transition hover:bg-[#F6F6F6] ${c.code === countryCode ? "bg-[#F6F6F6]" : ""}`}
+                      className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm transition hover:bg-[#F6F6F6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-1 focus-visible:ring-offset-white ${c.code === countryCode ? "bg-[#F6F6F6]" : ""}`}
                     >
                       <span className="flex items-center gap-3 text-black">
                         <FlagCircle iso={c.iso} alt={c.name} size={22} />
@@ -579,7 +579,7 @@ function Connexion() {
                 type="button"
                 onClick={() => sendCode("sms")}
                 disabled={loading}
-                className="mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#06C167] text-sm font-bold text-white transition hover:bg-[#05a857] active:scale-[0.99] disabled:opacity-60"
+                className="mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#06C167] text-sm font-bold text-white transition hover:bg-[#05a857] active:scale-[0.99] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (<>Recevoir le code par SMS <ArrowRight className="h-4 w-4" /></>)}
               </button>
@@ -588,7 +588,7 @@ function Connexion() {
                 type="button"
                 onClick={() => sendCode("email")}
                 disabled={loading}
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black ring-1 ring-neutral-200 transition hover:bg-[#F6F6F6] disabled:opacity-60"
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-black ring-1 ring-neutral-200 transition hover:bg-[#F6F6F6] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               >
                 <Mail className="h-4 w-4" /> Recevoir le code par Email
               </button>
@@ -610,7 +610,7 @@ function Connexion() {
                 <button
                   type="button"
                   onClick={() => { setOtpStep("phone"); setOtpCode(""); resetMessages(); setDevCode(null); }}
-                  className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white px-3 py-1.5 text-[11px] font-bold text-black ring-1 ring-neutral-200 hover:bg-neutral-50"
+                  className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white px-3 py-1.5 text-[11px] font-bold text-black ring-1 ring-neutral-200 hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
                   <Pencil className="h-3 w-3" /> Changer de numéro
                 </button>
@@ -640,7 +640,7 @@ function Connexion() {
               <button
                 type="submit"
                 disabled={loading || otpCode.length < 6}
-                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#06C167] text-sm font-bold text-white hover:bg-[#05a857] active:scale-[0.99] disabled:opacity-60"
+                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#06C167] text-sm font-bold text-white hover:bg-[#05a857] active:scale-[0.99] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (<><Check className="h-4 w-4" /> Valider et entrer</>)}
               </button>
@@ -650,7 +650,7 @@ function Connexion() {
                   type="button"
                   onClick={resendSms}
                   disabled={resendIn > 0 || resendingSms || loading}
-                  className="inline-flex items-center gap-2 text-xs font-bold text-[#06C167] underline-offset-4 hover:underline disabled:text-[#9b9b9b] disabled:no-underline"
+                  className="inline-flex items-center gap-2 text-xs font-bold text-[#06C167] underline-offset-4 hover:underline disabled:text-[#9b9b9b] disabled:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-white rounded-md px-1"
                 >
                   {resendingSms ? (
                     <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Envoi du SMS…</>
