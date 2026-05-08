@@ -421,7 +421,14 @@ function Connexion() {
 
           {/* ── EMAIL TAB ── */}
           {tab === "email" && (
-            <form onSubmit={handleEmailSubmit} className="mt-6 space-y-3" noValidate>
+            <form
+              onSubmit={handleEmailSubmit}
+              className="mt-6 space-y-3"
+              noValidate
+              role="tabpanel"
+              id="panel-email"
+              aria-labelledby="tab-email"
+            >
               <label className="flex h-12 items-center gap-3 rounded-xl bg-[#F6F6F6] px-4 ring-1 ring-transparent transition focus-within:bg-white focus-within:ring-[#06C167]">
                 <Mail className="h-4 w-4 shrink-0 text-[#6B6B6B]" />
                 <input
