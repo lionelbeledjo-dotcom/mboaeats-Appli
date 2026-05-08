@@ -294,13 +294,11 @@ export const verifyOtp = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const phone = normalizePhone(data.phone);
 
-    // Vérifie que le numéro correspond à celui pour lequel l'OTP a été demandé
+    // Vérification "soft" du numéro lié à la session (cookies parfois indisponibles
+    // en iframe preview / Safari ITP). La sécurité repose sur code_hash + TTL + tentatives.
     const session = await getMboaSession();
     const pending = session.data.pendingPhone;
-    if (!pending) {
-      throw new Error("Aucune demande de code en cours. Demandez un nouveau code.");
-    }
-    if (pending !== phone) {
+    if (pending && pending !== phone) {
       throw new Error("Ce code ne correspond pas au numéro utilisé pour la demande.");
     }
 
