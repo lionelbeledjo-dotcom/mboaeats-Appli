@@ -3,12 +3,17 @@ import { Home, ShoppingBag, UtensilsCrossed, LifeBuoy } from "lucide-react";
 import { MboaEatsLogo } from "@/components/brand/MboaEatsLogo";
 import { cn } from "@/lib/utils";
 
-const NAV_ITEMS = [
+const NAV_ITEMS: ReadonlyArray<{
+  to: string;
+  label: string;
+  icon: typeof Home;
+  exact?: boolean;
+}> = [
   { to: "/", label: "Accueil", icon: Home, exact: true },
   { to: "/commandes", label: "Commandes", icon: ShoppingBag },
   { to: "/restaurant", label: "Restaurants", icon: UtensilsCrossed },
   { to: "/aide", label: "Support", icon: LifeBuoy },
-] as const;
+];
 
 export function SiteHeader() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
