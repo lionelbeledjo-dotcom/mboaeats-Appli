@@ -64,6 +64,22 @@ function Litiges() {
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erreur"); }
   };
 
+  const openView = async (it: Dispute) => {
+    setViewing(it);
+    setViewingData(null);
+    try { setViewingData(await fetchDetails({ data: { id: it.id } })); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Erreur"); }
+  };
+
+  const handleDelete = async (it: Dispute) => {
+    if (!confirm(`Supprimer le litige #${it.orders?.reference ?? it.order_id.slice(0, 8)} ?`)) return;
+    try {
+      await deleteFn({ data: { id: it.id } });
+      toast.success("Litige supprimé");
+      setItems((prev) => prev?.filter((x) => x.id !== it.id) ?? null);
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erreur"); }
+  };
+
   const open = (items ?? []).filter((i) => i.status === "open");
 
   return (
