@@ -454,7 +454,7 @@ function Connexion() {
                         aria-controls="country-listbox"
                         className={`flex h-full shrink-0 items-center gap-2 rounded-[14px] border-2 bg-white px-3 text-sm font-semibold text-black transition-colors hover:border-[#06C167] focus:outline-none focus-visible:border-[#06C167] focus-visible:ring-2 focus-visible:ring-[#06C167]/30 ${showCountries ? "border-[#06C167] ring-2 ring-[#06C167]/30" : "border-[#E2E2E2]"}`}
                       >
-                        <span className="text-[20px] leading-none" aria-hidden="true">{country.flag}</span>
+                        <CircleFlag code={country.code} size={26} />
                         <span className="font-display text-[16px] font-extrabold tracking-wide text-black tabular-nums">{country.dial}</span>
                         <ChevronDown className={`h-4 w-4 text-[#6B6B6B] transition-transform ${showCountries ? "rotate-180" : ""}`} strokeWidth={2.5} />
                       </button>
