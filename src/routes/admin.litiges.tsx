@@ -130,15 +130,23 @@ function Litiges() {
                 </div>
               </div>
 
-              <div className="mt-4 grid grid-cols-3 gap-2">
-                <button className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-background py-2 text-xs font-semibold hover:bg-surface">
-                  <MessageCircle className="h-3.5 w-3.5" /> Contacter
-                </button>
+              <div className="mt-4 grid grid-cols-2 gap-2">
                 <button onClick={() => handle(it.id, "resolved")} className="flex items-center justify-center gap-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 py-2 text-xs font-bold text-emerald-300">
                   <Check className="h-3.5 w-3.5" /> Résoudre
                 </button>
                 <button onClick={() => handle(it.id, "rejected")} className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-background py-2 text-xs font-semibold text-muted-foreground hover:text-foreground">
                   <X className="h-3.5 w-3.5" /> Rejeter
+                </button>
+              </div>
+              <div className="mt-2 grid grid-cols-3 gap-2">
+                <button onClick={() => openView(it)} className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-background py-2 text-xs font-semibold hover:bg-surface">
+                  <Eye className="h-3.5 w-3.5" /> Voir
+                </button>
+                <button onClick={() => setEditing(it)} className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-background py-2 text-xs font-semibold hover:bg-surface">
+                  <Pencil className="h-3.5 w-3.5" /> Éditer
+                </button>
+                <button onClick={() => handleDelete(it)} className="flex items-center justify-center gap-1.5 rounded-xl border border-destructive/40 bg-destructive/10 py-2 text-xs font-bold text-destructive hover:bg-destructive/20">
+                  <Trash2 className="h-3.5 w-3.5" /> Supprimer
                 </button>
               </div>
             </div>
@@ -152,6 +160,100 @@ function Litiges() {
           </div>
         )}
       </div>
+
+      {viewing && (
+        <Modal title={`Litige · ${viewing.reason}`} onClose={() => { setViewing(null); setViewingData(null); }}>
+          {!viewingData ? (
+            <div className="flex justify-center p-8"><Loader2 className="h-5 w-5 animate-spin" /></div>
+          ) : (
+            <div className="space-y-4 text-sm">
+              <div className="grid grid-cols-2 gap-3">
+                <DInfo label="Statut" value={viewingData.dispute.status} />
+                <DInfo label="Priorité" value={viewingData.dispute.priority} />
+                <DInfo label="Montant" value={`${(viewingData.dispute.amount ?? 0).toLocaleString("fr-FR")} FCFA`} />
+                <DInfo label="Créé" value={new Date(viewingData.dispute.created_at).toLocaleString("fr-FR")} />
+                <DInfo label="Commande" value={viewingData.order?.reference ?? "—"} />
+                <DInfo label="Restaurant" value={viewingData.restaurant?.name ?? "—"} />
+                <DInfo label="Client" value={viewingData.client?.full_name ?? "—"} />
+                <DInfo label="Tél. client" value={viewingData.client?.phone ?? "—"} />
+              </div>
+              {viewingData.dispute.description && (
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Description</p>
+                  <p className="rounded-xl border border-border bg-background/40 p-3">{viewingData.dispute.description}</p>
+                </div>
+              )}
+              {viewingData.dispute.resolution && (
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Résolution</p>
+                  <p className="rounded-xl border border-border bg-background/40 p-3">{viewingData.dispute.resolution}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </Modal>
+      )}
+
+      {editing && (
+        <EditDisputeModal
+          dispute={editing}
+          onClose={() => setEditing(null)}
+          onSave={async (patch) => {
+            await updateFn({ data: { id: editing.id, ...patch } });
+            toast.success("Litige mis à jour");
+            setItems((prev) => prev?.map((x) => (x.id === editing.id ? { ...x, ...patch } as Dispute : x)) ?? null);
+            setEditing(null);
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+function DInfo({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="font-medium">{value}</p>
+    </div>
+  );
+}
+
+function EditDisputeModal({ dispute, onClose, onSave }: { dispute: Dispute; onClose: () => void; onSave: (patch: { reason: string; priority: "low" | "medium" | "high"; amount: number; description: string | null }) => Promise<void> }) {
+  const [reason, setReason] = useState(dispute.reason);
+  const [priority, setPriority] = useState<"low" | "medium" | "high">((dispute.priority as any) ?? "medium");
+  const [amount, setAmount] = useState(dispute.amount ?? 0);
+  const [description, setDescription] = useState(dispute.description ?? "");
+  const [saving, setSaving] = useState(false);
+  const submit = async () => {
+    setSaving(true);
+    try { await onSave({ reason, priority, amount: Number(amount) || 0, description: description || null }); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Erreur"); }
+    finally { setSaving(false); }
+  };
+  return (
+    <Modal title="Éditer le litige" onClose={onClose} footer={
+      <>
+        <button onClick={onClose} className="rounded-xl border border-border px-4 py-2 text-sm font-semibold">Annuler</button>
+        <button onClick={submit} disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-4 py-2 text-sm font-bold text-primary-foreground disabled:opacity-60">
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Enregistrer
+        </button>
+      </>
+    }>
+      <div className="space-y-4">
+        <Field label="Motif"><input className={inputCls} value={reason} onChange={(e) => setReason(e.target.value)} /></Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Priorité">
+            <select className={inputCls} value={priority} onChange={(e) => setPriority(e.target.value as any)}>
+              <option value="low">Basse</option>
+              <option value="medium">Moyenne</option>
+              <option value="high">Haute</option>
+            </select>
+          </Field>
+          <Field label="Montant (FCFA)"><input type="number" className={inputCls} value={amount} onChange={(e) => setAmount(Number(e.target.value))} /></Field>
+        </div>
+        <Field label="Description"><textarea rows={4} className={inputCls} value={description} onChange={(e) => setDescription(e.target.value)} /></Field>
+      </div>
+    </Modal>
   );
 }
