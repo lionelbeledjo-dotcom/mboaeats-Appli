@@ -70,6 +70,23 @@ function formatPhoneForOtp(dial: string, raw: string) {
   return `${dial}${digits}`;
 }
 
+/** Detect a country from a raw phone input that may start with +indicatif or 00indicatif. */
+function detectCountryFromInput(raw: string) {
+  const input = raw.trim();
+  let digits = "";
+  if (input.startsWith("+")) digits = input.slice(1).replace(/\D/g, "");
+  else if (input.replace(/\D/g, "").startsWith("00")) digits = input.replace(/\D/g, "").slice(2);
+  else return null;
+  if (!digits) return null;
+  // Match longest dial code first to avoid +1 swallowing +1XX, etc.
+  const sorted = [...COUNTRIES].sort((a, b) => b.dial.length - a.dial.length);
+  for (const c of sorted) {
+    const d = c.dial.replace(/\D/g, "");
+    if (digits.startsWith(d)) return { country: c, rest: digits.slice(d.length) };
+  }
+  return null;
+}
+
 function Connexion() {
   const navigate = useNavigate();
   const sendOtpFn = useServerFn(sendOtp);
