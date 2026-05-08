@@ -10,6 +10,7 @@ import { sendOtp, verifyOtp } from "@/lib/otp.functions";
 import { useAuth } from "@/hooks/useAuth";
 import { invalidateSessionCache } from "@/hooks/useSessionUser";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/connexion")({
   component: Connexion,
