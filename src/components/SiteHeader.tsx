@@ -291,8 +291,11 @@ export function SiteHeader() {
 
       {/* Panneau mobile (liste déroulante) */}
       <nav
+        ref={panelRef}
         id="mobile-nav-panel"
         aria-label="Navigation mobile"
+        aria-hidden={!open}
+        role="menu"
         className={cn(
           "absolute inset-x-0 top-full z-40 md:hidden",
           "origin-top overflow-hidden border-b border-white/5",
@@ -301,12 +304,13 @@ export function SiteHeader() {
           open ? "max-h-[80vh] opacity-100" : "max-h-0 opacity-0",
         )}
       >
-        <ul className="flex flex-col gap-1 p-3">
+        <ul className="flex flex-col gap-1 p-2.5 sm:p-3">
           {NAV_ITEMS.map(({ to, label, icon: Icon, exact }, i) => {
             const active = isActive(to, exact);
             return (
               <li
                 key={to}
+                role="none"
                 style={{ transitionDelay: open ? `${60 + i * 40}ms` : "0ms" }}
                 className={cn(
                   "transition-all duration-300 ease-out",
@@ -315,16 +319,30 @@ export function SiteHeader() {
               >
                 <Link
                   to={to as any}
+                  ref={(el) => {
+                    itemRefs.current[i] = el;
+                  }}
+                  role="menuitem"
+                  tabIndex={open ? 0 : -1}
                   onClick={() => setOpen(false)}
+                  onKeyDown={(e) => onItemKeyDown(e, i)}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold",
+                    "relative flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-sm font-semibold sm:gap-3 sm:px-3 sm:py-3",
                     "transition-all duration-200 active:scale-[0.98]",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cm-green/60 focus-visible:ring-offset-0",
                     active
                       ? "bg-brand-cm-green/15 text-brand-cm-green ring-1 ring-brand-cm-green/40"
                       : "text-white/80 hover:bg-white/5 hover:text-white",
                   )}
                 >
+                  {/* Indicateur vertical d'état actif */}
+                  {active && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-brand-cm-green shadow-[0_0_10px_rgba(6,193,103,0.7)]"
+                    />
+                  )}
                   <span
                     className={cn(
                       "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
@@ -335,7 +353,9 @@ export function SiteHeader() {
                   </span>
                   <span className="min-w-0 flex-1 truncate">{label}</span>
                   {active && (
-                    <span className="h-2 w-2 shrink-0 rounded-full bg-brand-cm-green shadow-[0_0_10px_rgba(6,193,103,0.7)]" />
+                    <span className="shrink-0 rounded-full bg-brand-cm-green/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-cm-green">
+                      Ici
+                    </span>
                   )}
                 </Link>
               </li>
@@ -343,6 +363,7 @@ export function SiteHeader() {
           })}
 
           <li
+            role="none"
             style={{ transitionDelay: open ? `${60 + NAV_ITEMS.length * 40}ms` : "0ms" }}
             className={cn(
               "mt-2 transition-all duration-300 ease-out",
@@ -351,11 +372,18 @@ export function SiteHeader() {
           >
             <Link
               to="/commandes"
+              ref={(el) => {
+                itemRefs.current[NAV_ITEMS.length] = el;
+              }}
+              role="menuitem"
+              tabIndex={open ? 0 : -1}
               onClick={() => setOpen(false)}
+              onKeyDown={(e) => onItemKeyDown(e, NAV_ITEMS.length)}
               className={cn(
                 "flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-bold",
                 "bg-brand-cm-green text-brand-cm-green-fg shadow-badge",
                 "transition-all duration-200 active:scale-[0.98]",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[hsl(240_10%_8%)]",
               )}
             >
               <ShoppingBag className="h-4 w-4" strokeWidth={2.5} />
