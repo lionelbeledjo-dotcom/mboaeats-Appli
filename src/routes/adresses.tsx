@@ -384,6 +384,10 @@ function AddressesPage() {
               city={city}
               info={cityInfo}
               activeNeighborhood={coveredZone?.neighborhood ?? null}
+              onSelectNeighborhood={(n) => {
+                setNeighborhood(n);
+                toast.success(`Quartier sélectionné : ${n}`);
+              }}
             />
             {!cityInfo.loading && cityInfo.zones.length === 0 && (
               <p className="mt-2 rounded-xl border border-destructive/40 bg-destructive/10 p-2.5 text-[11px] font-medium text-destructive">
@@ -657,10 +661,12 @@ function CoverageMap({
   city,
   zones,
   activeNeighborhood,
+  onSelect,
 }: {
   city: string;
   zones: Zone[];
   activeNeighborhood: string | null;
+  onSelect?: (neighborhood: string) => void;
 }) {
   if (zones.length === 0) return null;
   return (
@@ -696,10 +702,12 @@ function CoverageMap({
           const t = etaTier(z.eta_minutes);
           const isActive = activeNeighborhood && normalizeText(activeNeighborhood) === normalizeText(z.neighborhood);
           return (
-            <div
+            <button
+              type="button"
               key={`${z.neighborhood}-${i}`}
-              title={`${z.neighborhood} · ${z.eta_minutes} min · ${z.base_fee} FCFA`}
-              className={`group relative flex flex-col items-center gap-1 rounded-xl border bg-background/70 p-2 text-center transition ${
+              onClick={() => onSelect?.(z.neighborhood)}
+              title={`${z.neighborhood} · ${z.eta_minutes} min · ${z.base_fee} FCFA — Cliquez pour sélectionner`}
+              className={`group relative flex flex-col items-center gap-1 rounded-xl border bg-background/70 p-2 text-center transition cursor-pointer hover:scale-[1.03] hover:bg-background active:scale-95 ${
                 isActive
                   ? "border-primary shadow-glow ring-2 ring-primary/40"
                   : "border-border hover:border-primary/50"
@@ -716,7 +724,7 @@ function CoverageMap({
               </span>
               <span className="line-clamp-1 text-[10px] font-semibold text-foreground">{z.neighborhood}</span>
               <span className="text-[9px] text-muted-foreground">{z.eta_minutes}′ · {z.base_fee}F</span>
-            </div>
+            </button>
           );
         })}
       </div>
@@ -734,10 +742,12 @@ function CityDeliveryPanel({
   city,
   info,
   activeNeighborhood = null,
+  onSelectNeighborhood,
 }: {
   city: string;
   info: CityInfo;
   activeNeighborhood?: string | null;
+  onSelectNeighborhood?: (neighborhood: string) => void;
 }) {
   const hours = CITY_HOURS[city] ?? "09h00 – 22h00";
   return (
@@ -767,7 +777,11 @@ function CityDeliveryPanel({
             </span>
           </div>
 
-          <CoverageMap city={city} zones={info.zones} activeNeighborhood={activeNeighborhood} />
+          <p className="mt-2 text-[10px] text-muted-foreground">
+            💡 Astuce : cliquez sur un quartier ci-dessous pour le sélectionner automatiquement.
+          </p>
+
+          <CoverageMap city={city} zones={info.zones} activeNeighborhood={activeNeighborhood} onSelect={onSelectNeighborhood} />
 
           <details className="mt-2 group">
             <summary className="cursor-pointer text-[11px] font-semibold text-muted-foreground hover:text-foreground">
