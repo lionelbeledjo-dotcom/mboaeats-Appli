@@ -103,7 +103,7 @@ function Connexion() {
   const identifierLabel =
     mode === "phone" ? formatPhoneForOtp(country.dial, phone) : email;
 
-  const submitIdentify = (e: React.FormEvent) => {
+  const submitIdentify = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     if (mode === "phone") {
@@ -111,13 +111,15 @@ function Connexion() {
         setError("Numéro de téléphone invalide");
         return;
       }
-    } else {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-        setError("Adresse email invalide");
-        return;
-      }
-      setChannel("email");
+      // Canal déjà choisi via le toggle SMS/WhatsApp -> on envoie directement
+      await sendCode();
+      return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError("Adresse email invalide");
+      return;
+    }
+    setChannel("email");
     setStep("channel");
   };
 
