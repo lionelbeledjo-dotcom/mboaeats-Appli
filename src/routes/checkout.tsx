@@ -285,7 +285,7 @@ function Checkout() {
           {step === "success" && <SuccessScreen method={method} total={total} />}
         </section>
 
-        <Summary cartItems={cartItems} subtotal={subtotal} delivery={delivery} total={total} hasPass={hasPass} landmark={landmark} promo={promo} setPromo={setPromo} />
+        <Summary cartItems={cartItems} subtotal={subtotal} delivery={delivery} total={total} hasPass={hasPass} landmark={landmark} promo={promo} setPromo={setPromo} paymentStatus={paymentStatus} method={method} reference={reference} />
       </main>
 
       {showExtras && (
