@@ -46,6 +46,7 @@ function ProfilPage() {
 
     supabase.auth.getUser().then(async ({ data }) => {
       const u = data.user;
+      setAuthChecked(true);
       if (!u) return;
       setAuthedSb(true);
       if (u.email) setAuthEmail(u.email);
@@ -68,7 +69,7 @@ function ProfilPage() {
         });
         setLoyalty({ points: l.points, currentTier: l.currentTier });
       } catch {}
-    }).catch(() => {});
+    }).catch(() => { setAuthChecked(true); });
 
     return () => window.removeEventListener(CART_SOUND_EVT, sync);
   }, []);
