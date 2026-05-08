@@ -141,10 +141,10 @@ function Livreurs() {
   ];
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-6">
+    <div className="mx-auto max-w-7xl space-y-4 p-3 sm:space-y-6 sm:p-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-3xl font-extrabold">Livreurs</h1>
+          <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Livreurs</h1>
           <p className="text-sm text-muted-foreground">{counts.all} livreurs · {counts.online} en ligne · {counts.inactive} désactivés</p>
         </div>
         <div className="relative">
