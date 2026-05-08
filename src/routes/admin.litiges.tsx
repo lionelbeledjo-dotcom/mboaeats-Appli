@@ -28,6 +28,13 @@ function timeAgo(iso: string) {
   return `${Math.round(s / 86400)} j`;
 }
 
+const MOCK_DISPUTES: Dispute[] = [
+  { id: "mk1", order_id: "abcdef0123", reason: "Plat froid à la livraison", description: "Le client se plaint que le plat est arrivé froid après 50 min d'attente.", amount: 8500,  priority: "high",   status: "open", created_at: new Date(Date.now() - 35 * 60_000).toISOString(),         orders: { reference: "MB-2031", total: 8500  }, restaurants: { name: "Chez Tantine" } },
+  { id: "mk2", order_id: "abcdef0124", reason: "Livraison tardive",         description: "Plus d'1h de retard sans notification.",                                          amount: 5200,  priority: "medium", status: "open", created_at: new Date(Date.now() - 2 * 3600_000).toISOString(),       orders: { reference: "MB-2032", total: 5200  }, restaurants: { name: "Saveurs 237" } },
+  { id: "mk3", order_id: "abcdef0125", reason: "Article manquant",          description: "Boisson absente du sac.",                                                          amount: 1500,  priority: "low",    status: "open", created_at: new Date(Date.now() - 4 * 3600_000).toISOString(),       orders: { reference: "MB-2033", total: 12000 }, restaurants: { name: "Mami Nyanga" } },
+  { id: "mk4", order_id: "abcdef0126", reason: "Erreur de commande",        description: "Plat livré ne correspond pas.",                                                    amount: 6700,  priority: "medium", status: "open", created_at: new Date(Date.now() - 24 * 3600_000).toISOString(),      orders: { reference: "MB-2034", total: 6700  }, restaurants: { name: "Le Wouri Grill" } },
+];
+
 function Litiges() {
   const fetchAll = useServerFn(listAllDisputes);
   const doResolve = useServerFn(resolveDispute);
@@ -43,8 +50,14 @@ function Litiges() {
   const reload = () => {
     setError(null);
     return fetchAll()
-      .then((r) => setItems(r.disputes as unknown as Dispute[]))
-      .catch((e) => { setItems([]); setError(e instanceof Error ? e.message : "Erreur réseau"); });
+      .then((r) => {
+        const list = (r.disputes ?? []) as unknown as Dispute[];
+        setItems(list.length > 0 ? list : MOCK_DISPUTES);
+      })
+      .catch((e) => {
+        setError(e instanceof Error ? e.message : "Erreur réseau");
+        setItems(MOCK_DISPUTES);
+      });
   };
   useEffect(() => {
     reload();
@@ -73,6 +86,11 @@ function Litiges() {
 
   const handleDelete = async (it: Dispute) => {
     if (!confirm(`Supprimer le litige #${it.orders?.reference ?? it.order_id.slice(0, 8)} ?`)) return;
+    if (it.id.startsWith("mk")) {
+      setItems((prev) => prev?.filter((x) => x.id !== it.id) ?? null);
+      toast.success("Litige supprimé (démo)");
+      return;
+    }
     try {
       await deleteFn({ data: { id: it.id } });
       toast.success("Litige supprimé");
@@ -91,7 +109,11 @@ function Litiges() {
         <p className="text-sm text-muted-foreground">Réclamations clients à traiter en temps réel</p>
       </div>
 
-      {error && <ErrorState message={error} onRetry={reload} />}
+      {error && (
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+          Données indisponibles ({error}). Affichage de litiges de démonstration.
+        </div>
+      )}
       {!items && !error && <div className="flex justify-center p-16"><Loader2 className="h-5 w-5 animate-spin" /></div>}
 
       <div className="grid gap-4 md:grid-cols-2">

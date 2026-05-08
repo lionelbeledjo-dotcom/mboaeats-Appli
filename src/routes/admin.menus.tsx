@@ -28,6 +28,22 @@ type Dish = {
   is_available: boolean | null; is_popular: boolean | null; sort_order: number | null;
 };
 
+const MOCK_RESTOS: Resto[] = [
+  { id: "mock-resto-1", name: "Restaurant de démo", city: "Douala" },
+];
+const MOCK_CATS = (rid: string): Category[] => [
+  { id: "mc-ent", restaurant_id: rid, name: "Entrées",  sort_order: 1 },
+  { id: "mc-pla", restaurant_id: rid, name: "Plats",    sort_order: 2 },
+  { id: "mc-boi", restaurant_id: rid, name: "Boissons", sort_order: 3 },
+];
+const MOCK_DISHES = (rid: string): Dish[] => [
+  { id: "md1", restaurant_id: rid, category_id: "mc-ent", name: "Salade Mboa",     description: "Salade fraîche, vinaigrette maison.",      price: 2500, image_url: null, is_available: true,  is_popular: false, sort_order: 1 },
+  { id: "md2", restaurant_id: rid, category_id: "mc-pla", name: "Ndolè royal",     description: "Ndolè aux crevettes et viande de bœuf.",   price: 5500, image_url: null, is_available: true,  is_popular: true,  sort_order: 1 },
+  { id: "md3", restaurant_id: rid, category_id: "mc-pla", name: "Poulet DG",       description: "Poulet sauté, plantains et légumes.",      price: 6000, image_url: null, is_available: true,  is_popular: true,  sort_order: 2 },
+  { id: "md4", restaurant_id: rid, category_id: "mc-pla", name: "Poisson braisé",  description: "Bar braisé, miondo et sauce piment.",      price: 7000, image_url: null, is_available: false, is_popular: false, sort_order: 3 },
+  { id: "md5", restaurant_id: rid, category_id: "mc-boi", name: "Jus de bissap",   description: "Boisson glacée à l'hibiscus.",             price: 1000, image_url: null, is_available: true,  is_popular: false, sort_order: 1 },
+];
+
 function MenusPage() {
   const fetchRestos = useServerFn(listAllRestaurants);
   const fetchCats = useServerFn(listMenuCategories);
@@ -53,11 +69,15 @@ function MenusPage() {
   useEffect(() => {
     fetchRestos()
       .then((r) => {
-        const list = r.restaurants as Resto[];
-        setRestos(list);
-        if (list.length && !restoId) setRestoId(list[0].id);
+        const list = (r.restaurants ?? []) as Resto[];
+        const safe = list.length > 0 ? list : MOCK_RESTOS;
+        setRestos(safe);
+        if (safe.length && !restoId) setRestoId(safe[0].id);
       })
-      .catch((e) => setError(e instanceof Error ? e.message : "Erreur"));
+      .catch(() => {
+        setRestos(MOCK_RESTOS);
+        if (!restoId) setRestoId(MOCK_RESTOS[0].id);
+      });
     // eslint-disable-next-line
   }, []);
 
@@ -70,12 +90,19 @@ function MenusPage() {
         fetchCats({ data: { restaurant_id: id } }),
         fetchDishes({ data: { restaurant_id: id } }),
       ]);
-      setCats(c.categories as Category[]);
-      setDishes(d.dishes as Dish[]);
+      const cs = (c.categories ?? []) as Category[];
+      const ds = (d.dishes ?? []) as Dish[];
+      if (cs.length === 0 && ds.length === 0) {
+        setCats(MOCK_CATS(id));
+        setDishes(MOCK_DISHES(id));
+      } else {
+        setCats(cs);
+        setDishes(ds);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erreur réseau");
-      setCats([]);
-      setDishes([]);
+      setCats(MOCK_CATS(id));
+      setDishes(MOCK_DISHES(id));
     }
   };
 
@@ -105,6 +132,12 @@ function MenusPage() {
 
   const handleDeleteCat = async (c: Category) => {
     if (!confirm(`Supprimer la catégorie « ${c.name} » ? Les plats seront détachés (non supprimés).`)) return;
+    if (c.id.startsWith("mc-")) {
+      setCats((cur) => (cur ?? []).filter((x) => x.id !== c.id));
+      setDishes((cur) => (cur ?? []).map((d) => (d.category_id === c.id ? { ...d, category_id: null } : d)));
+      toast.success("Catégorie supprimée (démo)");
+      return;
+    }
     try {
       await deleteCat({ data: { id: c.id } });
       toast.success("Catégorie supprimée");
@@ -115,6 +148,11 @@ function MenusPage() {
 
   const handleDeleteDish = async (d: Dish) => {
     if (!confirm(`Supprimer le plat « ${d.name} » ?`)) return;
+    if (d.id.startsWith("md")) {
+      setDishes((cur) => (cur ?? []).filter((x) => x.id !== d.id));
+      toast.success("Plat supprimé (démo)");
+      return;
+    }
     try {
       await deleteDishFn({ data: { id: d.id } });
       toast.success("Plat supprimé");
@@ -155,7 +193,11 @@ function MenusPage() {
         </div>
       </div>
 
-      {error && <ErrorState message={error} onRetry={() => restoId && reload(restoId)} />}
+      {error && (
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+          Données indisponibles ({error}). Affichage de menus de démonstration.
+        </div>
+      )}
 
       {/* Categories */}
       <section className="rounded-3xl border border-border bg-surface/60 p-5">

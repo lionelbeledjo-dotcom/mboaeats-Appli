@@ -38,6 +38,7 @@ export const Route = createFileRoute("/admin")({
     }
   },
   component: AdminLayout,
+  errorComponent: AdminErrorBoundary,
   head: () => ({
     meta: [
       { title: "Admin · MboaEats Console" },
@@ -46,14 +47,47 @@ export const Route = createFileRoute("/admin")({
   }),
 });
 
+function AdminErrorBoundary({ error, reset }: { error: Error; reset: () => void }) {
+  return (
+    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 p-8 text-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10">
+        <AlertTriangle className="h-7 w-7 text-destructive" />
+      </div>
+      <h2 className="font-display text-2xl font-bold">Une erreur est survenue</h2>
+      <p className="max-w-md text-sm text-muted-foreground">{error?.message ?? "La page a planté de façon inattendue."}</p>
+      <div className="flex gap-2">
+        <button onClick={() => reset()} className="rounded-xl border border-border bg-surface px-4 py-2 text-sm font-semibold hover:bg-background">
+          Réessayer
+        </button>
+        <Link to="/admin" className="rounded-xl bg-gradient-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-glow">
+          Retour à l'accueil
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+type NavTone = {
+  bar: string; bg: string; text: string; icon: string; ring: string; glow: string;
+};
+const TONES: Record<string, NavTone> = {
+  blue:   { bar: "bg-blue-500",    bg: "bg-blue-500/10",    text: "text-blue-300",    icon: "text-blue-400",    ring: "ring-blue-500/40",    glow: "shadow-[0_0_18px_-4px_rgba(59,130,246,0.55)]" },
+  green:  { bar: "bg-emerald-500", bg: "bg-emerald-500/10", text: "text-emerald-300", icon: "text-emerald-400", ring: "ring-emerald-500/40", glow: "shadow-[0_0_18px_-4px_rgba(16,185,129,0.55)]" },
+  yellow: { bar: "bg-amber-400",   bg: "bg-amber-400/10",   text: "text-amber-200",   icon: "text-amber-300",   ring: "ring-amber-400/40",   glow: "shadow-[0_0_18px_-4px_rgba(251,191,36,0.55)]" },
+  purple: { bar: "bg-violet-500",  bg: "bg-violet-500/10",  text: "text-violet-300",  icon: "text-violet-400",  ring: "ring-violet-500/40",  glow: "shadow-[0_0_18px_-4px_rgba(139,92,246,0.55)]" },
+  orange: { bar: "bg-orange-500",  bg: "bg-orange-500/10",  text: "text-orange-300",  icon: "text-orange-400",  ring: "ring-orange-500/40",  glow: "shadow-[0_0_18px_-4px_rgba(249,115,22,0.55)]" },
+  indigo: { bar: "bg-indigo-500",  bg: "bg-indigo-500/10",  text: "text-indigo-300",  icon: "text-indigo-400",  ring: "ring-indigo-500/40",  glow: "shadow-[0_0_18px_-4px_rgba(99,102,241,0.55)]" },
+  red:    { bar: "bg-red-500",     bg: "bg-red-500/10",     text: "text-red-300",     icon: "text-red-400",     ring: "ring-red-500/40",     glow: "shadow-[0_0_18px_-4px_rgba(239,68,68,0.55)]" },
+};
+
 const navItems = [
-  { title: "Vue d'ensemble", url: "/admin", icon: LayoutDashboard, exact: true },
-  { title: "Commissions", url: "/admin/commissions", icon: Coins },
-  { title: "Zones livraison", url: "/admin/zones", icon: MapPin },
-  { title: "Restaurants", url: "/admin/restaurants", icon: Store },
-  { title: "Menus & Catégories", url: "/admin/menus", icon: Utensils },
-  { title: "Livreurs", url: "/admin/livreurs", icon: Bike },
-  { title: "Litiges", url: "/admin/litiges", icon: AlertTriangle, badge: 4 },
+  { title: "Vue d'ensemble", url: "/admin", icon: LayoutDashboard, exact: true, tone: "blue" as const },
+  { title: "Commissions", url: "/admin/commissions", icon: Coins, tone: "green" as const },
+  { title: "Zones livraison", url: "/admin/zones", icon: MapPin, tone: "yellow" as const },
+  { title: "Restaurants", url: "/admin/restaurants", icon: Store, tone: "purple" as const },
+  { title: "Menus & Catégories", url: "/admin/menus", icon: Utensils, tone: "orange" as const },
+  { title: "Livreurs", url: "/admin/livreurs", icon: Bike, tone: "indigo" as const },
+  { title: "Litiges", url: "/admin/litiges", icon: AlertTriangle, badge: 4, tone: "red" as const },
 ];
 
 function AdminLayout() {
@@ -193,25 +227,42 @@ function AdminSidebar() {
           <SidebarGroupLabel>Pilotage</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={isActive(item)}>
-                    <Link to={item.url} className="flex items-center gap-2">
-                      <item.icon className="h-4 w-4" />
-                      {!collapsed && (
-                        <>
-                          <span className="flex-1">{item.title}</span>
-                          {item.badge && (
-                            <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">
-                              {item.badge}
-                            </span>
-                          )}
-                        </>
-                      )}
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {navItems.map((item) => {
+                const active = isActive(item);
+                const tone = TONES[item.tone];
+                return (
+                  <SidebarMenuItem key={item.url}>
+                    <SidebarMenuButton asChild isActive={active}>
+                      <Link
+                        to={item.url}
+                        className={`relative flex items-center gap-2 rounded-xl transition-all duration-300 ease-out ${
+                          active
+                            ? `${tone.bg} ${tone.text} ${tone.glow} ring-1 ${tone.ring} scale-[1.04]`
+                            : "hover:bg-muted/40"
+                        }`}
+                      >
+                        {active && (
+                          <span
+                            className={`absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full ${tone.bar} animate-fade-in`}
+                            aria-hidden
+                          />
+                        )}
+                        <item.icon className={`h-4 w-4 transition-colors ${active ? `${tone.icon} drop-shadow-[0_0_6px_currentColor]` : ""}`} />
+                        {!collapsed && (
+                          <>
+                            <span className={`flex-1 ${active ? "font-bold tracking-wide" : ""}`}>{item.title}</span>
+                            {item.badge && (
+                              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${active ? `${tone.bar} text-white` : "bg-primary/15 text-primary"}`}>
+                                {item.badge}
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
