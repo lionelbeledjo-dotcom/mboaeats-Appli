@@ -359,7 +359,7 @@ function Connexion() {
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col items-center justify-center px-5 py-10">
         {/* Logo MboaEats */}
         <div className="mb-10 flex w-full flex-col items-center sm:mb-12">
-          <MboaEatsLogo size="lg" />
+          <MboaEatsLogo size="lg" align="center" variant="filled" badgeSize="md" />
         </div>
 
         {/* Card */}
