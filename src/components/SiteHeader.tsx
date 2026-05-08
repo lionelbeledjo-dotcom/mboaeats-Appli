@@ -2,14 +2,6 @@ import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent }
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, ShoppingBag, UtensilsCrossed, LifeBuoy, Menu, X } from "lucide-react";
 import { MboaEatsLogo } from "@/components/brand/MboaEatsLogo";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 
