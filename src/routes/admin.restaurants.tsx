@@ -115,6 +115,7 @@ function Restaurants() {
     }
   };
 
+  const counts = useMemo(() => {
     const all = list ?? [];
     return {
       all: all.length,
