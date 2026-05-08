@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { invalidateSessionCache } from "@/hooks/useSessionUser";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { DeliveryBadge } from "@/components/brand/DeliveryBadge";
 
 export const Route = createFileRoute("/connexion")({
   component: Connexion,
