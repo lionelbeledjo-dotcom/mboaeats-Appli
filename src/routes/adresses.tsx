@@ -81,6 +81,15 @@ function AddressesPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const cityInfo = useCityDelivery(city);
+  const coveredZone = findCoveredZone(neighborhood, cityInfo.zones);
+  const cityHasCoverage = !cityInfo.loading && cityInfo.zones.length > 0;
+  const neighborhoodCovered = !!coveredZone;
+  const canSubmit =
+    !!label.trim() &&
+    !!neighborhood.trim() &&
+    cityHasCoverage &&
+    neighborhoodCovered &&
+    validateCmPhone(phone).ok;
 
   const reloadList = async () => {
     try {
@@ -185,6 +194,18 @@ function AddressesPage() {
       toast.error("Merci de remplir tous les champs.");
       return;
     }
+    if (!cityHasCoverage) {
+      toast.error("Ville non desservie", {
+        description: `Aucune zone de livraison active à ${city} pour le moment.`,
+      });
+      return;
+    }
+    if (!neighborhoodCovered) {
+      toast.error("Quartier hors zone de livraison", {
+        description: `Choisissez un quartier desservi à ${city}.`,
+      });
+      return;
+    }
     const v = validateCmPhone(phone);
     if (!v.ok) {
       toast.error("Numéro invalide", { description: v.error });
@@ -278,9 +299,44 @@ function AddressesPage() {
               onChange={(e) => setNeighborhood(e.target.value)}
               maxLength={120}
               placeholder="Bonapriso, en face de la pharmacie centrale"
-              className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
+              className={`w-full rounded-2xl border bg-background px-4 py-3 text-sm outline-none transition focus:ring-2 ${
+                neighborhood && cityHasCoverage && !neighborhoodCovered
+                  ? "border-destructive focus:border-destructive focus:ring-destructive/30"
+                  : neighborhoodCovered
+                  ? "border-emerald-500/60 focus:border-emerald-500 focus:ring-emerald-500/30"
+                  : "border-border focus:border-primary focus:ring-primary/30"
+              }`}
               required
             />
+            {neighborhood && cityHasCoverage && !neighborhoodCovered && (
+              <div className="mt-2 rounded-xl border border-destructive/40 bg-destructive/10 p-2.5 text-[11px] text-destructive">
+                <p className="font-semibold">Quartier hors zone à {city}.</p>
+                {cityInfo.zones.length > 0 && (
+                  <div className="mt-1.5">
+                    <p className="text-[10px] font-medium text-destructive/80">
+                      Choisissez un quartier desservi :
+                    </p>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {cityInfo.zones.map((z, i) => (
+                        <button
+                          type="button"
+                          key={`${z.neighborhood}-${i}`}
+                          onClick={() => setNeighborhood(z.neighborhood)}
+                          className="rounded-full bg-background px-2 py-0.5 text-[10px] font-semibold text-foreground hover:bg-primary/15 hover:text-primary"
+                        >
+                          {z.neighborhood}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            {neighborhoodCovered && coveredZone && (
+              <p className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-medium text-emerald-400">
+                <Check className="h-3 w-3" /> Zone couverte — {coveredZone.neighborhood} · {coveredZone.eta_minutes} min · {coveredZone.base_fee} FCFA
+              </p>
+            )}
           </Field>
 
           <Field label="Ville">
@@ -294,6 +350,11 @@ function AddressesPage() {
               ))}
             </select>
             <CityDeliveryPanel city={city} info={cityInfo} />
+            {!cityInfo.loading && cityInfo.zones.length === 0 && (
+              <p className="mt-2 rounded-xl border border-destructive/40 bg-destructive/10 p-2.5 text-[11px] font-medium text-destructive">
+                {city} n'est pas encore desservie. Choisissez une autre ville pour continuer.
+              </p>
+            )}
           </Field>
 
           <Field label="Numéro de téléphone de livraison" hint="Mobile Cameroun · 9 chiffres (6XX XX XX XX)">
@@ -302,8 +363,9 @@ function AddressesPage() {
 
           <button
             type="submit"
-            disabled={saving}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 via-primary to-amber-500 px-5 py-4 text-sm font-bold text-primary-foreground shadow-glow transition-transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-70"
+            disabled={saving || !canSubmit}
+            title={!canSubmit ? "Complétez tous les champs et choisissez un quartier desservi" : undefined}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 via-primary to-amber-500 px-5 py-4 text-sm font-bold text-primary-foreground shadow-glow transition-transform hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
           >
             {saving ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -494,6 +556,29 @@ const CITY_HOURS: Record<string, string> = {
   Ngaoundéré: "09h00 – 21h00",
   Limbe: "09h00 – 22h00",
 };
+
+function normalizeText(s: string): string {
+  return (s || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+/** Cherche un quartier couvert qui correspond (inclusion bidirectionnelle) au texte saisi. */
+function findCoveredZone(input: string, zones: Zone[]): Zone | null {
+  const q = normalizeText(input);
+  if (!q) return null;
+  // Match exact normalisé d'abord
+  const exact = zones.find((z) => normalizeText(z.neighborhood) === q);
+  if (exact) return exact;
+  // Sinon : la saisie contient le nom d'un quartier (ex. "Bonapriso, près de…")
+  return zones.find((z) => {
+    const n = normalizeText(z.neighborhood);
+    return q.includes(n) || n.includes(q);
+  }) ?? null;
+}
 
 function useCityDelivery(city: string): CityInfo {
   const [zones, setZones] = useState<Zone[]>([]);
