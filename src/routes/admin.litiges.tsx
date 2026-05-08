@@ -109,7 +109,11 @@ function Litiges() {
         <p className="text-sm text-muted-foreground">Réclamations clients à traiter en temps réel</p>
       </div>
 
-      {error && <ErrorState message={error} onRetry={reload} />}
+      {error && (
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+          Données indisponibles ({error}). Affichage de litiges de démonstration.
+        </div>
+      )}
       {!items && !error && <div className="flex justify-center p-16"><Loader2 className="h-5 w-5 animate-spin" /></div>}
 
       <div className="grid gap-4 md:grid-cols-2">
