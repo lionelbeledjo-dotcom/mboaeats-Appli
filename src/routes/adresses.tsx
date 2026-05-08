@@ -529,3 +529,112 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
     </label>
   );
 }
+
+// ----- Délais & horaires de livraison par ville -----
+type Zone = { neighborhood: string; eta_minutes: number; base_fee: number };
+type CityInfo = {
+  loading: boolean;
+  zones: Zone[];
+  etaMin: number | null;
+  etaMax: number | null;
+  feeMin: number | null;
+  feeMax: number | null;
+};
+
+// Plages horaires de service par ville (locales — pas en BDD)
+const CITY_HOURS: Record<string, string> = {
+  Douala: "08h00 – 23h00",
+  Yaoundé: "08h00 – 23h00",
+  Bafoussam: "09h00 – 22h00",
+  Garoua: "09h00 – 21h00",
+  Bamenda: "09h00 – 21h00",
+  Buea: "09h00 – 22h00",
+  Kribi: "09h00 – 22h00",
+  Maroua: "09h00 – 21h00",
+  Ngaoundéré: "09h00 – 21h00",
+  Limbe: "09h00 – 22h00",
+};
+
+function useCityDelivery(city: string): CityInfo {
+  const [zones, setZones] = useState<Zone[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    (async () => {
+      const { data } = await supabase
+        .from("delivery_zones")
+        .select("neighborhood, eta_minutes, base_fee")
+        .eq("city", city)
+        .eq("active", true)
+        .order("eta_minutes", { ascending: true });
+      if (!active) return;
+      setZones((data ?? []) as Zone[]);
+      setLoading(false);
+    })();
+    return () => { active = false; };
+  }, [city]);
+
+  const etas = zones.map((z) => z.eta_minutes);
+  const fees = zones.map((z) => z.base_fee);
+  return {
+    loading,
+    zones,
+    etaMin: etas.length ? Math.min(...etas) : null,
+    etaMax: etas.length ? Math.max(...etas) : null,
+    feeMin: fees.length ? Math.min(...fees) : null,
+    feeMax: fees.length ? Math.max(...fees) : null,
+  };
+}
+
+function CityDeliveryPanel({ city, info }: { city: string; info: CityInfo }) {
+  const hours = CITY_HOURS[city] ?? "09h00 – 22h00";
+  return (
+    <div className="mt-3 rounded-2xl border border-border bg-surface/40 p-3">
+      {info.loading ? (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Chargement des disponibilités à {city}…
+        </div>
+      ) : info.zones.length === 0 ? (
+        <p className="text-xs text-muted-foreground">
+          Aucune zone de livraison active à <span className="font-semibold">{city}</span> pour le moment.
+        </p>
+      ) : (
+        <>
+          <div className="flex flex-wrap items-center gap-2 text-[11px]">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-2.5 py-1 font-semibold text-primary">
+              <Bike className="h-3 w-3" />
+              {info.etaMin === info.etaMax ? `${info.etaMin} min` : `${info.etaMin}–${info.etaMax} min`}
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-1 font-semibold text-emerald-300">
+              <Clock className="h-3 w-3" /> {hours}
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-2.5 py-1 font-semibold text-amber-300">
+              {info.feeMin === info.feeMax
+                ? `${info.feeMin} FCFA`
+                : `${info.feeMin}–${info.feeMax} FCFA`}
+            </span>
+          </div>
+          <details className="mt-2 group">
+            <summary className="cursor-pointer text-[11px] font-semibold text-muted-foreground hover:text-foreground">
+              Voir les {info.zones.length} quartiers desservis
+            </summary>
+            <ul className="mt-2 grid gap-1 sm:grid-cols-2">
+              {info.zones.map((z, i) => (
+                <li
+                  key={`${z.neighborhood}-${i}`}
+                  className="flex items-center justify-between rounded-lg bg-background/60 px-2.5 py-1.5 text-[11px]"
+                >
+                  <span className="truncate font-medium">{z.neighborhood}</span>
+                  <span className="ml-2 shrink-0 text-muted-foreground">
+                    {z.eta_minutes} min · {z.base_fee} F
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </details>
+        </>
+      )}
+    </div>
+  );
+}
