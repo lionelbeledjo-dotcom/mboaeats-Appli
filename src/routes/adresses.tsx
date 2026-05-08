@@ -1,11 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
-  MapPin, ArrowLeft, Home, Briefcase, Heart, Loader2, Phone, Check, Save, Pencil, X,
+  MapPin, ArrowLeft, Home, Briefcase, Heart, Loader2, Phone, Check, Save, Pencil, X, Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { listMyAddresses, upsertMyAddress } from "@/server/account.functions";
+import { listMyAddresses, upsertMyAddress, deleteMyAddress } from "@/server/account.functions";
 
 export const Route = createFileRoute("/adresses")({
   head: () => ({
@@ -47,6 +47,49 @@ function AddressesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<Saved | null>(null);
   const [savingEdit, setSavingEdit] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const reloadList = async () => {
+    try {
+      const { data } = await supabase.auth.getUser();
+      if (!data.user) return;
+      const res = await listMyAddresses();
+      const list = (res?.addresses ?? []).map((a: any) => ({
+        id: a.id,
+        label: a.label ?? "Adresse",
+        city: a.city ?? "",
+        neighborhood: a.neighborhood ?? "",
+        phone: "",
+      }));
+      setSaved(list);
+    } catch {
+      // silencieux
+    }
+  };
+
+  const onDelete = async (id: string) => {
+    setDeletingId(id);
+    const prev = saved;
+    setSaved((s) => s.filter((x) => x.id !== id));
+    if (id.startsWith("local-")) {
+      setDeletingId(null);
+      setConfirmDeleteId(null);
+      toast.success("Adresse supprimée");
+      return;
+    }
+    try {
+      await deleteMyAddress({ data: { id } });
+      toast.success("Adresse supprimée ✅");
+      await reloadList();
+    } catch (e: any) {
+      setSaved(prev);
+      toast.error("Suppression impossible", { description: e?.message ?? "Réessayez." });
+    } finally {
+      setDeletingId(null);
+      setConfirmDeleteId(null);
+    }
+  };
 
   const startEdit = (a: Saved) => {
     setEditingId(a.id);
@@ -95,27 +138,8 @@ function AddressesPage() {
   useEffect(() => {
     let active = true;
     (async () => {
-      try {
-        const { data } = await supabase.auth.getUser();
-        if (!data.user) {
-          if (active) setLoadingList(false);
-          return;
-        }
-        const res = await listMyAddresses();
-        if (!active) return;
-        const list = (res?.addresses ?? []).map((a: any) => ({
-          id: a.id,
-          label: a.label ?? "Adresse",
-          city: a.city ?? "",
-          neighborhood: a.neighborhood ?? "",
-          phone: "",
-        }));
-        setSaved(list);
-      } catch {
-        // silencieux : on continue avec une liste vide
-      } finally {
-        if (active) setLoadingList(false);
-      }
+      await reloadList();
+      if (active) setLoadingList(false);
     })();
     return () => { active = false; };
   }, []);
@@ -360,13 +384,48 @@ function AddressesPage() {
                             📞 {a.phone}
                           </p>
                         )}
-                        <button
-                          type="button"
-                          onClick={() => startEdit(a)}
-                          className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-1 text-[11px] font-semibold text-muted-foreground hover:text-foreground"
-                        >
-                          <Pencil className="h-3 w-3" /> Modifier
-                        </button>
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => startEdit(a)}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-1 text-[11px] font-semibold text-muted-foreground hover:text-foreground"
+                          >
+                            <Pencil className="h-3 w-3" /> Modifier
+                          </button>
+                          {confirmDeleteId === a.id ? (
+                            <>
+                              <span className="text-[11px] font-semibold text-destructive">Supprimer ?</span>
+                              <button
+                                type="button"
+                                onClick={() => onDelete(a.id)}
+                                disabled={deletingId === a.id}
+                                className="inline-flex items-center gap-1 rounded-lg bg-destructive px-2.5 py-1 text-[11px] font-bold text-destructive-foreground hover:opacity-90 disabled:opacity-60"
+                              >
+                                {deletingId === a.id ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                  <Check className="h-3 w-3" />
+                                )}
+                                Confirmer
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setConfirmDeleteId(null)}
+                                className="inline-flex items-center gap-1 rounded-lg border border-border bg-background px-2.5 py-1 text-[11px] font-semibold text-muted-foreground hover:text-foreground"
+                              >
+                                <X className="h-3 w-3" /> Annuler
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setConfirmDeleteId(a.id)}
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/40 bg-destructive/10 px-2.5 py-1 text-[11px] font-semibold text-destructive hover:bg-destructive/20"
+                            >
+                              <Trash2 className="h-3 w-3" /> Supprimer
+                            </button>
+                          )}
+                        </div>
                       </>
                     )}
                   </div>
