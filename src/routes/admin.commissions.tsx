@@ -98,7 +98,42 @@ function Commissions() {
             <Card label="Taux moyen effectif" value={`${report.avgRate}%`} sub="Sur GMV total" />
           </div>
 
-          <div className="overflow-hidden rounded-3xl border border-border bg-surface/60">
+          {/* Mobile cards */}
+          <div className="grid gap-3 md:hidden">
+            {report.rows.map((r) => {
+              const tone = r.status === "delivered" ? "bg-emerald-500/15 text-emerald-400" :
+                r.status === "cancelled" || r.status === "refunded" ? "bg-red-500/15 text-red-400" :
+                "bg-gold/15 text-gold";
+              return (
+                <div key={r.id} className="rounded-2xl border border-border bg-surface/60 p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-mono text-[11px] font-bold text-primary">{r.reference}</p>
+                      <p className="mt-0.5 truncate font-semibold">{r.resto}</p>
+                      <p className="text-xs text-muted-foreground">{r.city}</p>
+                    </div>
+                    <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${tone}`}>{r.status}</span>
+                  </div>
+                  <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
+                    <div className="rounded-lg bg-background/40 p-2"><p className="text-[10px] uppercase text-muted-foreground">GMV</p><p className="font-bold">{r.gmv.toLocaleString("fr-FR")} F</p></div>
+                    <div className="rounded-lg bg-background/40 p-2"><p className="text-[10px] uppercase text-muted-foreground">Taux</p><p className="font-bold">{r.rate}%</p></div>
+                    <div className="rounded-lg bg-background/40 p-2"><p className="text-[10px] uppercase text-muted-foreground">Commission</p><p className="font-bold text-gradient-gold">{r.commission.toLocaleString("fr-FR")} F</p></div>
+                  </div>
+                  <button
+                    onClick={() => removeRow(r.id)}
+                    className="mt-3 inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-destructive/40 bg-destructive/10 text-xs font-bold text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" /> Supprimer la ligne
+                  </button>
+                </div>
+              );
+            })}
+            {report.rows.length === 0 && (
+              <p className="rounded-2xl border border-dashed border-border bg-surface/30 p-8 text-center text-sm text-muted-foreground">Aucune commande sur la période.</p>
+            )}
+          </div>
+
+          <div className="hidden overflow-hidden rounded-3xl border border-border bg-surface/60 md:block">
             <table className="w-full text-sm">
               <thead className="bg-background/40 text-xs uppercase tracking-wider text-muted-foreground">
                 <tr>
