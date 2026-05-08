@@ -124,7 +124,7 @@ function Connexion() {
 }
 
 /* ---------- Login (email + password) ---------- */
-function LoginForm() {
+function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   const [email, setEmail] = useState("");
   const [pwd, setPwd] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -148,7 +148,10 @@ function LoginForm() {
             ? "Email non confirmé. Vérifie ta boîte de réception."
             : error.message,
       );
+      return;
     }
+    toast.success("Connexion réussie");
+    onSuccess();
   }
 
   return (
@@ -174,7 +177,11 @@ function LoginForm() {
           </button>
         }
       />
-      <ResetPasswordLink email={email} />
+      <div className="flex justify-end pt-1">
+        <Link to="/reset-password" className="text-xs font-medium text-neutral-600 hover:text-black">
+          Mot de passe oublié ?
+        </Link>
+      </div>
       {err && <ErrorBox>{err}</ErrorBox>}
       <PrimaryButton busy={busy}>Se connecter</PrimaryButton>
     </form>
