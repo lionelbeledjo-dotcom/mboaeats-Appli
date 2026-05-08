@@ -441,21 +441,21 @@ function Connexion() {
           {/* ── PHONE TAB ── */}
           {tab === "phone" && otpStep === "phone" && (
             <div className="mt-6 space-y-3">
-              <div className="flex items-stretch gap-2">
+              <div className="flex items-stretch gap-3">
                 <button
                   type="button"
                   onClick={() => setShowCountries((v) => !v)}
-                  className="flex h-12 items-center gap-2 rounded-xl bg-[#F6F6F6] px-3 text-sm font-semibold text-black ring-1 ring-transparent transition hover:bg-[#EFEFEF] focus:outline-none focus:ring-[#06C167]"
+                  className="flex h-14 items-center gap-2 rounded-2xl bg-[#F6F6F6] px-3.5 text-sm font-semibold text-black ring-1 ring-neutral-200 transition hover:bg-[#EFEFEF] focus:outline-none focus:ring-2 focus:ring-[#06C167]"
                   aria-expanded={showCountries}
+                  aria-label={`Indicatif ${country.name} ${country.dial}`}
                 >
-                  <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-white text-base ring-1 ring-neutral-200">
-                    {country.flag}
-                  </span>
-                  <span>{country.dial}</span>
-                  <ChevronDown className="h-3.5 w-3.5 text-[#6B6B6B]" />
+                  <FlagCircle iso={country.iso} alt={country.name} size={26} />
+                  <span className="text-[15px] tracking-tight">{country.dial}</span>
+                  <ChevronDown className={`h-4 w-4 text-[#6B6B6B] transition-transform ${showCountries ? "rotate-180" : ""}`} strokeWidth={1.75} />
                 </button>
 
-                <label className="flex h-12 flex-1 items-center gap-3 rounded-xl bg-[#F6F6F6] px-4 ring-1 ring-transparent transition focus-within:bg-white focus-within:ring-[#06C167]">
+                <label className="flex h-14 flex-1 items-center gap-3 rounded-2xl bg-[#F9F9F9] px-5 ring-1 ring-neutral-200 transition focus-within:bg-white focus-within:ring-2 focus-within:ring-[#06C167]">
+                  <Phone className="h-[18px] w-[18px] shrink-0 text-[#9b9b9b]" strokeWidth={1.75} />
                   <input
                     type="tel"
                     inputMode="tel"
@@ -463,24 +463,22 @@ function Connexion() {
                     placeholder="Entrez votre numéro"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="flex-1 bg-transparent text-base font-medium text-black placeholder:text-[#9b9b9b] outline-none"
+                    className="flex-1 bg-transparent text-lg font-semibold tracking-tight text-black placeholder:text-[15px] placeholder:font-medium placeholder:text-[#9b9b9b] outline-none"
                   />
                 </label>
               </div>
 
               {showCountries && (
-                <div className="max-h-56 overflow-y-auto rounded-xl bg-white p-1.5 ring-1 ring-neutral-200">
+                <div className="max-h-56 overflow-y-auto rounded-2xl bg-white p-1.5 ring-1 ring-neutral-200 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.15)]">
                   {COUNTRIES.map((c) => (
                     <button
                       key={c.code}
                       type="button"
                       onClick={() => { setCountryCode(c.code); setShowCountries(false); }}
-                      className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm hover:bg-[#F6F6F6] ${c.code === countryCode ? "bg-[#F6F6F6]" : ""}`}
+                      className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm transition hover:bg-[#F6F6F6] ${c.code === countryCode ? "bg-[#F6F6F6]" : ""}`}
                     >
-                      <span className="flex items-center gap-2 text-black">
-                        <span className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-white text-base ring-1 ring-neutral-200">
-                          {c.flag}
-                        </span>
+                      <span className="flex items-center gap-3 text-black">
+                        <FlagCircle iso={c.iso} alt={c.name} size={22} />
                         <span className="font-medium">{c.name}</span>
                       </span>
                       <span className="text-xs text-[#6B6B6B]">{c.dial}</span>
