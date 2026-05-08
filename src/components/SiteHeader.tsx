@@ -107,6 +107,7 @@ export function SiteHeader() {
         "border-b border-white/5",
         "bg-[hsl(240_10%_8%_/_0.72)] backdrop-blur-xl backdrop-saturate-150",
         "supports-[backdrop-filter]:bg-[hsl(240_10%_8%_/_0.55)]",
+        "pt-[env(safe-area-inset-top)]",
       )}
     >
       {/* Filets lumineux décoratifs */}
