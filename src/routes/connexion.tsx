@@ -340,7 +340,13 @@ function Connexion() {
                   </>
                 )}
 
-                {mode === "phone" && (
+                {mode === "phone" && smsTrial && (
+                  <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 text-xs text-foreground">
+                    🔔 Le service SMS est temporairement indisponible. Recevez votre code par WhatsApp — gratuit et immédiat.
+                  </div>
+                )}
+
+                {mode === "phone" && !smsTrial && (
                   <div>
                     <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       Recevoir le code par
@@ -348,14 +354,14 @@ function Connexion() {
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
-                        onClick={() => { setChannel("sms"); setError(null); }}
+                        onClick={() => { setChannel("sms"); setError(null); setShowWhatsAppFallback(false); }}
                         className={`flex items-center justify-center gap-2 rounded-2xl border p-3 text-sm font-semibold transition ${channel === "sms" ? "border-primary bg-primary/10 text-foreground" : "border-border bg-background text-muted-foreground hover:bg-muted/40"}`}
                       >
                         <MessageCircle className="h-4 w-4" /> SMS
                       </button>
                       <button
                         type="button"
-                        onClick={() => { setChannel("whatsapp"); setError(null); }}
+                        onClick={() => { setChannel("whatsapp"); setError(null); setShowWhatsAppFallback(false); }}
                         className={`flex items-center justify-center gap-2 rounded-2xl border p-3 text-sm font-semibold transition ${channel === "whatsapp" ? "border-primary bg-primary/10 text-foreground" : "border-border bg-background text-muted-foreground hover:bg-muted/40"}`}
                       >
                         <Send className="h-4 w-4" /> WhatsApp
@@ -370,9 +376,31 @@ function Connexion() {
                 </p>
 
                 {error && (
-                  <div className="flex items-start gap-2 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
-                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                    <span>{error}</span>
+                  <div className="space-y-2 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span>{error}</span>
+                    </div>
+                    {showWhatsAppFallback && (
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => sendCode("whatsapp")}
+                          disabled={loading}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-gradient-primary px-3 py-1.5 text-[11px] font-semibold text-primary-foreground shadow-glow disabled:opacity-60"
+                        >
+                          <Send className="h-3 w-3" /> Recevoir par WhatsApp
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => sendCode("sms")}
+                          disabled={loading}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-[11px] font-semibold text-muted-foreground"
+                        >
+                          Réessayer
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
 
