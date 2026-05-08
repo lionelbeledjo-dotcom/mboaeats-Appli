@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Flame, ShieldCheck, Loader2, Check, AlertCircle, Mail, Phone, MessageCircle, Send, ChevronDown, ArrowRight } from "lucide-react";
+import { Flame, ShieldCheck, Loader2, Check, AlertCircle, Mail, Phone, MessageCircle, Send, ChevronDown, ArrowRight, Search } from "lucide-react";
 import { sendOtp, verifyOtp, getOtpDeliveryConfig } from "@/lib/otp.functions";
 import { claimAdminByPhone, checkAdminEligibility } from "@/lib/admin-claim.functions";
 
@@ -85,6 +85,27 @@ function detectCountryFromInput(raw: string) {
     if (digits.startsWith(d)) return { country: c, rest: digits.slice(d.length) };
   }
   return null;
+}
+/** Vivid circular flag — uses HatScripts circle-flags SVG CDN (no extra dep). */
+function CircleFlag({ code, size = 24, className = "" }: { code: string; size?: number; className?: string }) {
+  const cc = code.toLowerCase();
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-white ring-1 ring-black/5 shadow-[0_1px_3px_rgba(0,0,0,0.18)] ${className}`}
+      style={{ width: size, height: size }}
+      aria-hidden="true"
+    >
+      <img
+        src={`https://hatscripts.github.io/circle-flags/flags/${cc}.svg`}
+        alt=""
+        width={size}
+        height={size}
+        loading="lazy"
+        decoding="async"
+        className="block h-full w-full object-cover"
+      />
+    </span>
+  );
 }
 
 function Connexion() {
@@ -433,7 +454,7 @@ function Connexion() {
                         aria-controls="country-listbox"
                         className={`flex h-full shrink-0 items-center gap-2 rounded-[14px] border-2 bg-white px-3 text-sm font-semibold text-black transition-colors hover:border-[#06C167] focus:outline-none focus-visible:border-[#06C167] focus-visible:ring-2 focus-visible:ring-[#06C167]/30 ${showCountries ? "border-[#06C167] ring-2 ring-[#06C167]/30" : "border-[#E2E2E2]"}`}
                       >
-                        <span className="text-[20px] leading-none" aria-hidden="true">{country.flag}</span>
+                        <CircleFlag code={country.code} size={26} />
                         <span className="font-display text-[16px] font-extrabold tracking-wide text-black tabular-nums">{country.dial}</span>
                         <ChevronDown className={`h-4 w-4 text-[#6B6B6B] transition-transform ${showCountries ? "rotate-180" : ""}`} strokeWidth={2.5} />
                       </button>
@@ -460,24 +481,27 @@ function Connexion() {
 
                     {showCountries && (
                       <div
-                        className="rounded-2xl border border-[#E2E2E2] bg-white p-2 shadow-lg"
+                        className="origin-top animate-fade-in rounded-2xl border border-[#E2E2E2] bg-white p-2 shadow-[0_18px_40px_-16px_rgba(0,0,0,0.18)]"
                         onKeyDown={handleCountryListKeyDown}
                       >
-                        <input
-                          ref={countrySearchRef}
-                          type="text"
-                          placeholder="Rechercher un pays ou indicatif…"
-                          value={countryQuery}
-                          onChange={(e) => setCountryQuery(e.target.value)}
-                          aria-label="Rechercher un pays"
-                          aria-controls="country-listbox"
-                          aria-activedescendant={
-                            filteredCountries[highlightedCountry]
-                              ? `country-opt-${filteredCountries[highlightedCountry].code}`
-                              : undefined
-                          }
-                          className="mb-2 w-full rounded-lg border border-[#E2E2E2] bg-white px-3 py-2 text-sm text-black placeholder:text-[#9A9A9A] outline-none focus:border-[#06C167] focus-visible:ring-2 focus-visible:ring-[#06C167]/30"
-                        />
+                        <div className="relative mb-2">
+                          <Search strokeWidth={2} className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9A9A9A]" />
+                          <input
+                            ref={countrySearchRef}
+                            type="text"
+                            placeholder="Rechercher un pays ou indicatif…"
+                            value={countryQuery}
+                            onChange={(e) => setCountryQuery(e.target.value)}
+                            aria-label="Rechercher un pays"
+                            aria-controls="country-listbox"
+                            aria-activedescendant={
+                              filteredCountries[highlightedCountry]
+                                ? `country-opt-${filteredCountries[highlightedCountry].code}`
+                                : undefined
+                            }
+                            className="w-full rounded-lg border border-[#E2E2E2] bg-white py-2 pl-9 pr-3 text-sm text-black placeholder:text-[#9A9A9A] outline-none focus:border-[#06C167] focus-visible:ring-2 focus-visible:ring-[#06C167]/30"
+                          />
+                        </div>
                         <div
                           ref={countryListRef}
                           id="country-listbox"
@@ -500,13 +524,17 @@ function Connexion() {
                                 tabIndex={-1}
                                 onMouseEnter={() => setHighlightedCountry(idx)}
                                 onClick={() => selectCountry(c.code)}
-                                className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-black transition focus:outline-none ${active ? "bg-[#06C167]/10 ring-1 ring-[#06C167]/40" : "hover:bg-[#F5F5F5]"} ${selected ? "bg-[#F0F0F0]" : ""}`}
+                                className={`group flex w-full items-center justify-between gap-3 rounded-lg border-l-[3px] px-3 py-2 text-sm text-black transition-colors focus:outline-none ${
+                                  active
+                                    ? "border-[#06C167] bg-[#06C167]/[0.05]"
+                                    : "border-transparent hover:border-[#06C167] hover:bg-[#06C167]/[0.05]"
+                                } ${selected ? "font-semibold" : ""}`}
                               >
-                                <span className="flex items-center gap-2">
-                                  <span className="text-base leading-none">{c.flag}</span>
-                                  <span>{c.name}</span>
+                                <span className="flex items-center gap-3">
+                                  <CircleFlag code={c.code} size={22} />
+                                  <span className="text-[14px] text-black">{c.name}</span>
                                 </span>
-                                <span className="text-xs text-[#6B6B6B]">{c.dial}</span>
+                                <span className="text-xs font-medium text-[#9A9A9A] tabular-nums">{c.dial}</span>
                               </button>
                             );
                           })}
