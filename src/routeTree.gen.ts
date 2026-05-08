@@ -22,6 +22,7 @@ import { Route as ParrainageRouteImport } from './routes/parrainage'
 import { Route as MboapassRouteImport } from './routes/mboapass'
 import { Route as MboaAiRouteImport } from './routes/mboa-ai'
 import { Route as LivreurRouteImport } from './routes/livreur'
+import { Route as InscriptionRouteImport } from './routes/inscription'
 import { Route as HealthcheckRouteImport } from './routes/healthcheck'
 import { Route as FideliteRouteImport } from './routes/fidelite'
 import { Route as FavorisRouteImport } from './routes/favoris'
@@ -129,6 +130,11 @@ const MboaAiRoute = MboaAiRouteImport.update({
 const LivreurRoute = LivreurRouteImport.update({
   id: '/livreur',
   path: '/livreur',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InscriptionRoute = InscriptionRouteImport.update({
+  id: '/inscription',
+  path: '/inscription',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HealthcheckRoute = HealthcheckRouteImport.update({
@@ -367,6 +373,7 @@ export interface FileRoutesByFullPath {
   '/favoris': typeof FavorisRoute
   '/fidelite': typeof FideliteRoute
   '/healthcheck': typeof HealthcheckRoute
+  '/inscription': typeof InscriptionRoute
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
   '/mboapass': typeof MboapassRoute
@@ -424,6 +431,7 @@ export interface FileRoutesByTo {
   '/favoris': typeof FavorisRoute
   '/fidelite': typeof FideliteRoute
   '/healthcheck': typeof HealthcheckRoute
+  '/inscription': typeof InscriptionRoute
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
   '/mboapass': typeof MboapassRoute
@@ -482,6 +490,7 @@ export interface FileRoutesById {
   '/favoris': typeof FavorisRoute
   '/fidelite': typeof FideliteRoute
   '/healthcheck': typeof HealthcheckRoute
+  '/inscription': typeof InscriptionRoute
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
   '/mboapass': typeof MboapassRoute
@@ -542,6 +551,7 @@ export interface FileRouteTypes {
     | '/favoris'
     | '/fidelite'
     | '/healthcheck'
+    | '/inscription'
     | '/livreur'
     | '/mboa-ai'
     | '/mboapass'
@@ -599,6 +609,7 @@ export interface FileRouteTypes {
     | '/favoris'
     | '/fidelite'
     | '/healthcheck'
+    | '/inscription'
     | '/livreur'
     | '/mboa-ai'
     | '/mboapass'
@@ -656,6 +667,7 @@ export interface FileRouteTypes {
     | '/favoris'
     | '/fidelite'
     | '/healthcheck'
+    | '/inscription'
     | '/livreur'
     | '/mboa-ai'
     | '/mboapass'
@@ -715,6 +727,7 @@ export interface RootRouteChildren {
   FavorisRoute: typeof FavorisRoute
   FideliteRoute: typeof FideliteRoute
   HealthcheckRoute: typeof HealthcheckRoute
+  InscriptionRoute: typeof InscriptionRoute
   LivreurRoute: typeof LivreurRoute
   MboaAiRoute: typeof MboaAiRoute
   MboapassRoute: typeof MboapassRoute
@@ -834,6 +847,13 @@ declare module '@tanstack/react-router' {
       path: '/livreur'
       fullPath: '/livreur'
       preLoaderRoute: typeof LivreurRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inscription': {
+      id: '/inscription'
+      path: '/inscription'
+      fullPath: '/inscription'
+      preLoaderRoute: typeof InscriptionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/healthcheck': {
@@ -1236,6 +1256,7 @@ const rootRouteChildren: RootRouteChildren = {
   FavorisRoute: FavorisRoute,
   FideliteRoute: FideliteRoute,
   HealthcheckRoute: HealthcheckRoute,
+  InscriptionRoute: InscriptionRoute,
   LivreurRoute: LivreurRoute,
   MboaAiRoute: MboaAiRoute,
   MboapassRoute: MboapassRoute,
