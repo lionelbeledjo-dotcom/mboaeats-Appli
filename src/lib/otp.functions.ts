@@ -226,8 +226,36 @@ export const sendOtp = createServerFn({ method: "POST" })
       pendingPhoneAt: Date.now(),
     });
 
-    const body = `MboaEats : votre code de vérification est ${code}. Valable 5 min. Ne le partagez avec personne.`;
-    await sendTwilioMessage({ to: phone, body, channel });
+    // ─── Messages brandés MboaEats ─────────────────────────────────────────
+    // SMS : court (1 segment GSM-7), brandé, mention sécurité.
+    const smsBody =
+      `MboaEats — Code de connexion : ${code}\n` +
+      `Valable 5 min. Ne le partagez avec personne.\n` +
+      `Si ce n'est pas vous, ignorez ce message.`;
+
+    // WhatsApp : conforme aux règles Meta pour OTP (catégorie Authentication).
+    // Pas de promo, pas de lien, pas d'emoji, mention "ne partagez pas".
+    const waBody =
+      `*MboaEats*\n` +
+      `Votre code de vérification est *${code}*.\n` +
+      `Ce code expire dans 5 minutes. Ne le partagez avec personne, même avec un membre de l'équipe MboaEats.`;
+
+    // Si un Content Template Twilio approuvé existe (WhatsApp Authentication),
+    // on l'utilise. Sinon, fallback sur un message texte brandé.
+    const TWILIO_WHATSAPP_OTP_CONTENT_SID = process.env.TWILIO_WHATSAPP_OTP_CONTENT_SID;
+
+    if (channel === "whatsapp") {
+      await sendTwilioMessage({
+        to: phone,
+        body: waBody,
+        channel,
+        contentSid: TWILIO_WHATSAPP_OTP_CONTENT_SID || undefined,
+        contentVariables: TWILIO_WHATSAPP_OTP_CONTENT_SID ? { "1": code } : undefined,
+      });
+    } else {
+      await sendTwilioMessage({ to: phone, body: smsBody, channel });
+    }
+
 
     return { ok: true, expiresIn: OTP_TTL_SECONDS, channel };
   });
