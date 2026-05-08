@@ -504,7 +504,12 @@ function Connexion() {
 
           {/* ── PHONE TAB ── */}
           {tab === "phone" && otpStep === "phone" && (
-            <div className="mt-6 space-y-3">
+            <div
+              className="mt-6 space-y-3"
+              role="tabpanel"
+              id="panel-phone"
+              aria-labelledby="tab-phone"
+            >
               <div className="flex items-stretch gap-3">
                 <button
                   type="button"
