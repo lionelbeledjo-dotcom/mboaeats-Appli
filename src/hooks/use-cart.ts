@@ -106,6 +106,7 @@ export function useCart() {
     count,
     add: useCallback((it: CartItem) => addToCart(it), []),
     remove: useCallback((id: string) => removeFromCart(id), []),
+    setQty: useCallback((id: string, qty: number) => setQty(id, qty), []),
     clear: useCallback(() => clearCart(), []),
   };
 }
