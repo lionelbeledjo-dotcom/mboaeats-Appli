@@ -293,15 +293,22 @@ function Connexion() {
 
       // Vérifier si ce compte est éligible à devenir admin
       try {
-        const status = await checkAdminFn();
-        if (status.isAdmin) {
-          navigate({ to: "/admin" });
-          return;
-        }
-        if (status.eligible) {
-          await claimAdminFn();
-          navigate({ to: "/admin" });
-          return;
+        // Attendre que la session soit bien persistée côté client avant
+        // d'appeler les server functions protégées (sinon le fetch wrapper
+        // n'attache pas le bearer token et on reçoit un 401 -> blank screen).
+        const { supabase } = await import("@/integrations/supabase/client");
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (sessionData?.session?.access_token) {
+          const status = await checkAdminFn().catch(() => null);
+          if (status?.isAdmin) {
+            navigate({ to: "/admin" });
+            return;
+          }
+          if (status?.eligible) {
+            await claimAdminFn().catch(() => null);
+            navigate({ to: "/admin" });
+            return;
+          }
         }
       } catch {
         // ignore — utilisateur normal
