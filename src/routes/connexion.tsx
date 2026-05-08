@@ -361,13 +361,13 @@ function Connexion() {
                     </div>
 
                     {showCountries && (
-                      <div className="rounded-2xl border border-border bg-background p-2">
+                      <div className="rounded-2xl border border-white/10 bg-[#0c0a14]/90 p-2 backdrop-blur-2xl shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)]">
                         <input
                           type="text"
                           placeholder="Rechercher un pays ou indicatif…"
                           value={countryQuery}
                           onChange={(e) => setCountryQuery(e.target.value)}
-                          className="mb-2 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-primary"
+                          className="mb-2 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-[#d4af6c]/70"
                         />
                         <div className="max-h-56 overflow-y-auto">
                           {filteredCountries.map((c) => (
@@ -379,17 +379,17 @@ function Connexion() {
                                 setShowCountries(false);
                                 setCountryQuery("");
                               }}
-                              className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm hover:bg-muted/60 ${c.code === countryCode ? "bg-muted/40" : ""}`}
+                              className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-white/90 transition hover:bg-white/10 ${c.code === countryCode ? "bg-white/10" : ""}`}
                             >
                               <span className="flex items-center gap-2">
-                                <span className="text-base leading-none">{c.flag}</span>
+                                <span className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-white/10 text-base leading-none ring-1 ring-white/15">{c.flag}</span>
                                 <span>{c.name}</span>
                               </span>
-                              <span className="text-xs text-muted-foreground">{c.dial}</span>
+                              <span className="text-xs text-white/55">{c.dial}</span>
                             </button>
                           ))}
                           {filteredCountries.length === 0 && (
-                            <p className="px-3 py-4 text-center text-xs text-muted-foreground">Aucun pays trouvé</p>
+                            <p className="px-3 py-4 text-center text-xs text-white/55">Aucun pays trouvé</p>
                           )}
                         </div>
                       </div>
@@ -397,10 +397,10 @@ function Connexion() {
                   </>
                 ) : (
                   <>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    <label className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
                       Adresse email
                     </label>
-                    <div className="flex items-center gap-2 rounded-2xl border border-border bg-background px-3 py-1.5 focus-within:border-primary">
+                    <div className="flex items-center gap-2 rounded-2xl border border-[#d4af6c]/45 bg-white/[0.06] backdrop-blur-2xl px-3 py-1.5 focus-within:border-[#d4af6c]/80">
                       <Mail className="h-4 w-4 text-muted-foreground" />
                       <input
                         type="email"
