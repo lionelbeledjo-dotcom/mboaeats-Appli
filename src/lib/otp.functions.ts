@@ -83,8 +83,12 @@ async function sendTwilioMessage(opts: {
   to: string;
   body: string;
   channel: OtpChannel;
+  /** SID d'un Content Template Twilio (WhatsApp Authentication) — recommandé hors fenêtre 24h. */
+  contentSid?: string;
+  /** Variables du template (ex: {"1": "123456"}). */
+  contentVariables?: Record<string, string>;
 }) {
-  const { to, body, channel } = opts;
+  const { to, body, channel, contentSid, contentVariables } = opts;
 
   const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
   const TWILIO_API_KEY = process.env.TWILIO_API_KEY;
@@ -92,6 +96,8 @@ async function sendTwilioMessage(opts: {
   // Optionnel : numéro WhatsApp dédié (sandbox: +14155238886, ou WA Business)
   const TWILIO_WHATSAPP_FROM =
     process.env.TWILIO_WHATSAPP_FROM || process.env.TWILIO_FROM_NUMBER;
+  // Optionnel : Messaging Service SID (recommandé pour WhatsApp en production)
+  const TWILIO_MESSAGING_SERVICE_SID = process.env.TWILIO_MESSAGING_SERVICE_SID;
 
   if (!LOVABLE_API_KEY) throw new Error("Configuration manquante (LOVABLE_API_KEY).");
   if (!TWILIO_API_KEY) throw new Error("Configuration manquante (TWILIO_API_KEY).");
@@ -103,7 +109,25 @@ async function sendTwilioMessage(opts: {
     : fromRaw;
   const To = channel === "whatsapp" ? `whatsapp:${to}` : to;
 
-  const params = new URLSearchParams({ To, From, Body: body });
+  const params = new URLSearchParams({ To });
+
+  // Préfère un Messaging Service quand disponible (meilleure délivrabilité WA)
+  if (channel === "whatsapp" && TWILIO_MESSAGING_SERVICE_SID) {
+    params.set("MessagingServiceSid", TWILIO_MESSAGING_SERVICE_SID);
+  } else {
+    params.set("From", From);
+  }
+
+  // Si un Content Template approuvé est fourni (WhatsApp Authentication template),
+  // on l'utilise — c'est la voie conforme aux règles Meta hors fenêtre 24h.
+  if (channel === "whatsapp" && contentSid) {
+    params.set("ContentSid", contentSid);
+    if (contentVariables) {
+      params.set("ContentVariables", JSON.stringify(contentVariables));
+    }
+  } else {
+    params.set("Body", body);
+  }
 
   let res: Response;
   try {
