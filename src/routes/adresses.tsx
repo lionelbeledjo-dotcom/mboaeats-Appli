@@ -384,13 +384,48 @@ function AddressesPage() {
                             📞 {a.phone}
                           </p>
                         )}
-                        <button
-                          type="button"
-                          onClick={() => startEdit(a)}
-                          className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-1 text-[11px] font-semibold text-muted-foreground hover:text-foreground"
-                        >
-                          <Pencil className="h-3 w-3" /> Modifier
-                        </button>
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => startEdit(a)}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-1 text-[11px] font-semibold text-muted-foreground hover:text-foreground"
+                          >
+                            <Pencil className="h-3 w-3" /> Modifier
+                          </button>
+                          {confirmDeleteId === a.id ? (
+                            <>
+                              <span className="text-[11px] font-semibold text-destructive">Supprimer ?</span>
+                              <button
+                                type="button"
+                                onClick={() => onDelete(a.id)}
+                                disabled={deletingId === a.id}
+                                className="inline-flex items-center gap-1 rounded-lg bg-destructive px-2.5 py-1 text-[11px] font-bold text-destructive-foreground hover:opacity-90 disabled:opacity-60"
+                              >
+                                {deletingId === a.id ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                  <Check className="h-3 w-3" />
+                                )}
+                                Confirmer
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setConfirmDeleteId(null)}
+                                className="inline-flex items-center gap-1 rounded-lg border border-border bg-background px-2.5 py-1 text-[11px] font-semibold text-muted-foreground hover:text-foreground"
+                              >
+                                <X className="h-3 w-3" /> Annuler
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setConfirmDeleteId(a.id)}
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/40 bg-destructive/10 px-2.5 py-1 text-[11px] font-semibold text-destructive hover:bg-destructive/20"
+                            >
+                              <Trash2 className="h-3 w-3" /> Supprimer
+                            </button>
+                          )}
+                        </div>
                       </>
                     )}
                   </div>
