@@ -94,6 +94,24 @@ function Connexion() {
   const [smsTrial, setSmsTrial] = useState(false);
   const [whatsappAvailable, setWhatsappAvailable] = useState(false);
   const [showWhatsAppFallback, setShowWhatsAppFallback] = useState(false);
+  const RESEND_COOLDOWN = 45;
+  const MAX_RESEND = 3;
+  const [resendCount, setResendCount] = useState(0);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
+
+  const handleResend = async () => {
+    if (cooldown > 0 || resendCount >= MAX_RESEND || loading) return;
+    await sendCode();
+    setResendCount((n) => n + 1);
+    setCooldown(RESEND_COOLDOWN);
+    setCode("");
+  };
 
   useEffect(() => {
     let active = true;
