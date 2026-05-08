@@ -39,6 +39,8 @@ const landmarkSchema = z.string().trim().min(8, "Décrivez un repère visible (�
 function Checkout() {
   const navigate = useNavigate();
   const initiate = useServerFn(initiatePayment);
+  const initiateCard = useServerFn(initiateCardPayment);
+  const pollStatus = useServerFn(pollPaymentStatus);
   const verify = useServerFn(verifyPayment);
   const fetchPass = useServerFn(getActiveMboaPass);
   const createOrderFn = useServerFn(createOrder);
