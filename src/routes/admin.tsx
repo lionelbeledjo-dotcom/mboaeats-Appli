@@ -38,6 +38,7 @@ export const Route = createFileRoute("/admin")({
     }
   },
   component: AdminLayout,
+  errorComponent: AdminErrorBoundary,
   head: () => ({
     meta: [
       { title: "Admin · MboaEats Console" },
@@ -45,6 +46,26 @@ export const Route = createFileRoute("/admin")({
     ],
   }),
 });
+
+function AdminErrorBoundary({ error, reset }: { error: Error; reset: () => void }) {
+  return (
+    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 p-8 text-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10">
+        <AlertTriangle className="h-7 w-7 text-destructive" />
+      </div>
+      <h2 className="font-display text-2xl font-bold">Une erreur est survenue</h2>
+      <p className="max-w-md text-sm text-muted-foreground">{error?.message ?? "La page a planté de façon inattendue."}</p>
+      <div className="flex gap-2">
+        <button onClick={() => reset()} className="rounded-xl border border-border bg-surface px-4 py-2 text-sm font-semibold hover:bg-background">
+          Réessayer
+        </button>
+        <Link to="/admin" className="rounded-xl bg-gradient-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-glow">
+          Retour à l'accueil
+        </Link>
+      </div>
+    </div>
+  );
+}
 
 type NavTone = {
   bar: string; bg: string; text: string; icon: string; ring: string; glow: string;
