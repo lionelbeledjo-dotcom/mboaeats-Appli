@@ -353,12 +353,21 @@ function Connexion() {
   return (
     <div className="min-h-screen bg-white">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col items-center justify-center px-5 py-10">
-        {/* Logo */}
-        <div className="mb-6 flex flex-col items-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#06C167]">
-            <span className="text-3xl">🍲</span>
+        {/* Logo MboaEats */}
+        <div className="mb-12 flex flex-col items-center">
+          <div className="rounded-3xl bg-[#06C167] px-8 py-6 shadow-[0_10px_30px_-12px_rgba(6,193,103,0.45)]">
+            <div className="flex flex-col items-start">
+              <span className="mb-2 inline-flex items-center rounded-full bg-[#06C167] px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-white ring-1 ring-white/40">
+                Livraison Cameroun
+              </span>
+              <h2
+                aria-label="MboaEats"
+                className="text-5xl font-black tracking-tight leading-none text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.18)] sm:text-6xl"
+              >
+                Mboa<span className="text-white/95" style={{ color: "#FFFFFF" }}>Eats</span>
+              </h2>
+            </div>
           </div>
-          <h2 className="mt-3 text-lg font-bold tracking-tight text-black">MboaEats</h2>
         </div>
 
         {/* Card */}
