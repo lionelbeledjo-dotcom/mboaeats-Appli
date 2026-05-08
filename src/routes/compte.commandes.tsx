@@ -67,6 +67,32 @@ function formatFcfa(n: number) {
 }
 
 function CommandesPage() {
+  const navigate = useNavigate();
+  const [reorderingId, setReorderingId] = useState<string | null>(null);
+  const [doneId, setDoneId] = useState<string | null>(null);
+
+  const reorder = async (o: Order) => {
+    if (reorderingId) return;
+    setReorderingId(o.id);
+    try {
+      clearCart();
+      addToCart({
+        id: `${o.id}-${o.dish}`,
+        dishId: o.id,
+        restoId: o.restaurant.toLowerCase().replace(/\s+/g, "-"),
+        name: o.dish,
+        price: o.price,
+        qty: 1,
+        image: o.image,
+      });
+      setDoneId(o.id);
+      await new Promise((r) => setTimeout(r, 450));
+      navigate({ to: "/checkout" });
+    } finally {
+      setReorderingId(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-30 glass">
