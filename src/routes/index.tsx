@@ -30,8 +30,8 @@ export const Route = createFileRoute("/")({
 });
 
 const filters = [
-  { key: "nearby", label: "Nearby", icon: "📍" },
-  { key: "popular", label: "Popular", icon: "🔥" },
+  { key: "nearby", label: "À proximité", icon: "📍" },
+  { key: "popular", label: "Populaire", icon: "🔥" },
   { key: "cuisines", label: "Cuisines", icon: "🍽️" },
 ];
 
