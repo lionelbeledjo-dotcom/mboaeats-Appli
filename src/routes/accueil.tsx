@@ -24,7 +24,7 @@ function prefetchRestaurantImages(restoId: string) {
   }
 }
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/accueil")({
   head: () => ({
     meta: [
       { title: "MboaEats — Vos plats camerounais livrés à Douala, Yaoundé & Bafoussam" },
