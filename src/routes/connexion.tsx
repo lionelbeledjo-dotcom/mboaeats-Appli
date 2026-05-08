@@ -408,8 +408,8 @@ function Connexion() {
                         aria-controls="country-listbox"
                         className="flex shrink-0 items-center gap-3 px-[20px] text-sm font-semibold text-white transition hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb000] focus-visible:ring-offset-2 focus-visible:ring-offset-[#111113] rounded-l-[28px]"
                       >
-                        <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-[#5f5f65] text-[14px] font-black leading-none ring-1 ring-white/10">
-                          {country.flag}
+                        <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-[#5f5f65] text-[14px] font-black leading-none tracking-tight ring-1 ring-white/10">
+                          {country.code}
                         </span>
                         <span className="font-display text-[21px] font-black tracking-wide">{country.dial}</span>
                         <ChevronDown className={`h-4 w-4 text-[#ffad05] transition-transform ${showCountries ? "rotate-180" : ""}`} strokeWidth={3} />
