@@ -7,6 +7,7 @@ import { AideContextuelle } from "@/components/AideContextuelle";
 import { Toaster } from "@/components/ui/sonner";
 import { useSessionUser } from "@/hooks/useSessionUser";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { SplashScreen } from "@/components/SplashScreen";
 
 const PUBLIC_ROUTES = ["/connexion", "/inscription", "/reset-password", "/cgu", "/confidentialite", "/admin/login", "/healthcheck"];
 const PUBLIC_PREFIXES = ["/admin"];
