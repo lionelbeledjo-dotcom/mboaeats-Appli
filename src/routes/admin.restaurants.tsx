@@ -38,6 +38,8 @@ function Restaurants() {
   const fetchAll = useServerFn(listAllRestaurants);
   const setActive = useServerFn(setRestaurantActive);
   const fetchDetails = useServerFn(getRestaurantDetails);
+  const updateResto = useServerFn(updateRestaurant);
+  const deleteResto = useServerFn(deleteRestaurant);
   const [list, setList] = useState<Resto[] | null>(null);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<StatusFilter>("all");
@@ -47,6 +49,7 @@ function Restaurants() {
   const [details, setDetails] = useState<Details>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editing, setEditing] = useState<Resto | null>(null);
 
   const openDetails = async (id: string) => {
     setOpenId(id);
