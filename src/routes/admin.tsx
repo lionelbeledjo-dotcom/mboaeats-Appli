@@ -46,14 +46,27 @@ export const Route = createFileRoute("/admin")({
   }),
 });
 
+type NavTone = {
+  bar: string; bg: string; text: string; icon: string; ring: string; glow: string;
+};
+const TONES: Record<string, NavTone> = {
+  blue:   { bar: "bg-blue-500",    bg: "bg-blue-500/10",    text: "text-blue-300",    icon: "text-blue-400",    ring: "ring-blue-500/40",    glow: "shadow-[0_0_18px_-4px_rgba(59,130,246,0.55)]" },
+  green:  { bar: "bg-emerald-500", bg: "bg-emerald-500/10", text: "text-emerald-300", icon: "text-emerald-400", ring: "ring-emerald-500/40", glow: "shadow-[0_0_18px_-4px_rgba(16,185,129,0.55)]" },
+  yellow: { bar: "bg-amber-400",   bg: "bg-amber-400/10",   text: "text-amber-200",   icon: "text-amber-300",   ring: "ring-amber-400/40",   glow: "shadow-[0_0_18px_-4px_rgba(251,191,36,0.55)]" },
+  purple: { bar: "bg-violet-500",  bg: "bg-violet-500/10",  text: "text-violet-300",  icon: "text-violet-400",  ring: "ring-violet-500/40",  glow: "shadow-[0_0_18px_-4px_rgba(139,92,246,0.55)]" },
+  orange: { bar: "bg-orange-500",  bg: "bg-orange-500/10",  text: "text-orange-300",  icon: "text-orange-400",  ring: "ring-orange-500/40",  glow: "shadow-[0_0_18px_-4px_rgba(249,115,22,0.55)]" },
+  indigo: { bar: "bg-indigo-500",  bg: "bg-indigo-500/10",  text: "text-indigo-300",  icon: "text-indigo-400",  ring: "ring-indigo-500/40",  glow: "shadow-[0_0_18px_-4px_rgba(99,102,241,0.55)]" },
+  red:    { bar: "bg-red-500",     bg: "bg-red-500/10",     text: "text-red-300",     icon: "text-red-400",     ring: "ring-red-500/40",     glow: "shadow-[0_0_18px_-4px_rgba(239,68,68,0.55)]" },
+};
+
 const navItems = [
-  { title: "Vue d'ensemble", url: "/admin", icon: LayoutDashboard, exact: true },
-  { title: "Commissions", url: "/admin/commissions", icon: Coins },
-  { title: "Zones livraison", url: "/admin/zones", icon: MapPin },
-  { title: "Restaurants", url: "/admin/restaurants", icon: Store },
-  { title: "Menus & Catégories", url: "/admin/menus", icon: Utensils },
-  { title: "Livreurs", url: "/admin/livreurs", icon: Bike },
-  { title: "Litiges", url: "/admin/litiges", icon: AlertTriangle, badge: 4 },
+  { title: "Vue d'ensemble", url: "/admin", icon: LayoutDashboard, exact: true, tone: "blue" as const },
+  { title: "Commissions", url: "/admin/commissions", icon: Coins, tone: "green" as const },
+  { title: "Zones livraison", url: "/admin/zones", icon: MapPin, tone: "yellow" as const },
+  { title: "Restaurants", url: "/admin/restaurants", icon: Store, tone: "purple" as const },
+  { title: "Menus & Catégories", url: "/admin/menus", icon: Utensils, tone: "orange" as const },
+  { title: "Livreurs", url: "/admin/livreurs", icon: Bike, tone: "indigo" as const },
+  { title: "Litiges", url: "/admin/litiges", icon: AlertTriangle, badge: 4, tone: "red" as const },
 ];
 
 function AdminLayout() {
