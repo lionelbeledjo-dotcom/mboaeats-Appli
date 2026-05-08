@@ -394,16 +394,29 @@ function Connexion() {
                     {/* Glassmorphism block — copper border + gold separator */}
                     <div className="group relative flex items-stretch overflow-hidden rounded-2xl border border-[#d4af6c]/45 bg-white/[0.06] backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_40px_-20px_rgba(212,175,108,0.4)] focus-within:border-[#d4af6c]/80">
                       <button
+                        ref={countryTriggerRef}
                         type="button"
                         onClick={() => setShowCountries((v) => !v)}
+                        onKeyDown={(e) => {
+                          if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setShowCountries(true);
+                          } else if (e.key === "Escape" && showCountries) {
+                            e.preventDefault();
+                            closeCountries(false);
+                          }
+                        }}
                         aria-label="Choisir le pays"
-                        className="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/5"
+                        aria-haspopup="listbox"
+                        aria-expanded={showCountries}
+                        aria-controls="country-listbox"
+                        className="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af6c] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c0a14] rounded-l-2xl"
                       >
                         <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-white/10 text-base leading-none ring-1 ring-white/15">
                           {country.flag}
                         </span>
                         <span className="font-display text-base font-bold tracking-wide">{country.dial}</span>
-                        <ChevronDown className="h-3.5 w-3.5 text-[#d4af6c]" strokeWidth={2.4} />
+                        <ChevronDown className={`h-3.5 w-3.5 text-[#d4af6c] transition-transform ${showCountries ? "rotate-180" : ""}`} strokeWidth={2.4} />
                       </button>
                       <span
                         aria-hidden
@@ -416,39 +429,63 @@ function Connexion() {
                         placeholder="Entrez votre numéro de téléphone"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="flex-1 bg-transparent px-4 py-3 text-base text-white outline-none placeholder:text-white/40"
+                        className="flex-1 bg-transparent px-4 py-3 text-base text-white outline-none placeholder:text-white/40 focus-visible:ring-2 focus-visible:ring-[#d4af6c]/60 rounded-r-2xl"
                         autoFocus
                       />
                     </div>
 
                     {showCountries && (
-                      <div className="rounded-2xl border border-white/10 bg-[#0c0a14]/90 p-2 backdrop-blur-2xl shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)]">
+                      <div
+                        className="rounded-2xl border border-white/10 bg-[#0c0a14]/90 p-2 backdrop-blur-2xl shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)]"
+                        onKeyDown={handleCountryListKeyDown}
+                      >
                         <input
+                          ref={countrySearchRef}
                           type="text"
                           placeholder="Rechercher un pays ou indicatif…"
                           value={countryQuery}
                           onChange={(e) => setCountryQuery(e.target.value)}
-                          className="mb-2 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-[#d4af6c]/70"
+                          aria-label="Rechercher un pays"
+                          aria-controls="country-listbox"
+                          aria-activedescendant={
+                            filteredCountries[highlightedCountry]
+                              ? `country-opt-${filteredCountries[highlightedCountry].code}`
+                              : undefined
+                          }
+                          className="mb-2 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-[#d4af6c]/70 focus-visible:ring-2 focus-visible:ring-[#d4af6c]"
                         />
-                        <div className="max-h-56 overflow-y-auto">
-                          {filteredCountries.map((c) => (
-                            <button
-                              key={c.code}
-                              type="button"
-                              onClick={() => {
-                                setCountryCode(c.code);
-                                setShowCountries(false);
-                                setCountryQuery("");
-                              }}
-                              className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-white/90 transition hover:bg-white/10 ${c.code === countryCode ? "bg-white/10" : ""}`}
-                            >
-                              <span className="flex items-center gap-2">
-                                <span className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-white/10 text-base leading-none ring-1 ring-white/15">{c.flag}</span>
-                                <span>{c.name}</span>
-                              </span>
-                              <span className="text-xs text-white/55">{c.dial}</span>
-                            </button>
-                          ))}
+                        <div
+                          ref={countryListRef}
+                          id="country-listbox"
+                          role="listbox"
+                          aria-label="Liste des pays"
+                          tabIndex={-1}
+                          className="max-h-56 overflow-y-auto focus:outline-none"
+                        >
+                          {filteredCountries.map((c, idx) => {
+                            const active = idx === highlightedCountry;
+                            const selected = c.code === countryCode;
+                            return (
+                              <button
+                                key={c.code}
+                                id={`country-opt-${c.code}`}
+                                data-country-index={idx}
+                                role="option"
+                                aria-selected={selected}
+                                type="button"
+                                tabIndex={-1}
+                                onMouseEnter={() => setHighlightedCountry(idx)}
+                                onClick={() => selectCountry(c.code)}
+                                className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-white/90 transition focus:outline-none ${active ? "bg-[#d4af6c]/20 ring-1 ring-[#d4af6c]/60" : "hover:bg-white/10"} ${selected ? "bg-white/10" : ""}`}
+                              >
+                                <span className="flex items-center gap-2">
+                                  <span className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-white/10 text-base leading-none ring-1 ring-white/15">{c.flag}</span>
+                                  <span>{c.name}</span>
+                                </span>
+                                <span className="text-xs text-white/55">{c.dial}</span>
+                              </button>
+                            );
+                          })}
                           {filteredCountries.length === 0 && (
                             <p className="px-3 py-4 text-center text-xs text-white/55">Aucun pays trouvé</p>
                           )}
