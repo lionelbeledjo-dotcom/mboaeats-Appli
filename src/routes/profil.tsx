@@ -74,6 +74,26 @@ function ProfilPage() {
     return () => window.removeEventListener(CART_SOUND_EVT, sync);
   }, []);
 
+  // Route guard: redirect to /connexion if unauthenticated once auth checks settle
+  useEffect(() => {
+    if (!authChecked || sessionLoading) return;
+    if (!authedSb && !sessionUser?.identifier) {
+      navigate({ to: "/connexion", search: { redirect: "/profil" } as never, replace: true } as never);
+    }
+  }, [authChecked, sessionLoading, authedSb, sessionUser, navigate]);
+
+  if (!authChecked || sessionLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!authedSb && !sessionUser?.identifier) {
+    return null;
+  }
+
   const identifier = authEmail || profile?.phone || "Invité";
   const displayName = profile?.full_name || (authEmail ? authEmail.split("@")[0] : "Mon compte");
   const initials = (displayName.match(/[a-zA-Z]/g) || ["U"]).slice(0, 2).join("").toUpperCase();
