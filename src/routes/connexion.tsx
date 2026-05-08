@@ -338,6 +338,7 @@ function Connexion() {
         if (vErr) throw new Error(vErr.message);
       }
       invalidateSessionCache();
+      toast.success("Connexion réussie 🎉");
       navigate({ to: "/", replace: true });
     } catch (err: any) {
       setError(err?.message ?? "Code invalide");
