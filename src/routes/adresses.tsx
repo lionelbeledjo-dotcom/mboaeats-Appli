@@ -384,6 +384,10 @@ function AddressesPage() {
               city={city}
               info={cityInfo}
               activeNeighborhood={coveredZone?.neighborhood ?? null}
+              onSelectNeighborhood={(n) => {
+                setNeighborhood(n);
+                toast.success(`Quartier sélectionné : ${n}`);
+              }}
             />
             {!cityInfo.loading && cityInfo.zones.length === 0 && (
               <p className="mt-2 rounded-xl border border-destructive/40 bg-destructive/10 p-2.5 text-[11px] font-medium text-destructive">
