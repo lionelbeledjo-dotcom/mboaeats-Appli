@@ -124,7 +124,14 @@ async function sendTwilioMessage(opts: {
   if (!TWILIO_API_KEY) throw new Error("Configuration manquante (TWILIO_API_KEY).");
   if (!TWILIO_FROM_NUMBER) throw new Error("Configuration manquante (TWILIO_FROM_NUMBER).");
 
-  const fromRaw = channel === "whatsapp" ? TWILIO_WHATSAPP_FROM! : TWILIO_FROM_NUMBER!;
+  if (channel === "whatsapp" && !process.env.TWILIO_WHATSAPP_FROM && !TWILIO_MESSAGING_SERVICE_SID) {
+    console.error("[OTP] WhatsApp non configuré : TWILIO_WHATSAPP_FROM et TWILIO_MESSAGING_SERVICE_SID absents. Le numéro SMS standard ne peut pas envoyer de WhatsApp.");
+    throw new Error(
+      "WhatsApp n'est pas encore activé sur ce compte. Utilisez l'email ou contactez le support sur WhatsApp pour vous inscrire manuellement."
+    );
+  }
+
+  const fromRaw = channel === "whatsapp" ? (process.env.TWILIO_WHATSAPP_FROM || TWILIO_FROM_NUMBER!) : TWILIO_FROM_NUMBER!;
   const From = channel === "whatsapp"
     ? (fromRaw.startsWith("whatsapp:") ? fromRaw : `whatsapp:${fromRaw}`)
     : fromRaw;
