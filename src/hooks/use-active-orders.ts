@@ -2,15 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyOrders } from "@/server/marketplace.functions";
 
-const ACTIVE = new Set([
-  "pending_payment",
-  "paid",
-  "accepted",
-  "preparing",
-  "ready",
-  "picked_up",
-  "delivering",
-]);
+// Badge "Mes Commandes" : uniquement quand une commande est en livraison.
+const ACTIVE = new Set(["picked_up", "delivering"]);
 
 const MAX_RETRIES = 3;
 
