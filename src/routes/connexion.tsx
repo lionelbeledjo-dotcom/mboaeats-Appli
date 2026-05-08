@@ -94,6 +94,24 @@ function Connexion() {
   const [smsTrial, setSmsTrial] = useState(false);
   const [whatsappAvailable, setWhatsappAvailable] = useState(false);
   const [showWhatsAppFallback, setShowWhatsAppFallback] = useState(false);
+  const RESEND_COOLDOWN = 45;
+  const MAX_RESEND = 3;
+  const [resendCount, setResendCount] = useState(0);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
+
+  const handleResend = async () => {
+    if (cooldown > 0 || resendCount >= MAX_RESEND || loading) return;
+    await sendCode();
+    setResendCount((n) => n + 1);
+    setCooldown(RESEND_COOLDOWN);
+    setCode("");
+  };
 
   useEffect(() => {
     let active = true;
@@ -168,6 +186,7 @@ function Connexion() {
       } else {
         setError("Ce canal n'est pas disponible.");
       }
+      setCooldown((c) => (c === 0 ? RESEND_COOLDOWN : c));
     } catch (err: any) {
       const msg = err?.message ?? "Échec de l'envoi du code";
       setError(msg);
@@ -556,9 +575,27 @@ function Connexion() {
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (<><Check className="h-4 w-4" /> Valider et entrer</>)}
               </button>
 
+              <div className="flex flex-col items-center gap-1 pt-1">
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={cooldown > 0 || resendCount >= MAX_RESEND || loading}
+                  className="text-xs font-semibold text-primary disabled:text-muted-foreground disabled:cursor-not-allowed hover:underline underline-offset-4"
+                >
+                  {resendCount >= MAX_RESEND
+                    ? "Limite de renvois atteinte"
+                    : cooldown > 0
+                      ? `Renvoyer le code dans ${cooldown}s`
+                      : "Renvoyer le code"}
+                </button>
+                <p className="text-[11px] text-muted-foreground">
+                  {resendCount}/{MAX_RESEND} tentatives utilisées
+                </p>
+              </div>
+
               <button
                 type="button"
-                onClick={() => { setStep("identify"); setCode(""); setError(null); }}
+                onClick={() => { setStep("identify"); setCode(""); setError(null); setResendCount(0); setCooldown(0); }}
                 className="block w-full text-center text-xs text-muted-foreground underline-offset-4 hover:underline"
               >
                 Modifier {mode === "phone" ? "le numéro" : "l'email"}
