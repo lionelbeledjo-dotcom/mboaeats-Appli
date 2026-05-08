@@ -179,11 +179,16 @@ function AddressesPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!label.trim() || !neighborhood.trim() || !phone.trim()) {
+    if (!label.trim() || !neighborhood.trim()) {
       toast.error("Merci de remplir tous les champs.");
       return;
     }
-    const phoneFull = `+237 ${phone.replace(/\D/g, "")}`;
+    const v = validateCmPhone(phone);
+    if (!v.ok) {
+      toast.error("Numéro invalide", { description: v.error });
+      return;
+    }
+    const phoneFull = `+237 ${formatCmPhone(v.digits)}`;
     setSaving(true);
 
     // Simule l'enregistrement local immédiat
