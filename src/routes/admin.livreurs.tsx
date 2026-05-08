@@ -49,9 +49,8 @@ function Livreurs() {
 
   const reload = () => {
     setError(null);
-    return fetchAll()
-      .then((r) => setList(r.drivers as Driver[]))
-      .catch((e) => { setList([]); setError(e instanceof Error ? e.message : "Erreur réseau"); });
+    setList(MOCK_DRIVERS as Driver[]);
+    return Promise.resolve();
   };
 
   useEffect(() => {
