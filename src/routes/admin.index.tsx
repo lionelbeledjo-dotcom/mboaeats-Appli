@@ -54,16 +54,18 @@ function Overview() {
 
       <div className="grid gap-3 sm:gap-4 lg:grid-cols-4">
         {KPIS.map((k) => (
-          <div key={k.label} className="rounded-3xl border border-border bg-surface/60 p-5">
-            <div className="flex items-center justify-between">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-background">
-                <k.icon className={`h-5 w-5 ${k.accent === "gold" ? "text-gold" : "text-primary"}`} />
-              </span>
-              {k.suffix && <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{k.suffix}</span>}
+          <div key={k.label} className="flex items-center gap-3 rounded-2xl border border-border bg-surface/60 p-4 sm:block sm:rounded-3xl sm:p-5">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-background sm:h-10 sm:w-10">
+              <k.icon className={`h-5 w-5 ${k.accent === "gold" ? "text-gold" : "text-primary"}`} />
+            </span>
+            <div className="min-w-0 flex-1 sm:mt-4">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground sm:text-xs">{k.label}</p>
+                {k.suffix && <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{k.suffix}</span>}
+              </div>
+              <p className={`mt-0.5 font-display text-xl font-extrabold sm:mt-1 sm:text-2xl ${k.accent === "gold" ? "text-gradient-gold" : "text-gradient-primary"}`}>{k.value}</p>
+              <p className="mt-0.5 truncate text-[11px] text-muted-foreground sm:mt-1">{k.hint}</p>
             </div>
-            <p className="mt-4 text-xs uppercase tracking-wider text-muted-foreground">{k.label}</p>
-            <p className={`mt-1 font-display text-2xl font-extrabold ${k.accent === "gold" ? "text-gradient-gold" : "text-gradient-primary"}`}>{k.value}</p>
-            <p className="mt-1 text-[11px] text-muted-foreground">{k.hint}</p>
           </div>
         ))}
       </div>
