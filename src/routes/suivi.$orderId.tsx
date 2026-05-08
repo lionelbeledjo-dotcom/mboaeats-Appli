@@ -373,10 +373,7 @@ function DriverMarker({ progress }: { progress: number }) {
         <animate attributeName="opacity" from="0.4" to="0" dur="1.5s" repeatCount="indefinite" />
       </circle>
       <circle r="12" fill="#FFFFFF" stroke="#00B14F" strokeWidth="3" />
-      <g transform="translate(-6,-6)">
-        <Navigation x="0" y="0" width="12" height="12" />
-      </g>
-      <text textAnchor="middle" y="3.5" fontSize="11">🛵</text>
+      <text textAnchor="middle" y="4" fontSize="12">🛵</text>
     </g>
   );
 }
