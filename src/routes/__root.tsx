@@ -117,6 +117,7 @@ function RootComponent() {
     PUBLIC_ROUTES.includes(path) || PUBLIC_PREFIXES.some((p) => path.startsWith(p));
   return (
     <ThemeProvider defaultTheme="light">
+      <SplashScreen />
       <AuthGate>
         <Outlet />
         {!hideDock && (
