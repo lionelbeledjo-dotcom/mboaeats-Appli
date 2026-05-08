@@ -21,6 +21,16 @@ type Driver = {
 
 type Filter = "all" | "online" | "offline" | "inactive";
 
+const NOW = new Date().toISOString();
+const MOCK_DRIVERS: (Driver & { vehicle: string; from: string; to: string })[] = [
+  { id: "mk-d1", name: "Samuel Mbappé", phone: "+237 6 91 12 34 56", city: "Douala", status: "busy", is_active: true, lat: 4.0511, lng: 9.7679, updated_at: NOW, courses: 32, earned: 48_500, vehicle: "Moto", from: "Akwa", to: "Logpom" },
+  { id: "mk-d2", name: "Patrick Eyenga", phone: "+237 6 77 45 22 11", city: "Douala", status: "busy", is_active: true, lat: 4.0613, lng: 9.7510, updated_at: NOW, courses: 21, earned: 31_200, vehicle: "Moto", from: "Bonapriso", to: "Bonamoussadi" },
+  { id: "mk-d3", name: "Christelle Nkomo", phone: "+237 6 55 88 90 12", city: "Douala", status: "available", is_active: true, lat: 4.0721, lng: 9.7398, updated_at: NOW, courses: 15, earned: 22_800, vehicle: "Vélo", from: "Bonanjo", to: "—" },
+  { id: "mk-d4", name: "Jean-Marc Tchoumi", phone: "+237 6 22 11 33 99", city: "Douala", status: "busy", is_active: true, lat: 4.0468, lng: 9.7825, updated_at: NOW, courses: 28, earned: 42_000, vehicle: "Moto", from: "Deido", to: "Makepe" },
+  { id: "mk-d5", name: "Éric Mbida", phone: "+237 6 78 65 43 21", city: "Douala", status: "busy", is_active: true, lat: 4.0397, lng: 9.7142, updated_at: NOW, courses: 19, earned: 27_600, vehicle: "Moto", from: "Youpwe", to: "New Bell" },
+  { id: "mk-d6", name: "Brice Ondoa", phone: "+237 6 91 00 77 88", city: "Douala", status: "available", is_active: true, lat: 4.0892, lng: 9.7654, updated_at: NOW, courses: 11, earned: 16_400, vehicle: "Vélo", from: "Akwa Nord", to: "—" },
+];
+
 function Livreurs() {
   const fetchAll = useServerFn(listAllDrivers);
   const updateStatusFn = useServerFn(setDriverStatus);
@@ -39,9 +49,8 @@ function Livreurs() {
 
   const reload = () => {
     setError(null);
-    return fetchAll()
-      .then((r) => setList(r.drivers as Driver[]))
-      .catch((e) => { setList([]); setError(e instanceof Error ? e.message : "Erreur réseau"); });
+    setList(MOCK_DRIVERS as Driver[]);
+    return Promise.resolve();
   };
 
   useEffect(() => {
@@ -80,7 +89,7 @@ function Livreurs() {
   async function changeStatus(id: string, status: "available" | "busy" | "offline") {
     setPendingId(id);
     try {
-      await updateStatusFn({ data: { driver_id: id, status } });
+      if (!id.startsWith("mk-")) await updateStatusFn({ data: { driver_id: id, status } });
       setList((prev) => prev?.map((d) => (d.id === id ? { ...d, status, updated_at: new Date().toISOString() } : d)) ?? null);
     } finally { setPendingId(null); }
   }
@@ -90,7 +99,7 @@ function Livreurs() {
     if (!confirm(next ? `Réactiver le livreur ${d.name} ?` : `Désactiver le livreur ${d.name} ? Il ne recevra plus d'offres.`)) return;
     setPendingId(d.id);
     try {
-      await setActiveFn({ data: { driver_id: d.id, active: next } });
+      if (!d.id.startsWith("mk-")) await setActiveFn({ data: { driver_id: d.id, active: next } });
       setList((prev) => prev?.map((x) => (x.id === d.id ? { ...x, is_active: next, status: next ? "available" : "offline" } : x)) ?? null);
     } finally { setPendingId(null); }
   }
@@ -98,6 +107,17 @@ function Livreurs() {
   async function openView(d: Driver) {
     setViewing(d);
     setViewingData(null);
+    if (d.id.startsWith("mk-")) {
+      setViewingData({
+        profile: { full_name: d.name, phone: d.phone, city: d.city },
+        location: { status: d.status, lat: d.lat, lng: d.lng, updated_at: d.updated_at },
+        orders: [
+          { id: "o1", reference: "MBE-2106", status: "en_cours", delivery_fee: 1000 },
+          { id: "o2", reference: "MBE-2098", status: "livree", delivery_fee: 1500 },
+        ],
+      });
+      return;
+    }
     try { setViewingData(await fetchDetails({ data: { id: d.id } })); }
     catch (e) { toast.error(e instanceof Error ? e.message : "Erreur"); }
   }
@@ -106,7 +126,7 @@ function Livreurs() {
     if (!confirm(`Supprimer DÉFINITIVEMENT le livreur ${d.name} ? Position et rôle seront effacés.`)) return;
     setPendingId(d.id);
     try {
-      await deleteFn({ data: { id: d.id } });
+      if (!d.id.startsWith("mk-")) await deleteFn({ data: { id: d.id } });
       toast.success("Livreur supprimé");
       setList((prev) => prev?.filter((x) => x.id !== d.id) ?? null);
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erreur"); }
@@ -160,7 +180,8 @@ function Livreurs() {
           <thead className="bg-background/40 text-xs uppercase tracking-wider text-muted-foreground">
             <tr>
               <th className="p-4 text-left">Livreur</th>
-              <th className="p-4 text-left">Position</th>
+              <th className="p-4 text-left">Véhicule</th>
+              <th className="p-4 text-left">Course actuelle</th>
               <th className="p-4 text-right">Courses (7j)</th>
               <th className="p-4 text-right">Gains (7j)</th>
               <th className="p-4 text-center">Statut</th>
@@ -185,12 +206,22 @@ function Livreurs() {
                       </div>
                     </div>
                   </td>
-                  <td className="p-4 text-xs text-muted-foreground">
-                    <span className="inline-flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      {d.lat && d.lng ? `${d.lat.toFixed(3)}, ${d.lng.toFixed(3)}` : "—"}
+                  <td className="p-4 text-xs">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-background/40 px-2 py-0.5 font-semibold">
+                      <Bike className="h-3 w-3" /> {(d as any).vehicle ?? "Moto"}
                     </span>
-                    <p className="mt-0.5 inline-flex items-center gap-1"><Clock className="h-3 w-3" /> il y a {agoStr}</p>
+                    <p className="mt-1 text-[11px] text-muted-foreground inline-flex items-center gap-1">
+                      <Clock className="h-3 w-3" /> il y a {agoStr}
+                    </p>
+                  </td>
+                  <td className="p-4 text-xs">
+                    {(d as any).from && (d as any).to && (d as any).to !== "—" ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-2 py-1 font-semibold text-primary">
+                        <MapPin className="h-3 w-3" /> {(d as any).from} <span className="opacity-60">→</span> {(d as any).to}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">Disponible · {(d as any).from ?? "—"}</span>
+                    )}
                   </td>
                   <td className="p-4 text-right">{d.courses}</td>
                   <td className="p-4 text-right font-bold">{d.earned.toLocaleString("fr-FR")} F</td>
@@ -252,7 +283,7 @@ function Livreurs() {
               );
             })}
             {list && filtered.length === 0 && (
-              <tr><td colSpan={6} className="p-10 text-center text-sm text-muted-foreground">
+              <tr><td colSpan={7} className="p-10 text-center text-sm text-muted-foreground">
                 {counts.all === 0 ? "Aucun livreur enregistré pour l'instant." : "Aucun livreur ne correspond à ces filtres."}
               </td></tr>
             )}

@@ -28,6 +28,19 @@ type Resto = {
 
 type StatusFilter = "all" | "active" | "suspended";
 
+const MOCK_RESTOS: Resto[] = [
+  { id: "mk-r1", name: "Le Wouri Saveurs", city: "Douala", neighborhood: "Akwa", cuisine: "Cuisine camerounaise", rating: 4.7, reviews_count: 218, is_active: true, is_open: true },
+  { id: "mk-r2", name: "Soya d'Or", city: "Douala", neighborhood: "Bonapriso", cuisine: "Grillades & Soya", rating: 4.5, reviews_count: 142, is_active: true, is_open: true },
+  { id: "mk-r3", name: "La Marmite Bamiléké", city: "Douala", neighborhood: "Deido", cuisine: "Spécialités Ouest", rating: 4.8, reviews_count: 305, is_active: true, is_open: true },
+  { id: "mk-r4", name: "Douala Fast Food", city: "Douala", neighborhood: "Bonamoussadi", cuisine: "Fast-food & Burgers", rating: 4.2, reviews_count: 96, is_active: true, is_open: false },
+  { id: "mk-r5", name: "Poisson Braisé du Port", city: "Douala", neighborhood: "Youpwe", cuisine: "Poisson & Fruits de mer", rating: 4.9, reviews_count: 412, is_active: true, is_open: true },
+  { id: "mk-r6", name: "Chez Maman Ndolé", city: "Douala", neighborhood: "New Bell", cuisine: "Ndolé & plats traditionnels", rating: 4.6, reviews_count: 187, is_active: true, is_open: true },
+  { id: "mk-r7", name: "Le Manguier d'Akwa", city: "Douala", neighborhood: "Akwa Nord", cuisine: "Bistro afro-européen", rating: 4.3, reviews_count: 74, is_active: false, is_open: false },
+  { id: "mk-r8", name: "Bonanjo Pizza", city: "Douala", neighborhood: "Bonanjo", cuisine: "Pizza & Pâtes", rating: 4.4, reviews_count: 158, is_active: true, is_open: true },
+  { id: "mk-r9", name: "Saveurs de Logpom", city: "Douala", neighborhood: "Logpom", cuisine: "Cuisine du terroir", rating: 4.5, reviews_count: 121, is_active: true, is_open: true },
+  { id: "mk-r10", name: "Kribi Beach Food (Makepe)", city: "Douala", neighborhood: "Makepe", cuisine: "Crevettes & Poisson", rating: 4.6, reviews_count: 199, is_active: false, is_open: false },
+];
+
 type Details = {
   restaurant: Record<string, any>;
   owner: { full_name: string | null; phone: string | null; city: string | null } | null;
@@ -55,6 +68,16 @@ function Restaurants() {
     setOpenId(id);
     setDetails(null);
     setDetailsLoading(true);
+    if (id.startsWith("mk-")) {
+      const r = MOCK_RESTOS.find((x) => x.id === id);
+      setDetails({
+        restaurant: { ...r, slug: r?.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"), eta_min: 20, eta_max: 35, delivery_fee: 1000, min_order: 2500 },
+        owner: { full_name: "Propriétaire démo", phone: "+237 6 99 00 00 00", city: "Douala" },
+        stats: { dishes: 18, orders: 142 },
+      });
+      setDetailsLoading(false);
+      return;
+    }
     try {
       const d = await fetchDetails({ data: { id } });
       setDetails(d as Details);
@@ -68,9 +91,8 @@ function Restaurants() {
 
   const reload = () => {
     setError(null);
-    return fetchAll()
-      .then((r) => setList(r.restaurants as Resto[]))
-      .catch((e) => { setList([]); setError(e instanceof Error ? e.message : "Erreur réseau"); });
+    setList(MOCK_RESTOS);
+    return Promise.resolve();
   };
 
   useEffect(() => {
@@ -88,9 +110,10 @@ function Restaurants() {
     if (!window.confirm(`${verb} le restaurant « ${r.name} » ?`)) return;
     setPendingId(r.id);
     try {
-      await setActive({ data: { id: r.id, is_active: next } });
+      if (!r.id.startsWith("mk-")) {
+        await setActive({ data: { id: r.id, is_active: next } });
+      }
       toast.success(next ? "Restaurant approuvé et publié" : "Restaurant désactivé");
-      // Mise à jour optimiste pour éviter un round-trip
       setList((cur) =>
         (cur ?? []).map((x) => (x.id === r.id ? { ...x, is_active: next } : x))
       );
@@ -105,7 +128,9 @@ function Restaurants() {
     if (!window.confirm(`Supprimer DÉFINITIVEMENT « ${r.name} » et toutes ses données ? Cette action est irréversible.`)) return;
     setPendingId(r.id);
     try {
-      await deleteResto({ data: { id: r.id } });
+      if (!r.id.startsWith("mk-")) {
+        await deleteResto({ data: { id: r.id } });
+      }
       toast.success("Restaurant supprimé");
       setList((cur) => (cur ?? []).filter((x) => x.id !== r.id));
     } catch (e) {
