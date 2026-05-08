@@ -465,8 +465,8 @@ function SuccessScreen({ method, total }: { method: Method; total: number }) {
   );
 }
 
-function Summary({ cart, subtotal, delivery, total, hasPass, landmark, promo, setPromo }: {
-  cart: { name: string; qty: number; price: number }[]; subtotal: number; delivery: number; total: number; hasPass: boolean; landmark: string;
+function Summary({ cartItems, subtotal, delivery, total, hasPass, landmark, promo, setPromo }: {
+  cartItems: CartItem[]; subtotal: number; delivery: number; total: number; hasPass: boolean; landmark: string;
   promo: { code: string; discount: number } | null;
   setPromo: (p: { code: string; discount: number } | null) => void;
 }) {
@@ -490,17 +490,61 @@ function Summary({ cart, subtotal, delivery, total, hasPass, landmark, promo, se
     setCode("");
   };
 
+  const handleRemove = (item: CartItem) => {
+    const snapshot = { ...item };
+    removeFromCart(item.id);
+    toast("Article retiré", {
+      description: item.name,
+      action: { label: "Annuler", onClick: () => addToCart(snapshot) },
+      duration: 5000,
+    });
+  };
+
   return (
-    <aside className="rounded-3xl border border-border bg-surface/60 p-5 h-fit md:sticky md:top-20">
+    <aside className="rounded-3xl border border-border bg-card p-5 h-fit md:sticky md:top-20 shadow-card">
       <h3 className="font-display text-lg font-bold">Ta commande</h3>
-      <p className="text-xs text-muted-foreground">Chez Mama Bello · Akwa</p>
-      <ul className="mt-4 space-y-2 text-sm">
-        {cart.map((i) => (
-          <li key={i.name} className="flex justify-between">
-            <span><span className="text-muted-foreground">{i.qty}×</span> {i.name}</span>
-            <span>{(i.qty * i.price).toLocaleString("fr-FR")} F</span>
+      <p className="text-xs text-muted-foreground">{cartItems.length} article{cartItems.length > 1 ? "s" : ""}</p>
+      <ul className="mt-4 space-y-3 text-sm">
+        {cartItems.map((i) => (
+          <li
+            key={i.id}
+            className="group relative flex items-center gap-3 rounded-2xl border border-border/60 bg-background p-2 pr-3 animate-fade-up"
+          >
+            <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-muted">
+              {i.image ? (
+                <img src={i.image} alt={i.name} className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-xl">🍽️</div>
+              )}
+              <button
+                type="button"
+                aria-label={`Retirer ${i.name}`}
+                onClick={() => handleRemove(i)}
+                className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-md transition-transform hover:scale-110 active:scale-95"
+              >
+                <X className="h-3.5 w-3.5" strokeWidth={3} />
+              </button>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-semibold">{i.name}</p>
+              <p className="text-xs text-muted-foreground">{(i.qty * i.price).toLocaleString("fr-FR")} F</p>
+              <div className="mt-1.5">
+                <QuantityStepper
+                  size="sm"
+                  qty={i.qty}
+                  onInc={() => setCartQty(i.id, i.qty + 1)}
+                  onDec={() => setCartQty(i.id, i.qty - 1)}
+                  ariaLabel={`Quantité ${i.name}`}
+                />
+              </div>
+            </div>
           </li>
         ))}
+        {cartItems.length === 0 && (
+          <li className="rounded-2xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
+            Ton panier est vide. <Link to="/" className="font-semibold text-primary">Découvrir des restos</Link>
+          </li>
+        )}
       </ul>
       <div className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
         <div className="flex justify-between text-muted-foreground"><span>Sous-total</span><span>{subtotal.toLocaleString("fr-FR")} F</span></div>
