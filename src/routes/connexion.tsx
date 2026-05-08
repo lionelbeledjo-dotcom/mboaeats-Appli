@@ -76,6 +76,7 @@ function Connexion() {
   const verifyOtpFn = useServerFn(verifyOtp);
   const checkAdminFn = useServerFn(checkAdminEligibility);
   const claimAdminFn = useServerFn(claimAdminByPhone);
+  const getDeliveryConfigFn = useServerFn(getOtpDeliveryConfig);
   const [mode, setMode] = useState<Mode>("phone");
   const [step, setStep] = useState<Step>("identify");
 
@@ -90,6 +91,22 @@ function Connexion() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [smsTrial, setSmsTrial] = useState(false);
+  const [showWhatsAppFallback, setShowWhatsAppFallback] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    getDeliveryConfigFn()
+      .then((cfg: any) => {
+        if (!active) return;
+        if (cfg?.twilioTrial) {
+          setSmsTrial(true);
+          setChannel("whatsapp");
+        }
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [getDeliveryConfigFn]);
 
   const country = COUNTRIES.find((c) => c.code === countryCode) ?? COUNTRIES[0];
   const filteredCountries = useMemo(() => {
