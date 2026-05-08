@@ -107,7 +107,7 @@ export function AideContextuelle({
             aria-label={`Besoin d'aide sur ${section.title}`}
             className={cn(
               "relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-orange-500 text-white shadow-lg transition-transform hover:scale-110 active:scale-95",
-              floating && "fixed top-3 right-16 z-50 sm:right-20 sm:top-4",
+              floating && "fixed left-3 top-3 z-50 sm:left-4 sm:top-4",
               className
             )}
           >

@@ -4,11 +4,13 @@ import {
   User, Crown, MapPin, CreditCard, Bell, Shield, HelpCircle,
   LogOut, ChevronRight, Heart, Bike, Store, Sparkles, Volume2, VolumeX,
   Loader2, Check, ShieldCheck, LayoutDashboard, Coins, AlertTriangle, Settings, Package,
+  Sun, Moon,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { isCartSoundEnabled, setCartSoundEnabled, CART_SOUND_EVT } from "@/lib/cart-sound";
 import { getMyProfile, upsertMyProfile, getMyLoyalty } from "@/server/account.functions";
 import { useSessionUser } from "@/hooks/useSessionUser";
+import { useTheme } from "@/components/ThemeProvider";
 
 export const Route = createFileRoute("/profil")({
   head: () => ({
@@ -23,6 +25,7 @@ export const Route = createFileRoute("/profil")({
 function ProfilPage() {
   const navigate = useNavigate();
   const { user: sessionUser, loading: sessionLoading, refresh: refreshSession } = useSessionUser();
+  const { theme, toggle: toggleTheme } = useTheme();
   const [authChecked, setAuthChecked] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -237,6 +240,32 @@ function ProfilPage() {
         </Section>
 
         <Section title="Préférences">
+          <li>
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-pressed={theme === "dark"}
+              className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-surface/80"
+            >
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                {theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+              </span>
+              <span className="flex-1 text-sm font-medium">
+                Thème {theme === "dark" ? "sombre" : "clair"}
+                <span className="block text-[11px] font-normal text-muted-foreground">
+                  Bascule entre le mode clair et sombre
+                </span>
+              </span>
+              <span
+                className={`relative h-6 w-11 rounded-full transition ${theme === "dark" ? "bg-primary" : "bg-muted"}`}
+                aria-hidden="true"
+              >
+                <span
+                  className={`absolute top-0.5 h-5 w-5 rounded-full bg-background shadow transition-transform ${theme === "dark" ? "translate-x-[22px]" : "translate-x-0.5"}`}
+                />
+              </span>
+            </button>
+          </li>
           <li>
             <button
               type="button"
