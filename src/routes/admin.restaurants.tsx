@@ -68,6 +68,16 @@ function Restaurants() {
     setOpenId(id);
     setDetails(null);
     setDetailsLoading(true);
+    if (id.startsWith("mk-")) {
+      const r = MOCK_RESTOS.find((x) => x.id === id);
+      setDetails({
+        restaurant: { ...r, slug: r?.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"), eta_min: 20, eta_max: 35, delivery_fee: 1000, min_order: 2500 },
+        owner: { full_name: "Propriétaire démo", phone: "+237 6 99 00 00 00", city: "Douala" },
+        stats: { dishes: 18, orders: 142 },
+      });
+      setDetailsLoading(false);
+      return;
+    }
     try {
       const d = await fetchDetails({ data: { id } });
       setDetails(d as Details);
