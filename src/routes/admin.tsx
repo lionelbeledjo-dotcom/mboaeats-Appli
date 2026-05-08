@@ -206,25 +206,42 @@ function AdminSidebar() {
           <SidebarGroupLabel>Pilotage</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={isActive(item)}>
-                    <Link to={item.url} className="flex items-center gap-2">
-                      <item.icon className="h-4 w-4" />
-                      {!collapsed && (
-                        <>
-                          <span className="flex-1">{item.title}</span>
-                          {item.badge && (
-                            <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">
-                              {item.badge}
-                            </span>
-                          )}
-                        </>
-                      )}
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {navItems.map((item) => {
+                const active = isActive(item);
+                const tone = TONES[item.tone];
+                return (
+                  <SidebarMenuItem key={item.url}>
+                    <SidebarMenuButton asChild isActive={active}>
+                      <Link
+                        to={item.url}
+                        className={`relative flex items-center gap-2 rounded-xl transition-all duration-300 ease-out ${
+                          active
+                            ? `${tone.bg} ${tone.text} ${tone.glow} ring-1 ${tone.ring} scale-[1.04]`
+                            : "hover:bg-muted/40"
+                        }`}
+                      >
+                        {active && (
+                          <span
+                            className={`absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full ${tone.bar} animate-fade-in`}
+                            aria-hidden
+                          />
+                        )}
+                        <item.icon className={`h-4 w-4 transition-colors ${active ? `${tone.icon} drop-shadow-[0_0_6px_currentColor]` : ""}`} />
+                        {!collapsed && (
+                          <>
+                            <span className={`flex-1 ${active ? "font-bold tracking-wide" : ""}`}>{item.title}</span>
+                            {item.badge && (
+                              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${active ? `${tone.bar} text-white` : "bg-primary/15 text-primary"}`}>
+                                {item.badge}
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
