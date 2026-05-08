@@ -59,11 +59,12 @@ function Connexion() {
       <div className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-8">
         <button
           type="button"
+          aria-label="Retour à la page d'accueil MboaEats"
+          title="Retour à l'accueil"
           onClick={() => {
             if (typeof window !== "undefined" && window.history.length > 1) {
               try {
                 window.history.back();
-                // Safety net: if back() doesn't change the route within 250ms, force navigate to /
                 const startPath = window.location.pathname;
                 setTimeout(() => {
                   if (window.location.pathname === startPath) {
@@ -77,9 +78,15 @@ function Connexion() {
             }
             navigate({ to: "/", replace: true });
           }}
-          className="inline-flex w-fit items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-black"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              (e.currentTarget as HTMLButtonElement).click();
+            }
+          }}
+          className="inline-flex w-fit items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-black focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-white"
         >
-          <ArrowLeft className="h-4 w-4" strokeWidth={2.5} />
+          <ArrowLeft className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" focusable="false" />
           <span>Accueil</span>
         </button>
 
