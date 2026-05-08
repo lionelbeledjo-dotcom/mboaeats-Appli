@@ -203,3 +203,86 @@ export const getActiveMboaPass = createServerFn({ method: "POST" })
       .maybeSingle();
     return { active: !!row, sub: row ?? null };
   });
+
+// ─── Carte bancaire via Campay (hosted payment link Visa/Mastercard) ────────
+async function campayPaymentLink(amount: number, reference: string, returnUrl: string) {
+  const token = await campayToken();
+  const r = await fetch(`${CAMPAY_BASE}/get_payment_link/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Token ${token}` },
+    body: JSON.stringify({
+      amount: String(amount),
+      currency: "XAF",
+      description: `MboaEats ${reference}`,
+      external_reference: reference,
+      redirect_url: returnUrl,
+      failure_redirect_url: returnUrl,
+      payment_options: "CARD",
+    }),
+  });
+  const j = (await r.json().catch(() => ({}))) as { link?: string; payment_url?: string };
+  const link = j.link ?? j.payment_url;
+  if (!r.ok || !link) return { ok: false as const, error: `Campay link HTTP ${r.status}` };
+  return { ok: true as const, link };
+}
+
+export const initiateCardPayment = createServerFn({ method: "POST" })
+  .inputValidator((d) => InitiateCardSchema.parse(d))
+  .handler(async ({ data }) => {
+    if (!isCampayConfigured()) {
+      throw new Error("Paiement carte indisponible : Campay n'est pas configuré.");
+    }
+    const reference = genReference("card");
+    const { error } = await supabaseAdmin.from("payments").insert({
+      provider: "card",
+      reference,
+      msisdn: null,
+      amount_fcfa: data.amount,
+      purpose: data.purpose,
+      status: "pending",
+      otp_code: null,
+      metadata: { live: true, provider_name: "campay", channel: "card", ...(data.metadata ?? {}) },
+    });
+    if (error) throw new Error(error.message);
+
+    const res = await campayPaymentLink(data.amount, reference, data.return_url);
+    if (!res.ok) {
+      await supabaseAdmin.from("payments").update({ status: "failed" }).eq("reference", reference);
+      return { ok: false as const, reference, error: res.error };
+    }
+    return { ok: true as const, reference, link: res.link };
+  });
+
+export const pollPaymentStatus = createServerFn({ method: "POST" })
+  .inputValidator((d) => PollSchema.parse(d))
+  .handler(async ({ data }) => {
+    const { data: row } = await supabaseAdmin
+      .from("payments")
+      .select("status, provider_tx_id")
+      .eq("reference", data.reference)
+      .maybeSingle();
+    if (!row) return { status: "unknown" as const };
+    if (row.status === "succeeded") return { status: "succeeded" as const };
+    if (row.status === "failed") return { status: "failed" as const };
+    // Si webhook pas encore reçu, on tente une vérif live via external_reference
+    try {
+      const token = await campayToken();
+      const r = await fetch(`${CAMPAY_BASE}/transaction/${data.reference}/`, {
+        headers: { Authorization: `Token ${token}` },
+      });
+      if (r.ok) {
+        const j = (await r.json()) as { status?: string; reference?: string };
+        if (j.status === "SUCCESSFUL") {
+          await supabaseAdmin.from("payments")
+            .update({ status: "succeeded", provider_tx_id: j.reference ?? data.reference })
+            .eq("reference", data.reference);
+          return { status: "succeeded" as const };
+        }
+        if (j.status === "FAILED") {
+          await supabaseAdmin.from("payments").update({ status: "failed" }).eq("reference", data.reference);
+          return { status: "failed" as const };
+        }
+      }
+    } catch { /* ignore */ }
+    return { status: "pending" as const };
+  });
