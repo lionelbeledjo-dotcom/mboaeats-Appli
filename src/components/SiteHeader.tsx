@@ -234,6 +234,13 @@ export function SiteHeader() {
           open ? "max-h-[80vh] opacity-100" : "max-h-0 opacity-0",
         )}
       >
+        <div className="px-3 pb-1 pt-3 sm:px-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">
+            Navigation
+          </p>
+        </div>
+        <div className="mx-3 h-px bg-white/10 sm:mx-4" aria-hidden="true" />
+
         <ul className="flex flex-col gap-1 p-2.5 sm:p-3">
           {NAV_ITEMS.map(({ to, label, icon: Icon, exact }, i) => {
             const active = isActive(to, exact);
@@ -258,12 +265,12 @@ export function SiteHeader() {
                   onKeyDown={(e) => onItemKeyDown(e, i)}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "relative flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-sm font-semibold sm:gap-3 sm:px-3 sm:py-3",
+                    "relative flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold",
                     "transition-all duration-200 active:scale-[0.98]",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cm-green/60 focus-visible:ring-offset-0",
                     active
-                      ? "bg-brand-cm-green/15 text-brand-cm-green ring-1 ring-brand-cm-green/40"
-                      : "text-white/80 hover:bg-white/5 hover:text-white",
+                      ? "bg-brand-cm-green/15 text-white ring-1 ring-brand-cm-green/40"
+                      : "text-white/85 hover:bg-white/10 hover:text-white",
                   )}
                 >
                   {/* Indicateur vertical d'état actif */}
@@ -275,15 +282,17 @@ export function SiteHeader() {
                   )}
                   <span
                     className={cn(
-                      "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-                      active ? "bg-brand-cm-green/20" : "bg-white/5",
+                      "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-colors",
+                      active
+                        ? "border-brand-cm-green/40 bg-brand-cm-green/20 text-brand-cm-green"
+                        : "border-white/10 bg-white/[0.06] text-white/80 group-hover:text-white",
                     )}
                   >
                     <Icon className="h-4 w-4" strokeWidth={2.25} />
                   </span>
                   <span className="min-w-0 flex-1 truncate">{label}</span>
                   {active && (
-                    <span className="shrink-0 rounded-full bg-brand-cm-green/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-cm-green">
+                    <span className="shrink-0 rounded-full bg-brand-cm-green/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-cm-green ring-1 ring-brand-cm-green/40">
                       Ici
                     </span>
                   )}
@@ -292,11 +301,14 @@ export function SiteHeader() {
             );
           })}
 
+          {/* Séparateur avant le CTA */}
+          <li role="none" aria-hidden="true" className="my-1 h-px bg-white/10" />
+
           <li
             role="none"
             style={{ transitionDelay: open ? `${60 + NAV_ITEMS.length * 40}ms` : "0ms" }}
             className={cn(
-              "mt-2 transition-all duration-300 ease-out",
+              "mt-1 transition-all duration-300 ease-out",
               open ? "translate-x-0 opacity-100" : "-translate-x-2 opacity-0",
             )}
           >
@@ -311,9 +323,9 @@ export function SiteHeader() {
               onKeyDown={(e) => onItemKeyDown(e, NAV_ITEMS.length)}
               className={cn(
                 "flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-bold",
-                "bg-brand-cm-green text-brand-cm-green-fg shadow-badge",
-                "transition-all duration-200 active:scale-[0.98]",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[hsl(240_10%_8%)]",
+                "bg-brand-cm-green text-brand-cm-green-fg shadow-[0_8px_24px_-8px_rgba(6,193,103,0.6)]",
+                "transition-all duration-200 hover:brightness-110 active:scale-[0.98]",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cm-green/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
               )}
             >
               <ShoppingBag className="h-4 w-4" strokeWidth={2.5} />
