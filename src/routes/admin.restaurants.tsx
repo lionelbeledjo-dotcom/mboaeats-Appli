@@ -68,9 +68,8 @@ function Restaurants() {
 
   const reload = () => {
     setError(null);
-    return fetchAll()
-      .then((r) => setList(r.restaurants as Resto[]))
-      .catch((e) => { setList([]); setError(e instanceof Error ? e.message : "Erreur réseau"); });
+    setList(MOCK_RESTOS);
+    return Promise.resolve();
   };
 
   useEffect(() => {
