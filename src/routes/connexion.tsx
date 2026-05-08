@@ -88,6 +88,10 @@ function Connexion() {
 
   const [showCountries, setShowCountries] = useState(false);
   const [countryQuery, setCountryQuery] = useState("");
+  const [highlightedCountry, setHighlightedCountry] = useState(0);
+  const countryTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const countrySearchRef = useRef<HTMLInputElement | null>(null);
+  const countryListRef = useRef<HTMLDivElement | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
