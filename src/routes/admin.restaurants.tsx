@@ -311,6 +311,22 @@ function Restaurants() {
                     Approuver et publier
                   </button>
                 )}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setEditing(r)}
+                    disabled={busy}
+                    className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-border bg-background/50 text-xs font-semibold transition hover:bg-background disabled:opacity-60"
+                  >
+                    <Pencil className="h-3.5 w-3.5" /> Éditer
+                  </button>
+                  <button
+                    onClick={() => handleDelete(r)}
+                    disabled={busy}
+                    className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-destructive/40 bg-destructive/10 text-xs font-semibold text-destructive transition hover:bg-destructive/20 disabled:opacity-60"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> Supprimer
+                  </button>
+                </div>
               </div>
             </div>
           );
