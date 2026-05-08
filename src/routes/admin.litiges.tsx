@@ -86,6 +86,11 @@ function Litiges() {
 
   const handleDelete = async (it: Dispute) => {
     if (!confirm(`Supprimer le litige #${it.orders?.reference ?? it.order_id.slice(0, 8)} ?`)) return;
+    if (it.id.startsWith("mk")) {
+      setItems((prev) => prev?.filter((x) => x.id !== it.id) ?? null);
+      toast.success("Litige supprimé (démo)");
+      return;
+    }
     try {
       await deleteFn({ data: { id: it.id } });
       toast.success("Litige supprimé");
