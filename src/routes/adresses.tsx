@@ -293,6 +293,7 @@ function AddressesPage() {
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
+            <CityDeliveryPanel city={city} info={cityInfo} />
           </Field>
 
           <Field label="Numéro de téléphone de livraison" hint="Mobile Cameroun · 9 chiffres (6XX XX XX XX)">
