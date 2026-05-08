@@ -51,6 +51,7 @@ const navItems = [
   { title: "Commissions", url: "/admin/commissions", icon: Coins },
   { title: "Zones livraison", url: "/admin/zones", icon: MapPin },
   { title: "Restaurants", url: "/admin/restaurants", icon: Store },
+  { title: "Menus & Catégories", url: "/admin/menus", icon: Utensils },
   { title: "Livreurs", url: "/admin/livreurs", icon: Bike },
   { title: "Litiges", url: "/admin/litiges", icon: AlertTriangle, badge: 4 },
 ];
