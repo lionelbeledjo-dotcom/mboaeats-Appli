@@ -205,10 +205,21 @@ function RestaurantPage() {
                               },
                             });
                           }}
-                          className="absolute -bottom-2 -right-2 flex h-9 w-9 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-glow transition-transform hover:scale-110 active:scale-95"
+                          className={`absolute -bottom-2 -right-2 flex h-9 w-9 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-glow transition-transform hover:scale-110 active:scale-95 ${qtyOf(dish.id) > 0 ? "hidden" : ""}`}
                         >
                           <Plus className="h-5 w-5" strokeWidth={2.6} />
                         </button>
+                        {qtyOf(dish.id) > 0 && (
+                          <div className="absolute -bottom-3 -right-2">
+                            <QuantityStepper
+                              size="sm"
+                              qty={qtyOf(dish.id)}
+                              onInc={() => setCartQty(`${dish.id}__default`, qtyOf(dish.id) + 1)}
+                              onDec={() => setCartQty(`${dish.id}__default`, qtyOf(dish.id) - 1)}
+                              ariaLabel={`Quantité de ${dish.name}`}
+                            />
+                          </div>
+                        )}
                       </div>
                     </Link>
                   </li>
