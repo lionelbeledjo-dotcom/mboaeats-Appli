@@ -9,18 +9,19 @@ interface MboaEatsLogoProps {
   className?: string;
 }
 
+// Tailles fluides : clamp() garantit la lisibilité jusqu'à 320px sans débordement
 const TEXT_SIZES = {
-  sm: "text-[28px] sm:text-[32px]",
-  md: "text-[40px] sm:text-[48px]",
-  lg: "text-[40px] sm:text-[56px]",
-  xl: "text-[64px] sm:text-[88px]",
+  sm: "text-[clamp(22px,7vw,32px)]",
+  md: "text-[clamp(28px,8vw,48px)]",
+  lg: "text-[clamp(30px,9vw,56px)]",
+  xl: "text-[clamp(44px,12vw,88px)]",
 } as const;
 
 const PADDING_SIZES = {
-  sm: "px-4 py-3 sm:px-5 sm:py-4",
-  md: "px-5 py-4 sm:px-6 sm:py-5",
-  lg: "px-6 py-5 sm:px-8 sm:py-6",
-  xl: "px-8 py-6 sm:px-12 sm:py-8",
+  sm: "px-3 py-2.5 sm:px-5 sm:py-4",
+  md: "px-4 py-3 sm:px-6 sm:py-5",
+  lg: "px-4 py-4 sm:px-8 sm:py-6",
+  xl: "px-5 py-5 sm:px-12 sm:py-8",
 } as const;
 
 /**
