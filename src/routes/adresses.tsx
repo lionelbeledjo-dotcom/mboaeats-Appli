@@ -293,21 +293,40 @@ function AddressesPage() {
             </select>
           </Field>
 
-          <Field label="Numéro de téléphone de livraison" hint="Format Cameroun (+237)">
-            <div className="flex items-stretch overflow-hidden rounded-2xl border border-border bg-background focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30">
-              <span className="inline-flex items-center gap-1.5 border-r border-border bg-surface px-3 text-sm font-semibold text-muted-foreground">
-                <Phone className="h-3.5 w-3.5" /> +237
-              </span>
-              <input
-                type="tel"
-                inputMode="numeric"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/[^\d ]/g, "").slice(0, 13))}
-                placeholder="6 99 12 34 56"
-                className="flex-1 bg-transparent px-4 py-3 text-sm outline-none placeholder:text-muted-foreground/60"
-                required
-              />
-            </div>
+          <Field label="Numéro de téléphone de livraison" hint="Mobile Cameroun · 9 chiffres (6XX XX XX XX)">
+            {(() => {
+              const v = validateCmPhone(phone);
+              const showError = phone.length > 0 && !v.ok;
+              return (
+                <>
+                  <div
+                    className={`flex items-stretch overflow-hidden rounded-2xl border bg-background transition ${
+                      showError
+                        ? "border-destructive focus-within:ring-2 focus-within:ring-destructive/30"
+                        : "border-border focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30"
+                    }`}
+                  >
+                    <span className="inline-flex items-center gap-1.5 border-r border-border bg-surface px-3 text-sm font-semibold text-muted-foreground">
+                      <Phone className="h-3.5 w-3.5" /> +237
+                    </span>
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      autoComplete="tel-national"
+                      value={phone}
+                      onChange={(e) => setPhone(formatCmPhone(e.target.value))}
+                      placeholder="6 99 12 34 56"
+                      maxLength={12}
+                      className="flex-1 bg-transparent px-4 py-3 text-sm outline-none placeholder:text-muted-foreground/60"
+                      required
+                    />
+                  </div>
+                  {showError && (
+                    <p className="mt-1.5 text-[11px] font-medium text-destructive">{v.error}</p>
+                  )}
+                </>
+              );
+            })()}
           </Field>
 
           <button
