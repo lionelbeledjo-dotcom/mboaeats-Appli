@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Flame, ShieldCheck, Loader2, Check, AlertCircle, Mail, Phone, MessageCircle, Send, ChevronDown } from "lucide-react";
-import { sendOtp, verifyOtp } from "@/lib/otp.functions";
+import { sendOtp, verifyOtp, getOtpDeliveryConfig } from "@/lib/otp.functions";
 import { claimAdminByPhone, checkAdminEligibility } from "@/lib/admin-claim.functions";
 
 export const Route = createFileRoute("/connexion")({
@@ -76,6 +76,7 @@ function Connexion() {
   const verifyOtpFn = useServerFn(verifyOtp);
   const checkAdminFn = useServerFn(checkAdminEligibility);
   const claimAdminFn = useServerFn(claimAdminByPhone);
+  const getDeliveryConfigFn = useServerFn(getOtpDeliveryConfig);
   const [mode, setMode] = useState<Mode>("phone");
   const [step, setStep] = useState<Step>("identify");
 
@@ -90,6 +91,22 @@ function Connexion() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [smsTrial, setSmsTrial] = useState(false);
+  const [showWhatsAppFallback, setShowWhatsAppFallback] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    getDeliveryConfigFn()
+      .then((cfg: any) => {
+        if (!active) return;
+        if (cfg?.twilioTrial) {
+          setSmsTrial(true);
+          setChannel("whatsapp");
+        }
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [getDeliveryConfigFn]);
 
   const country = COUNTRIES.find((c) => c.code === countryCode) ?? COUNTRIES[0];
   const filteredCountries = useMemo(() => {
@@ -123,19 +140,26 @@ function Connexion() {
     setStep("channel");
   };
 
-  const sendCode = async () => {
+  const sendCode = async (overrideChannel?: Channel) => {
+    const ch = overrideChannel ?? channel;
     setError(null);
+    setShowWhatsAppFallback(false);
     setLoading(true);
     try {
-      if (mode === "phone" && (channel === "sms" || channel === "whatsapp")) {
+      if (mode === "phone" && (ch === "sms" || ch === "whatsapp")) {
         const fullPhone = formatPhoneForOtp(country.dial, phone);
-        await sendOtpFn({ data: { phone: fullPhone, channel } });
+        await sendOtpFn({ data: { phone: fullPhone, channel: ch } });
+        if (overrideChannel) setChannel(overrideChannel);
         setStep("otp");
       } else {
         setError("Ce canal n'est pas encore disponible. Choisissez SMS ou WhatsApp.");
       }
     } catch (err: any) {
-      setError(err?.message ?? "Échec de l'envoi du code");
+      const msg = err?.message ?? "Échec de l'envoi du code";
+      setError(msg);
+      if (ch === "sms" && /whatsapp/i.test(msg)) {
+        setShowWhatsAppFallback(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -316,7 +340,13 @@ function Connexion() {
                   </>
                 )}
 
-                {mode === "phone" && (
+                {mode === "phone" && smsTrial && (
+                  <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 text-xs text-foreground">
+                    🔔 Le service SMS est temporairement indisponible. Recevez votre code par WhatsApp — gratuit et immédiat.
+                  </div>
+                )}
+
+                {mode === "phone" && !smsTrial && (
                   <div>
                     <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       Recevoir le code par
@@ -324,14 +354,14 @@ function Connexion() {
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
-                        onClick={() => { setChannel("sms"); setError(null); }}
+                        onClick={() => { setChannel("sms"); setError(null); setShowWhatsAppFallback(false); }}
                         className={`flex items-center justify-center gap-2 rounded-2xl border p-3 text-sm font-semibold transition ${channel === "sms" ? "border-primary bg-primary/10 text-foreground" : "border-border bg-background text-muted-foreground hover:bg-muted/40"}`}
                       >
                         <MessageCircle className="h-4 w-4" /> SMS
                       </button>
                       <button
                         type="button"
-                        onClick={() => { setChannel("whatsapp"); setError(null); }}
+                        onClick={() => { setChannel("whatsapp"); setError(null); setShowWhatsAppFallback(false); }}
                         className={`flex items-center justify-center gap-2 rounded-2xl border p-3 text-sm font-semibold transition ${channel === "whatsapp" ? "border-primary bg-primary/10 text-foreground" : "border-border bg-background text-muted-foreground hover:bg-muted/40"}`}
                       >
                         <Send className="h-4 w-4" /> WhatsApp
@@ -346,9 +376,31 @@ function Connexion() {
                 </p>
 
                 {error && (
-                  <div className="flex items-start gap-2 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
-                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                    <span>{error}</span>
+                  <div className="space-y-2 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span>{error}</span>
+                    </div>
+                    {showWhatsAppFallback && (
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => sendCode("whatsapp")}
+                          disabled={loading}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-gradient-primary px-3 py-1.5 text-[11px] font-semibold text-primary-foreground shadow-glow disabled:opacity-60"
+                        >
+                          <Send className="h-3 w-3" /> Recevoir par WhatsApp
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => sendCode("sms")}
+                          disabled={loading}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-[11px] font-semibold text-muted-foreground"
+                        >
+                          Réessayer
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -390,7 +442,7 @@ function Connexion() {
                 </button>
                 <button
                   type="button"
-                  onClick={sendCode}
+                  onClick={() => sendCode()}
                   disabled={loading}
                   className="inline-flex h-12 flex-[2] items-center justify-center gap-2 rounded-full bg-gradient-primary text-sm font-semibold text-primary-foreground shadow-glow active:scale-[0.98] disabled:opacity-60"
                 >

@@ -240,7 +240,7 @@ export const sendOtp = createServerFn({ method: "POST" })
 
     const { error } = await supabaseAdmin
       .from("otp_codes")
-      .insert({ phone, code_hash, expires_at });
+      .insert({ phone, code_hash, expires_at, method: channel });
     if (error) throw new Error("Impossible d'enregistrer le code");
 
     const session = await getMboaSession();
