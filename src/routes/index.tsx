@@ -219,7 +219,7 @@ function Index() {
                       style={{ backgroundColor: "#00B14F" }}
                     >
                       <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
-                      Add
+                      Ajouter
                     </button>
                   </div>
                 </div>
