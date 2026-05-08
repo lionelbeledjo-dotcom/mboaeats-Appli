@@ -52,19 +52,28 @@ function Overview() {
         <p className="text-xs text-muted-foreground sm:text-sm">Activité MboaEats · Douala · Aperçu en direct</p>
       </div>
 
-      <div className="grid gap-3 sm:gap-4 lg:grid-cols-4">
+      <div className="grid gap-3 sm:gap-5 lg:grid-cols-4">
         {KPIS.map((k) => (
-          <div key={k.label} className="flex items-center gap-3 rounded-2xl border border-border bg-surface/60 p-4 sm:block sm:rounded-3xl sm:p-5">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-background sm:h-10 sm:w-10">
-              <k.icon className={`h-5 w-5 ${k.accent === "gold" ? "text-gold" : "text-primary"}`} />
+          <div
+            key={k.label}
+            className="group flex items-center gap-3 rounded-3xl border border-border/60 bg-surface p-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-14px_rgba(0,0,0,0.35)] sm:block sm:p-5"
+          >
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-background shadow-inner sm:h-11 sm:w-11">
+              <k.icon className={`h-6 w-6 ${k.accent === "gold" ? "text-gold" : "text-primary"}`} strokeWidth={2.2} />
             </span>
             <div className="min-w-0 flex-1 sm:mt-4">
               <div className="flex items-center justify-between gap-2">
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground sm:text-xs">{k.label}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-xs">{k.label}</p>
                 {k.suffix && <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{k.suffix}</span>}
               </div>
-              <p className={`mt-0.5 font-display text-xl font-extrabold sm:mt-1 sm:text-2xl ${k.accent === "gold" ? "text-gradient-gold" : "text-gradient-primary"}`}>{k.value}</p>
-              <p className="mt-0.5 truncate text-[11px] text-muted-foreground sm:mt-1">{k.hint}</p>
+              <p
+                className={`mt-1 font-display text-3xl font-extrabold leading-tight tracking-tight tabular-nums sm:mt-1.5 sm:text-4xl ${
+                  k.accent === "gold" ? "text-gradient-gold" : "text-gradient-primary"
+                }`}
+              >
+                {k.value}
+              </p>
+              <p className="mt-1 truncate text-[11px] text-muted-foreground sm:mt-1.5 sm:text-xs">{k.hint}</p>
             </div>
           </div>
         ))}
@@ -207,11 +216,16 @@ function OrderDetailsPanel({ order, onClose }: { order: OrderRow; onClose: () =>
             <button
               type="button"
               onClick={() => exportInvoicePdf(order)}
-              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground shadow-glow transition hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-glow transition-all duration-200 hover:scale-[1.03] hover:opacity-95 active:scale-95"
             >
-              <Download className="h-3.5 w-3.5" /> Exporter PDF
+              <Download className="h-4 w-4" /> Exporter PDF
             </button>
-            <button type="button" onClick={onClose} className="rounded-full p-2 hover:bg-background" aria-label="Fermer le panneau">
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-background"
+              aria-label="Fermer le panneau"
+            >
               <X className="h-5 w-5" />
             </button>
           </div>
