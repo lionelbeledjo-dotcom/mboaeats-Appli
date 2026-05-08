@@ -579,9 +579,11 @@ function Summary({ cartItems, subtotal, delivery, total, hasPass, landmark, prom
           )}
         </div>
         {promo && (
-          <div className="flex justify-between text-primary">
-            <span>Promo {promo.code}</span>
-            <span>−{promo.discount.toLocaleString("fr-FR")} F</span>
+          <div className="-mx-2 flex items-center justify-between rounded-lg bg-[oklch(var(--promo)/0.1)] px-2 py-1.5 text-[oklch(var(--promo))]">
+            <span className="flex items-center gap-1.5 font-semibold">
+              <Check className="h-3.5 w-3.5" /> Promotion appliquée · {promo.code}
+            </span>
+            <span className="font-bold">−{promo.discount.toLocaleString("fr-FR")} F</span>
           </div>
         )}
         <div className="flex justify-between font-display text-xl font-extrabold"><span>Total</span><span className="text-gradient-gold">{total.toLocaleString("fr-FR")} F</span></div>
