@@ -83,9 +83,12 @@ function Commissions() {
 
       <CommissionConfig />
 
-      {error ? (
-        <ErrorState message={error} onRetry={reload} />
-      ) : !report ? (
+      {error && (
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+          Données indisponibles ({error}). Affichage de données de démonstration.
+        </div>
+      )}
+      {!report ? (
         <div className="flex justify-center p-16"><Loader2 className="h-5 w-5 animate-spin" /></div>
       ) : (
         <>
