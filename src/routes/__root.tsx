@@ -7,7 +7,7 @@ import { AideContextuelle } from "@/components/AideContextuelle";
 import { Toaster } from "@/components/ui/sonner";
 import { useSessionUser } from "@/hooks/useSessionUser";
 
-const PUBLIC_ROUTES = ["/connexion", "/admin/login", "/healthcheck"];
+const PUBLIC_ROUTES = ["/", "/connexion", "/inscription", "/reset-password", "/cgu", "/confidentialite", "/admin/login", "/healthcheck"];
 const PUBLIC_PREFIXES = ["/admin"];
 
 function AuthGate({ children }: { children: React.ReactNode }) {
