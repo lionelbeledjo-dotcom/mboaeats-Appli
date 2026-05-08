@@ -1,0 +1,1 @@
+ALTER TABLE public.payments ALTER COLUMN msisdn DROP NOT NULL;
