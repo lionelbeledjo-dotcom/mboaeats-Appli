@@ -70,13 +70,13 @@ function Commissions() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="mx-auto max-w-7xl space-y-4 p-3 sm:space-y-6 sm:p-6">
+      <div className="flex flex-wrap items-end justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="font-display text-3xl font-extrabold">Commissions</h1>
-          <p className="text-sm text-muted-foreground">Suivi des prélèvements MboaEats sur chaque commande · 7 derniers jours</p>
+          <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Commissions</h1>
+          <p className="text-xs text-muted-foreground sm:text-sm">Suivi des prélèvements MboaEats sur chaque commande · 7 derniers jours</p>
         </div>
-        <button onClick={exportCsv} className="flex items-center gap-2 rounded-xl bg-gradient-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-glow">
+        <button onClick={exportCsv} className="inline-flex h-11 items-center gap-2 rounded-xl bg-gradient-primary px-4 text-sm font-semibold text-primary-foreground shadow-glow sm:h-10">
           <Download className="h-4 w-4" /> Export CSV
         </button>
       </div>
