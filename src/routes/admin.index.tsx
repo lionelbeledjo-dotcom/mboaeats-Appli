@@ -194,8 +194,3 @@ function OrderDetailsPanel({ order, onClose }: { order: OrderRow; onClose: () =>
     </div>
   );
 }
-        </div>
-      </div>
-    </div>
-  );
-}
