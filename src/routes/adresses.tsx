@@ -80,6 +80,8 @@ function AddressesPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  const cityInfo = useCityDelivery(city);
+
   const reloadList = async () => {
     try {
       const { data } = await supabase.auth.getUser();
