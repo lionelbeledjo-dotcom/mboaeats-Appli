@@ -697,23 +697,55 @@ function CoverageMap({
         </div>
       </div>
 
-      <div className="relative mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
+      <div
+        className="relative mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4"
+        role="radiogroup"
+        aria-label={`Quartiers desservis à ${city}. Utilisez les flèches pour naviguer, Entrée ou Espace pour sélectionner.`}
+      >
         {zones.map((z, i) => {
           const t = etaTier(z.eta_minutes);
-          const isActive = activeNeighborhood && normalizeText(activeNeighborhood) === normalizeText(z.neighborhood);
+          const isActive = !!activeNeighborhood && normalizeText(activeNeighborhood) === normalizeText(z.neighborhood);
+          const tierLabel = z.eta_minutes <= 25 ? "rapide" : z.eta_minutes <= 35 ? "standard" : "étendu";
+          const ariaLabel = `${z.neighborhood}, livraison ${tierLabel} en ${z.eta_minutes} minutes, frais ${z.base_fee} francs CFA${isActive ? " — quartier actuellement sélectionné" : ""}`;
           return (
             <button
               type="button"
               key={`${z.neighborhood}-${i}`}
+              role="radio"
+              aria-checked={isActive}
+              aria-label={ariaLabel}
+              tabIndex={isActive || (!activeNeighborhood && i === 0) ? 0 : -1}
               onClick={() => onSelect?.(z.neighborhood)}
-              title={`${z.neighborhood} · ${z.eta_minutes} min · ${z.base_fee} FCFA — Cliquez pour sélectionner`}
-              className={`group relative flex flex-col items-center gap-1 rounded-xl border bg-background/70 p-2 text-center transition cursor-pointer hover:scale-[1.03] hover:bg-background active:scale-95 ${
+              onKeyDown={(e) => {
+                const cols = window.matchMedia("(min-width: 640px)").matches ? 4 : 3;
+                let next = -1;
+                if (e.key === "ArrowRight") next = (i + 1) % zones.length;
+                else if (e.key === "ArrowLeft") next = (i - 1 + zones.length) % zones.length;
+                else if (e.key === "ArrowDown") next = Math.min(i + cols, zones.length - 1);
+                else if (e.key === "ArrowUp") next = Math.max(i - cols, 0);
+                else if (e.key === "Home") next = 0;
+                else if (e.key === "End") next = zones.length - 1;
+                else if (e.key === " " || e.key === "Enter") {
+                  e.preventDefault();
+                  onSelect?.(z.neighborhood);
+                  return;
+                }
+                if (next >= 0) {
+                  e.preventDefault();
+                  const parent = (e.currentTarget as HTMLElement).parentElement;
+                  const items = parent?.querySelectorAll<HTMLButtonElement>('[role="radio"]');
+                  items?.[next]?.focus();
+                }
+              }}
+              title={`${z.neighborhood} · ${z.eta_minutes} min · ${z.base_fee} FCFA — Cliquez ou appuyez sur Entrée pour sélectionner`}
+              className={`group relative flex flex-col items-center gap-1 rounded-xl border bg-background/70 p-2 text-center transition cursor-pointer hover:scale-[1.03] hover:bg-background active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                 isActive
                   ? "border-primary shadow-glow ring-2 ring-primary/40"
                   : "border-border hover:border-primary/50"
               }`}
             >
               <span
+                aria-hidden="true"
                 className={`relative inline-flex h-3 w-3 items-center justify-center rounded-full ${t.dot} ${
                   isActive ? "ring-4 " + t.ring : ""
                 }`}
@@ -722,8 +754,8 @@ function CoverageMap({
                   <span className={`absolute inset-0 animate-ping rounded-full ${t.dot} opacity-60`} />
                 )}
               </span>
-              <span className="line-clamp-1 text-[10px] font-semibold text-foreground">{z.neighborhood}</span>
-              <span className="text-[9px] text-muted-foreground">{z.eta_minutes}′ · {z.base_fee}F</span>
+              <span aria-hidden="true" className="line-clamp-1 text-[10px] font-semibold text-foreground">{z.neighborhood}</span>
+              <span aria-hidden="true" className="text-[9px] text-muted-foreground">{z.eta_minutes}′ · {z.base_fee}F</span>
             </button>
           );
         })}
