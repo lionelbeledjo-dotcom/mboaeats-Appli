@@ -651,6 +651,101 @@ function CityDeliveryPanel({ city, info }: { city: string; info: CityInfo }) {
   const hours = CITY_HOURS[city] ?? "09h00 – 22h00";
   return (
     <div className="mt-3 rounded-2xl border border-border bg-surface/40 p-3">
+function etaTier(eta: number): { dot: string; ring: string; label: string } {
+  if (eta <= 25) return { dot: "bg-emerald-500", ring: "ring-emerald-500/40", label: "Rapide" };
+  if (eta <= 35) return { dot: "bg-amber-500", ring: "ring-amber-500/40", label: "Standard" };
+  return { dot: "bg-orange-500", ring: "ring-orange-500/40", label: "Étendu" };
+}
+
+function CoverageMap({
+  city,
+  zones,
+  activeNeighborhood,
+}: {
+  city: string;
+  zones: Zone[];
+  activeNeighborhood: string | null;
+}) {
+  if (zones.length === 0) return null;
+  return (
+    <div
+      className="relative mt-3 overflow-hidden rounded-2xl border border-border p-3"
+      style={{
+        backgroundImage:
+          "radial-gradient(circle at 20% 20%, hsl(var(--primary)/0.18), transparent 55%), radial-gradient(circle at 80% 70%, hsl(var(--primary)/0.12), transparent 60%), linear-gradient(180deg, hsl(var(--surface)/0.6), hsl(var(--background)/0.6))",
+      }}
+      aria-label={`Carte des zones couvertes à ${city}`}
+    >
+      {/* "rues" décoratives */}
+      <div className="pointer-events-none absolute inset-0 opacity-20">
+        <div className="absolute left-0 right-0 top-1/3 h-px bg-foreground/30" />
+        <div className="absolute left-0 right-0 top-2/3 h-px bg-foreground/30" />
+        <div className="absolute bottom-0 top-0 left-1/4 w-px bg-foreground/30" />
+        <div className="absolute bottom-0 top-0 left-3/4 w-px bg-foreground/30" />
+      </div>
+
+      <div className="relative flex items-center justify-between">
+        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-foreground">
+          <MapPin className="h-3.5 w-3.5 text-primary" /> Zones desservies · {city}
+        </div>
+        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> ≤25′</span>
+          <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-amber-500" /> 26–35′</span>
+          <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-orange-500" /> &gt;35′</span>
+        </div>
+      </div>
+
+      <div className="relative mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
+        {zones.map((z, i) => {
+          const t = etaTier(z.eta_minutes);
+          const isActive = activeNeighborhood && normalizeText(activeNeighborhood) === normalizeText(z.neighborhood);
+          return (
+            <div
+              key={`${z.neighborhood}-${i}`}
+              title={`${z.neighborhood} · ${z.eta_minutes} min · ${z.base_fee} FCFA`}
+              className={`group relative flex flex-col items-center gap-1 rounded-xl border bg-background/70 p-2 text-center transition ${
+                isActive
+                  ? "border-primary shadow-glow ring-2 ring-primary/40"
+                  : "border-border hover:border-primary/50"
+              }`}
+            >
+              <span
+                className={`relative inline-flex h-3 w-3 items-center justify-center rounded-full ${t.dot} ${
+                  isActive ? "ring-4 " + t.ring : ""
+                }`}
+              >
+                {isActive && (
+                  <span className={`absolute inset-0 animate-ping rounded-full ${t.dot} opacity-60`} />
+                )}
+              </span>
+              <span className="line-clamp-1 text-[10px] font-semibold text-foreground">{z.neighborhood}</span>
+              <span className="text-[9px] text-muted-foreground">{z.eta_minutes}′ · {z.base_fee}F</span>
+            </div>
+          );
+        })}
+      </div>
+
+      {activeNeighborhood && (
+        <p className="relative mt-2 text-[10px] font-medium text-emerald-400">
+          📍 Vous êtes ici : <span className="font-bold">{activeNeighborhood}</span>
+        </p>
+      )}
+    </div>
+  );
+}
+
+function CityDeliveryPanel({
+  city,
+  info,
+  activeNeighborhood = null,
+}: {
+  city: string;
+  info: CityInfo;
+  activeNeighborhood?: string | null;
+}) {
+  const hours = CITY_HOURS[city] ?? "09h00 – 22h00";
+  return (
+    <div className="mt-3 rounded-2xl border border-border bg-surface/40 p-3">
       {info.loading ? (
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Loader2 className="h-3.5 w-3.5 animate-spin" /> Chargement des disponibilités à {city}…
@@ -675,6 +770,9 @@ function CityDeliveryPanel({ city, info }: { city: string; info: CityInfo }) {
                 : `${info.feeMin}–${info.feeMax} FCFA`}
             </span>
           </div>
+
+          <CoverageMap city={city} zones={info.zones} activeNeighborhood={activeNeighborhood} />
+
           <details className="mt-2 group">
             <summary className="cursor-pointer text-[11px] font-semibold text-muted-foreground hover:text-foreground">
               Voir les {info.zones.length} quartiers desservis
