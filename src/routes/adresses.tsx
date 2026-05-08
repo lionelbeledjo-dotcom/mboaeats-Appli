@@ -362,40 +362,11 @@ function AddressesPage() {
                             <option key={c} value={c}>{c}</option>
                           ))}
                         </select>
-                        {(() => {
-                          const v = validateCmPhone(editDraft!.phone);
-                          const showError = editDraft!.phone.length > 0 && !v.ok;
-                          return (
-                            <>
-                              <div
-                                className={`flex items-stretch overflow-hidden rounded-xl border bg-background transition ${
-                                  showError
-                                    ? "border-destructive focus-within:ring-2 focus-within:ring-destructive/30"
-                                    : "border-border focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30"
-                                }`}
-                              >
-                                <span className="inline-flex items-center gap-1 border-r border-border bg-surface px-2 text-xs font-semibold text-muted-foreground">
-                                  <Phone className="h-3 w-3" /> +237
-                                </span>
-                                <input
-                                  type="tel"
-                                  inputMode="numeric"
-                                  autoComplete="tel-national"
-                                  value={editDraft!.phone}
-                                  onChange={(e) =>
-                                    setEditDraft({ ...editDraft!, phone: formatCmPhone(e.target.value) })
-                                  }
-                                  placeholder="6 99 12 34 56"
-                                  maxLength={12}
-                                  className="flex-1 bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/60"
-                                />
-                              </div>
-                              {showError && (
-                                <p className="-mt-1 text-[10px] font-medium text-destructive">{v.error}</p>
-                              )}
-                            </>
-                          );
-                        })()}
+                        <PhoneField
+                          size="sm"
+                          value={editDraft!.phone}
+                          onChange={(next) => setEditDraft({ ...editDraft!, phone: next })}
+                        />
                         <div className="flex gap-2 pt-1">
                           <button
                             type="button"
