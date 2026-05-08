@@ -1,15 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import {
-  Search, MapPin, Star, Clock, Flame, Bell, ChevronRight, Plus, Users, ArrowRight, Bike,
-} from "lucide-react";
+import { useState, useMemo } from "react";
+import { Search, Star, Clock, Plus, MapPin, Bell } from "lucide-react";
 
 import { restaurants as realRestaurants, getRestaurant } from "@/data/restaurants";
-import MboaExpressAssistant from "@/components/MboaExpressAssistant";
-import QuickLogin from "@/components/QuickLogin";
-import { useSessionUser } from "@/hooks/useSessionUser";
 
-// Pre-cache decoded images so menu pages render instantly on hover/intent.
 const imageCache = new Set<string>();
 function prefetchRestaurantImages(restoId: string) {
   const r = getRestaurant(restoId);
@@ -27,234 +21,211 @@ function prefetchRestaurantImages(restoId: string) {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "MboaEats — Vos plats camerounais livrés à Douala, Yaoundé & Bafoussam" },
-      { name: "description", content: "Commandez Ndolé, Poulet DG, Soya et plus encore. Livraison rapide, paiement Mobile Money, mode Tablée pour partager entre amis." },
-      { property: "og:title", content: "MboaEats — Le goût du Mboa, livré chez vous" },
-      { property: "og:description", content: "Restaurants triés sur le volet à Douala, Yaoundé et Bafoussam. Paiement Mobile Money sécurisé." },
+      { title: "MboaEats — Vos plats camerounais livrés" },
+      { name: "description", content: "Commandez vos plats préférés, livrés rapidement chez vous." },
     ],
   }),
   component: Index,
 });
 
-const cities = ["Douala", "Yaoundé", "Bafoussam"];
-
-const categories = [
-  { slug: "ndole", label: "Ndolé", icon: "🥬" },
-  { slug: "poulet-dg", label: "Poulet DG", icon: "🍗" },
-  { slug: "poisson", label: "Poisson braisé", icon: "🐟" },
-  { slug: "eru", label: "Eru", icon: "🍲" },
-  { slug: "suya", label: "Suya", icon: "🍢" },
-  { slug: "beignets", label: "Beignets", icon: "🥯" },
-  { slug: "jus", label: "Jus naturels", icon: "🥤" },
+const filters = [
+  { key: "nearby", label: "Nearby", icon: "📍" },
+  { key: "popular", label: "Popular", icon: "🔥" },
+  { key: "cuisines", label: "Cuisines", icon: "🍽️" },
 ];
 
-const restaurants = realRestaurants.map((r) => {
-  const minPrice = Math.min(
-    ...r.categories.flatMap((c) => c.dishes.map((d) => d.price))
-  );
+type Card = {
+  slug: string;
+  name: string;
+  tag: string;
+  rating: number;
+  eta: string;
+  img: string;
+  badge: string;
+  price: number;
+  oldPrice: number;
+  promo: number;
+};
+
+const cards: Card[] = realRestaurants.map((r, i) => {
+  const minPrice = Math.min(...r.categories.flatMap((c) => c.dishes.map((d) => d.price)));
+  const promo = [10, 15, 20, 25, 30][i % 5];
+  const oldPrice = Math.round((minPrice / (1 - promo / 100)) / 100) * 100;
   return {
     slug: r.id,
     name: r.name,
     tag: r.tagline.split("—")[0].trim(),
     rating: r.rating,
     eta: r.eta,
-    price: `${minPrice.toLocaleString("fr-FR")} FCFA`,
     img: r.cover,
     badge: r.badge ?? r.neighborhood,
+    price: minPrice,
+    oldPrice,
+    promo,
   };
 });
 
 function Index() {
-  const [city, setCity] = useState("Douala");
-  const { user } = useSessionUser();
-  const isLoggedIn = !!user;
+  const [active, setActive] = useState("popular");
+  const [query, setQuery] = useState("");
+
+  const filtered = useMemo(() => {
+    if (!query.trim()) return cards;
+    const q = query.toLowerCase();
+    return cards.filter((c) => c.name.toLowerCase().includes(q) || c.tag.toLowerCase().includes(q));
+  }, [query]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Header city={city} setCity={setCity} />
-      <main className="mx-auto max-w-md px-4 pb-4">
-        <SearchBar />
-        {!isLoggedIn && <div className="mt-4"><QuickLogin /></div>}
-        <Categories />
-        <TableeBanner />
-        <Restaurants city={city} />
-      </main>
-      <MboaExpressAssistant />
-    </div>
-  );
-}
-
-function Header({ city, setCity }: { city: string; setCity: (c: string) => void }) {
-  return (
-    <header className="sticky top-0 z-40 glass border-b border-border/40">
-      <div className="mx-auto flex max-w-md items-center justify-between px-4 py-3">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-primary shadow-glow">
-            <Flame className="h-5 w-5 text-primary-foreground" />
+    <div className="min-h-screen" style={{ backgroundColor: "#D9E8D8" }}>
+      <div className="mx-auto max-w-md px-4 pb-28 pt-4">
+        {/* Top bar */}
+        <header className="mb-4 flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium" style={{ color: "#888888" }}>
+              Deliver to
+            </p>
+            <button className="flex items-center gap-1 text-sm font-bold" style={{ color: "#1A1A1A" }}>
+              <MapPin className="h-4 w-4" style={{ color: "#00B14F" }} />
+              Douala, CM
+            </button>
           </div>
-          <span className="font-display text-lg font-bold tracking-tight">
-            Mboa<span className="text-gradient-primary">Eats</span>
-          </span>
-        </Link>
-
-        <div className="flex items-center gap-2">
-          <label className="flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1.5 text-xs font-semibold text-primary">
-            <MapPin className="h-3.5 w-3.5" />
-            <select
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              className="bg-transparent outline-none"
-              aria-label="Choisir une ville"
-            >
-              {cities.map((c) => <option key={c} className="bg-surface text-foreground">{c}</option>)}
-            </select>
-          </label>
-          <Link to="/profil" aria-label="Notifications" className="relative rounded-full border border-border bg-surface/60 p-2">
-            <Bell className="h-4 w-4" />
-            <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-accent ring-2 ring-background" />
-          </Link>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function SearchBar() {
-  return (
-    <div className="mt-4 flex items-center gap-2">
-      <Link
-        to="/recherche"
-        className="flex flex-1 items-center gap-2 rounded-2xl border border-border bg-surface/80 px-4 py-3 shadow-card"
-      >
-        <Search className="h-5 w-5 text-muted-foreground" />
-        <span className="text-sm text-muted-foreground">Plat, restaurant, quartier…</span>
-      </Link>
-      <Link
-        to="/decouvrir"
-        className="rounded-2xl border border-primary/40 bg-primary/10 px-3 py-3 text-xs font-bold uppercase text-primary"
-      >
-        Live
-      </Link>
-    </div>
-  );
-}
-
-function Categories() {
-  return (
-    <section className="mt-5">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Catégories
-        </h2>
-        <Link to="/recherche" className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
-          Tout voir <ChevronRight className="h-3 w-3" />
-        </Link>
-      </div>
-      <div className="mt-3 -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {categories.map((c) => (
           <Link
-            key={c.slug}
-            to="/categorie/$slug"
-            params={{ slug: c.slug }}
-            preload="intent"
-            className="flex shrink-0 items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium hover:border-primary/50 active:scale-95 transition-transform"
+            to="/profil"
+            aria-label="Notifications"
+            className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm"
           >
-            <span className="text-base">{c.icon}</span>
-            <span>{c.label}</span>
+            <Bell className="h-5 w-5" style={{ color: "#1A1A1A" }} />
+            <span
+              className="absolute right-2 top-2 h-2 w-2 rounded-full"
+              style={{ backgroundColor: "#FF4D4D" }}
+            />
           </Link>
-        ))}
-      </div>
-    </section>
-  );
-}
+        </header>
 
-function TableeBanner() {
-  return (
-    <Link
-      to="/tablee"
-      className="mt-5 relative block overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/15 via-primary/5 to-accent/10 p-4 shadow-card"
-    >
-      <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground shadow-glow">
-          <Users className="h-5 w-5" />
+        {/* Search */}
+        <div
+          className="flex items-center gap-2 rounded-2xl bg-white px-4 py-3.5"
+          style={{ boxShadow: "0 2px 12px -6px rgba(0,0,0,0.08)" }}
+        >
+          <Search className="h-5 w-5" style={{ color: "#888888" }} />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Would you like to eat something?"
+            className="flex-1 bg-transparent text-sm outline-none"
+            style={{ color: "#1A1A1A" }}
+          />
         </div>
-        <div className="flex-1">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-gold">Exclusivité</p>
-          <p className="font-display font-bold leading-tight">Mode Tablée</p>
-          <p className="text-xs text-muted-foreground">Commandez à plusieurs, payez chacun votre part.</p>
-        </div>
-        <ArrowRight className="h-4 w-4 text-primary" />
-      </div>
-    </Link>
-  );
-}
 
-function Restaurants({ city }: { city: string }) {
-  return (
-    <section className="mt-6">
-      <div className="flex items-end justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-primary">À la une</p>
-          <h2 className="mt-1 font-display text-xl font-bold">Restos ouverts à {city}</h2>
-        </div>
-      </div>
-
-      <div className="mt-4 grid gap-4">
-        {restaurants.map((r, i) => (
-          <Link
-            key={r.name}
-            to="/restaurants/$restoId"
-            params={{ restoId: r.slug }}
-            preload="intent"
-            onMouseEnter={() => prefetchRestaurantImages(r.slug)}
-            onTouchStart={() => prefetchRestaurantImages(r.slug)}
-            className="group relative block overflow-hidden rounded-2xl border border-border bg-card shadow-card active:scale-[0.99] transition-transform"
-            style={{ animationDelay: `${i * 50}ms` }}
-          >
-            <div className="relative aspect-[16/10] overflow-hidden">
-              <img
-                src={r.img}
-                alt={r.name}
-                width={768}
-                height={480}
-                loading={i < 2 ? "eager" : "lazy"}
-                className="h-full w-full object-cover"
-              />
-              <span className="absolute left-3 top-3 rounded-full bg-background/85 px-2.5 py-1 text-[11px] font-semibold backdrop-blur">
-                {r.badge}
-              </span>
-              <span
-                aria-hidden
-                className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-glow"
+        {/* Filter tabs */}
+        <div className="mt-5 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {filters.map((f) => {
+            const isActive = f.key === active;
+            return (
+              <button
+                key={f.key}
+                onClick={() => setActive(f.key)}
+                className="flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-all"
+                style={{
+                  backgroundColor: isActive ? "#00B14F" : "#FFFFFF",
+                  color: isActive ? "#FFFFFF" : "#1A1A1A",
+                  boxShadow: isActive ? "0 4px 14px -4px rgba(0,177,79,0.4)" : "0 1px 4px rgba(0,0,0,0.04)",
+                }}
               >
-                <Plus className="h-4 w-4" />
-              </span>
-            </div>
-            <div className="p-3.5">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <h3 className="truncate font-display text-base font-semibold">{r.name}</h3>
-                  <p className="truncate text-xs text-muted-foreground">{r.tag}</p>
-                </div>
-                <div className="flex items-center gap-1 rounded-md bg-gold/10 px-1.5 py-0.5 text-xs font-semibold text-gold">
-                  <Star className="h-3 w-3 fill-current" />
-                  {r.rating}
-                </div>
-              </div>
-              <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-                <span className="inline-flex items-center gap-1">
-                  <Clock className="h-3.5 w-3.5" /> {r.eta}
+                <span
+                  className="flex h-6 w-6 items-center justify-center rounded-full text-xs"
+                  style={{ backgroundColor: isActive ? "rgba(255,255,255,0.2)" : "#F4F4F4" }}
+                >
+                  {f.icon}
                 </span>
-                <span className="inline-flex items-center gap-1">
-                  <Bike className="h-3.5 w-3.5 text-primary" />
-                  <span className="font-semibold text-foreground">800 F</span>
-                </span>
-                <span className="font-semibold text-foreground">dès {r.price}</span>
-              </div>
-            </div>
+                {f.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Section title */}
+        <div className="mt-6 mb-3 flex items-center justify-between">
+          <h2 className="text-base font-bold" style={{ color: "#1A1A1A" }}>
+            Popular near you
+          </h2>
+          <Link to="/decouvrir" className="text-xs font-semibold" style={{ color: "#00B14F" }}>
+            See all
           </Link>
-        ))}
+        </div>
+
+        {/* Restaurant cards */}
+        <div className="space-y-3">
+          {filtered.map((r) => (
+            <Link
+              key={r.slug}
+              to="/restaurants/$restoId"
+              params={{ restoId: r.slug }}
+              preload="intent"
+              onMouseEnter={() => prefetchRestaurantImages(r.slug)}
+              onTouchStart={() => prefetchRestaurantImages(r.slug)}
+              className="block rounded-2xl bg-white p-3 transition active:scale-[0.99]"
+              style={{ boxShadow: "0 2px 12px -6px rgba(0,0,0,0.08)" }}
+            >
+              <div className="flex gap-3">
+                {/* Image */}
+                <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl">
+                  <img src={r.img} alt={r.name} className="h-full w-full object-cover" loading="lazy" />
+                  <span
+                    className="absolute left-1.5 top-1.5 rounded-md px-1.5 py-0.5 text-[10px] font-bold text-white"
+                    style={{ backgroundColor: "#FF4D4D" }}
+                  >
+                    {r.promo}% OFF
+                  </span>
+                </div>
+
+                {/* Content */}
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <h3 className="truncate text-sm font-bold" style={{ color: "#1A1A1A" }}>
+                    {r.name}
+                  </h3>
+                  <p className="mt-0.5 truncate text-xs" style={{ color: "#888888" }}>
+                    {r.tag}
+                  </p>
+
+                  <div className="mt-1.5 flex items-center gap-3 text-xs" style={{ color: "#888888" }}>
+                    <span className="inline-flex items-center gap-1">
+                      <Star className="h-3 w-3 fill-current" style={{ color: "#FFC107" }} />
+                      <span className="font-semibold" style={{ color: "#1A1A1A" }}>
+                        {r.rating}
+                      </span>
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <Clock className="h-3 w-3" /> {r.eta}
+                    </span>
+                  </div>
+
+                  <div className="mt-auto flex items-end justify-between pt-2">
+                    <div className="leading-tight">
+                      <span className="text-[11px] line-through" style={{ color: "#AAAAAA" }}>
+                        {r.oldPrice.toLocaleString("fr-FR")} F
+                      </span>
+                      <div className="text-sm font-bold" style={{ color: "#1A1A1A" }}>
+                        {r.price.toLocaleString("fr-FR")} F
+                      </div>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                      }}
+                      className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold text-white transition active:scale-95"
+                      style={{ backgroundColor: "#00B14F" }}
+                    >
+                      <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
-    </section>
+    </div>
   );
 }
