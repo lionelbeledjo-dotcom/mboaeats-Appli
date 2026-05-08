@@ -8,10 +8,12 @@ import {
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { listAllRestaurants, setRestaurantActive, getRestaurantDetails, updateRestaurantLocation } from "@/server/admin.functions";
+import { listAllRestaurants, setRestaurantActive, getRestaurantDetails, updateRestaurantLocation, updateRestaurant, deleteRestaurant } from "@/server/admin.functions";
 import RestaurantMap from "@/components/admin/RestaurantMap";
 import { supabase } from "@/integrations/supabase/client";
 import { ErrorState } from "@/components/admin/ErrorState";
+import { Modal, Field, inputCls } from "@/components/admin/Modal";
+import { Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/admin/restaurants")({
   head: () => ({ meta: [{ title: "Restaurants · Admin MboaEats" }, { name: "robots", content: "noindex,nofollow" }] }),
