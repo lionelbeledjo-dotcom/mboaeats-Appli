@@ -639,3 +639,106 @@ function CityDeliveryPanel({ city, info }: { city: string; info: CityInfo }) {
     </div>
   );
 }
+
+// Champ téléphone +237 réutilisable : auto-format, bouton "Reformater",
+// aide contextuelle (chiffres restants, préfixe attendu) et état d'erreur.
+function PhoneField({
+  value,
+  onChange,
+  size = "md",
+  required,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+  size?: "sm" | "md";
+  required?: boolean;
+}) {
+  const v = validateCmPhone(value);
+  const digits = v.digits;
+  const isEmpty = value.length === 0;
+  const showError = !isEmpty && !v.ok && digits.length === 9;
+  // "Différent du format canonique ?" → propose le bouton de reformat.
+  const canonical = formatCmPhone(value);
+  const needsReformat = !isEmpty && value !== canonical;
+
+  // Aide contextuelle progressive
+  let hint: string | null = null;
+  if (!isEmpty && !v.ok) {
+    if (digits.length === 0) hint = "Tapez votre numéro mobile (sans le +237).";
+    else if (digits.length > 0 && !digits.startsWith("6"))
+      hint = "Un mobile camerounais commence par 6.";
+    else if (digits.length < 9) hint = `Encore ${9 - digits.length} chiffre${9 - digits.length > 1 ? "s" : ""}…`;
+    else hint = v.error ?? null;
+  } else if (v.ok) {
+    hint = "Numéro valide ✓";
+  }
+
+  const pad = size === "sm" ? "px-3 py-2 text-sm" : "px-4 py-3 text-sm";
+  const radius = size === "sm" ? "rounded-xl" : "rounded-2xl";
+  const iconSize = size === "sm" ? "h-3 w-3" : "h-3.5 w-3.5";
+
+  return (
+    <>
+      <div
+        className={`flex items-stretch overflow-hidden border bg-background transition ${radius} ${
+          showError
+            ? "border-destructive focus-within:ring-2 focus-within:ring-destructive/30"
+            : v.ok
+            ? "border-emerald-500/60 focus-within:ring-2 focus-within:ring-emerald-500/30"
+            : "border-border focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30"
+        }`}
+      >
+        <span
+          className={`inline-flex items-center gap-1.5 border-r border-border bg-surface ${
+            size === "sm" ? "px-2 text-xs" : "px-3 text-sm"
+          } font-semibold text-muted-foreground`}
+        >
+          <Phone className={iconSize} /> +237
+        </span>
+        <input
+          type="tel"
+          inputMode="numeric"
+          autoComplete="tel-national"
+          value={value}
+          onChange={(e) => onChange(formatCmPhone(e.target.value))}
+          placeholder="6 99 12 34 56"
+          maxLength={12}
+          required={required}
+          className={`flex-1 bg-transparent ${pad} outline-none placeholder:text-muted-foreground/60`}
+        />
+        {needsReformat && (
+          <button
+            type="button"
+            onClick={() => onChange(canonical)}
+            title="Reformater le numéro"
+            aria-label="Reformater le numéro"
+            className="inline-flex items-center gap-1 border-l border-border bg-surface/70 px-2.5 text-[11px] font-semibold text-primary hover:bg-surface"
+          >
+            <Wand2 className="h-3 w-3" /> Corriger
+          </button>
+        )}
+        {!needsReformat && !isEmpty && (
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            title="Effacer"
+            aria-label="Effacer"
+            className="inline-flex items-center border-l border-border bg-surface/70 px-2.5 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        )}
+      </div>
+      {hint && (
+        <p
+          className={`mt-1.5 inline-flex items-center gap-1 text-[11px] font-medium ${
+            showError ? "text-destructive" : v.ok ? "text-emerald-400" : "text-muted-foreground"
+          }`}
+        >
+          {v.ok ? <Check className="h-3 w-3" /> : <Info className="h-3 w-3" />}
+          {hint}
+        </p>
+      )}
+    </>
+  );
+}
