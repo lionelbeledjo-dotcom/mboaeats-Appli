@@ -49,6 +49,7 @@ import { Route as AdminLoginRouteImport } from './routes/admin_.login'
 import { Route as AdminZonesRouteImport } from './routes/admin.zones'
 import { Route as AdminRestaurantsRouteImport } from './routes/admin.restaurants'
 import { Route as AdminParametresRouteImport } from './routes/admin.parametres'
+import { Route as AdminMenusRouteImport } from './routes/admin.menus'
 import { Route as AdminLivreursRouteImport } from './routes/admin.livreurs'
 import { Route as AdminLitigesRouteImport } from './routes/admin.litiges'
 import { Route as AdminCommissionsRouteImport } from './routes/admin.commissions'
@@ -258,6 +259,11 @@ const AdminParametresRoute = AdminParametresRouteImport.update({
   path: '/parametres',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminMenusRoute = AdminMenusRouteImport.update({
+  id: '/menus',
+  path: '/menus',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminLivreursRoute = AdminLivreursRouteImport.update({
   id: '/livreurs',
   path: '/livreurs',
@@ -332,6 +338,7 @@ export interface FileRoutesByFullPath {
   '/admin/commissions': typeof AdminCommissionsRoute
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
+  '/admin/menus': typeof AdminMenusRoute
   '/admin/parametres': typeof AdminParametresRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
   '/admin/zones': typeof AdminZonesRoute
@@ -380,6 +387,7 @@ export interface FileRoutesByTo {
   '/admin/commissions': typeof AdminCommissionsRoute
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
+  '/admin/menus': typeof AdminMenusRoute
   '/admin/parametres': typeof AdminParametresRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
   '/admin/zones': typeof AdminZonesRoute
@@ -431,6 +439,7 @@ export interface FileRoutesById {
   '/admin/commissions': typeof AdminCommissionsRoute
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
+  '/admin/menus': typeof AdminMenusRoute
   '/admin/parametres': typeof AdminParametresRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
   '/admin/zones': typeof AdminZonesRoute
@@ -483,6 +492,7 @@ export interface FileRouteTypes {
     | '/admin/commissions'
     | '/admin/litiges'
     | '/admin/livreurs'
+    | '/admin/menus'
     | '/admin/parametres'
     | '/admin/restaurants'
     | '/admin/zones'
@@ -531,6 +541,7 @@ export interface FileRouteTypes {
     | '/admin/commissions'
     | '/admin/litiges'
     | '/admin/livreurs'
+    | '/admin/menus'
     | '/admin/parametres'
     | '/admin/restaurants'
     | '/admin/zones'
@@ -581,6 +592,7 @@ export interface FileRouteTypes {
     | '/admin/commissions'
     | '/admin/litiges'
     | '/admin/livreurs'
+    | '/admin/menus'
     | '/admin/parametres'
     | '/admin/restaurants'
     | '/admin/zones'
@@ -922,6 +934,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminParametresRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/menus': {
+      id: '/admin/menus'
+      path: '/menus'
+      fullPath: '/admin/menus'
+      preLoaderRoute: typeof AdminMenusRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/livreurs': {
       id: '/admin/livreurs'
       path: '/livreurs'
@@ -985,6 +1004,7 @@ interface AdminRouteChildren {
   AdminCommissionsRoute: typeof AdminCommissionsRoute
   AdminLitigesRoute: typeof AdminLitigesRoute
   AdminLivreursRoute: typeof AdminLivreursRoute
+  AdminMenusRoute: typeof AdminMenusRoute
   AdminParametresRoute: typeof AdminParametresRoute
   AdminRestaurantsRoute: typeof AdminRestaurantsRoute
   AdminZonesRoute: typeof AdminZonesRoute
@@ -995,6 +1015,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminCommissionsRoute: AdminCommissionsRoute,
   AdminLitigesRoute: AdminLitigesRoute,
   AdminLivreursRoute: AdminLivreursRoute,
+  AdminMenusRoute: AdminMenusRoute,
   AdminParametresRoute: AdminParametresRoute,
   AdminRestaurantsRoute: AdminRestaurantsRoute,
   AdminZonesRoute: AdminZonesRoute,
