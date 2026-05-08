@@ -254,28 +254,56 @@ function Connexion() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
-      {/* Atmosphere */}
+    <div className="relative min-h-screen overflow-hidden bg-[#0c0a14] text-white">
+      {/* Radiant atmosphere — deep charcoal + violet/orange/brick glows */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-primary/15 blur-[160px]" />
-        <div className="absolute bottom-0 right-0 h-[300px] w-[300px] rounded-full bg-gold/10 blur-[140px]" />
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(60% 50% at 50% 30%, rgba(255,90,40,0.28), transparent 65%), radial-gradient(45% 40% at 20% 80%, rgba(120,40,200,0.32), transparent 70%), radial-gradient(50% 45% at 85% 75%, rgba(180,30,40,0.28), transparent 70%), linear-gradient(180deg, #0e0a1a 0%, #0a0610 100%)",
+          }}
+        />
+        <div className="absolute -top-32 left-1/2 h-[640px] w-[640px] -translate-x-1/2 rounded-full bg-[#ff6a3d]/20 blur-[160px] animate-radiant-a" />
+        <div className="absolute bottom-[-120px] right-[-80px] h-[460px] w-[460px] rounded-full bg-[#7a2cff]/25 blur-[180px] animate-radiant-b" />
+        <div className="absolute top-1/3 -left-32 h-[420px] w-[420px] rounded-full bg-[#c41a2a]/20 blur-[160px] animate-radiant-a" />
+        {/* Subtle grain */}
+        <div
+          aria-hidden
+          className="absolute inset-0 opacity-[0.06] mix-blend-overlay"
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
+          }}
+        />
       </div>
 
-      <div className="relative mx-auto flex min-h-screen max-w-md flex-col px-5 py-8">
-        {/* Brand */}
-        <div className="mb-6 flex flex-col items-center gap-3 animate-fade-in">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-primary shadow-glow">
-            <Flame className="h-7 w-7 text-primary-foreground" />
+      <div className="relative mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-10">
+        {/* Brand — logo with radiant glow */}
+        <div className="mb-10 flex flex-col items-center gap-4 animate-fade-in">
+          <div className="relative">
+            <div
+              aria-hidden
+              className="absolute inset-0 -z-10 rounded-3xl blur-2xl opacity-80"
+              style={{
+                background:
+                  "conic-gradient(from 120deg, #ff6a3d, #c41a2a, #7a2cff, #ff6a3d)",
+              }}
+            />
+            <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-[#0c0a14]/70 backdrop-blur-xl ring-1 ring-white/15 shadow-[0_8px_40px_-8px_rgba(255,106,61,0.55)]">
+              <Flame className="h-8 w-8 text-[#ffb38a]" strokeWidth={2} />
+            </div>
           </div>
           <div className="text-center">
-            <h1 className="font-display text-2xl font-bold">Bienvenue au Mboa</h1>
-            <p className="mt-1 text-xs uppercase tracking-[0.25em] text-muted-foreground">
+            <h1 className="font-display text-3xl font-bold tracking-tight text-white">Bienvenue au Mboa</h1>
+            <p className="mt-2 text-[11px] uppercase tracking-[0.3em] text-white/55">
               Connectez-vous pour commander
             </p>
           </div>
         </div>
 
-        <div className="rounded-3xl border border-border bg-card/80 p-6 shadow-card backdrop-blur-xl animate-fade-up">
+        <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.8)] backdrop-blur-2xl animate-fade-up">
           {step === "identify" && (
             <>
               {/* Mode tabs */}
