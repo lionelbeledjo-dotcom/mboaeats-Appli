@@ -559,25 +559,35 @@ function Connexion() {
                       <button
                         type="button"
                         onClick={() => { setChannel("sms"); setError(null); setShowWhatsAppFallback(false); }}
-                        className={`flex min-h-[44px] h-[52px] items-center justify-center gap-2 rounded-[14px] border text-[15px] font-semibold transition ${channel === "sms" ? "border-[#06C167] bg-[#06C167]/8 text-black" : "border-[#E2E2E2] bg-white text-[#6B6B6B] hover:border-[#06C167]/50"}`}
+                        aria-pressed={channel === "sms"}
+                        className={`flex min-h-[44px] h-[52px] items-center justify-center gap-2 rounded-full border text-[15px] font-semibold text-[#2D2D2D] transition ${
+                          channel === "sms"
+                            ? "border-[#F39C12] bg-[#FFF8EC] shadow-[0_2px_6px_-2px_rgba(243,156,18,0.25)]"
+                            : "border-[#F39C12]/40 bg-[#FFFBF2] hover:border-[#F39C12]/70"
+                        }`}
                       >
-                        <MessageCircle className="h-4 w-4" /> SMS
+                        <MessageCircle strokeWidth={2} className="h-4 w-4 text-[#F39C12]" /> SMS
                       </button>
                       {whatsappAvailable ? (
                         <button
                           type="button"
                           onClick={() => { setChannel("whatsapp"); setError(null); setShowWhatsAppFallback(false); }}
-                          className={`flex min-h-[44px] h-[52px] items-center justify-center gap-2 rounded-[14px] border text-[15px] font-semibold transition ${channel === "whatsapp" ? "border-[#06C167] bg-[#06C167]/8 text-black" : "border-[#E2E2E2] bg-white text-[#6B6B6B] hover:border-[#06C167]/50"}`}
+                          aria-pressed={channel === "whatsapp"}
+                          className={`flex min-h-[44px] h-[52px] items-center justify-center gap-2 rounded-full border text-[15px] font-semibold text-[#2D2D2D] transition ${
+                            channel === "whatsapp"
+                              ? "border-[#25D366] bg-[#25D366]/10 shadow-[0_2px_6px_-2px_rgba(37,211,102,0.25)]"
+                              : "border-[#25D366]/40 bg-[#25D366]/5 hover:border-[#25D366]/70"
+                          }`}
                         >
-                          <Send className="h-4 w-4" /> WhatsApp
+                          <Send strokeWidth={2} className="h-4 w-4 text-[#25D366]" /> WhatsApp
                         </button>
                       ) : (
                         <div
-                          className="flex h-[52px] flex-col items-center justify-center gap-0.5 rounded-[14px] border border-dashed border-[#E2E2E2] bg-[#F5F5F5] text-center text-[13px] font-semibold text-[#9A9A9A]"
+                          className="flex h-[52px] flex-col items-center justify-center gap-0.5 rounded-full border border-dashed border-[#A8D5BA] bg-[#F5FBF7] text-center text-[13px] font-semibold text-[#6B6B6B]"
                           aria-disabled
                           title="WhatsApp pas encore activé sur ce compte"
                         >
-                          <span className="flex items-center gap-1.5"><Send className="h-3.5 w-3.5" /> WhatsApp</span>
+                          <span className="flex items-center gap-1.5"><Send strokeWidth={2} className="h-3.5 w-3.5 text-[#A8D5BA]" /> WhatsApp</span>
                           <span className="text-[10px] opacity-80">Bientôt disponible</span>
                         </div>
                       )}
