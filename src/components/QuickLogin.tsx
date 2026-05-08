@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Phone, Loader2, AlertCircle, ShieldCheck, Check, ChevronDown } from "lucide-react";
@@ -19,18 +19,20 @@ const COUNTRIES = [
   { code: "MA", dial: "+212", flag: "🇲🇦", name: "Maroc" },
 ];
 
-export default function QuickLogin() {
+export default function QuickLogin({ onSuccess }: { onSuccess?: () => void } = {}) {
   const navigate = useNavigate();
   const sendOtpFn = useServerFn(sendOtp);
   const verifyOtpFn = useServerFn(verifyOtp);
 
-  const [countryCode, setCountryCode] = useState("FR");
+  const [countryCode, setCountryCode] = useState("CM");
   const [phone, setPhone] = useState("");
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showCountries, setShowCountries] = useState(false);
+  const [devCode, setDevCode] = useState<string | null>(null);
+  const [resendIn, setResendIn] = useState(0);
 
   const country = COUNTRIES.find((c) => c.code === countryCode) ?? COUNTRIES[0];
   const fullPhone = `${country.dial}${phone.replace(/\D/g, "")}`;
@@ -38,14 +40,23 @@ export default function QuickLogin() {
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setDevCode(null);
     if (phone.replace(/\D/g, "").length < 6) {
       setError("Numéro invalide");
       return;
     }
     setLoading(true);
     try {
-      await sendOtpFn({ data: { phone: fullPhone } });
+      const res: any = await sendOtpFn({ data: { phone: fullPhone, channel: "sms" } });
+      if (res?.ok === false) {
+        setError(res.error ?? "Échec de l'envoi du SMS");
+        if (typeof res.retryAfter === "number") setResendIn(res.retryAfter);
+        return;
+      }
       setStep("otp");
+      setResendIn(30);
+      // En dev, le serveur renvoie le code en clair pour faciliter le test.
+      if (res?.devCode) setDevCode(String(res.devCode));
     } catch (err: any) {
       setError(err?.message ?? "Échec de l'envoi du SMS");
     } finally {
@@ -71,15 +82,34 @@ export default function QuickLogin() {
         });
         if (vErr) throw new Error(vErr.message);
       }
-      const { invalidateSessionCache } = await import("@/hooks/useSessionUser");
-      invalidateSessionCache();
-      navigate({ to: "/" });
-      window.location.reload();
+      try {
+        const { invalidateSessionCache } = await import("@/hooks/useSessionUser");
+        invalidateSessionCache();
+      } catch {
+        /* hook may not exist in some builds */
+      }
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        navigate({ to: "/profil" });
+      }
     } catch (err: any) {
       setError(err?.message ?? "Code invalide");
     } finally {
       setLoading(false);
     }
+  };
+
+  // Décompte du bouton "Renvoyer"
+  useEffect(() => {
+    if (resendIn <= 0) return;
+    const t = setInterval(() => setResendIn((s) => (s > 0 ? s - 1 : 0)), 1000);
+    return () => clearInterval(t);
+  }, [resendIn]);
+
+  const handleResend = async () => {
+    if (resendIn > 0 || loading) return;
+    await handleSend(new Event("submit") as unknown as React.FormEvent);
   };
 
   return (
@@ -161,6 +191,11 @@ export default function QuickLogin() {
           <div className="rounded-xl border border-primary/30 bg-primary/10 p-2.5 text-xs">
             📩 Code envoyé au <span className="font-semibold">{fullPhone}</span>
           </div>
+          {devCode && (
+            <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-2.5 text-xs text-amber-700">
+              🛠️ Mode dev — code : <span className="font-mono font-bold">{devCode}</span>
+            </div>
+          )}
           <input
             type="text"
             inputMode="numeric"
@@ -187,7 +222,15 @@ export default function QuickLogin() {
           </button>
           <button
             type="button"
-            onClick={() => { setStep("phone"); setCode(""); setError(null); }}
+            onClick={handleResend}
+            disabled={resendIn > 0 || loading}
+            className="block w-full text-center text-xs font-medium text-primary underline-offset-4 hover:underline disabled:text-muted-foreground disabled:no-underline"
+          >
+            {resendIn > 0 ? `Renvoyer le code dans ${resendIn}s` : "Renvoyer le code"}
+          </button>
+          <button
+            type="button"
+            onClick={() => { setStep("phone"); setCode(""); setError(null); setDevCode(null); }}
             className="block w-full text-center text-xs text-muted-foreground underline-offset-4 hover:underline"
           >
             Modifier le numéro

@@ -94,7 +94,7 @@ function Connexion() {
 
         {tab === "login" && <LoginForm onSuccess={() => navigate({ to: "/profil" })} />}
         {tab === "signup" && <SignupForm onVerified={() => navigate({ to: "/profil" })} />}
-        {tab === "phone" && <QuickLogin />}
+        {tab === "phone" && <QuickLogin onSuccess={() => navigate({ to: "/profil" })} />}
 
         {tab !== "phone" && (
           <>
