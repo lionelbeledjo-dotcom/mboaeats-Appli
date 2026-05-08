@@ -1,12 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { Loader2, Mail, Lock, User as UserIcon, Phone, ArrowRight, Check, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Loader2, Mail, Lock, User as UserIcon, Phone, ArrowLeft, ArrowRight, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
-import { sendOtp, verifyOtp } from "@/lib/otp.functions";
+import QuickLogin from "@/components/QuickLogin";
 
 export const Route = createFileRoute("/connexion")({
   component: Connexion,
@@ -51,14 +51,18 @@ function Connexion() {
 
   // Redirect when authenticated
   useEffect(() => {
-    if (!authLoading && isAuthenticated) navigate({ to: "/" });
+    if (!authLoading && isAuthenticated) navigate({ to: "/profil" });
   }, [authLoading, isAuthenticated, navigate]);
 
   return (
     <div className="min-h-screen bg-white">
       <div className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-8">
-        <Link to="/" className="text-sm font-medium text-neutral-600 hover:text-black">
-          ← Accueil
+        <Link
+          to="/"
+          className="inline-flex w-fit items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-black"
+        >
+          <ArrowLeft className="h-4 w-4" strokeWidth={2.5} />
+          <span>Accueil</span>
         </Link>
 
         <div className="mt-8 mb-6">
@@ -88,9 +92,9 @@ function Connexion() {
           ))}
         </div>
 
-        {tab === "login" && <LoginForm />}
-        {tab === "signup" && <SignupForm onVerified={() => navigate({ to: "/" })} />}
-        {tab === "phone" && <PhoneForm onSuccess={() => navigate({ to: "/" })} />}
+        {tab === "login" && <LoginForm onSuccess={() => navigate({ to: "/profil" })} />}
+        {tab === "signup" && <SignupForm onVerified={() => navigate({ to: "/profil" })} />}
+        {tab === "phone" && <QuickLogin />}
 
         {tab !== "phone" && (
           <>
@@ -105,8 +109,12 @@ function Connexion() {
 
         <p className="mt-auto pt-8 text-center text-xs text-neutral-500">
           En continuant tu acceptes nos{" "}
-          <Link to="/confidentialite" className="underline">
-            CGU et politique de confidentialité
+          <Link to="/cgu" className="font-medium text-neutral-700 underline underline-offset-2 hover:text-black">
+            CGU
+          </Link>{" "}
+          et notre{" "}
+          <Link to="/confidentialite" className="font-medium text-neutral-700 underline underline-offset-2 hover:text-black">
+            politique de confidentialité
           </Link>
           .
         </p>
@@ -116,7 +124,7 @@ function Connexion() {
 }
 
 /* ---------- Login (email + password) ---------- */
-function LoginForm() {
+function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   const [email, setEmail] = useState("");
   const [pwd, setPwd] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -140,7 +148,10 @@ function LoginForm() {
             ? "Email non confirmé. Vérifie ta boîte de réception."
             : error.message,
       );
+      return;
     }
+    toast.success("Connexion réussie");
+    onSuccess();
   }
 
   return (
@@ -166,38 +177,17 @@ function LoginForm() {
           </button>
         }
       />
-      <ResetPasswordLink email={email} />
+      <div className="flex justify-end pt-1">
+        <Link to="/reset-password" className="text-xs font-medium text-neutral-600 hover:text-black">
+          Mot de passe oublié ?
+        </Link>
+      </div>
       {err && <ErrorBox>{err}</ErrorBox>}
       <PrimaryButton busy={busy}>Se connecter</PrimaryButton>
     </form>
   );
 }
 
-function ResetPasswordLink({ email }: { email: string }) {
-  const [sent, setSent] = useState(false);
-  return (
-    <div className="flex justify-end pt-1">
-      {sent ? (
-        <span className="text-xs text-emerald-600">Lien envoyé ✓</span>
-      ) : (
-        <button
-          type="button"
-          onClick={async () => {
-            const r = emailSchema.safeParse(email);
-            if (!r.success) return;
-            await supabase.auth.resetPasswordForEmail(r.data, {
-              redirectTo: `${window.location.origin}/connexion`,
-            });
-            setSent(true);
-          }}
-          className="text-xs font-medium text-neutral-600 hover:text-black"
-        >
-          Mot de passe oublié ?
-        </button>
-      )}
-    </div>
-  );
-}
 
 /* ---------- Signup (name + email + phone + password) ---------- */
 function SignupForm({ onVerified }: { onVerified: () => void }) {
@@ -310,81 +300,6 @@ function SignupForm({ onVerified }: { onVerified: () => void }) {
   );
 }
 
-/* ---------- Phone OTP (legacy Twilio flow, kept) ---------- */
-function PhoneForm({ onSuccess }: { onSuccess: () => void }) {
-  const sendFn = useServerFn(sendOtp);
-  const verifyFn = useServerFn(verifyOtp);
-  const [phone, setPhone] = useState("");
-  const [code, setCode] = useState("");
-  const [step, setStep] = useState<"phone" | "code">("phone");
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-
-  async function send(e: React.FormEvent) {
-    e.preventDefault();
-    setErr(null);
-    const ph = phoneSchema.safeParse(phone);
-    if (!ph.success) return setErr(ph.error.issues[0].message);
-    setBusy(true);
-    try {
-      const res = await sendFn({ data: { phone: ph.data, channel: "sms" } });
-      if ((res as { ok?: boolean }).ok === false) {
-        setErr((res as { error?: string }).error ?? "Erreur d'envoi");
-      } else {
-        setStep("code");
-        const dev = (res as { devCode?: string }).devCode;
-        if (dev) setCode(dev);
-      }
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : "Erreur d'envoi");
-    } finally {
-      setBusy(false);
-    }
-  }
-  async function check(e: React.FormEvent) {
-    e.preventDefault();
-    setErr(null);
-    if (code.length !== 6) return setErr("Code à 6 chiffres requis");
-    setBusy(true);
-    try {
-      const res = await verifyFn({ data: { phone, code } });
-      if ((res as { ok?: boolean }).ok === false) setErr("Code incorrect");
-      else onSuccess();
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <form onSubmit={step === "phone" ? send : check} className="space-y-3">
-      {step === "phone" ? (
-        <Field icon={Phone} type="tel" placeholder="+237 6XX XXX XXX" value={phone} onChange={setPhone} autoComplete="tel" />
-      ) : (
-        <>
-          <p className="text-xs text-neutral-600">
-            Code SMS envoyé à <span className="font-semibold text-black">{phone}</span>
-          </p>
-          <input
-            inputMode="numeric"
-            maxLength={6}
-            autoComplete="one-time-code"
-            value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-            className="w-full rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-center font-mono text-xl tracking-[0.5em] text-black placeholder:text-neutral-300 focus:border-black focus:outline-none"
-            placeholder="123456"
-          />
-        </>
-      )}
-      {err && <ErrorBox>{err}</ErrorBox>}
-      <PrimaryButton busy={busy}>{step === "phone" ? "Recevoir le code" : "Vérifier"}</PrimaryButton>
-      {step === "code" && (
-        <button type="button" onClick={() => setStep("phone")} className="w-full text-center text-xs text-neutral-600 hover:text-black">
-          ← Modifier le numéro
-        </button>
-      )}
-    </form>
-  );
-}
 
 /* ---------- Google ---------- */
 function GoogleButton() {
@@ -398,8 +313,11 @@ function GoogleButton() {
         onClick={async () => {
           setBusy(true);
           setErr(null);
+          toast.loading("Connexion Google en cours...", { id: "google-auth" });
           const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
           if ((r as { error?: unknown }).error) {
+            toast.dismiss("google-auth");
+            toast.error("Connexion Google indisponible");
             setErr("Connexion Google indisponible");
             setBusy(false);
           }

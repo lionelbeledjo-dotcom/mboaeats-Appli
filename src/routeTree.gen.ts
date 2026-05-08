@@ -14,6 +14,7 @@ import { Route as SuperadminRouteImport } from './routes/superadmin'
 import { Route as SuiviRouteImport } from './routes/suivi'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RestaurantRouteImport } from './routes/restaurant'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RechercheRouteImport } from './routes/recherche'
 import { Route as ProfilRouteImport } from './routes/profil'
 import { Route as PreferencesRouteImport } from './routes/preferences'
@@ -32,6 +33,7 @@ import { Route as ConnexionRouteImport } from './routes/connexion'
 import { Route as ConfidentialiteRouteImport } from './routes/confidentialite'
 import { Route as CommandesRouteImport } from './routes/commandes'
 import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as CguRouteImport } from './routes/cgu'
 import { Route as AideRouteImport } from './routes/aide'
 import { Route as AdressesRouteImport } from './routes/adresses'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -86,6 +88,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const RestaurantRoute = RestaurantRouteImport.update({
   id: '/restaurant',
   path: '/restaurant',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RechercheRoute = RechercheRouteImport.update({
@@ -176,6 +183,11 @@ const CommandesRoute = CommandesRouteImport.update({
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CguRoute = CguRouteImport.update({
+  id: '/cgu',
+  path: '/cgu',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AideRoute = AideRouteImport.update({
@@ -336,6 +348,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/adresses': typeof AdressesRoute
   '/aide': typeof AideRouteWithChildren
+  '/cgu': typeof CguRoute
   '/checkout': typeof CheckoutRoute
   '/commandes': typeof CommandesRoute
   '/confidentialite': typeof ConfidentialiteRoute
@@ -354,6 +367,7 @@ export interface FileRoutesByFullPath {
   '/preferences': typeof PreferencesRoute
   '/profil': typeof ProfilRoute
   '/recherche': typeof RechercheRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/restaurant': typeof RestaurantRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suivi': typeof SuiviRouteWithChildren
@@ -390,6 +404,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/adresses': typeof AdressesRoute
   '/aide': typeof AideRouteWithChildren
+  '/cgu': typeof CguRoute
   '/checkout': typeof CheckoutRoute
   '/commandes': typeof CommandesRoute
   '/confidentialite': typeof ConfidentialiteRoute
@@ -408,6 +423,7 @@ export interface FileRoutesByTo {
   '/preferences': typeof PreferencesRoute
   '/profil': typeof ProfilRoute
   '/recherche': typeof RechercheRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/restaurant': typeof RestaurantRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suivi': typeof SuiviRouteWithChildren
@@ -445,6 +461,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/adresses': typeof AdressesRoute
   '/aide': typeof AideRouteWithChildren
+  '/cgu': typeof CguRoute
   '/checkout': typeof CheckoutRoute
   '/commandes': typeof CommandesRoute
   '/confidentialite': typeof ConfidentialiteRoute
@@ -463,6 +480,7 @@ export interface FileRoutesById {
   '/preferences': typeof PreferencesRoute
   '/profil': typeof ProfilRoute
   '/recherche': typeof RechercheRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/restaurant': typeof RestaurantRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suivi': typeof SuiviRouteWithChildren
@@ -502,6 +520,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/adresses'
     | '/aide'
+    | '/cgu'
     | '/checkout'
     | '/commandes'
     | '/confidentialite'
@@ -520,6 +539,7 @@ export interface FileRouteTypes {
     | '/preferences'
     | '/profil'
     | '/recherche'
+    | '/reset-password'
     | '/restaurant'
     | '/sitemap.xml'
     | '/suivi'
@@ -556,6 +576,7 @@ export interface FileRouteTypes {
     | '/'
     | '/adresses'
     | '/aide'
+    | '/cgu'
     | '/checkout'
     | '/commandes'
     | '/confidentialite'
@@ -574,6 +595,7 @@ export interface FileRouteTypes {
     | '/preferences'
     | '/profil'
     | '/recherche'
+    | '/reset-password'
     | '/restaurant'
     | '/sitemap.xml'
     | '/suivi'
@@ -610,6 +632,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/adresses'
     | '/aide'
+    | '/cgu'
     | '/checkout'
     | '/commandes'
     | '/confidentialite'
@@ -628,6 +651,7 @@ export interface FileRouteTypes {
     | '/preferences'
     | '/profil'
     | '/recherche'
+    | '/reset-password'
     | '/restaurant'
     | '/sitemap.xml'
     | '/suivi'
@@ -666,6 +690,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AdressesRoute: typeof AdressesRoute
   AideRoute: typeof AideRouteWithChildren
+  CguRoute: typeof CguRoute
   CheckoutRoute: typeof CheckoutRoute
   CommandesRoute: typeof CommandesRoute
   ConfidentialiteRoute: typeof ConfidentialiteRoute
@@ -684,6 +709,7 @@ export interface RootRouteChildren {
   PreferencesRoute: typeof PreferencesRoute
   ProfilRoute: typeof ProfilRoute
   RechercheRoute: typeof RechercheRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   RestaurantRoute: typeof RestaurantRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SuiviRoute: typeof SuiviRouteWithChildren
@@ -739,6 +765,13 @@ declare module '@tanstack/react-router' {
       path: '/restaurant'
       fullPath: '/restaurant'
       preLoaderRoute: typeof RestaurantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/recherche': {
@@ -865,6 +898,13 @@ declare module '@tanstack/react-router' {
       path: '/checkout'
       fullPath: '/checkout'
       preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cgu': {
+      id: '/cgu'
+      path: '/cgu'
+      fullPath: '/cgu'
+      preLoaderRoute: typeof CguRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/aide': {
@@ -1163,6 +1203,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   AdressesRoute: AdressesRoute,
   AideRoute: AideRouteWithChildren,
+  CguRoute: CguRoute,
   CheckoutRoute: CheckoutRoute,
   CommandesRoute: CommandesRoute,
   ConfidentialiteRoute: ConfidentialiteRoute,
@@ -1181,6 +1222,7 @@ const rootRouteChildren: RootRouteChildren = {
   PreferencesRoute: PreferencesRoute,
   ProfilRoute: ProfilRoute,
   RechercheRoute: RechercheRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   RestaurantRoute: RestaurantRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SuiviRoute: SuiviRouteWithChildren,
