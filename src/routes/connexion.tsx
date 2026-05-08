@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Loader2, AlertCircle, ArrowRight, Mail, Lock, Eye, EyeOff,
-  Phone, ChevronDown, Check, ShieldCheck,
+  Phone, ChevronDown, Check, ShieldCheck, Pencil,
 } from "lucide-react";
 import { loginWithPassword, accountExists } from "@/lib/auth.functions";
 import { sendOtp, verifyOtp } from "@/lib/otp.functions";
@@ -38,6 +38,98 @@ const COUNTRIES = [
 ];
 
 type Tab = "email" | "phone";
+
+function OtpInput({
+  value,
+  onChange,
+  onComplete,
+  disabled,
+  hasError,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  onComplete?: (v: string) => void;
+  disabled?: boolean;
+  hasError?: boolean;
+}) {
+  const refs = useRef<Array<HTMLInputElement | null>>([]);
+  const digits = Array.from({ length: 6 }, (_, i) => value[i] ?? "");
+
+  const focusAt = (i: number) => {
+    const el = refs.current[Math.max(0, Math.min(5, i))];
+    el?.focus();
+    el?.select();
+  };
+
+  const setDigit = (i: number, d: string) => {
+    const clean = d.replace(/\D/g, "").slice(0, 1);
+    const arr = digits.slice();
+    arr[i] = clean;
+    const next = arr.join("").slice(0, 6);
+    onChange(next);
+    if (clean && i < 5) focusAt(i + 1);
+    if (next.length === 6) onComplete?.(next);
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const text = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (!text) return;
+    e.preventDefault();
+    onChange(text);
+    focusAt(Math.min(text.length, 5));
+    if (text.length === 6) onComplete?.(text);
+  };
+
+  const handleKeyDown = (i: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace") {
+      if (digits[i]) {
+        const arr = digits.slice();
+        arr[i] = "";
+        onChange(arr.join(""));
+      } else if (i > 0) {
+        const arr = digits.slice();
+        arr[i - 1] = "";
+        onChange(arr.join(""));
+        focusAt(i - 1);
+      }
+      e.preventDefault();
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      focusAt(i - 1);
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      focusAt(i + 1);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between gap-2" role="group" aria-label="Code à 6 chiffres">
+      {digits.map((d, i) => (
+        <input
+          key={i}
+          ref={(el) => { refs.current[i] = el; }}
+          type="text"
+          inputMode="numeric"
+          autoComplete={i === 0 ? "one-time-code" : "off"}
+          pattern="[0-9]*"
+          maxLength={1}
+          value={d}
+          disabled={disabled}
+          onChange={(e) => setDigit(i, e.target.value)}
+          onKeyDown={(e) => handleKeyDown(i, e)}
+          onPaste={handlePaste}
+          onFocus={(e) => e.currentTarget.select()}
+          aria-label={`Chiffre ${i + 1}`}
+          className={`h-14 w-full min-w-0 max-w-[52px] rounded-xl bg-[#F6F6F6] text-center text-2xl font-bold text-black outline-none ring-1 transition focus:bg-white ${
+            hasError
+              ? "ring-red-300 focus:ring-red-500"
+              : "ring-transparent focus:ring-[#06C167]"
+          } disabled:opacity-60`}
+        />
+      ))}
+    </div>
+  );
+}
 
 function Connexion() {
   const navigate = useNavigate();
@@ -177,16 +269,15 @@ function Connexion() {
     }
   };
 
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const verifyCode = async (code: string) => {
     resetMessages();
-    if (!/^\d{6}$/.test(otpCode.trim())) {
+    if (!/^\d{6}$/.test(code)) {
       setError("Saisissez les 6 chiffres reçus.");
       return;
     }
     setLoading(true);
     try {
-      const res: any = await verifyOtpFn({ data: { phone: fullPhone, code: otpCode.trim() } });
+      const res: any = await verifyOtpFn({ data: { phone: fullPhone, code } });
       if (res?.auth?.token_hash) {
         const { error: vErr } = await supabase.auth.verifyOtp({
           type: "magiclink",
@@ -198,9 +289,15 @@ function Connexion() {
       navigate({ to: "/", replace: true });
     } catch (err: any) {
       setError(err?.message ?? "Code invalide");
+      setOtpCode("");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleVerifyOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    void verifyCode(otpCode.trim());
   };
 
   return (
@@ -410,39 +507,49 @@ function Connexion() {
           )}
 
           {tab === "phone" && otpStep === "otp" && (
-            <form onSubmit={handleVerifyOtp} className="mt-6 space-y-3">
-              <div className="rounded-xl bg-[#F6F6F6] p-3 text-xs text-black">
-                📩 Code envoyé au <span className="font-bold">{fullPhone}</span>
+            <form onSubmit={handleVerifyOtp} className="mt-6 space-y-4">
+              <div className="flex items-center justify-between gap-3 rounded-xl bg-[#F6F6F6] p-3 text-xs text-black">
+                <span className="truncate">
+                  📩 Code envoyé au <span className="font-bold">{fullPhone}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => { setOtpStep("phone"); setOtpCode(""); resetMessages(); setDevCode(null); }}
+                  className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white px-3 py-1.5 text-[11px] font-bold text-black ring-1 ring-neutral-200 hover:bg-neutral-50"
+                >
+                  <Pencil className="h-3 w-3" /> Changer de numéro
+                </button>
               </div>
+
               {devCode && (
                 <div className="rounded-xl bg-amber-50 p-2.5 text-xs text-amber-800 ring-1 ring-amber-200">
                   🛠️ Mode dev — code : <span className="font-mono font-bold">{devCode}</span>
                 </div>
               )}
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={6}
-                placeholder="••••••"
+
+              <OtpInput
                 value={otpCode}
-                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
-                className="w-full rounded-xl bg-[#F6F6F6] px-4 py-3.5 text-center text-xl font-bold tracking-[0.5em] text-black outline-none ring-1 ring-transparent focus:bg-white focus:ring-[#06C167]"
-                autoFocus
+                onChange={(v) => { setOtpCode(v); if (error) resetMessages(); }}
+                onComplete={(v) => void verifyCode(v)}
+                disabled={loading}
+                hasError={!!error}
               />
+
               {error && (
                 <div className="flex items-start gap-2 rounded-xl bg-red-50 p-3 text-xs text-red-700">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                   <span className="font-medium">{error}</span>
                 </div>
               )}
+
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || otpCode.length < 6}
                 className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#06C167] text-sm font-bold text-white hover:bg-[#05a857] active:scale-[0.99] disabled:opacity-60"
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (<><Check className="h-4 w-4" /> Valider et entrer</>)}
               </button>
+
               <button
                 type="button"
                 onClick={() => sendCode("sms")}
@@ -450,13 +557,6 @@ function Connexion() {
                 className="block w-full text-center text-xs font-bold text-[#06C167] underline-offset-4 hover:underline disabled:text-[#9b9b9b] disabled:no-underline"
               >
                 {resendIn > 0 ? `Renvoyer le code dans ${resendIn}s` : "Renvoyer le code"}
-              </button>
-              <button
-                type="button"
-                onClick={() => { setOtpStep("phone"); setOtpCode(""); resetMessages(); setDevCode(null); }}
-                className="block w-full text-center text-xs text-[#6B6B6B] underline-offset-4 hover:underline"
-              >
-                Modifier le numéro
               </button>
             </form>
           )}
