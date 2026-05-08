@@ -39,6 +39,98 @@ const COUNTRIES = [
 
 type Tab = "email" | "phone";
 
+function OtpInput({
+  value,
+  onChange,
+  onComplete,
+  disabled,
+  hasError,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  onComplete?: (v: string) => void;
+  disabled?: boolean;
+  hasError?: boolean;
+}) {
+  const refs = useRef<Array<HTMLInputElement | null>>([]);
+  const digits = Array.from({ length: 6 }, (_, i) => value[i] ?? "");
+
+  const focusAt = (i: number) => {
+    const el = refs.current[Math.max(0, Math.min(5, i))];
+    el?.focus();
+    el?.select();
+  };
+
+  const setDigit = (i: number, d: string) => {
+    const clean = d.replace(/\D/g, "").slice(0, 1);
+    const arr = digits.slice();
+    arr[i] = clean;
+    const next = arr.join("").slice(0, 6);
+    onChange(next);
+    if (clean && i < 5) focusAt(i + 1);
+    if (next.length === 6) onComplete?.(next);
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const text = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (!text) return;
+    e.preventDefault();
+    onChange(text);
+    focusAt(Math.min(text.length, 5));
+    if (text.length === 6) onComplete?.(text);
+  };
+
+  const handleKeyDown = (i: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace") {
+      if (digits[i]) {
+        const arr = digits.slice();
+        arr[i] = "";
+        onChange(arr.join(""));
+      } else if (i > 0) {
+        const arr = digits.slice();
+        arr[i - 1] = "";
+        onChange(arr.join(""));
+        focusAt(i - 1);
+      }
+      e.preventDefault();
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      focusAt(i - 1);
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      focusAt(i + 1);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between gap-2" role="group" aria-label="Code à 6 chiffres">
+      {digits.map((d, i) => (
+        <input
+          key={i}
+          ref={(el) => (refs.current[i] = el)}
+          type="text"
+          inputMode="numeric"
+          autoComplete={i === 0 ? "one-time-code" : "off"}
+          pattern="[0-9]*"
+          maxLength={1}
+          value={d}
+          disabled={disabled}
+          onChange={(e) => setDigit(i, e.target.value)}
+          onKeyDown={(e) => handleKeyDown(i, e)}
+          onPaste={handlePaste}
+          onFocus={(e) => e.currentTarget.select()}
+          aria-label={`Chiffre ${i + 1}`}
+          className={`h-14 w-full min-w-0 max-w-[52px] rounded-xl bg-[#F6F6F6] text-center text-2xl font-bold text-black outline-none ring-1 transition focus:bg-white ${
+            hasError
+              ? "ring-red-300 focus:ring-red-500"
+              : "ring-transparent focus:ring-[#06C167]"
+          } disabled:opacity-60`}
+        />
+      ))}
+    </div>
+  );
+}
+
 function Connexion() {
   const navigate = useNavigate();
   const { isAuthenticated, loading: authLoading } = useAuth();
