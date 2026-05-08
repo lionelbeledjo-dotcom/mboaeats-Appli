@@ -135,9 +135,12 @@ function AddressesPage() {
       toast.error("Label et rue/quartier sont requis.");
       return;
     }
-    const phoneFull = editDraft.phone.trim()
-      ? `+237 ${editDraft.phone.replace(/\D/g, "")}`
-      : "";
+    const v = validateCmPhone(editDraft.phone);
+    if (!v.ok) {
+      toast.error("Numéro invalide", { description: v.error });
+      return;
+    }
+    const phoneFull = `+237 ${formatCmPhone(v.digits)}`;
     setSavingEdit(true);
     const updated: Saved = {
       ...editDraft,
