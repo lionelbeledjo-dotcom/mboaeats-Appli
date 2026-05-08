@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, ShoppingBag, UtensilsCrossed, LifeBuoy, Menu, X, MoreHorizontal } from "lucide-react";
 import { MboaEatsLogo } from "@/components/brand/MboaEatsLogo";
@@ -29,23 +29,75 @@ const NAV_ITEMS: ReadonlyArray<{
 export function SiteHeader() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
+  const burgerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  // +1 pour le CTA "Commander maintenant" en bas du panneau
+  const itemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
 
   const isActive = (to: string, exact?: boolean) =>
     exact ? pathname === to : pathname === to || pathname.startsWith(to + "/");
 
-  // Ferme le menu burger à chaque changement de route
+  // Ferme le menu burger à chaque changement de route + restaure le focus sur le burger
   useEffect(() => {
-    setOpen(false);
+    setOpen((wasOpen) => {
+      if (wasOpen) {
+        // Le panneau était ouvert : on rend le focus au déclencheur après navigation
+        requestAnimationFrame(() => burgerRef.current?.focus());
+      }
+      return false;
+    });
   }, [pathname]);
 
-  // Bloque le scroll body quand le menu est ouvert
+  // Bloque le scroll body + ferme avec Échap quand le menu est ouvert
   useEffect(() => {
     if (typeof document === "undefined") return;
     document.body.style.overflow = open ? "hidden" : "";
+
+    if (!open) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setOpen(false);
+        burgerRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+
+    // Focus sur le 1er item à l'ouverture
+    const t = window.setTimeout(() => itemRefs.current[0]?.focus(), 80);
+
     return () => {
       document.body.style.overflow = "";
+      document.removeEventListener("keydown", onKeyDown);
+      window.clearTimeout(t);
     };
   }, [open]);
+
+  // Navigation clavier (roving focus) dans le panneau mobile
+  const onItemKeyDown = (e: ReactKeyboardEvent<HTMLAnchorElement>, index: number) => {
+    const items = itemRefs.current.filter(Boolean) as HTMLAnchorElement[];
+    if (items.length === 0) return;
+
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        items[(index + 1) % items.length]?.focus();
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        items[(index - 1 + items.length) % items.length]?.focus();
+        break;
+      case "Home":
+        e.preventDefault();
+        items[0]?.focus();
+        break;
+      case "End":
+        e.preventDefault();
+        items[items.length - 1]?.focus();
+        break;
+    }
+  };
 
   return (
     <header
@@ -60,7 +112,7 @@ export function SiteHeader() {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-cm-green/60 to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-3 sm:h-20 sm:gap-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-1.5 px-2.5 sm:h-20 sm:gap-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link
           to="/"
@@ -114,7 +166,7 @@ export function SiteHeader() {
         </nav>
 
         {/* Actions droite */}
-        <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-3">
           {/* CTA desktop / tablette */}
           <Link
             to="/commandes"
@@ -193,11 +245,13 @@ export function SiteHeader() {
 
           {/* Burger mobile */}
           <button
+            ref={burgerRef}
             type="button"
             onClick={() => setOpen((v) => !v)}
             aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
             aria-expanded={open}
             aria-controls="mobile-nav-panel"
+            aria-haspopup="menu"
             className={cn(
               "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full md:hidden",
               "border border-white/10 bg-white/5 text-white",
@@ -237,8 +291,11 @@ export function SiteHeader() {
 
       {/* Panneau mobile (liste déroulante) */}
       <nav
+        ref={panelRef}
         id="mobile-nav-panel"
         aria-label="Navigation mobile"
+        aria-hidden={!open}
+        role="menu"
         className={cn(
           "absolute inset-x-0 top-full z-40 md:hidden",
           "origin-top overflow-hidden border-b border-white/5",
@@ -247,12 +304,13 @@ export function SiteHeader() {
           open ? "max-h-[80vh] opacity-100" : "max-h-0 opacity-0",
         )}
       >
-        <ul className="flex flex-col gap-1 p-3">
+        <ul className="flex flex-col gap-1 p-2.5 sm:p-3">
           {NAV_ITEMS.map(({ to, label, icon: Icon, exact }, i) => {
             const active = isActive(to, exact);
             return (
               <li
                 key={to}
+                role="none"
                 style={{ transitionDelay: open ? `${60 + i * 40}ms` : "0ms" }}
                 className={cn(
                   "transition-all duration-300 ease-out",
@@ -261,16 +319,30 @@ export function SiteHeader() {
               >
                 <Link
                   to={to as any}
+                  ref={(el) => {
+                    itemRefs.current[i] = el;
+                  }}
+                  role="menuitem"
+                  tabIndex={open ? 0 : -1}
                   onClick={() => setOpen(false)}
+                  onKeyDown={(e) => onItemKeyDown(e, i)}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold",
+                    "relative flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-sm font-semibold sm:gap-3 sm:px-3 sm:py-3",
                     "transition-all duration-200 active:scale-[0.98]",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cm-green/60 focus-visible:ring-offset-0",
                     active
                       ? "bg-brand-cm-green/15 text-brand-cm-green ring-1 ring-brand-cm-green/40"
                       : "text-white/80 hover:bg-white/5 hover:text-white",
                   )}
                 >
+                  {/* Indicateur vertical d'état actif */}
+                  {active && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-brand-cm-green shadow-[0_0_10px_rgba(6,193,103,0.7)]"
+                    />
+                  )}
                   <span
                     className={cn(
                       "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
@@ -281,7 +353,9 @@ export function SiteHeader() {
                   </span>
                   <span className="min-w-0 flex-1 truncate">{label}</span>
                   {active && (
-                    <span className="h-2 w-2 shrink-0 rounded-full bg-brand-cm-green shadow-[0_0_10px_rgba(6,193,103,0.7)]" />
+                    <span className="shrink-0 rounded-full bg-brand-cm-green/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-cm-green">
+                      Ici
+                    </span>
                   )}
                 </Link>
               </li>
@@ -289,6 +363,7 @@ export function SiteHeader() {
           })}
 
           <li
+            role="none"
             style={{ transitionDelay: open ? `${60 + NAV_ITEMS.length * 40}ms` : "0ms" }}
             className={cn(
               "mt-2 transition-all duration-300 ease-out",
@@ -297,11 +372,18 @@ export function SiteHeader() {
           >
             <Link
               to="/commandes"
+              ref={(el) => {
+                itemRefs.current[NAV_ITEMS.length] = el;
+              }}
+              role="menuitem"
+              tabIndex={open ? 0 : -1}
               onClick={() => setOpen(false)}
+              onKeyDown={(e) => onItemKeyDown(e, NAV_ITEMS.length)}
               className={cn(
                 "flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-bold",
                 "bg-brand-cm-green text-brand-cm-green-fg shadow-badge",
                 "transition-all duration-200 active:scale-[0.98]",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[hsl(240_10%_8%)]",
               )}
             >
               <ShoppingBag className="h-4 w-4" strokeWidth={2.5} />
