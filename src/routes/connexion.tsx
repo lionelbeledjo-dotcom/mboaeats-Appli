@@ -188,31 +188,6 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   );
 }
 
-function ResetPasswordLink({ email }: { email: string }) {
-  const [sent, setSent] = useState(false);
-  return (
-    <div className="flex justify-end pt-1">
-      {sent ? (
-        <span className="text-xs text-emerald-600">Lien envoyé ✓</span>
-      ) : (
-        <button
-          type="button"
-          onClick={async () => {
-            const r = emailSchema.safeParse(email);
-            if (!r.success) return;
-            await supabase.auth.resetPasswordForEmail(r.data, {
-              redirectTo: `${window.location.origin}/connexion`,
-            });
-            setSent(true);
-          }}
-          className="text-xs font-medium text-neutral-600 hover:text-black"
-        >
-          Mot de passe oublié ?
-        </button>
-      )}
-    </div>
-  );
-}
 
 /* ---------- Signup (name + email + phone + password) ---------- */
 function SignupForm({ onVerified }: { onVerified: () => void }) {
@@ -325,81 +300,6 @@ function SignupForm({ onVerified }: { onVerified: () => void }) {
   );
 }
 
-/* ---------- Phone OTP (legacy Twilio flow, kept) ---------- */
-function PhoneForm({ onSuccess }: { onSuccess: () => void }) {
-  const sendFn = useServerFn(sendOtp);
-  const verifyFn = useServerFn(verifyOtp);
-  const [phone, setPhone] = useState("");
-  const [code, setCode] = useState("");
-  const [step, setStep] = useState<"phone" | "code">("phone");
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-
-  async function send(e: React.FormEvent) {
-    e.preventDefault();
-    setErr(null);
-    const ph = phoneSchema.safeParse(phone);
-    if (!ph.success) return setErr(ph.error.issues[0].message);
-    setBusy(true);
-    try {
-      const res = await sendFn({ data: { phone: ph.data, channel: "sms" } });
-      if ((res as { ok?: boolean }).ok === false) {
-        setErr((res as { error?: string }).error ?? "Erreur d'envoi");
-      } else {
-        setStep("code");
-        const dev = (res as { devCode?: string }).devCode;
-        if (dev) setCode(dev);
-      }
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : "Erreur d'envoi");
-    } finally {
-      setBusy(false);
-    }
-  }
-  async function check(e: React.FormEvent) {
-    e.preventDefault();
-    setErr(null);
-    if (code.length !== 6) return setErr("Code à 6 chiffres requis");
-    setBusy(true);
-    try {
-      const res = await verifyFn({ data: { phone, code } });
-      if ((res as { ok?: boolean }).ok === false) setErr("Code incorrect");
-      else onSuccess();
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <form onSubmit={step === "phone" ? send : check} className="space-y-3">
-      {step === "phone" ? (
-        <Field icon={Phone} type="tel" placeholder="+237 6XX XXX XXX" value={phone} onChange={setPhone} autoComplete="tel" />
-      ) : (
-        <>
-          <p className="text-xs text-neutral-600">
-            Code SMS envoyé à <span className="font-semibold text-black">{phone}</span>
-          </p>
-          <input
-            inputMode="numeric"
-            maxLength={6}
-            autoComplete="one-time-code"
-            value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-            className="w-full rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-center font-mono text-xl tracking-[0.5em] text-black placeholder:text-neutral-300 focus:border-black focus:outline-none"
-            placeholder="123456"
-          />
-        </>
-      )}
-      {err && <ErrorBox>{err}</ErrorBox>}
-      <PrimaryButton busy={busy}>{step === "phone" ? "Recevoir le code" : "Vérifier"}</PrimaryButton>
-      {step === "code" && (
-        <button type="button" onClick={() => setStep("phone")} className="w-full text-center text-xs text-neutral-600 hover:text-black">
-          ← Modifier le numéro
-        </button>
-      )}
-    </form>
-  );
-}
 
 /* ---------- Google ---------- */
 function GoogleButton() {
