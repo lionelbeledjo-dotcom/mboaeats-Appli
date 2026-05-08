@@ -507,39 +507,49 @@ function Connexion() {
           )}
 
           {tab === "phone" && otpStep === "otp" && (
-            <form onSubmit={handleVerifyOtp} className="mt-6 space-y-3">
-              <div className="rounded-xl bg-[#F6F6F6] p-3 text-xs text-black">
-                📩 Code envoyé au <span className="font-bold">{fullPhone}</span>
+            <form onSubmit={handleVerifyOtp} className="mt-6 space-y-4">
+              <div className="flex items-center justify-between gap-3 rounded-xl bg-[#F6F6F6] p-3 text-xs text-black">
+                <span className="truncate">
+                  📩 Code envoyé au <span className="font-bold">{fullPhone}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => { setOtpStep("phone"); setOtpCode(""); resetMessages(); setDevCode(null); }}
+                  className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white px-3 py-1.5 text-[11px] font-bold text-black ring-1 ring-neutral-200 hover:bg-neutral-50"
+                >
+                  <Pencil className="h-3 w-3" /> Changer de numéro
+                </button>
               </div>
+
               {devCode && (
                 <div className="rounded-xl bg-amber-50 p-2.5 text-xs text-amber-800 ring-1 ring-amber-200">
                   🛠️ Mode dev — code : <span className="font-mono font-bold">{devCode}</span>
                 </div>
               )}
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={6}
-                placeholder="••••••"
+
+              <OtpInput
                 value={otpCode}
-                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
-                className="w-full rounded-xl bg-[#F6F6F6] px-4 py-3.5 text-center text-xl font-bold tracking-[0.5em] text-black outline-none ring-1 ring-transparent focus:bg-white focus:ring-[#06C167]"
-                autoFocus
+                onChange={(v) => { setOtpCode(v); if (error) resetMessages(); }}
+                onComplete={(v) => void verifyCode(v)}
+                disabled={loading}
+                hasError={!!error}
               />
+
               {error && (
                 <div className="flex items-start gap-2 rounded-xl bg-red-50 p-3 text-xs text-red-700">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                   <span className="font-medium">{error}</span>
                 </div>
               )}
+
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || otpCode.length < 6}
                 className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#06C167] text-sm font-bold text-white hover:bg-[#05a857] active:scale-[0.99] disabled:opacity-60"
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (<><Check className="h-4 w-4" /> Valider et entrer</>)}
               </button>
+
               <button
                 type="button"
                 onClick={() => sendCode("sms")}
@@ -547,13 +557,6 @@ function Connexion() {
                 className="block w-full text-center text-xs font-bold text-[#06C167] underline-offset-4 hover:underline disabled:text-[#9b9b9b] disabled:no-underline"
               >
                 {resendIn > 0 ? `Renvoyer le code dans ${resendIn}s` : "Renvoyer le code"}
-              </button>
-              <button
-                type="button"
-                onClick={() => { setOtpStep("phone"); setOtpCode(""); resetMessages(); setDevCode(null); }}
-                className="block w-full text-center text-xs text-[#6B6B6B] underline-offset-4 hover:underline"
-              >
-                Modifier le numéro
               </button>
             </form>
           )}
