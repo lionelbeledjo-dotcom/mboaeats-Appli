@@ -26,8 +26,11 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     }
   }, [loading, user, isPublic, navigate]);
 
+  // Public routes render immediately — no blank flash on mobile while session resolves.
+  if (isPublic) return <>{children}</>;
+  // Protected routes: hold render until we know auth state, then gate.
   if (loading) return null;
-  if (!user && !isPublic) return null;
+  if (!user) return null;
   return <>{children}</>;
 }
 
