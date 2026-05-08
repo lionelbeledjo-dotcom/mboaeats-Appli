@@ -86,6 +86,27 @@ function detectCountryFromInput(raw: string) {
   }
   return null;
 }
+/** Vivid circular flag — uses HatScripts circle-flags SVG CDN (no extra dep). */
+function CircleFlag({ code, size = 24, className = "" }: { code: string; size?: number; className?: string }) {
+  const cc = code.toLowerCase();
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-white ring-1 ring-black/5 shadow-[0_1px_3px_rgba(0,0,0,0.18)] ${className}`}
+      style={{ width: size, height: size }}
+      aria-hidden="true"
+    >
+      <img
+        src={`https://hatscripts.github.io/circle-flags/flags/${cc}.svg`}
+        alt=""
+        width={size}
+        height={size}
+        loading="lazy"
+        decoding="async"
+        className="block h-full w-full object-cover"
+      />
+    </span>
+  );
+}
 
 function Connexion() {
   const navigate = useNavigate();
