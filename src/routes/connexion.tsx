@@ -357,7 +357,7 @@ function Connexion() {
         <div className="mb-12 flex w-full flex-col items-center">
           <div className="rounded-3xl bg-[#0A8F4E] px-8 py-6 shadow-[0_12px_32px_-14px_rgba(6,193,103,0.55)]">
             <div className="flex flex-col items-start">
-              <span className="mb-2 inline-flex items-center rounded-full bg-[#06C167] px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.16em] text-white shadow-[0_2px_8px_-2px_rgba(0,0,0,0.25)]">
+              <span className="mb-2 ml-1 inline-flex items-center self-start rounded-full bg-[#06C167] px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.16em] text-white shadow-[0_2px_8px_-2px_rgba(0,0,0,0.25)] sm:ml-1.5 sm:text-[11px]">
                 Livraison Cameroun
               </span>
               <h2
