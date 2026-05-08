@@ -278,41 +278,41 @@ function AdminHeader({
         )}
       </header>
 
-      {/* Modale recherche */}
+      {/* Modale recherche — dark cohérent */}
       {searchOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-start justify-center bg-background/70 px-4 pt-20 backdrop-blur-sm animate-in fade-in"
+          className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 px-4 pt-20 backdrop-blur-md animate-in fade-in"
           role="dialog"
           aria-modal="true"
           aria-label="Recherche"
           onClick={() => setSearchOpen(false)}
         >
           <div
-            className="w-full max-w-xl overflow-hidden rounded-3xl border border-border bg-surface shadow-2xl animate-in zoom-in-95"
+            className="w-full max-w-xl overflow-hidden rounded-3xl border border-white/10 bg-black/95 text-white shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)] backdrop-blur-xl animate-in zoom-in-95 focus-within:ring-2 focus-within:ring-brand-cm-green/60"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-3 border-b border-border px-4 py-3">
-              <Search className="h-5 w-5 text-muted-foreground" />
+            <div className="flex items-center gap-3 border-b border-white/10 px-4 py-3">
+              <Search className="h-5 w-5 text-white/60" strokeWidth={2.25} />
               <input
                 ref={inputRef}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Commande, restaurant, livreur, client…"
-                className="flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground"
+                className="flex-1 bg-transparent text-base text-white outline-none placeholder:text-white/40"
               />
               <button
                 type="button"
                 onClick={() => setSearchOpen(false)}
                 aria-label="Fermer"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted/50"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cm-green/60"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="px-4 py-6 text-sm text-muted-foreground">
+            <div className="px-4 py-6 text-sm text-white/70">
               {query.trim() === "" ? (
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/80">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-white/50">
                     Suggestions
                   </p>
                   <ul className="space-y-1">
@@ -326,10 +326,10 @@ function AdminHeader({
                         <Link
                           to={s.to}
                           onClick={() => setSearchOpen(false)}
-                          className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-muted/50"
+                          className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm text-white/85 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cm-green/60"
                         >
                           <span>{s.label}</span>
-                          <span className="text-muted-foreground">↗</span>
+                          <span className="text-white/50">↗</span>
                         </Link>
                       </li>
                     ))}
@@ -337,7 +337,7 @@ function AdminHeader({
                 </div>
               ) : (
                 <p>
-                  Aucun résultat pour <span className="font-semibold text-foreground">«{query}»</span>.
+                  Aucun résultat pour <span className="font-semibold text-white">«{query}»</span>.
                 </p>
               )}
             </div>
