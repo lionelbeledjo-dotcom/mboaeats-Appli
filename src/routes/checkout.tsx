@@ -248,13 +248,35 @@ function ChooseMethod({
 }) {
   return (
     <>
-      <div className="rounded-3xl border border-border bg-surface/60 p-5">
-        <div className="flex items-center gap-2">
-          <MapPin className="h-4 w-4 text-primary" />
-          <h2 className="font-display text-lg font-bold">Livraison à</h2>
+      <div className="rounded-3xl border border-border bg-white text-black p-5 shadow-card">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-[oklch(var(--promo))]" />
+              <h2 className="font-display text-lg font-bold">Livraison à</h2>
+            </div>
+            <p className="mt-1 text-sm font-semibold">Akwa, Douala</p>
+            <p className="mt-0.5 text-xs text-neutral-500">Arrivée estimée</p>
+          </div>
+          <span className="inline-flex items-center gap-1 rounded-full bg-[oklch(var(--promo)/0.12)] px-3 py-1.5 text-xs font-bold text-[oklch(var(--promo))]">
+            ⏱ 15 min
+          </span>
         </div>
-        <p className="mt-1 text-sm">Akwa, Douala</p>
-        <p className="mt-1 text-xs text-muted-foreground">Arrivée estimée : 25-30 min</p>
+
+        {/* Mini-map mock */}
+        <div className="relative mt-4 h-28 w-full overflow-hidden rounded-2xl border border-neutral-200 bg-[linear-gradient(135deg,#f1f5f9_0%,#e2e8f0_100%)]">
+          <svg className="absolute inset-0 h-full w-full opacity-60" viewBox="0 0 400 120" preserveAspectRatio="none">
+            <path d="M0,80 Q120,20 200,60 T400,40" stroke="oklch(var(--promo))" strokeWidth="3" fill="none" strokeDasharray="6 4" />
+            <circle cx="60" cy="78" r="6" fill="oklch(var(--promo))" />
+            <circle cx="340" cy="46" r="8" fill="#000" />
+          </svg>
+          <div className="absolute bottom-2 left-3 rounded-md bg-white/90 px-2 py-0.5 text-[10px] font-semibold text-black shadow-sm">
+            Restaurant
+          </div>
+          <div className="absolute right-3 top-2 rounded-md bg-black px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+            Vous
+          </div>
+        </div>
 
         <label className="mt-4 block">
           <span className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-primary">
@@ -557,9 +579,11 @@ function Summary({ cartItems, subtotal, delivery, total, hasPass, landmark, prom
           )}
         </div>
         {promo && (
-          <div className="flex justify-between text-primary">
-            <span>Promo {promo.code}</span>
-            <span>−{promo.discount.toLocaleString("fr-FR")} F</span>
+          <div className="-mx-2 flex items-center justify-between rounded-lg bg-[oklch(var(--promo)/0.1)] px-2 py-1.5 text-[oklch(var(--promo))]">
+            <span className="flex items-center gap-1.5 font-semibold">
+              <Check className="h-3.5 w-3.5" /> Promotion appliquée · {promo.code}
+            </span>
+            <span className="font-bold">−{promo.discount.toLocaleString("fr-FR")} F</span>
           </div>
         )}
         <div className="flex justify-between font-display text-xl font-extrabold"><span>Total</span><span className="text-gradient-gold">{total.toLocaleString("fr-FR")} F</span></div>
@@ -570,15 +594,15 @@ function Summary({ cartItems, subtotal, delivery, total, hasPass, landmark, prom
         </p>
       )}
       {promo ? (
-        <div className="mt-4 flex items-center justify-between rounded-xl border border-gold/40 bg-gold/5 px-3 py-2 text-xs">
-          <span className="font-semibold text-gold">✓ {promo.code} appliqué</span>
+        <div className="mt-4 flex items-center justify-between rounded-xl border border-[oklch(var(--promo)/0.4)] bg-[oklch(var(--promo)/0.08)] px-3 py-2 text-xs">
+          <span className="flex items-center gap-1.5 font-semibold text-[oklch(var(--promo))]"><Check className="h-3 w-3" /> {promo.code} appliqué</span>
           <button type="button" onClick={() => setPromo(null)} className="text-muted-foreground hover:text-foreground">Retirer</button>
         </div>
       ) : !open ? (
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gold/40 bg-gold/5 py-2 text-xs font-semibold text-gold transition-colors hover:bg-gold/10"
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[oklch(var(--promo)/0.4)] bg-[oklch(var(--promo)/0.05)] py-2 text-xs font-semibold text-[oklch(var(--promo))] transition-colors hover:bg-[oklch(var(--promo)/0.1)]"
         >
           <Tag className="h-3 w-3" /> Ajouter un code promo
         </button>
