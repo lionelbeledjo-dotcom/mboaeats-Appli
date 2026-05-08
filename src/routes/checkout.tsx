@@ -622,8 +622,16 @@ function Summary({ cartItems, subtotal, delivery, total, hasPass, landmark, prom
 
   return (
     <aside className="rounded-3xl border border-border bg-card p-5 h-fit md:sticky md:top-20 shadow-card">
-      <h3 className="font-display text-lg font-bold">Ta commande</h3>
-      <p className="text-xs text-muted-foreground">{cartItems.length} article{cartItems.length > 1 ? "s" : ""}</p>
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <h3 className="font-display text-lg font-bold">Ta commande</h3>
+          <p className="text-xs text-muted-foreground">{cartItems.length} article{cartItems.length > 1 ? "s" : ""}</p>
+        </div>
+        <PaymentStatusBadge status={paymentStatus} method={method} />
+      </div>
+      {paymentStatus !== "idle" && reference && (
+        <p className="mt-2 text-[11px] text-muted-foreground">Réf. paiement : <span className="font-mono">{reference}</span></p>
+      )}
       <ul className="mt-4 space-y-3 text-sm">
         {cartItems.map((i) => (
           <li
