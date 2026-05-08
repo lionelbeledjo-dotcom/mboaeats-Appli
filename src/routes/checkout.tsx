@@ -120,8 +120,9 @@ function Checkout() {
     }
     setLandmarkErr(null);
 
+    let activeOrderId: string | null = liveOrderId;
     try {
-      await ensureLiveOrder();
+      activeOrderId = (await ensureLiveOrder()) ?? liveOrderId;
     } catch (e) {
       setTopError(e instanceof Error ? e.message : "Impossible de créer la commande");
       return;
@@ -130,13 +131,14 @@ function Checkout() {
     if (method === "cash") return setStep("success");
     if (method === "card") {
       setPending(true);
+      setPaymentStatus("pending");
       try {
         const res = await initiateCard({
           data: {
             amount: total,
             purpose: "order",
             return_url: typeof window !== "undefined" ? window.location.href : "https://mboaeats.lovable.app/checkout",
-            metadata: { landmark, cart: cart.map((c) => c.name) },
+            metadata: { landmark, cart: cart.map((c) => c.name), order_id: activeOrderId },
           },
         });
         if (!res.ok || !res.link) throw new Error(res.error ?? "Échec d'initiation carte");
@@ -148,12 +150,14 @@ function Checkout() {
         window.open(res.link, "_blank", "noopener,noreferrer");
       } catch (e) {
         setPending(false);
+        setPaymentStatus("failed");
         setTopError(e instanceof Error ? e.message : "Erreur paiement carte");
       }
       return;
     }
 
     setPending(true);
+    setPaymentStatus("pending");
     try {
       const cleanMsisdn = phone.replace(/\D/g, "");
       const res = await initiate({
@@ -162,7 +166,7 @@ function Checkout() {
           msisdn: `237${cleanMsisdn}`,
           amount: total,
           purpose: "order",
-          metadata: { landmark, cart: cart.map((c) => c.name) },
+          metadata: { landmark, cart: cart.map((c) => c.name), order_id: activeOrderId },
         },
       });
       if (!res.ok) throw new Error(res.error ?? "Échec d'initiation");
@@ -171,6 +175,7 @@ function Checkout() {
       setSeconds(20);
     } catch (e) {
       setPending(false);
+      setPaymentStatus("failed");
       setTopError(e instanceof Error ? e.message : "Erreur paiement");
     }
   };
