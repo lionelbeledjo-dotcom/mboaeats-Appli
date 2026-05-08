@@ -138,10 +138,10 @@
     color: transparent;
   }
   .glass {
-    background: oklch(0.22 0.045 280 / 0.55);
+    background: oklch(1 0 0 / 0.78);
     backdrop-filter: blur(18px) saturate(140%);
     -webkit-backdrop-filter: blur(18px) saturate(140%);
-    border: 1px solid oklch(1 0 0 / 0.08);
+    border: 1px solid oklch(0.2 0.02 280 / 0.08);
   }
   .noise::before {
     content: "";
