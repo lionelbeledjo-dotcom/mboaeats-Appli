@@ -148,7 +148,7 @@ function Connexion() {
     }
     setLoading(true);
     try {
-      if (mode === "phone" && channel === "sms") {
+      if (mode === "phone" && (channel === "sms" || channel === "whatsapp")) {
         const fullPhone = formatPhoneForOtp(country.dial, phone);
         const res: any = await verifyOtpFn({ data: { phone: fullPhone, code: code.trim() } });
         // Ouvre une vraie session Supabase Auth pour que les endpoints protégés fonctionnent
