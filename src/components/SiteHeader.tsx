@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
-const MORE_ITEMS = NAV_ITEMS_PLACEHOLDER; // replaced below
+
 
 const NAV_ITEMS: ReadonlyArray<{
   to: string;
