@@ -247,8 +247,11 @@ function SignInGate() {
       </p>
       <Link
         to="/connexion"
-        className="rounded-2xl bg-gradient-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-glow"
+        preload="intent"
+        aria-label="Se connecter"
+        className="inline-flex items-center gap-2 rounded-full bg-[#064E3B] px-6 py-3 text-base font-bold text-white border-2 border-white/95 shadow-[0_8px_24px_-8px_rgba(6,193,103,0.55)] transition-all duration-150 hover:border-[#D4AF37] active:scale-95"
       >
+        <Bike className="h-5 w-5" strokeWidth={2.5} />
         Se connecter
       </Link>
     </div>
