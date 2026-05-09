@@ -157,7 +157,7 @@ function ProfilPage() {
                 to="/connexion"
                 preload="intent"
                 aria-label="Se connecter"
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#064E3B] px-4 py-2.5 text-sm font-bold text-white border-2 border-white/95 shadow-[0_6px_18px_-6px_rgba(6,193,103,0.55)] transition-all duration-150 hover:border-[#D4AF37] hover:shadow-[0_8px_22px_-6px_rgba(212,175,55,0.55)] active:scale-95"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#064E3B] px-4 py-2.5 text-sm font-bold text-white border-2 border-white/95 shadow-[0_6px_18px_-6px_rgba(6,193,103,0.55)] transition-all duration-150 hover:border-[#D4AF37] hover:shadow-[0_8px_22px_-6px_rgba(212,175,55,0.55)] active:scale-95 min-h-11 min-w-[44px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#D4AF37]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 <User className="h-4 w-4" strokeWidth={2.5} />
                 Se connecter
