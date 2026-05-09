@@ -139,7 +139,13 @@ function CommandesPage() {
           <div className="rounded-2xl border border-border bg-surface/40 p-10 text-center">
             <LogIn className="mx-auto h-10 w-10 text-muted-foreground" />
             <p className="mt-3 text-sm text-muted-foreground">Connectez-vous pour voir vos commandes.</p>
-            <Link to="/connexion" className="mt-4 inline-block rounded-full bg-gradient-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-glow">
+            <Link
+              to="/connexion"
+              preload="intent"
+              aria-label="Se connecter"
+              className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#064E3B] px-6 py-3 text-base font-bold text-white border-2 border-white/95 shadow-[0_8px_24px_-8px_rgba(6,193,103,0.55)] transition-all duration-150 hover:border-[#D4AF37] active:scale-95"
+            >
+              <LogIn className="h-5 w-5" strokeWidth={2.5} />
               Se connecter
             </Link>
           </div>
