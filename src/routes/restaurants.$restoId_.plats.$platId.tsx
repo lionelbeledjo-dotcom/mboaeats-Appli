@@ -7,7 +7,7 @@ import { DishSkeleton } from "@/components/Skeleton";
 import { getDish, type Dish, type Restaurant } from "@/data/restaurants";
 import { addToCart } from "@/hooks/use-cart";
 
-export const Route = createFileRoute("/restaurants/$restoId/plats/$platId")({
+export const Route = createFileRoute("/restaurants/$restoId_/plats/$platId")({
   loader: ({ params }) => {
     const result = getDish(params.restoId, params.platId);
     if (!result) throw notFound();

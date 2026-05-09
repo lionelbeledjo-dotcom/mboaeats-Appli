@@ -8,7 +8,7 @@ import { DishReviews } from "@/components/DishReviews";
 import { getDishBySlugAndId } from "@/server/marketplace.functions";
 import { addToCart } from "@/hooks/use-cart";
 
-export const Route = createFileRoute("/r/$slug/plats/$dishId")({
+export const Route = createFileRoute("/r/$slug_/plats/$dishId")({
   component: DbDishPage,
   head: ({ params }) => ({
     meta: [
