@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Flame, Loader2, Minus, Plus, ShoppingCart, Star } from "lucide-react";
+import { ArrowLeft, Flame, Minus, Plus, ShoppingCart, Star } from "lucide-react";
 import { toast } from "sonner";
+import { DishSkeleton } from "@/components/Skeleton";
 import { getDishBySlugAndId } from "@/server/marketplace.functions";
 import { addToCart } from "@/hooks/use-cart";
 
