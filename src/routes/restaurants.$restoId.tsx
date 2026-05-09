@@ -156,7 +156,7 @@ function RestaurantPage() {
                       {/* Text left */}
                       <div className="flex min-w-0 flex-1 flex-col py-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="truncate font-display font-bold group-hover:text-[#06C167] transition-colors">{dish.name}</h3>
+                          <h3 className="truncate font-display text-base font-extrabold text-foreground group-hover:text-[#06C167] transition-colors dark:text-white">{dish.name}</h3>
                           {dish.popular && (
                             <span className="rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gold">
                               ★ Top
