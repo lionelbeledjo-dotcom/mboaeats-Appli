@@ -118,8 +118,13 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const location = useLocation();
   const path = location.pathname;
+  const isPreview =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("preview") === "1";
   const hideDock =
-    PUBLIC_ROUTES.includes(path) || PUBLIC_PREFIXES.some((p) => path.startsWith(p));
+    isPreview ||
+    PUBLIC_ROUTES.includes(path) ||
+    PUBLIC_PREFIXES.some((p) => path.startsWith(p));
   return (
     <ThemeProvider defaultTheme="light">
       <SplashScreen />
