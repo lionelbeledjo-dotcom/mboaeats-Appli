@@ -90,14 +90,15 @@ function DbDishPage() {
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-transparent to-background" />
-        <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between p-4 pt-5">
+        <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between gap-2 p-4 pt-5">
           <Link
             to="/r/$slug"
             params={{ slug }}
-            aria-label="Retour au menu"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-black shadow-md backdrop-blur"
+            aria-label="Retour au restaurant"
+            className="inline-flex items-center gap-2 rounded-full bg-white/95 px-3 py-2 text-xs font-semibold text-black shadow-md backdrop-blur hover:bg-white"
           >
             <ArrowLeft className="h-4 w-4" strokeWidth={2.5} />
+            <span>Retour au restaurant</span>
           </Link>
         </div>
       </div>
