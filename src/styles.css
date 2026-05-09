@@ -357,10 +357,25 @@
   src: url("https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2") format("woff2");
 }
 
-@layer base {
-  * {
-    border-color: var(--color-border);
-  }
+/* Price typography — Uber-Eats-like minimal, net & professionnel */
+.price {
+  font-family: "Inter", "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 0.9375rem; /* 15px */
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.price-sm { font-size: 0.875rem; font-weight: 500; } /* 14px */
+.price-lg { font-size: 1rem; font-weight: 600; }    /* 16px CTAs */
+.price .currency,
+.price-currency {
+  font-size: 0.6875rem; /* 11px */
+  font-weight: 500;
+  margin-left: 0.15em;
+  opacity: 0.75;
+  letter-spacing: 0.02em;
+}
 
   html {
     scroll-behavior: smooth;
