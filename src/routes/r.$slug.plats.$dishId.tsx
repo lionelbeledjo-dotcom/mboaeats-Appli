@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, Flame, Minus, Plus, ShoppingCart, Star } from "lucide-react";
 import { toast } from "sonner";
 import { DishSkeleton } from "@/components/Skeleton";
+import { DishReviews } from "@/components/DishReviews";
 import { getDishBySlugAndId } from "@/server/marketplace.functions";
 import { addToCart } from "@/hooks/use-cart";
 
@@ -187,6 +188,8 @@ function DbDishPage() {
             {resto.is_open ? "Plat indisponible pour le moment" : "Restaurant fermé"}
           </p>
         )}
+
+        <DishReviews dishId={dish.id} restaurantId={resto.id} />
       </div>
 
       {/* Sticky CTA */}
