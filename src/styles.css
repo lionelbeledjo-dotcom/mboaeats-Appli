@@ -377,6 +377,11 @@
   letter-spacing: 0.02em;
 }
 
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
   html {
     scroll-behavior: smooth;
   }
