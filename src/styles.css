@@ -436,11 +436,21 @@
   from { opacity: 0; transform: scale(0.94); }
   to { opacity: 1; transform: scale(1); }
 }
+@keyframes content-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes skeleton-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
 
 .animate-float { animation: float 4s ease-in-out infinite; }
 .animate-pulse-ring { animation: pulse-ring 1.8s cubic-bezier(0.4,0,0.6,1) infinite; }
 .animate-fade-up { animation: fade-up 0.7s cubic-bezier(0.2,0.8,0.2,1) both; }
 .animate-scale-in { animation: scale-in 0.5s cubic-bezier(0.2,0.8,0.2,1) both; }
+.animate-content-in { animation: content-in 0.32s cubic-bezier(0.2,0.8,0.2,1) both; }
+.animate-skeleton-out { animation: skeleton-out 0.18s ease-out both; }
 .skeleton {
   background: linear-gradient(90deg,
     oklch(0.95 0.005 280) 0%,
