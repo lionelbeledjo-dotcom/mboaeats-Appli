@@ -1,5 +1,6 @@
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, useRouter, useNavigate } from "@tanstack/react-router";
 import { Home, ShoppingBag, Package, User, Compass } from "lucide-react";
+import { useEffect } from "react";
 import { useCart } from "@/hooks/use-cart";
 import { useActiveOrdersCount } from "@/hooks/use-active-orders";
 
@@ -20,9 +21,19 @@ const items: Item[] = [
 
 export function BottomDock() {
   const location = useLocation();
+  const router = useRouter();
+  const navigate = useNavigate();
   const path = location.pathname;
   const { count } = useCart();
   const { count: activeOrders } = useActiveOrdersCount();
+
+  // Pré-chargement agressif : toutes les routes de la barre dès le montage.
+  useEffect(() => {
+    items.forEach((it) => {
+      router.preloadRoute({ to: it.to }).catch(() => {});
+    });
+  }, [router]);
+
 
   if (/^\/(admin|restaurant|livreur|connexion)/.test(path)) return null;
 
