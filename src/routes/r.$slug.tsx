@@ -192,10 +192,10 @@ function RestoLivePage() {
                       const el = document.getElementById(`cat-${cat.id}`);
                       el?.scrollIntoView({ behavior: "smooth", block: "start" });
                     }}
-                    className={`rounded-full border px-4 py-2 text-xs font-semibold transition-all ${
+                    className={`rounded-full border px-4 py-2 text-xs font-bold transition-all ${
                       active
-                        ? "border-black bg-black text-white"
-                        : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300"
+                        ? "border-foreground bg-foreground text-background"
+                        : "border-neutral-300 bg-card text-foreground hover:border-foreground/60 dark:border-neutral-700"
                     }`}
                   >
                     {cat.name}
@@ -209,7 +209,7 @@ function RestoLivePage() {
         {/* Dishes */}
         <div className="mt-6 space-y-8">
           {categories.length === 0 && (
-            <p className="rounded-2xl border border-dashed border-neutral-200 p-10 text-center text-sm text-neutral-500">
+            <p className="rounded-2xl border border-dashed border-neutral-300 p-10 text-center text-sm text-neutral-600 dark:border-neutral-700 dark:text-neutral-400">
               Menu en cours de mise en ligne.
             </p>
           )}
@@ -218,7 +218,7 @@ function RestoLivePage() {
             if (list.length === 0) return null;
             return (
               <section key={cat.id} id={`cat-${cat.id}`} className="scroll-mt-24">
-                <h2 className="mb-3 text-lg font-bold text-black">{cat.name}</h2>
+                <h2 className="mb-3 text-lg font-extrabold tracking-tight text-foreground">{cat.name}</h2>
                 <ul className="space-y-3">
                   {list.map((dish) => (
                     <DishCard
@@ -270,7 +270,7 @@ function DishCard({
   const cheap = dish.price > 0 && dish.price < 2000;
   return (
     <li
-      className="relative flex items-stretch gap-3 rounded-[1.25rem] border border-neutral-200 bg-white p-3"
+      className="relative flex items-stretch gap-3 rounded-[1.25rem] border border-neutral-200 bg-card p-3 dark:border-neutral-800"
       style={{ boxShadow: "var(--shadow-soft)" }}
     >
       <div className="relative shrink-0">
@@ -282,34 +282,34 @@ function DishCard({
             className="h-24 w-24 rounded-[1rem] object-cover"
           />
         ) : (
-          <div className="flex h-24 w-24 items-center justify-center rounded-[1rem] bg-neutral-100">
+          <div className="flex h-24 w-24 items-center justify-center rounded-[1rem] bg-neutral-100 dark:bg-neutral-800">
             <Flame className="h-6 w-6 text-neutral-400" />
           </div>
         )}
         {/* Badge pill (Most Popular / Under) */}
         {dish.is_popular && (
-          <span className="absolute -left-1 -top-1 rounded-full bg-black px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+          <span className="absolute -left-1 -top-1 rounded-full bg-foreground px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-background">
             Top
           </span>
         )}
         {!dish.is_popular && cheap && (
-          <span className="absolute -left-1 -top-1 rounded-full bg-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black ring-1 ring-neutral-200">
+          <span className="absolute -left-1 -top-1 rounded-full bg-card px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-foreground ring-1 ring-neutral-300 dark:ring-neutral-700">
             -2000F
           </span>
         )}
       </div>
       <div className="flex min-w-0 flex-1 flex-col py-1">
-        <h3 className="truncate text-base font-semibold text-black">{dish.name}</h3>
+        <h3 className="truncate text-base font-extrabold tracking-tight text-foreground">{dish.name}</h3>
         {dish.description && (
-          <p className="mt-0.5 line-clamp-2 text-xs text-neutral-500">{dish.description}</p>
+          <p className="mt-0.5 line-clamp-2 text-xs font-medium text-neutral-700 dark:text-neutral-300">{dish.description}</p>
         )}
         <div className="mt-auto flex items-center justify-between pt-2">
           <div className="flex items-baseline gap-2">
-            <span className="text-base font-bold text-black tabular-nums">
+            <span className="text-base font-extrabold text-foreground tabular-nums">
               {dish.price.toLocaleString("fr-FR")}
-              <span className="ml-0.5 text-xs font-medium text-neutral-500">FCFA</span>
+              <span className="ml-0.5 text-xs font-semibold text-neutral-600 dark:text-neutral-400">FCFA</span>
             </span>
-            <span className="text-[11px] text-neutral-400">· ~450 cal</span>
+            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">· ~450 cal</span>
           </div>
           <button
             aria-label={`Ajouter ${dish.name}`}
