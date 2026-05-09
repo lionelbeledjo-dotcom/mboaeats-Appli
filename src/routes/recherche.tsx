@@ -113,7 +113,7 @@ function RecherchePage() {
                       <p className="truncate text-sm font-semibold">{d.name}</p>
                       <p className="truncate text-xs text-muted-foreground">{d.resto}</p>
                     </div>
-                    <span className="text-sm font-bold text-primary">{d.price.toLocaleString("fr-FR")} FCFA</span>
+                    <span className="price text-primary">{d.price.toLocaleString("fr-FR")}<span className="price-currency">FCFA</span></span>
                   </Link>
                 </li>
               ))}

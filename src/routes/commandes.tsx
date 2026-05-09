@@ -172,8 +172,8 @@ function CommandesPage() {
                     <StatusBadge status={o.status} />
                   </div>
                   <div className="mt-3 flex items-center justify-between">
-                    <span className="text-sm font-bold text-primary tabular-nums">
-                      {o.total.toLocaleString("fr-FR")} FCFA
+                    <span className="price text-primary">
+                      {o.total.toLocaleString("fr-FR")}<span className="price-currency">FCFA</span>
                     </span>
                     {active ? (
                       <Link

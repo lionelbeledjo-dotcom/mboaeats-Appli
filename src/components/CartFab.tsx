@@ -31,8 +31,8 @@ export function CartFab() {
           {displayCount}
         </span>
       </div>
-      <span className="text-[11px] font-bold tabular-nums sm:text-xs">
-        {subtotal.toLocaleString("fr-FR")} FCFA
+      <span className="price price-sm">
+        {subtotal.toLocaleString("fr-FR")}<span className="price-currency">FCFA</span>
       </span>
       <span className="sr-only">{label}</span>
     </Link>

@@ -170,9 +170,9 @@ function RestaurantPage() {
                           {dish.description}
                         </p>
                         <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-                          <span className="font-display text-base font-bold text-[#06C167]">
+                          <span className="price text-[#06C167]">
                             {dish.price.toLocaleString("fr-FR")}
-                            <span className="ml-1 text-xs font-semibold text-[#06C167]/80">FCFA</span>
+                            <span className="price-currency text-[#06C167]">FCFA</span>
                           </span>
                           <span className="inline-flex items-center gap-1 rounded-full bg-[#06C167]/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#06C167] transition-all group-hover:bg-[#06C167] group-hover:text-white group-active:bg-[#06C167] group-active:text-white">
                             Voir <ChevronRight className="h-3 w-3" strokeWidth={2.5} />
