@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Bell, Mail, Smartphone, ArrowLeft, Loader2, Check } from "lucide-react";
+import { Bell, Mail, Smartphone, ArrowLeft, Loader2, Check, Contrast } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useTheme } from "@/components/ThemeProvider";
 
 export const Route = createFileRoute("/preferences")({
   head: () => ({
