@@ -79,6 +79,13 @@ export function MboaEatsLogo({
 
   const resolvedBadgeSize: BadgeSize = badgeSize ?? (size === "sm" ? "sm" : "md");
 
+  const wordmarkBaseColor =
+    resolvedVariant === "filled"
+      ? "text-white"
+      : resolvedVariant === "ghost" || resolvedVariant === "plain"
+        ? "text-white dark:text-white"
+        : "text-foreground";
+
   const wordmark = (
     <h2
       aria-label="MboaEats"
@@ -87,9 +94,7 @@ export function MboaEatsLogo({
         TEXT_SIZES[size],
       )}
     >
-      <span className={resolvedVariant === "filled" ? "text-white" : "text-foreground"}>
-        Mboa
-      </span>
+      <span className={wordmarkBaseColor}>Mboa</span>
       <span className="text-brand-cm-green">Eats</span>
     </h2>
   );
