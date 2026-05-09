@@ -188,6 +188,8 @@ function DbDishPage() {
             {resto.is_open ? "Plat indisponible pour le moment" : "Restaurant fermé"}
           </p>
         )}
+
+        <DishReviews dishId={dish.id} restaurantId={resto.id} />
       </div>
 
       {/* Sticky CTA */}
