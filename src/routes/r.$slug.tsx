@@ -107,13 +107,18 @@ function RestoLivePage() {
   const cover = resto.cover_url ?? resto.image_url ?? "";
 
   return (
-    <div className="min-h-screen bg-white pb-40">
+    <div className="min-h-screen bg-background pb-40">
       {/* Hero cover */}
-      <div className="relative h-56 w-full overflow-hidden md:h-72">
+      <div className="relative aspect-[16/10] w-full overflow-hidden bg-neutral-100 dark:bg-neutral-900 sm:aspect-[21/9] md:h-72 md:aspect-auto">
         {cover ? (
-          <img src={cover} alt={resto.name} className="h-full w-full object-cover" />
+          <img
+            src={cover}
+            alt={resto.name}
+            loading="eager"
+            className="h-full w-full object-cover object-center"
+          />
         ) : (
-          <div className="h-full w-full bg-gradient-to-br from-neutral-200 to-neutral-100" />
+          <div className="h-full w-full bg-gradient-to-br from-neutral-200 to-neutral-100 dark:from-neutral-800 dark:to-neutral-900" />
         )}
         <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
           <Link
@@ -130,35 +135,43 @@ function RestoLivePage() {
       {/* Resto info card */}
       <main className="mx-auto -mt-8 max-w-3xl px-4">
         <div
-          className="rounded-[1.5rem] border border-neutral-200 bg-white p-5"
+          className="rounded-[1.5rem] border border-neutral-200 bg-card p-5 dark:border-neutral-800"
           style={{ boxShadow: "var(--shadow-soft)" }}
         >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <h1 className="text-2xl font-bold tracking-tight text-black">{resto.name}</h1>
-              <p className="mt-1 text-sm text-neutral-600">{resto.cuisine}</p>
+              <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
+                {resto.name}
+              </h1>
+              <p className="mt-1 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                {resto.cuisine}
+              </p>
             </div>
             <span
-              className={`rounded-full px-3 py-1 text-[11px] font-semibold ${
-                resto.is_open ? "bg-emerald-50 text-emerald-700" : "bg-neutral-100 text-neutral-500"
+              className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold ${
+                resto.is_open
+                  ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                  : "bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
               }`}
             >
               {resto.is_open ? "● Ouvert" : "Fermé"}
             </span>
           </div>
-          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-neutral-700">
-            <span className="flex items-center gap-1 font-semibold text-black">
+          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-neutral-700 dark:text-neutral-300">
+            <span className="flex items-center gap-1 font-semibold text-foreground">
               <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" strokeWidth={2} />
               {Number(resto.rating ?? 4.5).toFixed(1)}
-              <span className="font-normal text-neutral-500">({resto.reviews_count ?? 0})</span>
+              <span className="font-normal text-neutral-500 dark:text-neutral-400">
+                ({resto.reviews_count ?? 0})
+              </span>
             </span>
-            <span className="flex items-center gap-1 text-neutral-600">
+            <span className="flex items-center gap-1">
               <Clock className="h-3.5 w-3.5" strokeWidth={2} /> {resto.eta_min ?? 20}–{resto.eta_max ?? 40} min
             </span>
-            <span className="flex items-center gap-1 text-neutral-600">
+            <span className="flex items-center gap-1">
               <MapPin className="h-3.5 w-3.5" strokeWidth={2} /> {resto.neighborhood ?? resto.city}
             </span>
-            <span className="text-neutral-600">
+            <span>
               Livraison {(resto.delivery_fee ?? 0).toLocaleString("fr-FR")} F
             </span>
           </div>
