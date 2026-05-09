@@ -18,6 +18,7 @@ type Prefs = { push_enabled: boolean; inapp_enabled: boolean; email_enabled: boo
 
 function PreferencesPage() {
   const navigate = useNavigate();
+  const { highContrast, toggleHighContrast } = useTheme();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
