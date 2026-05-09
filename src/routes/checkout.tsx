@@ -308,29 +308,29 @@ function ChooseMethod({
 }) {
   return (
     <>
-      <div className="rounded-3xl border border-border bg-white text-black p-5 shadow-card">
+      <div className="rounded-3xl border-2 border-brand-cm-green bg-brand-cm-green text-white p-5 shadow-[0_12px_32px_-12px_rgba(6,193,103,0.55)]">
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-[oklch(var(--promo))]" />
-              <h2 className="font-display text-lg font-bold">Livraison à</h2>
+              <MapPin className="h-4 w-4 text-white" />
+              <h2 className="font-display text-lg font-bold text-white">Livraison à</h2>
             </div>
-            <p className="mt-1 text-sm font-semibold">Akwa, Douala</p>
-            <p className="mt-0.5 text-xs text-neutral-500">Arrivée estimée</p>
+            <p className="mt-1 text-sm font-semibold text-white">Akwa, Douala</p>
+            <p className="mt-0.5 text-xs text-white/85">Arrivée estimée</p>
           </div>
-          <span className="inline-flex items-center gap-1 rounded-full bg-[oklch(var(--promo)/0.12)] px-3 py-1.5 text-xs font-bold text-[oklch(var(--promo))]">
+          <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1.5 text-xs font-bold text-white ring-1 ring-white/40">
             ⏱ 15 min
           </span>
         </div>
 
         {/* Mini-map mock */}
-        <div className="relative mt-4 h-28 w-full overflow-hidden rounded-2xl border border-neutral-200 bg-[linear-gradient(135deg,#f1f5f9_0%,#e2e8f0_100%)]">
-          <svg className="absolute inset-0 h-full w-full opacity-60" viewBox="0 0 400 120" preserveAspectRatio="none">
-            <path d="M0,80 Q120,20 200,60 T400,40" stroke="oklch(var(--promo))" strokeWidth="3" fill="none" strokeDasharray="6 4" />
-            <circle cx="60" cy="78" r="6" fill="oklch(var(--promo))" />
+        <div className="relative mt-4 h-28 w-full overflow-hidden rounded-2xl border border-white/30 bg-[linear-gradient(135deg,#f1f5f9_0%,#e2e8f0_100%)]">
+          <svg className="absolute inset-0 h-full w-full opacity-70" viewBox="0 0 400 120" preserveAspectRatio="none">
+            <path d="M0,80 Q120,20 200,60 T400,40" stroke="#0a8f4e" strokeWidth="3" fill="none" strokeDasharray="6 4" />
+            <circle cx="60" cy="78" r="6" fill="#0a8f4e" />
             <circle cx="340" cy="46" r="8" fill="#000" />
           </svg>
-          <div className="absolute bottom-2 left-3 rounded-md bg-white/90 px-2 py-0.5 text-[10px] font-semibold text-black shadow-sm">
+          <div className="absolute bottom-2 left-3 rounded-md bg-white/95 px-2 py-0.5 text-[10px] font-semibold text-black shadow-sm">
             Restaurant
           </div>
           <div className="absolute right-3 top-2 rounded-md bg-black px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
@@ -339,8 +339,8 @@ function ChooseMethod({
         </div>
 
         <label className="mt-4 block">
-          <span className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-primary">
-            <MapPin className="h-3 w-3" /> Point de repère visuel <span className="text-destructive">*</span>
+          <span className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-white">
+            <MapPin className="h-3 w-3 text-white" /> Point de repère visuel <span className="text-white">*</span>
           </span>
           <textarea
             value={landmark}
@@ -348,15 +348,15 @@ function ChooseMethod({
             placeholder="Ex: derrière la station Total, portail bleu en face de la pharmacie Jordan…"
             rows={2}
             maxLength={140}
-            className={`mt-2 w-full rounded-xl border bg-background/50 px-3 py-3 text-sm outline-none focus:border-primary ${
-              landmarkErr ? "border-destructive" : "border-border"
+            className={`mt-2 w-full rounded-xl border bg-white/10 px-3 py-3 text-sm text-white placeholder:text-white/70 outline-none focus:border-white focus:bg-white/15 ${
+              landmarkErr ? "border-red-200" : "border-white/40"
             }`}
           />
           <div className="mt-1 flex justify-between text-[11px]">
-            <span className={landmarkErr ? "text-destructive" : "text-muted-foreground"}>
+            <span className={landmarkErr ? "text-red-100 font-semibold" : "text-white/85"}>
               {landmarkErr ?? "Aide le livreur à te trouver rapidement (transmis à sa tournée)."}
             </span>
-            <span className="text-muted-foreground">{landmark.length}/140</span>
+            <span className="text-white/80">{landmark.length}/140</span>
           </div>
         </label>
       </div>
