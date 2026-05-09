@@ -153,7 +153,13 @@ function ProfilPage() {
                 {editing ? "Annuler" : "Modifier"}
               </button>
             ) : (
-              <Link to="/connexion" className="rounded-full bg-gradient-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-glow">
+              <Link
+                to="/connexion"
+                preload="intent"
+                aria-label="Se connecter"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#064E3B] px-4 py-2.5 text-sm font-bold text-white border-2 border-white/95 shadow-[0_6px_18px_-6px_rgba(6,193,103,0.55)] transition-all duration-150 hover:border-[#D4AF37] hover:shadow-[0_8px_22px_-6px_rgba(212,175,55,0.55)] active:scale-95"
+              >
+                <User className="h-4 w-4" strokeWidth={2.5} />
                 Se connecter
               </Link>
             )}
