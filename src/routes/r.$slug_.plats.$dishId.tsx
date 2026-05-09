@@ -238,7 +238,7 @@ function DbDishPage() {
               <ShoppingCart className="h-4 w-4" />
               Ajouter au panier
             </span>
-            <span>{total.toLocaleString("fr-FR")} FCFA</span>
+            <span className="price price-lg">{total.toLocaleString("fr-FR")}<span className="price-currency">FCFA</span></span>
           </button>
         </div>
       </div>
