@@ -191,13 +191,13 @@ function DishPage() {
                 },
               });
             }}
-            className="flex w-full items-center justify-between rounded-full bg-gradient-primary px-6 py-4 text-sm font-bold text-primary-foreground shadow-glow transition active:scale-[0.98]"
+            className="flex w-full items-center justify-between rounded-full bg-[#06C167] px-6 py-4 text-sm font-medium text-white shadow-[0_12px_32px_-10px_rgba(6,193,103,0.7)] transition active:scale-[0.98]"
           >
-            <span className="flex items-center gap-2">
-              <ShoppingCart className="h-4 w-4" />
+            <span className="flex items-center gap-2 font-medium">
+              <ShoppingCart className="h-4 w-4" strokeWidth={2} />
               Ajouter au panier
             </span>
-            <span className="price price-lg">{total.toLocaleString("fr-FR")}<span className="price-currency">FCFA</span></span>
+            <span className="price-cta">{total.toLocaleString("fr-FR")}<span className="price-currency">FCFA</span></span>
           </button>
         </div>
       </div>
