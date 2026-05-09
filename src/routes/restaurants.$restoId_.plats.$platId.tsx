@@ -58,10 +58,12 @@ function DishPage() {
 
   return (
     <div className="min-h-screen bg-background pb-32">
-      {/* Cover image */}
-      <div className="relative h-72 w-full overflow-hidden md:h-96">
+      {/* Cover image — hauteur fixe, pas de chevauchement */}
+      <div
+        className="relative w-full overflow-hidden"
+        style={{ height: "40vh", maxHeight: 420 }}
+      >
         <img src={dish.image} alt={dish.name} className="h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-transparent to-background" />
         <div className="absolute inset-x-0 top-0 p-4 pt-5">
           <SmartBack
             backTo="/restaurants/$restoId"
@@ -79,18 +81,18 @@ function DishPage() {
         </div>
       </div>
 
-      <div className="container mx-auto -mt-10 max-w-2xl px-4">
-        <div className="rounded-3xl border border-border/60 bg-card p-5 shadow-glow">
+      <div className="container mx-auto max-w-2xl px-4 pt-6">
+        <div className="rounded-3xl border border-border/60 bg-card p-5 shadow-card">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <Link
                 to="/restaurants/$restoId"
                 params={{ restoId: restaurant.id }}
-                className="text-xs font-medium text-muted-foreground hover:text-foreground"
+                className="text-xs font-normal text-muted-foreground hover:text-foreground"
               >
                 {restaurant.name} · {restaurant.city}
               </Link>
-              <h1 className="mt-1 text-2xl font-bold">{dish.name}</h1>
+              <h1 className="mt-1 font-display text-2xl font-medium tracking-tight">{dish.name}</h1>
               <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Star className="h-3.5 w-3.5 fill-accent text-accent" /> {restaurant.rating}
