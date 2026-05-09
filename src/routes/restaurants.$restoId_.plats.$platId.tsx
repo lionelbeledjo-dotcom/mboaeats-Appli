@@ -102,8 +102,8 @@ function DishPage() {
                 )}
               </div>
             </div>
-            <span className="shrink-0 rounded-full bg-primary/15 px-3 py-1 text-sm font-bold text-primary">
-              {dish.price.toLocaleString("fr-FR")} FCFA
+            <span className="price shrink-0 rounded-full bg-primary/15 px-3 py-1 text-primary">
+              {dish.price.toLocaleString("fr-FR")}<span className="price-currency">FCFA</span>
             </span>
           </div>
 
