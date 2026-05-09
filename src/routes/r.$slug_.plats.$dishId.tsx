@@ -98,7 +98,7 @@ function DbDishPage() {
   return (
     <div className="min-h-screen bg-background pb-32">
       {/* Cover */}
-      <div className="relative h-72 w-full overflow-hidden bg-muted md:h-96">
+      <div className="relative h-72 w-full overflow-hidden bg-muted md:h-96 animate-content-in" style={{ animationDelay: "0ms" }}>
         {dish.image_url ? (
           <img src={dish.image_url} alt={dish.name} className="h-full w-full object-cover" />
         ) : (
