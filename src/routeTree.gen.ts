@@ -16,6 +16,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RestaurantRouteImport } from './routes/restaurant'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RechercheRouteImport } from './routes/recherche'
+import { Route as ProximiteRouteImport } from './routes/proximite'
 import { Route as ProfilRouteImport } from './routes/profil'
 import { Route as PreferencesRouteImport } from './routes/preferences'
 import { Route as ParrainageRouteImport } from './routes/parrainage'
@@ -99,6 +100,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const RechercheRoute = RechercheRouteImport.update({
   id: '/recherche',
   path: '/recherche',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProximiteRoute = ProximiteRouteImport.update({
+  id: '/proximite',
+  path: '/proximite',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfilRoute = ProfilRouteImport.update({
@@ -373,6 +379,7 @@ export interface FileRoutesByFullPath {
   '/parrainage': typeof ParrainageRoute
   '/preferences': typeof PreferencesRoute
   '/profil': typeof ProfilRoute
+  '/proximite': typeof ProximiteRoute
   '/recherche': typeof RechercheRoute
   '/reset-password': typeof ResetPasswordRoute
   '/restaurant': typeof RestaurantRoute
@@ -430,6 +437,7 @@ export interface FileRoutesByTo {
   '/parrainage': typeof ParrainageRoute
   '/preferences': typeof PreferencesRoute
   '/profil': typeof ProfilRoute
+  '/proximite': typeof ProximiteRoute
   '/recherche': typeof RechercheRoute
   '/reset-password': typeof ResetPasswordRoute
   '/restaurant': typeof RestaurantRoute
@@ -488,6 +496,7 @@ export interface FileRoutesById {
   '/parrainage': typeof ParrainageRoute
   '/preferences': typeof PreferencesRoute
   '/profil': typeof ProfilRoute
+  '/proximite': typeof ProximiteRoute
   '/recherche': typeof RechercheRoute
   '/reset-password': typeof ResetPasswordRoute
   '/restaurant': typeof RestaurantRoute
@@ -548,6 +557,7 @@ export interface FileRouteTypes {
     | '/parrainage'
     | '/preferences'
     | '/profil'
+    | '/proximite'
     | '/recherche'
     | '/reset-password'
     | '/restaurant'
@@ -605,6 +615,7 @@ export interface FileRouteTypes {
     | '/parrainage'
     | '/preferences'
     | '/profil'
+    | '/proximite'
     | '/recherche'
     | '/reset-password'
     | '/restaurant'
@@ -662,6 +673,7 @@ export interface FileRouteTypes {
     | '/parrainage'
     | '/preferences'
     | '/profil'
+    | '/proximite'
     | '/recherche'
     | '/reset-password'
     | '/restaurant'
@@ -721,6 +733,7 @@ export interface RootRouteChildren {
   ParrainageRoute: typeof ParrainageRoute
   PreferencesRoute: typeof PreferencesRoute
   ProfilRoute: typeof ProfilRoute
+  ProximiteRoute: typeof ProximiteRoute
   RechercheRoute: typeof RechercheRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   RestaurantRoute: typeof RestaurantRoute
@@ -792,6 +805,13 @@ declare module '@tanstack/react-router' {
       path: '/recherche'
       fullPath: '/recherche'
       preLoaderRoute: typeof RechercheRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/proximite': {
+      id: '/proximite'
+      path: '/proximite'
+      fullPath: '/proximite'
+      preLoaderRoute: typeof ProximiteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profil': {
@@ -1242,6 +1262,7 @@ const rootRouteChildren: RootRouteChildren = {
   ParrainageRoute: ParrainageRoute,
   PreferencesRoute: PreferencesRoute,
   ProfilRoute: ProfilRoute,
+  ProximiteRoute: ProximiteRoute,
   RechercheRoute: RechercheRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   RestaurantRoute: RestaurantRoute,
