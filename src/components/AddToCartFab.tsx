@@ -15,9 +15,9 @@ export function AddToCartFab({ count, total, restoId }: { count: number; total: 
             {count}
           </span>
           <ShoppingBag className="h-4 w-4" strokeWidth={2} />
-          <span className="text-sm font-semibold">Voir le panier</span>
+          <span className="text-sm font-medium">Voir le panier</span>
         </span>
-        <span className="price">{total.toLocaleString("fr-FR")}<span className="price-currency">FCFA</span></span>
+        <span className="price-cta">{total.toLocaleString("fr-FR")}<span className="price-currency">FCFA</span></span>
       </Link>
     </div>
   );

@@ -5,8 +5,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-display: "Inter", "Roboto", system-ui, sans-serif;
-  --font-sans: "Inter", "Roboto", system-ui, sans-serif;
+  --font-display: "Lexend", "Inter", "Roboto", system-ui, sans-serif;
+  --font-sans: "Inter", "Lexend", "Roboto", system-ui, sans-serif;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -356,10 +356,17 @@
   font-display: swap;
   src: url("https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2") format("woff2");
 }
+@font-face {
+  font-family: "Lexend";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/lexend/v19/wlptgwvFAVdoq2_F94zlCfv0bz1WC2gWSneSdM.woff2") format("woff2");
+}
 
 /* Price typography — Uber-Eats-like minimal, net & professionnel */
 .price {
-  font-family: "Inter", "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: "Inter", "Lexend", "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
   font-size: 0.9375rem; /* 15px */
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -368,6 +375,23 @@
 }
 .price-sm { font-size: 0.875rem; font-weight: 500; } /* 14px */
 .price-lg { font-size: 1rem; font-weight: 600; }    /* 16px CTAs */
+/* Variante "fine & espacée" pour les prix à l'intérieur d'un CTA coloré (vert) */
+.price-cta {
+  font-family: "Inter", "Lexend", system-ui, sans-serif;
+  font-size: 0.9375rem;       /* 15px */
+  font-weight: 500;           /* Medium — fin et élégant */
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;     /* aéré */
+  line-height: 1.2;
+}
+.price-cta .price-currency,
+.price-cta .currency {
+  font-size: 0.6875rem;
+  font-weight: 400;           /* encore plus fin */
+  margin-left: 0.35em;        /* espacement net entre montant et devise */
+  opacity: 0.95;
+  letter-spacing: 0.06em;
+}
 .price .currency,
 .price-currency {
   font-size: 0.6875rem; /* 11px */
@@ -394,6 +418,18 @@
     font-size: 1.0625rem;   /* 17px CTAs */
     font-weight: 700;
     line-height: 1.25;
+  }
+  .price-cta {
+    font-size: 1rem;        /* 16px */
+    font-weight: 500;       /* on conserve la finesse même sur mobile */
+    letter-spacing: 0.025em;
+  }
+  .price-cta .price-currency,
+  .price-cta .currency {
+    font-size: 0.75rem;
+    font-weight: 400;
+    margin-left: 0.4em;
+    letter-spacing: 0.07em;
   }
   .price .currency,
   .price-currency {
@@ -423,8 +459,12 @@
 
   h1, h2, h3, h4 {
     font-family: var(--font-display);
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
+    font-weight: 500;            /* Medium — Uber Move feel */
     color: oklch(0.14 0 0);
+  }
+  p, li, span, label {
+    font-weight: 400;            /* Regular — descriptions aérées */
   }
 }
 
