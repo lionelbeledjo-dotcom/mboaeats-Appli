@@ -260,68 +260,83 @@ function RestoLivePage() {
 }
 
 function DishCard({
+  slug,
   dish,
   restoOpen,
   onAdd,
 }: {
+  slug: string;
   dish: Dish;
   restoOpen: boolean;
   onAdd: () => void;
 }) {
   const cheap = dish.price > 0 && dish.price < 2000;
   return (
-    <li
-      className="relative flex items-stretch gap-3 rounded-[1.25rem] border border-neutral-200 bg-card p-3 dark:border-neutral-800"
-      style={{ boxShadow: "var(--shadow-soft)" }}
-    >
-      <div className="relative shrink-0">
-        {dish.image_url ? (
-          <img
-            src={dish.image_url}
-            alt={dish.name}
-            loading="lazy"
-            className="h-24 w-24 rounded-[1rem] object-cover"
-          />
-        ) : (
-          <div className="flex h-24 w-24 items-center justify-center rounded-[1rem] bg-neutral-100 dark:bg-neutral-800">
-            <Flame className="h-6 w-6 text-neutral-400" />
-          </div>
-        )}
-        {/* Badge pill (Most Popular / Under) */}
-        {dish.is_popular && (
-          <span className="absolute -left-1 -top-1 rounded-full bg-foreground px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-background">
-            Top
-          </span>
-        )}
-        {!dish.is_popular && cheap && (
-          <span className="absolute -left-1 -top-1 rounded-full bg-card px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-foreground ring-1 ring-neutral-300 dark:ring-neutral-700">
-            -2000F
-          </span>
-        )}
-      </div>
-      <div className="flex min-w-0 flex-1 flex-col py-1">
-        <h3 className="truncate text-base font-extrabold tracking-tight text-foreground">{dish.name}</h3>
-        {dish.description && (
-          <p className="mt-0.5 line-clamp-2 text-xs font-medium text-neutral-700 dark:text-neutral-300">{dish.description}</p>
-        )}
-        <div className="mt-auto flex items-center justify-between pt-2">
-          <div className="flex items-baseline gap-2">
-            <span className="text-base font-extrabold text-foreground tabular-nums">
-              {dish.price.toLocaleString("fr-FR")}
-              <span className="ml-0.5 text-xs font-semibold text-neutral-600 dark:text-neutral-400">FCFA</span>
+    <li>
+      <Link
+        to="/r/$slug/plats/$dishId"
+        params={{ slug, dishId: dish.id }}
+        preload="intent"
+        aria-label={`Voir les détails de ${dish.name}`}
+        className="group relative flex items-stretch gap-3 rounded-[1.25rem] border border-neutral-200 bg-card p-3 transition-all cursor-pointer select-none hover:-translate-y-0.5 hover:border-[#06C167]/60 hover:shadow-[0_10px_28px_-12px_rgba(6,193,103,0.45)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:border-neutral-800"
+        style={{ boxShadow: "var(--shadow-soft)" }}
+      >
+        <div className="relative shrink-0">
+          {dish.image_url ? (
+            <img
+              src={dish.image_url}
+              alt={dish.name}
+              loading="lazy"
+              className="h-24 w-24 rounded-[1rem] object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div className="flex h-24 w-24 items-center justify-center rounded-[1rem] bg-neutral-100 dark:bg-neutral-800">
+              <Flame className="h-6 w-6 text-neutral-400" />
+            </div>
+          )}
+          {dish.is_popular && (
+            <span className="absolute -left-1 -top-1 rounded-full bg-foreground px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-background">
+              Top
             </span>
-            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">· ~450 cal</span>
-          </div>
-          <button
-            aria-label={`Ajouter ${dish.name}`}
-            disabled={!restoOpen || !dish.is_available}
-            onClick={onAdd}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#06C167] text-white shadow-[0_8px_20px_-6px_rgba(6,193,103,0.7)] ring-2 ring-background transition-all hover:scale-105 hover:bg-[#05a558] active:scale-95 disabled:opacity-40"
-          >
-            <Plus className="h-4 w-4" strokeWidth={2.5} />
-          </button>
+          )}
+          {!dish.is_popular && cheap && (
+            <span className="absolute -left-1 -top-1 rounded-full bg-card px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-foreground ring-1 ring-neutral-300 dark:ring-neutral-700">
+              -2000F
+            </span>
+          )}
         </div>
-      </div>
+        <div className="flex min-w-0 flex-1 flex-col py-1">
+          <h3 className="truncate text-base font-extrabold tracking-tight text-foreground group-hover:text-[#06C167] transition-colors dark:text-white">
+            {dish.name}
+          </h3>
+          {dish.description && (
+            <p className="mt-0.5 line-clamp-2 text-xs font-medium text-neutral-700 dark:text-neutral-300">
+              {dish.description}
+            </p>
+          )}
+          <div className="mt-auto flex items-center justify-between pt-2">
+            <div className="flex items-baseline gap-2">
+              <span className="text-base font-extrabold text-[#06C167] tabular-nums">
+                {dish.price.toLocaleString("fr-FR")}
+                <span className="ml-0.5 text-xs font-semibold text-[#06C167]/80">FCFA</span>
+              </span>
+            </div>
+            <button
+              type="button"
+              aria-label={`Ajouter ${dish.name}`}
+              disabled={!restoOpen || !dish.is_available}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onAdd();
+              }}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#06C167] text-white shadow-[0_8px_20px_-6px_rgba(6,193,103,0.7)] ring-2 ring-background transition-all hover:scale-105 hover:bg-[#05a558] active:scale-95 disabled:opacity-40"
+            >
+              <Plus className="h-4 w-4" strokeWidth={2.5} />
+            </button>
+          </div>
+        </div>
+      </Link>
     </li>
   );
 }
