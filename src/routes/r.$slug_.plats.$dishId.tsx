@@ -121,7 +121,7 @@ function DbDishPage() {
       </div>
 
       <div className="container mx-auto -mt-10 max-w-2xl px-4">
-        <div className="rounded-3xl border border-border/60 bg-card p-5 shadow-glow">
+        <div className="rounded-3xl border border-border/60 bg-card p-5 shadow-glow animate-content-in" style={{ animationDelay: "80ms" }}>
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <Link
