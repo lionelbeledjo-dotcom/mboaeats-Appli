@@ -64,6 +64,38 @@ export const getRestaurantBySlug = createServerFn({ method: "GET" })
     return { resto, categories: categories ?? [], dishes: dishes ?? [] };
   });
 
+export const getDishBySlugAndId = createServerFn({ method: "GET" })
+  .inputValidator((d: { slug: string; dishId: string }) =>
+    z
+      .object({
+        slug: z.string().min(1).max(80),
+        dishId: z.string().uuid(),
+      })
+      .parse(d)
+  )
+  .handler(async ({ data }) => {
+    const { data: resto, error: rErr } = await supabaseAdmin
+      .from("restaurants")
+      .select(
+        "id, slug, name, cuisine, city, neighborhood, image_url, cover_url, rating, is_open"
+      )
+      .eq("slug", data.slug)
+      .maybeSingle();
+    if (rErr) throw new Error(rErr.message);
+    if (!resto) return { resto: null, dish: null };
+
+    const { data: dish, error: dErr } = await supabaseAdmin
+      .from("dishes")
+      .select(
+        "id, restaurant_id, name, description, price, image_url, allergens, is_popular, is_available"
+      )
+      .eq("id", data.dishId)
+      .eq("restaurant_id", resto.id)
+      .maybeSingle();
+    if (dErr) throw new Error(dErr.message);
+    return { resto, dish };
+  });
+
 // ─── Promo ───────────────────────────────────────────────────────────────────
 export const applyPromo = createServerFn({ method: "POST" })
   .inputValidator((d) =>
