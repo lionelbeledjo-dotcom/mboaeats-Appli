@@ -74,7 +74,7 @@ function RestaurantPage() {
         </div>
       </div>
 
-      <div className="container mx-auto mt-5 max-w-3xl px-4 pb-12 sm:mt-7">
+      <div className="container mx-auto mt-8 max-w-3xl px-4 pb-12 sm:mt-10">
         {/* Restaurant identity card — titre TOUJOURS visible sous la bannière */}
         <div className="rounded-3xl border border-border/60 bg-card p-5 shadow-glow animate-fade-up">
           <div className="flex items-start justify-between gap-3">

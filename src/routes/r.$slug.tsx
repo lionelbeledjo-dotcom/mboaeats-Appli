@@ -108,8 +108,8 @@ function RestoLivePage() {
 
   return (
     <div className="min-h-screen bg-background pb-40">
-      {/* Hero cover */}
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-neutral-100 dark:bg-neutral-900 sm:aspect-[21/9] md:h-72 md:aspect-auto">
+      {/* Hero cover — bloc isolé, jamais par-dessus le titre */}
+      <div className="relative h-44 w-full overflow-hidden bg-neutral-100 dark:bg-neutral-900 sm:h-56 md:h-72">
         {cover ? (
           <img
             src={cover}
@@ -133,7 +133,7 @@ function RestoLivePage() {
       </div>
 
       {/* Resto info card */}
-      <main className="mx-auto -mt-8 max-w-3xl px-4">
+      <main className="mx-auto mt-6 max-w-3xl px-4 sm:mt-8">
         <div
           className="rounded-[1.5rem] border border-neutral-200 bg-card p-5 dark:border-neutral-800"
           style={{ boxShadow: "var(--shadow-soft)" }}
