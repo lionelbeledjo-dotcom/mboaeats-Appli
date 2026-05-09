@@ -130,8 +130,8 @@ function DishPage() {
                     }`}
                   >
                     <span className={active ? "font-semibold text-foreground" : ""}>{ch.name}</span>
-                    <span className="text-xs">
-                      {ch.extra ? `+${ch.extra.toLocaleString("fr-FR")} FCFA` : "Inclus"}
+                    <span className="price price-sm">
+                      {ch.extra ? <>+{ch.extra.toLocaleString("fr-FR")}<span className="price-currency">FCFA</span></> : "Inclus"}
                     </span>
                   </button>
                 );
