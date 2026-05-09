@@ -19,6 +19,7 @@ import { Route as RechercheRouteImport } from './routes/recherche'
 import { Route as ProximiteRouteImport } from './routes/proximite'
 import { Route as ProfilRouteImport } from './routes/profil'
 import { Route as PreferencesRouteImport } from './routes/preferences'
+import { Route as PopulaireRouteImport } from './routes/populaire'
 import { Route as ParrainageRouteImport } from './routes/parrainage'
 import { Route as MboapassRouteImport } from './routes/mboapass'
 import { Route as MboaAiRouteImport } from './routes/mboa-ai'
@@ -115,6 +116,11 @@ const ProfilRoute = ProfilRouteImport.update({
 const PreferencesRoute = PreferencesRouteImport.update({
   id: '/preferences',
   path: '/preferences',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PopulaireRoute = PopulaireRouteImport.update({
+  id: '/populaire',
+  path: '/populaire',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ParrainageRoute = ParrainageRouteImport.update({
@@ -377,6 +383,7 @@ export interface FileRoutesByFullPath {
   '/mboa-ai': typeof MboaAiRoute
   '/mboapass': typeof MboapassRoute
   '/parrainage': typeof ParrainageRoute
+  '/populaire': typeof PopulaireRoute
   '/preferences': typeof PreferencesRoute
   '/profil': typeof ProfilRoute
   '/proximite': typeof ProximiteRoute
@@ -435,6 +442,7 @@ export interface FileRoutesByTo {
   '/mboa-ai': typeof MboaAiRoute
   '/mboapass': typeof MboapassRoute
   '/parrainage': typeof ParrainageRoute
+  '/populaire': typeof PopulaireRoute
   '/preferences': typeof PreferencesRoute
   '/profil': typeof ProfilRoute
   '/proximite': typeof ProximiteRoute
@@ -494,6 +502,7 @@ export interface FileRoutesById {
   '/mboa-ai': typeof MboaAiRoute
   '/mboapass': typeof MboapassRoute
   '/parrainage': typeof ParrainageRoute
+  '/populaire': typeof PopulaireRoute
   '/preferences': typeof PreferencesRoute
   '/profil': typeof ProfilRoute
   '/proximite': typeof ProximiteRoute
@@ -555,6 +564,7 @@ export interface FileRouteTypes {
     | '/mboa-ai'
     | '/mboapass'
     | '/parrainage'
+    | '/populaire'
     | '/preferences'
     | '/profil'
     | '/proximite'
@@ -613,6 +623,7 @@ export interface FileRouteTypes {
     | '/mboa-ai'
     | '/mboapass'
     | '/parrainage'
+    | '/populaire'
     | '/preferences'
     | '/profil'
     | '/proximite'
@@ -671,6 +682,7 @@ export interface FileRouteTypes {
     | '/mboa-ai'
     | '/mboapass'
     | '/parrainage'
+    | '/populaire'
     | '/preferences'
     | '/profil'
     | '/proximite'
@@ -731,6 +743,7 @@ export interface RootRouteChildren {
   MboaAiRoute: typeof MboaAiRoute
   MboapassRoute: typeof MboapassRoute
   ParrainageRoute: typeof ParrainageRoute
+  PopulaireRoute: typeof PopulaireRoute
   PreferencesRoute: typeof PreferencesRoute
   ProfilRoute: typeof ProfilRoute
   ProximiteRoute: typeof ProximiteRoute
@@ -826,6 +839,13 @@ declare module '@tanstack/react-router' {
       path: '/preferences'
       fullPath: '/preferences'
       preLoaderRoute: typeof PreferencesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/populaire': {
+      id: '/populaire'
+      path: '/populaire'
+      fullPath: '/populaire'
+      preLoaderRoute: typeof PopulaireRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/parrainage': {
@@ -1260,6 +1280,7 @@ const rootRouteChildren: RootRouteChildren = {
   MboaAiRoute: MboaAiRoute,
   MboapassRoute: MboapassRoute,
   ParrainageRoute: ParrainageRoute,
+  PopulaireRoute: PopulaireRoute,
   PreferencesRoute: PreferencesRoute,
   ProfilRoute: ProfilRoute,
   ProximiteRoute: ProximiteRoute,
