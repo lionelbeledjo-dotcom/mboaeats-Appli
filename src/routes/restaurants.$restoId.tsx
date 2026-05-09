@@ -212,7 +212,7 @@ function RestaurantPage() {
                               },
                             });
                           }}
-                          className={`absolute -bottom-2 -right-2 flex h-9 w-9 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-glow transition-transform hover:scale-110 active:scale-95 ${qtyOf(dish.id) > 0 ? "hidden" : ""}`}
+                          className={`absolute -bottom-2 -right-2 flex h-9 w-9 items-center justify-center rounded-full bg-[#06C167] text-white shadow-[0_8px_20px_-6px_rgba(6,193,103,0.7)] ring-2 ring-background transition-transform hover:scale-110 hover:bg-[#05a558] active:scale-95 ${qtyOf(dish.id) > 0 ? "hidden" : ""}`}
                         >
                           <Plus className="h-5 w-5" strokeWidth={2.6} />
                         </button>
