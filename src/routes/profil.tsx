@@ -137,7 +137,7 @@ function ProfilPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div data-brand-actions className="min-h-screen bg-background text-foreground">
       <header className="glass border-b border-border/40">
         <div className="mx-auto max-w-md px-4 py-5">
           <div className="flex items-center gap-3">

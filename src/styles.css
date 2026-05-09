@@ -287,6 +287,68 @@
   opacity: 0.7 !important;
 }
 
+/* ==========================================================
+   Brand action scope — `data-brand-actions` (ex: page Profil)
+   Force toutes les surfaces d'action à utiliser le Vert Mboa,
+   peu importe la couleur d'origine (orange/amber/gold/primary).
+   ========================================================== */
+[data-brand-actions] {
+  --brand-action: #06C167;
+  --brand-action-fg: #ffffff;
+}
+
+/* Surfaces pleines : boutons, CTA, badges colorés */
+[data-brand-actions] [class*="bg-primary"]:not([class*="bg-primary/"]),
+[data-brand-actions] [class*="bg-gradient-primary"],
+[data-brand-actions] [class*="bg-orange-"]:not([class*="bg-orange-50"]):not([class*="bg-orange-100"]),
+[data-brand-actions] [class*="bg-amber-"]:not([class*="bg-amber-50"]):not([class*="bg-amber-100"]),
+[data-brand-actions] [class*="bg-gold"]:not([class*="bg-gold/"]) {
+  background-color: var(--brand-action) !important;
+  background-image: linear-gradient(135deg, #06C167, #0a8f4e) !important;
+  color: var(--brand-action-fg) !important;
+}
+
+/* Surfaces translucides (icônes circulaires des Rows, pills) */
+[data-brand-actions] [class*="bg-primary/"],
+[data-brand-actions] [class*="bg-orange-50"],
+[data-brand-actions] [class*="bg-orange-100"],
+[data-brand-actions] [class*="bg-amber-50"],
+[data-brand-actions] [class*="bg-amber-100"],
+[data-brand-actions] [class*="bg-gold/"] {
+  background-color: rgb(6 193 103 / 0.12) !important;
+}
+.dark [data-brand-actions] [class*="bg-amber-9"],
+.dark [data-brand-actions] [class*="bg-orange-9"] {
+  background-color: rgb(6 193 103 / 0.18) !important;
+}
+
+/* Texte/icônes accentués */
+[data-brand-actions] [class*="text-primary"]:not([class*="text-primary-foreground"]),
+[data-brand-actions] [class*="text-orange-"],
+[data-brand-actions] [class*="text-amber-"],
+[data-brand-actions] [class*="text-gold"] {
+  color: var(--brand-action) !important;
+}
+
+/* Bordures et anneaux d'accent */
+[data-brand-actions] [class*="border-primary"],
+[data-brand-actions] [class*="border-orange-"],
+[data-brand-actions] [class*="border-amber-"],
+[data-brand-actions] [class*="border-gold"],
+[data-brand-actions] [class*="ring-primary"],
+[data-brand-actions] [class*="ring-amber-"],
+[data-brand-actions] [class*="ring-orange-"] {
+  border-color: var(--brand-action) !important;
+}
+
+/* Préserver la sémantique destructive (Se déconnecter, erreurs) */
+[data-brand-actions] [class*="destructive"] {
+  background-color: revert !important;
+  background-image: none !important;
+  color: revert !important;
+  border-color: revert !important;
+}
+
 @font-face {
   font-family: "Inter";
   font-style: normal;
