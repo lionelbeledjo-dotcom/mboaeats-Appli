@@ -223,6 +223,7 @@ function RestoLivePage() {
                   {list.map((dish) => (
                     <DishCard
                       key={dish.id}
+                      slug={slug}
                       dish={dish}
                       restoOpen={!!resto.is_open}
                       onAdd={() => {
