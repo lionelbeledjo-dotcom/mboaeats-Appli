@@ -198,23 +198,23 @@ function ProfilPage() {
 
           <Link
             to="/fidelite"
-            className="mt-4 flex items-center justify-between rounded-2xl border border-brand-cm-green/40 bg-gradient-to-r from-brand-cm-green/15 to-brand-cm-green/5 p-3 shadow-[0_8px_24px_-12px_rgba(6,193,103,0.45)] transition-all hover:scale-[1.01] dark:border-brand-cm-green/50 dark:from-brand-cm-green/20 dark:to-brand-cm-green/5 dark:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.6)]"
+            className="mt-4 flex items-center justify-between rounded-2xl border border-brand-cm-green/40 bg-gradient-to-r from-brand-cm-green/15 to-brand-cm-green/5 p-3 shadow-[0_8px_24px_-12px_rgba(6,193,103,0.45)] transition-all hover:scale-[1.01] dark:border-brand-cm-green/70 dark:bg-brand-cm-green dark:from-brand-cm-green dark:to-brand-cm-green dark:shadow-[0_8px_24px_-12px_rgba(6,193,103,0.6)]"
           >
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-cm-green/20 dark:bg-brand-cm-green/25">
-                <Crown className="h-5 w-5 text-brand-cm-green" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-cm-green/20 dark:bg-white/20">
+                <Crown className="h-5 w-5 text-brand-cm-green dark:text-white" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-foreground/80">
+                <p className="text-xs font-semibold text-foreground/80 dark:text-white">
                   Mboa {loyalty?.currentTier ?? "Pistache"}
                 </p>
-                <p className="font-bold text-foreground">
+                <p className="font-bold text-foreground dark:text-white">
                   {(loyalty?.points ?? 0).toLocaleString("fr-FR")}{" "}
-                  <span className="text-xs font-normal text-foreground/70">points</span>
+                  <span className="text-xs font-normal text-foreground/70 dark:text-white/85">points</span>
                 </p>
               </div>
             </div>
-            <ChevronRight className="h-4 w-4 text-brand-cm-green" />
+            <ChevronRight className="h-4 w-4 text-brand-cm-green dark:text-white" />
           </Link>
         </div>
       </header>
