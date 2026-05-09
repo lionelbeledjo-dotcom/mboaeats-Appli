@@ -496,9 +496,9 @@ function Connexion() {
               <button
                 type="submit"
                 disabled={loading}
-                className="mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#06C167] text-sm font-bold text-white transition hover:bg-[#05a857] active:scale-[0.99] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                className="mt-3 inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[#06C167] text-base font-extrabold uppercase tracking-wide text-white shadow-[0_10px_24px_-8px_rgba(6,193,103,0.55)] ring-1 ring-[#06C167]/30 transition hover:bg-[#05a857] hover:shadow-[0_14px_28px_-8px_rgba(6,193,103,0.65)] active:scale-[0.99] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (<>Se connecter <ArrowRight className="h-4 w-4" /></>)}
+                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (<>Se connecter <ArrowRight className="h-5 w-5" strokeWidth={2.5} /></>)}
               </button>
             </form>
           )}
@@ -580,9 +580,9 @@ function Connexion() {
                 type="button"
                 onClick={() => sendCode("sms")}
                 disabled={loading}
-                className="mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#06C167] text-sm font-bold text-white transition hover:bg-[#05a857] active:scale-[0.99] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                className="mt-3 inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[#06C167] text-base font-extrabold uppercase tracking-wide text-white shadow-[0_10px_24px_-8px_rgba(6,193,103,0.55)] ring-1 ring-[#06C167]/30 transition hover:bg-[#05a857] hover:shadow-[0_14px_28px_-8px_rgba(6,193,103,0.65)] active:scale-[0.99] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (<>Recevoir le code par SMS <ArrowRight className="h-4 w-4" /></>)}
+                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (<>Recevoir le code par SMS <ArrowRight className="h-5 w-5" strokeWidth={2.5} /></>)}
               </button>
 
               <button
@@ -641,9 +641,9 @@ function Connexion() {
               <button
                 type="submit"
                 disabled={loading || otpCode.length < 6}
-                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#06C167] text-sm font-bold text-white hover:bg-[#05a857] active:scale-[0.99] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[#06C167] text-base font-extrabold uppercase tracking-wide text-white shadow-[0_10px_24px_-8px_rgba(6,193,103,0.55)] ring-1 ring-[#06C167]/30 hover:bg-[#05a857] hover:shadow-[0_14px_28px_-8px_rgba(6,193,103,0.65)] active:scale-[0.99] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (<><Check className="h-4 w-4" /> Valider et entrer</>)}
+                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (<><Check className="h-5 w-5" strokeWidth={2.5} /> Valider et entrer</>)}
               </button>
 
               <div className="flex flex-col items-center gap-1.5 pt-1">
