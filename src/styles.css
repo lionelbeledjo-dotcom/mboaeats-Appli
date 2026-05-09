@@ -459,8 +459,12 @@
 
   h1, h2, h3, h4 {
     font-family: var(--font-display);
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
+    font-weight: 500;            /* Medium — Uber Move feel */
     color: oklch(0.14 0 0);
+  }
+  p, li, span, label {
+    font-weight: 400;            /* Regular — descriptions aérées */
   }
 }
 
