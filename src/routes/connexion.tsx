@@ -463,12 +463,6 @@ function Connexion() {
                 </button>
               </label>
 
-              <div className="flex justify-end">
-                <Link to="/reset-password" className="rounded-md text-xs font-medium text-[#06C167] hover:underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-white">
-                  Mot de passe oublié ?
-                </Link>
-              </div>
-
               {error && (
                 <div className="space-y-2 rounded-xl bg-red-50 p-3 text-xs text-red-700">
                   <div className="flex items-start gap-2">
@@ -500,6 +494,28 @@ function Connexion() {
               >
                 {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (<>Se connecter <ArrowRight className="h-5 w-5" strokeWidth={2.5} /></>)}
               </button>
+
+              {/* Liens auxiliaires : focusables au clavier juste après le bouton Se connecter */}
+              <nav
+                aria-label="Options du compte"
+                className="mt-3 flex flex-col items-center gap-2 sm:flex-row sm:justify-between"
+              >
+                <Link
+                  to="/reset-password"
+                  preload="intent"
+                  className="inline-flex min-h-11 items-center justify-center rounded-lg px-3 py-2 text-sm font-semibold text-[#064E3B] underline underline-offset-4 decoration-2 hover:text-[#06C167] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#D4AF37]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                >
+                  Mot de passe oublié&nbsp;?
+                </Link>
+                <Link
+                  to="/inscription"
+                  preload="intent"
+                  className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-bold text-[#064E3B] underline underline-offset-4 decoration-2 hover:text-[#06C167] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#D4AF37]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                >
+                  Créer un compte
+                  <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
+                </Link>
+              </nav>
             </form>
           )}
 
