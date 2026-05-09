@@ -540,16 +540,10 @@
 .animate-pulse-ring { animation: pulse-ring 1.8s cubic-bezier(0.4,0,0.6,1) infinite; }
 .animate-fade-up { animation: fade-up 0.7s cubic-bezier(0.2,0.8,0.2,1) both; }
 .animate-scale-in { animation: scale-in 0.5s cubic-bezier(0.2,0.8,0.2,1) both; }
-.animate-content-in { animation: content-in 0.18s ease-out both; }
-.animate-skeleton-out { animation: skeleton-out 0.12s ease-out both; }
-
-/* Mobile : transition quasi instantanée */
-@media (max-width: 767px) {
-  .animate-content-in {
-    animation: content-in-mobile 0.1s ease-out both;
-    animation-delay: 0ms !important;
-  }
-}
+/* Navigation INSTANTANÉE : pas d'animation de transition entre pages */
+.animate-content-in { animation: none !important; opacity: 1 !important; transform: none !important; }
+.animate-skeleton-out { animation: none !important; }
+.animate-fade-in { animation: none !important; opacity: 1 !important; }
 @media (prefers-reduced-motion: reduce) {
   .animate-content-in,
   .animate-skeleton-out { animation: none !important; }

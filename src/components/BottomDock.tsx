@@ -1,5 +1,6 @@
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, useRouter, useNavigate } from "@tanstack/react-router";
 import { Home, ShoppingBag, Package, User, Compass } from "lucide-react";
+import { useEffect } from "react";
 import { useCart } from "@/hooks/use-cart";
 import { useActiveOrdersCount } from "@/hooks/use-active-orders";
 
@@ -20,9 +21,19 @@ const items: Item[] = [
 
 export function BottomDock() {
   const location = useLocation();
+  const router = useRouter();
+  const navigate = useNavigate();
   const path = location.pathname;
   const { count } = useCart();
   const { count: activeOrders } = useActiveOrdersCount();
+
+  // Pré-chargement agressif : toutes les routes de la barre dès le montage.
+  useEffect(() => {
+    items.forEach((it) => {
+      router.preloadRoute({ to: it.to }).catch(() => {});
+    });
+  }, [router]);
+
 
   if (/^\/(admin|restaurant|livreur|connexion)/.test(path)) return null;
 
@@ -47,10 +58,18 @@ export function BottomDock() {
                 preloadDelay={0}
                 aria-label={it.label}
                 aria-current={active ? "page" : undefined}
-                className="group relative flex flex-1 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cm-green/60"
+                onPointerEnter={() => router.preloadRoute({ to: it.to }).catch(() => {})}
+                onPointerDown={(e) => {
+                  // Navigation immédiate au pointerdown (gagne ~80-150ms vs onClick)
+                  if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+                  if (path === it.to) return;
+                  e.preventDefault();
+                  navigate({ to: it.to });
+                }}
+                className="group relative flex flex-1 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cm-green/60 touch-manipulation"
               >
                 <span
-                  className={`relative flex h-11 w-11 items-center justify-center rounded-full transition-all duration-200 active:scale-95 ${
+                  className={`relative flex h-11 w-11 items-center justify-center rounded-full transition-colors duration-75 active:scale-95 ${
                     active
                       ? "bg-brand-cm-green text-brand-cm-green-fg shadow-[0_0_18px_-4px_rgba(6,193,103,0.65)]"
                       : "text-white/70 hover:bg-white/10 hover:text-white"
