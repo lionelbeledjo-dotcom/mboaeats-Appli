@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Flame, Loader2, Minus, Plus, ShoppingCart, Star } from "lucide-react";
+import { ArrowLeft, Flame, Minus, Plus, ShoppingCart, Star } from "lucide-react";
 import { toast } from "sonner";
+import { DishSkeleton } from "@/components/Skeleton";
 import { getDishBySlugAndId } from "@/server/marketplace.functions";
 import { addToCart } from "@/hooks/use-cart";
 
@@ -61,11 +62,7 @@ function DbDishPage() {
   }, [fetcher, slug, dishId]);
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <Loader2 className="h-6 w-6 animate-spin text-foreground" />
-      </div>
-    );
+    return <DishSkeleton />;
   }
   if (!resto || !dish) {
     return (
