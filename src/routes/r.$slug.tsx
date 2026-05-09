@@ -316,9 +316,9 @@ function DishCard({
           )}
           <div className="mt-auto flex items-center justify-between pt-2">
             <div className="flex items-baseline gap-2">
-              <span className="text-base font-extrabold text-[#06C167] tabular-nums">
+              <span className="price text-[#06C167]">
                 {dish.price.toLocaleString("fr-FR")}
-                <span className="ml-0.5 text-xs font-semibold text-[#06C167]/80">FCFA</span>
+                <span className="price-currency text-[#06C167]">FCFA</span>
               </span>
             </div>
             <button
