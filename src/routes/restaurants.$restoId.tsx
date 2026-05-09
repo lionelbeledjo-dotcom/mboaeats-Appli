@@ -151,7 +151,7 @@ function RestaurantPage() {
                       params={{ restoId: restaurant.id, platId: dish.id }}
                       preload="intent"
                       aria-label={`Voir les détails de ${dish.name}`}
-                      className="group relative flex items-stretch gap-4 rounded-2xl border border-border/50 bg-card p-3 transition-all cursor-pointer select-none hover:-translate-y-0.5 hover:border-[#06C167]/60 hover:shadow-[0_10px_28px_-12px_rgba(6,193,103,0.45)] active:scale-[0.985] active:bg-muted/40 active:border-[#06C167] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                      className="group relative z-10 flex items-stretch gap-4 rounded-2xl border border-border/50 bg-card p-3 transition-all cursor-pointer select-none hover:-translate-y-0.5 hover:border-[#06C167]/60 hover:shadow-[0_10px_28px_-12px_rgba(6,193,103,0.45)] active:scale-[0.985] active:bg-muted/40 active:border-[#06C167] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                     >
                       {/* Text left */}
                       <div className="flex min-w-0 flex-1 flex-col py-1">
@@ -188,7 +188,7 @@ function RestaurantPage() {
                           loading="lazy"
                           width={112}
                           height={112}
-                          className="h-28 w-28 rounded-xl object-cover transition-transform duration-500 group-hover:scale-105"
+                          className="pointer-events-none h-28 w-28 rounded-xl object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                         <button
                           aria-label={`Ajouter ${dish.name} au panier`}
