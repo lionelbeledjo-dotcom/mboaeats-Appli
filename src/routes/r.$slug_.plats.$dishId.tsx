@@ -75,7 +75,11 @@ function DbDishPage() {
   }, [fetcher, slug, dishId, initial]);
 
   if (loading) {
-    return <DishSkeleton />;
+    return (
+      <div className="animate-content-in">
+        <DishSkeleton />
+      </div>
+    );
   }
   if (!resto || !dish) {
     return (
