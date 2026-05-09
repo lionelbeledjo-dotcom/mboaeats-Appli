@@ -30,9 +30,9 @@ export const Route = createFileRoute("/")({
 });
 
 const filters = [
-  { key: "nearby", label: "À proximité", icon: "📍" },
-  { key: "popular", label: "Populaire", icon: "🔥" },
-  { key: "cuisines", label: "Cuisines", icon: "🍽️" },
+  { key: "nearby", label: "À proximité", icon: "📍", to: "/proximite" as const },
+  { key: "popular", label: "Populaire", icon: "🔥", to: "/populaire" as const },
+  { key: "cuisines", label: "Cuisines", icon: "🍽️", to: "/cuisines" as const },
 ];
 
 type Card = {

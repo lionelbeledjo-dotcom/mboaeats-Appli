@@ -31,6 +31,7 @@ import { Route as FavorisRouteImport } from './routes/favoris'
 import { Route as DevenirRestoRouteImport } from './routes/devenir-resto'
 import { Route as DevenirLivreurRouteImport } from './routes/devenir-livreur'
 import { Route as DecouvrirRouteImport } from './routes/decouvrir'
+import { Route as CuisinesRouteImport } from './routes/cuisines'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ConnexionRouteImport } from './routes/connexion'
 import { Route as ConfidentialiteRouteImport } from './routes/confidentialite'
@@ -176,6 +177,11 @@ const DevenirLivreurRoute = DevenirLivreurRouteImport.update({
 const DecouvrirRoute = DecouvrirRouteImport.update({
   id: '/decouvrir',
   path: '/decouvrir',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CuisinesRoute = CuisinesRouteImport.update({
+  id: '/cuisines',
+  path: '/cuisines',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -372,6 +378,7 @@ export interface FileRoutesByFullPath {
   '/confidentialite': typeof ConfidentialiteRoute
   '/connexion': typeof ConnexionRoute
   '/contact': typeof ContactRoute
+  '/cuisines': typeof CuisinesRoute
   '/decouvrir': typeof DecouvrirRoute
   '/devenir-livreur': typeof DevenirLivreurRoute
   '/devenir-resto': typeof DevenirRestoRoute
@@ -431,6 +438,7 @@ export interface FileRoutesByTo {
   '/confidentialite': typeof ConfidentialiteRoute
   '/connexion': typeof ConnexionRoute
   '/contact': typeof ContactRoute
+  '/cuisines': typeof CuisinesRoute
   '/decouvrir': typeof DecouvrirRoute
   '/devenir-livreur': typeof DevenirLivreurRoute
   '/devenir-resto': typeof DevenirRestoRoute
@@ -491,6 +499,7 @@ export interface FileRoutesById {
   '/confidentialite': typeof ConfidentialiteRoute
   '/connexion': typeof ConnexionRoute
   '/contact': typeof ContactRoute
+  '/cuisines': typeof CuisinesRoute
   '/decouvrir': typeof DecouvrirRoute
   '/devenir-livreur': typeof DevenirLivreurRoute
   '/devenir-resto': typeof DevenirRestoRoute
@@ -553,6 +562,7 @@ export interface FileRouteTypes {
     | '/confidentialite'
     | '/connexion'
     | '/contact'
+    | '/cuisines'
     | '/decouvrir'
     | '/devenir-livreur'
     | '/devenir-resto'
@@ -612,6 +622,7 @@ export interface FileRouteTypes {
     | '/confidentialite'
     | '/connexion'
     | '/contact'
+    | '/cuisines'
     | '/decouvrir'
     | '/devenir-livreur'
     | '/devenir-resto'
@@ -671,6 +682,7 @@ export interface FileRouteTypes {
     | '/confidentialite'
     | '/connexion'
     | '/contact'
+    | '/cuisines'
     | '/decouvrir'
     | '/devenir-livreur'
     | '/devenir-resto'
@@ -732,6 +744,7 @@ export interface RootRouteChildren {
   ConfidentialiteRoute: typeof ConfidentialiteRoute
   ConnexionRoute: typeof ConnexionRoute
   ContactRoute: typeof ContactRoute
+  CuisinesRoute: typeof CuisinesRoute
   DecouvrirRoute: typeof DecouvrirRoute
   DevenirLivreurRoute: typeof DevenirLivreurRoute
   DevenirRestoRoute: typeof DevenirRestoRoute
@@ -923,6 +936,13 @@ declare module '@tanstack/react-router' {
       path: '/decouvrir'
       fullPath: '/decouvrir'
       preLoaderRoute: typeof DecouvrirRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cuisines': {
+      id: '/cuisines'
+      path: '/cuisines'
+      fullPath: '/cuisines'
+      preLoaderRoute: typeof CuisinesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -1269,6 +1289,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConfidentialiteRoute: ConfidentialiteRoute,
   ConnexionRoute: ConnexionRoute,
   ContactRoute: ContactRoute,
+  CuisinesRoute: CuisinesRoute,
   DecouvrirRoute: DecouvrirRoute,
   DevenirLivreurRoute: DevenirLivreurRoute,
   DevenirRestoRoute: DevenirRestoRoute,
