@@ -315,7 +315,7 @@ function DishCard({
             aria-label={`Ajouter ${dish.name}`}
             disabled={!restoOpen || !dish.is_available}
             onClick={onAdd}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-white shadow-md transition-all hover:scale-105 active:scale-95 disabled:opacity-40"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#06C167] text-white shadow-[0_8px_20px_-6px_rgba(6,193,103,0.7)] ring-2 ring-background transition-all hover:scale-105 hover:bg-[#05a558] active:scale-95 disabled:opacity-40"
           >
             <Plus className="h-4 w-4" strokeWidth={2.5} />
           </button>
