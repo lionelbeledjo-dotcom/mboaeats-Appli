@@ -126,7 +126,7 @@ function DbDishPage() {
       <div className="container mx-auto max-w-2xl px-4 pt-6">
         <div
           className="rounded-3xl border border-border/60 bg-card p-5 shadow-card animate-content-in"
-          style={{ animationDelay: "80ms" }}
+          style={{ animationDelay: "0ms" }}
         >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -166,7 +166,7 @@ function DbDishPage() {
 
         {/* Allergens */}
         {dish.allergens && dish.allergens.length > 0 && (
-          <section className="mt-5 animate-content-in" style={{ animationDelay: "160ms" }}>
+          <section className="mt-5 animate-content-in" style={{ animationDelay: "0ms" }}>
             <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-muted-foreground">
               Allergènes
             </h2>
@@ -184,7 +184,7 @@ function DbDishPage() {
         )}
 
         {/* Quantity */}
-        <div className="mt-6 flex items-center justify-between rounded-2xl border border-border/60 bg-card p-3 animate-content-in" style={{ animationDelay: "200ms" }}>
+        <div className="mt-6 flex items-center justify-between rounded-2xl border border-border/60 bg-card p-3 animate-content-in" style={{ animationDelay: "0ms" }}>
           <span className="text-sm font-semibold text-foreground">Quantité</span>
           <div className="flex items-center gap-3">
             <button
@@ -215,7 +215,7 @@ function DbDishPage() {
       </div>
 
       {/* Sticky CTA */}
-      <div className="fixed inset-x-0 bottom-24 z-40 px-4 md:bottom-6 animate-content-in" style={{ animationDelay: "280ms" }}>
+      <div className="fixed inset-x-0 bottom-24 z-40 px-4 md:bottom-6 animate-content-in" style={{ animationDelay: "0ms" }}>
         <div className="mx-auto max-w-2xl">
           <button
             type="button"
