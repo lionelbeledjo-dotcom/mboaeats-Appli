@@ -58,10 +58,18 @@ export function BottomDock() {
                 preloadDelay={0}
                 aria-label={it.label}
                 aria-current={active ? "page" : undefined}
-                className="group relative flex flex-1 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cm-green/60"
+                onPointerEnter={() => router.preloadRoute({ to: it.to }).catch(() => {})}
+                onPointerDown={(e) => {
+                  // Navigation immédiate au pointerdown (gagne ~80-150ms vs onClick)
+                  if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+                  if (path === it.to) return;
+                  e.preventDefault();
+                  navigate({ to: it.to });
+                }}
+                className="group relative flex flex-1 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cm-green/60 touch-manipulation"
               >
                 <span
-                  className={`relative flex h-11 w-11 items-center justify-center rounded-full transition-all duration-200 active:scale-95 ${
+                  className={`relative flex h-11 w-11 items-center justify-center rounded-full transition-colors duration-75 active:scale-95 ${
                     active
                       ? "bg-brand-cm-green text-brand-cm-green-fg shadow-[0_0_18px_-4px_rgba(6,193,103,0.65)]"
                       : "text-white/70 hover:bg-white/10 hover:text-white"
