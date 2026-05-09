@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Bell, Mail, Smartphone, ArrowLeft, Loader2, Check } from "lucide-react";
+import { Bell, Mail, Smartphone, ArrowLeft, Loader2, Check, Contrast } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useTheme } from "@/components/ThemeProvider";
 
 export const Route = createFileRoute("/preferences")({
   head: () => ({
@@ -17,6 +18,7 @@ type Prefs = { push_enabled: boolean; inapp_enabled: boolean; email_enabled: boo
 
 function PreferencesPage() {
   const navigate = useNavigate();
+  const { highContrast, toggleHighContrast } = useTheme();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -114,6 +116,19 @@ function PreferencesPage() {
           enabled={prefs.email_enabled}
           onToggle={() => toggle("email_enabled")}
         />
+
+        <div className="pt-2">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground dark:text-white/70 mb-2 px-1">
+            Affichage
+          </h2>
+          <PrefRow
+            icon={<Contrast className="w-5 h-5" />}
+            title="Contraste renforcé"
+            desc="Optimise la lisibilité du texte sur les fonds colorés (recommandé en mode sombre ou en plein soleil)."
+            enabled={highContrast}
+            onToggle={toggleHighContrast}
+          />
+        </div>
 
         <button
           onClick={save}

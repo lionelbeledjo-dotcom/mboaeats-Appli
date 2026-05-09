@@ -153,6 +153,71 @@
   color: oklch(0.97 0.005 280);
 }
 
+/* ==========================================================
+   High-contrast mode (optional) — improves legibility on
+   colored backgrounds, especially in dark mode.
+   Toggled by adding `.hc` on <html> via ThemeProvider.
+   ========================================================== */
+.hc.dark {
+  --background: oklch(0.08 0 0);
+  --surface: oklch(0.12 0 0);
+  --surface-elevated: oklch(0.16 0 0);
+  --foreground: oklch(1 0 0);
+  --card: oklch(0.12 0 0);
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0.12 0 0);
+  --popover-foreground: oklch(1 0 0);
+  --muted: oklch(0.20 0 0);
+  --muted-foreground: oklch(0.92 0 0);
+  --secondary: oklch(0.20 0 0);
+  --secondary-foreground: oklch(1 0 0);
+  --border: oklch(0.85 0 0 / 70%);
+  --input: oklch(0.30 0 0);
+  --ink: oklch(1 0 0);
+  --ink-soft: oklch(0.92 0 0);
+  --hairline: oklch(0.85 0 0);
+}
+
+.hc {
+  --muted-foreground: oklch(0.30 0 0);
+  --border: oklch(0.20 0 0 / 80%);
+}
+
+/* Force readable text on any colored/branded surface in HC mode */
+.hc [class*="bg-amber-"],
+.hc [class*="bg-orange-"],
+.hc [class*="bg-yellow-"],
+.hc [class*="bg-rose-"],
+.hc [class*="bg-pink-"],
+.hc [class*="bg-emerald-"],
+.hc [class*="bg-green-"],
+.hc [class*="bg-blue-"],
+.hc [class*="bg-indigo-"],
+.hc [class*="bg-violet-"],
+.hc [class*="bg-brand-"],
+.hc [class*="bg-primary"],
+.hc [class*="bg-gradient"] {
+  color: #000 !important;
+}
+.hc.dark [class*="bg-amber-9"],
+.hc.dark [class*="bg-orange-9"],
+.hc.dark [class*="bg-rose-9"],
+.hc.dark [class*="bg-emerald-9"],
+.hc.dark [class*="bg-green-9"],
+.hc.dark [class*="bg-blue-9"],
+.hc.dark [class*="bg-indigo-9"],
+.hc.dark [class*="bg-violet-9"] {
+  color: #fff !important;
+}
+
+/* Stronger focus rings + outlines in HC */
+.hc *:focus-visible {
+  outline: 2px solid currentColor !important;
+  outline-offset: 2px !important;
+}
+.hc a, .hc button { text-underline-offset: 3px; }
+.hc.dark a:not([class*="bg-"]):hover { text-decoration: underline; }
+
 @font-face {
   font-family: "Inter";
   font-style: normal;
