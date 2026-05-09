@@ -96,9 +96,9 @@ function DbDishPage() {
   const canOrder = !!resto.is_open && !!dish.is_available;
 
   return (
-    <div className="min-h-screen bg-background pb-32 animate-content-in">
+    <div className="min-h-screen bg-background pb-32">
       {/* Cover */}
-      <div className="relative h-72 w-full overflow-hidden bg-muted md:h-96">
+      <div className="relative h-72 w-full overflow-hidden bg-muted md:h-96 animate-content-in" style={{ animationDelay: "0ms" }}>
         {dish.image_url ? (
           <img src={dish.image_url} alt={dish.name} className="h-full w-full object-cover" />
         ) : (
@@ -121,7 +121,7 @@ function DbDishPage() {
       </div>
 
       <div className="container mx-auto -mt-10 max-w-2xl px-4">
-        <div className="rounded-3xl border border-border/60 bg-card p-5 shadow-glow">
+        <div className="rounded-3xl border border-border/60 bg-card p-5 shadow-glow animate-content-in" style={{ animationDelay: "80ms" }}>
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <Link
@@ -160,7 +160,7 @@ function DbDishPage() {
 
         {/* Allergens */}
         {dish.allergens && dish.allergens.length > 0 && (
-          <section className="mt-5">
+          <section className="mt-5 animate-content-in" style={{ animationDelay: "160ms" }}>
             <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-muted-foreground">
               Allergènes
             </h2>
@@ -178,7 +178,7 @@ function DbDishPage() {
         )}
 
         {/* Quantity */}
-        <div className="mt-6 flex items-center justify-between rounded-2xl border border-border/60 bg-card p-3">
+        <div className="mt-6 flex items-center justify-between rounded-2xl border border-border/60 bg-card p-3 animate-content-in" style={{ animationDelay: "200ms" }}>
           <span className="text-sm font-semibold text-foreground">Quantité</span>
           <div className="flex items-center gap-3">
             <button
@@ -209,7 +209,7 @@ function DbDishPage() {
       </div>
 
       {/* Sticky CTA */}
-      <div className="fixed inset-x-0 bottom-24 z-40 px-4 md:bottom-6">
+      <div className="fixed inset-x-0 bottom-24 z-40 px-4 md:bottom-6 animate-content-in" style={{ animationDelay: "280ms" }}>
         <div className="mx-auto max-w-2xl">
           <button
             type="button"
