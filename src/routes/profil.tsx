@@ -303,7 +303,7 @@ function ProfilPage() {
           <button
             type="button"
             onClick={() => setConfirm(true)}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-3.5 text-sm font-semibold text-destructive transition hover:bg-destructive/20 active:scale-[0.99]"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-brand-cm-green/50 bg-brand-cm-green/10 px-4 py-3.5 text-sm font-semibold text-brand-cm-green transition hover:bg-brand-cm-green hover:text-brand-cm-green-fg active:scale-[0.99] dark:border-brand-cm-green/70 dark:bg-brand-cm-green/20 dark:text-white"
           >
             <LogOut className="h-4 w-4" />
             Se déconnecter
