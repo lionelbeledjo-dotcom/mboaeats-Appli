@@ -138,15 +138,15 @@ function ProfilPage() {
 
   return (
     <div data-brand-actions className="min-h-screen bg-background text-foreground">
-      <header className="glass border-b border-border/40">
+      <header className="border-b border-border/40 bg-white text-foreground dark:border-brand-cm-green/30 dark:bg-brand-cm-green/15">
         <div className="mx-auto max-w-md px-4 py-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-primary text-xl font-bold text-primary-foreground shadow-glow">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-cm-green text-xl font-bold text-brand-cm-green-fg shadow-[0_8px_24px_-8px_rgba(6,193,103,0.6)]">
               {initials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-display text-lg font-bold capitalize">{displayName}</p>
-              <p className="truncate text-xs text-muted-foreground">{identifier}</p>
+              <p className="font-display text-lg font-bold capitalize text-foreground dark:text-white">{displayName}</p>
+              <p className="truncate text-xs font-medium text-muted-foreground dark:text-white/85">{identifier}</p>
             </div>
             {authed ? (
               <button onClick={() => setEditing((v) => !v)} className="rounded-full border border-border bg-surface/60 px-3 py-1.5 text-xs font-semibold">
