@@ -278,16 +278,16 @@ function DishCard({
         params={{ slug, dishId: dish.id }}
         preload="intent"
         aria-label={`Voir les détails de ${dish.name}`}
-        className="group relative flex items-stretch gap-3 rounded-[1.25rem] border border-neutral-200 bg-card p-3 transition-all cursor-pointer select-none hover:-translate-y-0.5 hover:border-[#06C167]/60 hover:shadow-[0_10px_28px_-12px_rgba(6,193,103,0.45)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:border-neutral-800"
+        className="group relative z-10 flex items-stretch gap-3 rounded-[1.25rem] border border-neutral-200 bg-card p-3 transition-all cursor-pointer select-none hover:-translate-y-0.5 hover:border-[#06C167]/60 hover:shadow-[0_10px_28px_-12px_rgba(6,193,103,0.45)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:border-neutral-800"
         style={{ boxShadow: "var(--shadow-soft)" }}
       >
-        <div className="relative shrink-0">
+        <div className="pointer-events-none relative shrink-0">
           {dish.image_url ? (
             <img
               src={dish.image_url}
               alt={dish.name}
               loading="lazy"
-              className="h-24 w-24 rounded-[1rem] object-cover transition-transform duration-500 group-hover:scale-105"
+              className="pointer-events-none h-24 w-24 rounded-[1rem] object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
             <div className="flex h-24 w-24 items-center justify-center rounded-[1rem] bg-neutral-100 dark:bg-neutral-800">
@@ -330,7 +330,7 @@ function DishCard({
                 e.stopPropagation();
                 onAdd();
               }}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#06C167] text-white shadow-[0_8px_20px_-6px_rgba(6,193,103,0.7)] ring-2 ring-background transition-all hover:scale-105 hover:bg-[#05a558] active:scale-95 disabled:opacity-40"
+              className="relative z-20 flex h-9 w-9 items-center justify-center rounded-full bg-[#06C167] text-white shadow-[0_8px_20px_-6px_rgba(6,193,103,0.7)] ring-2 ring-background transition-all hover:scale-105 hover:bg-[#05a558] active:scale-95 disabled:opacity-40"
             >
               <Plus className="h-4 w-4" strokeWidth={2.5} />
             </button>
