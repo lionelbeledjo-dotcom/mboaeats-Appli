@@ -198,23 +198,23 @@ function ProfilPage() {
 
           <Link
             to="/fidelite"
-            className="mt-4 flex items-center justify-between rounded-2xl border border-gold/50 bg-gradient-to-r from-amber-100 to-amber-50 p-3 shadow-[0_8px_24px_-12px_rgba(212,160,23,0.45)] transition-all hover:scale-[1.01] dark:border-amber-500/60 dark:from-amber-950 dark:to-amber-900 dark:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.6)]"
+            className="mt-4 flex items-center justify-between rounded-2xl border border-brand-cm-green/40 bg-gradient-to-r from-brand-cm-green/15 to-brand-cm-green/5 p-3 shadow-[0_8px_24px_-12px_rgba(6,193,103,0.45)] transition-all hover:scale-[1.01] dark:border-brand-cm-green/50 dark:from-brand-cm-green/20 dark:to-brand-cm-green/5 dark:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.6)]"
           >
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/25 dark:bg-amber-500/20">
-                <Crown className="h-5 w-5 text-amber-700 dark:text-amber-300" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-cm-green/20 dark:bg-brand-cm-green/25">
+                <Crown className="h-5 w-5 text-brand-cm-green" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-amber-900/80 dark:text-amber-100/80">
+                <p className="text-xs font-semibold text-foreground/80">
                   Mboa {loyalty?.currentTier ?? "Pistache"}
                 </p>
-                <p className="font-bold text-neutral-900 dark:text-white">
+                <p className="font-bold text-foreground">
                   {(loyalty?.points ?? 0).toLocaleString("fr-FR")}{" "}
-                  <span className="text-xs font-normal text-amber-900/70 dark:text-amber-100/70">points</span>
+                  <span className="text-xs font-normal text-foreground/70">points</span>
                 </p>
               </div>
             </div>
-            <ChevronRight className="h-4 w-4 text-amber-800 dark:text-amber-200" />
+            <ChevronRight className="h-4 w-4 text-brand-cm-green" />
           </Link>
         </div>
       </header>
