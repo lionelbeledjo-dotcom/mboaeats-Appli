@@ -178,7 +178,7 @@ function DbDishPage() {
         )}
 
         {/* Quantity */}
-        <div className="mt-6 flex items-center justify-between rounded-2xl border border-border/60 bg-card p-3">
+        <div className="mt-6 flex items-center justify-between rounded-2xl border border-border/60 bg-card p-3 animate-content-in" style={{ animationDelay: "200ms" }}>
           <span className="text-sm font-semibold text-foreground">Quantité</span>
           <div className="flex items-center gap-3">
             <button
