@@ -17,8 +17,14 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, loading } = useSessionUser();
 
   const path = location.pathname;
+  // Mode aperçu public : ?preview=1 sur n'importe quelle URL contourne l'auth (lecture seule)
+  const isPreview =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("preview") === "1";
   const isPublic =
-    PUBLIC_ROUTES.includes(path) || PUBLIC_PREFIXES.some((p) => path.startsWith(p));
+    isPreview ||
+    PUBLIC_ROUTES.includes(path) ||
+    PUBLIC_PREFIXES.some((p) => path.startsWith(p));
 
   useEffect(() => {
     if (loading) return;
