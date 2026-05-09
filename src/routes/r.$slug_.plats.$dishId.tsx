@@ -160,7 +160,7 @@ function DbDishPage() {
 
         {/* Allergens */}
         {dish.allergens && dish.allergens.length > 0 && (
-          <section className="mt-5">
+          <section className="mt-5 animate-content-in" style={{ animationDelay: "160ms" }}>
             <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-muted-foreground">
               Allergènes
             </h2>
