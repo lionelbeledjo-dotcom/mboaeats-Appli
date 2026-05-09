@@ -160,12 +160,13 @@ function RestaurantPage() {
                       to="/restaurants/$restoId/plats/$platId"
                       params={{ restoId: restaurant.id, platId: dish.id }}
                       preload="intent"
-                      className="group flex items-stretch gap-4 rounded-2xl border border-border/50 bg-card p-3 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow"
+                      aria-label={`Voir les détails de ${dish.name}`}
+                      className="group relative flex items-stretch gap-4 rounded-2xl border border-border/50 bg-card p-3 transition-all cursor-pointer select-none hover:-translate-y-0.5 hover:border-[#06C167]/60 hover:shadow-[0_10px_28px_-12px_rgba(6,193,103,0.45)] active:scale-[0.985] active:bg-muted/40 active:border-[#06C167] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                     >
                       {/* Text left */}
                       <div className="flex min-w-0 flex-1 flex-col py-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="truncate font-display font-bold">{dish.name}</h3>
+                          <h3 className="truncate font-display font-bold group-hover:text-[#06C167] transition-colors">{dish.name}</h3>
                           {dish.popular && (
                             <span className="rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gold">
                               ★ Top
@@ -178,10 +179,13 @@ function RestaurantPage() {
                         <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
                           {dish.description}
                         </p>
-                        <div className="mt-auto pt-2">
-                          <span className="font-display text-base font-bold text-primary">
+                        <div className="mt-auto flex items-center justify-between gap-2 pt-2">
+                          <span className="font-display text-base font-bold text-[#06C167]">
                             {dish.price.toLocaleString("fr-FR")}
-                            <span className="ml-1 text-xs font-semibold text-primary/80">FCFA</span>
+                            <span className="ml-1 text-xs font-semibold text-[#06C167]/80">FCFA</span>
+                          </span>
+                          <span className="inline-flex items-center gap-1 rounded-full bg-[#06C167]/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#06C167] transition-all group-hover:bg-[#06C167] group-hover:text-white group-active:bg-[#06C167] group-active:text-white">
+                            Voir <ChevronRight className="h-3 w-3" strokeWidth={2.5} />
                           </span>
                         </div>
                       </div>
