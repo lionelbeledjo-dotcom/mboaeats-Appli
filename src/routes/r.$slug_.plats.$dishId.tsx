@@ -51,12 +51,20 @@ function DbDishPage() {
   const navigate = useNavigate();
   const fetcher = useServerFn(getDishBySlugAndId);
 
-  const [resto, setResto] = useState<Resto | null>(null);
-  const [dish, setDish] = useState<Dish | null>(null);
-  const [loading, setLoading] = useState(true);
+  const initial = Route.useLoaderData() as { resto: Resto | null; dish: Dish | null };
+  const [resto, setResto] = useState<Resto | null>(initial?.resto ?? null);
+  const [dish, setDish] = useState<Dish | null>(initial?.dish ?? null);
+  const [loading, setLoading] = useState(!initial?.dish);
   const [qty, setQty] = useState(1);
 
   useEffect(() => {
+    // Re-sync when params change (loader data already primes initial render)
+    setResto(initial?.resto ?? null);
+    setDish(initial?.dish ?? null);
+    if (initial?.dish) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     fetcher({ data: { slug, dishId } })
       .then((r) => {
@@ -64,7 +72,7 @@ function DbDishPage() {
         setDish(r.dish as Dish | null);
       })
       .finally(() => setLoading(false));
-  }, [fetcher, slug, dishId]);
+  }, [fetcher, slug, dishId, initial]);
 
   if (loading) {
     return <DishSkeleton />;
