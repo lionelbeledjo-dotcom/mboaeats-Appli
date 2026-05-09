@@ -100,7 +100,7 @@ function RestaurantPage() {
         </div>
       </div>
 
-      <div className="container mx-auto -mt-6 max-w-3xl px-4 pb-12 sm:-mt-14">
+      <div className="container mx-auto mt-4 max-w-3xl px-4 pb-12 sm:mt-6">
         {/* Restaurant identity card */}
         <div className="rounded-3xl border border-border/60 bg-card p-5 shadow-glow animate-fade-up">
           <div className="flex items-start justify-between gap-3">
