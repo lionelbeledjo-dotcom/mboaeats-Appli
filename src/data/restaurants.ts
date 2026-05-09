@@ -622,6 +622,7 @@ export const restaurants: Restaurant[] = [
       { id: "tradition", label: "Tradition camerounaise", dishes: villageAkwaDishes.slice(1) },
     ],
   },
+  ...restaurantsDoualaExtras,
 ];
 
 export function getRestaurant(id: string) {
