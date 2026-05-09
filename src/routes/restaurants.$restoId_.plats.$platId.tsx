@@ -156,10 +156,10 @@ function DishPage() {
             <span className="w-6 text-center font-bold">{qty}</span>
             <button
               onClick={() => setQty(qty + 1)}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-glow"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#06C167] text-white shadow-[0_8px_20px_-6px_rgba(6,193,103,0.7)] transition-transform hover:scale-105 active:scale-95"
               aria-label="Augmenter"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4" strokeWidth={2.6} />
             </button>
           </div>
         </div>
