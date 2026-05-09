@@ -62,11 +62,7 @@ function DbDishPage() {
   }, [fetcher, slug, dishId]);
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <Loader2 className="h-6 w-6 animate-spin text-foreground" />
-      </div>
-    );
+    return <DishSkeleton />;
   }
   if (!resto || !dish) {
     return (
