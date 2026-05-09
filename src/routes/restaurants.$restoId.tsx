@@ -44,8 +44,8 @@ function RestaurantPage() {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
-      {/* Banner */}
-      <div className="relative h-64 w-full overflow-hidden md:h-80">
+      {/* Banner — décalée pour ne pas être coupée par le SiteHeader sticky */}
+      <div className="relative mt-16 h-64 w-full overflow-hidden sm:mt-20 md:h-80">
         <img
           src={restaurant.cover}
           alt={restaurant.name}
