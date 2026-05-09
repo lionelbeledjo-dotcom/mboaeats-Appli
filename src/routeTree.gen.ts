@@ -16,8 +16,10 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RestaurantRouteImport } from './routes/restaurant'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RechercheRouteImport } from './routes/recherche'
+import { Route as ProximiteRouteImport } from './routes/proximite'
 import { Route as ProfilRouteImport } from './routes/profil'
 import { Route as PreferencesRouteImport } from './routes/preferences'
+import { Route as PopulaireRouteImport } from './routes/populaire'
 import { Route as ParrainageRouteImport } from './routes/parrainage'
 import { Route as MboapassRouteImport } from './routes/mboapass'
 import { Route as MboaAiRouteImport } from './routes/mboa-ai'
@@ -29,6 +31,7 @@ import { Route as FavorisRouteImport } from './routes/favoris'
 import { Route as DevenirRestoRouteImport } from './routes/devenir-resto'
 import { Route as DevenirLivreurRouteImport } from './routes/devenir-livreur'
 import { Route as DecouvrirRouteImport } from './routes/decouvrir'
+import { Route as CuisinesRouteImport } from './routes/cuisines'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ConnexionRouteImport } from './routes/connexion'
 import { Route as ConfidentialiteRouteImport } from './routes/confidentialite'
@@ -101,6 +104,11 @@ const RechercheRoute = RechercheRouteImport.update({
   path: '/recherche',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProximiteRoute = ProximiteRouteImport.update({
+  id: '/proximite',
+  path: '/proximite',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfilRoute = ProfilRouteImport.update({
   id: '/profil',
   path: '/profil',
@@ -109,6 +117,11 @@ const ProfilRoute = ProfilRouteImport.update({
 const PreferencesRoute = PreferencesRouteImport.update({
   id: '/preferences',
   path: '/preferences',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PopulaireRoute = PopulaireRouteImport.update({
+  id: '/populaire',
+  path: '/populaire',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ParrainageRoute = ParrainageRouteImport.update({
@@ -164,6 +177,11 @@ const DevenirLivreurRoute = DevenirLivreurRouteImport.update({
 const DecouvrirRoute = DecouvrirRouteImport.update({
   id: '/decouvrir',
   path: '/decouvrir',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CuisinesRoute = CuisinesRouteImport.update({
+  id: '/cuisines',
+  path: '/cuisines',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -360,6 +378,7 @@ export interface FileRoutesByFullPath {
   '/confidentialite': typeof ConfidentialiteRoute
   '/connexion': typeof ConnexionRoute
   '/contact': typeof ContactRoute
+  '/cuisines': typeof CuisinesRoute
   '/decouvrir': typeof DecouvrirRoute
   '/devenir-livreur': typeof DevenirLivreurRoute
   '/devenir-resto': typeof DevenirRestoRoute
@@ -371,8 +390,10 @@ export interface FileRoutesByFullPath {
   '/mboa-ai': typeof MboaAiRoute
   '/mboapass': typeof MboapassRoute
   '/parrainage': typeof ParrainageRoute
+  '/populaire': typeof PopulaireRoute
   '/preferences': typeof PreferencesRoute
   '/profil': typeof ProfilRoute
+  '/proximite': typeof ProximiteRoute
   '/recherche': typeof RechercheRoute
   '/reset-password': typeof ResetPasswordRoute
   '/restaurant': typeof RestaurantRoute
@@ -417,6 +438,7 @@ export interface FileRoutesByTo {
   '/confidentialite': typeof ConfidentialiteRoute
   '/connexion': typeof ConnexionRoute
   '/contact': typeof ContactRoute
+  '/cuisines': typeof CuisinesRoute
   '/decouvrir': typeof DecouvrirRoute
   '/devenir-livreur': typeof DevenirLivreurRoute
   '/devenir-resto': typeof DevenirRestoRoute
@@ -428,8 +450,10 @@ export interface FileRoutesByTo {
   '/mboa-ai': typeof MboaAiRoute
   '/mboapass': typeof MboapassRoute
   '/parrainage': typeof ParrainageRoute
+  '/populaire': typeof PopulaireRoute
   '/preferences': typeof PreferencesRoute
   '/profil': typeof ProfilRoute
+  '/proximite': typeof ProximiteRoute
   '/recherche': typeof RechercheRoute
   '/reset-password': typeof ResetPasswordRoute
   '/restaurant': typeof RestaurantRoute
@@ -475,6 +499,7 @@ export interface FileRoutesById {
   '/confidentialite': typeof ConfidentialiteRoute
   '/connexion': typeof ConnexionRoute
   '/contact': typeof ContactRoute
+  '/cuisines': typeof CuisinesRoute
   '/decouvrir': typeof DecouvrirRoute
   '/devenir-livreur': typeof DevenirLivreurRoute
   '/devenir-resto': typeof DevenirRestoRoute
@@ -486,8 +511,10 @@ export interface FileRoutesById {
   '/mboa-ai': typeof MboaAiRoute
   '/mboapass': typeof MboapassRoute
   '/parrainage': typeof ParrainageRoute
+  '/populaire': typeof PopulaireRoute
   '/preferences': typeof PreferencesRoute
   '/profil': typeof ProfilRoute
+  '/proximite': typeof ProximiteRoute
   '/recherche': typeof RechercheRoute
   '/reset-password': typeof ResetPasswordRoute
   '/restaurant': typeof RestaurantRoute
@@ -535,6 +562,7 @@ export interface FileRouteTypes {
     | '/confidentialite'
     | '/connexion'
     | '/contact'
+    | '/cuisines'
     | '/decouvrir'
     | '/devenir-livreur'
     | '/devenir-resto'
@@ -546,8 +574,10 @@ export interface FileRouteTypes {
     | '/mboa-ai'
     | '/mboapass'
     | '/parrainage'
+    | '/populaire'
     | '/preferences'
     | '/profil'
+    | '/proximite'
     | '/recherche'
     | '/reset-password'
     | '/restaurant'
@@ -592,6 +622,7 @@ export interface FileRouteTypes {
     | '/confidentialite'
     | '/connexion'
     | '/contact'
+    | '/cuisines'
     | '/decouvrir'
     | '/devenir-livreur'
     | '/devenir-resto'
@@ -603,8 +634,10 @@ export interface FileRouteTypes {
     | '/mboa-ai'
     | '/mboapass'
     | '/parrainage'
+    | '/populaire'
     | '/preferences'
     | '/profil'
+    | '/proximite'
     | '/recherche'
     | '/reset-password'
     | '/restaurant'
@@ -649,6 +682,7 @@ export interface FileRouteTypes {
     | '/confidentialite'
     | '/connexion'
     | '/contact'
+    | '/cuisines'
     | '/decouvrir'
     | '/devenir-livreur'
     | '/devenir-resto'
@@ -660,8 +694,10 @@ export interface FileRouteTypes {
     | '/mboa-ai'
     | '/mboapass'
     | '/parrainage'
+    | '/populaire'
     | '/preferences'
     | '/profil'
+    | '/proximite'
     | '/recherche'
     | '/reset-password'
     | '/restaurant'
@@ -708,6 +744,7 @@ export interface RootRouteChildren {
   ConfidentialiteRoute: typeof ConfidentialiteRoute
   ConnexionRoute: typeof ConnexionRoute
   ContactRoute: typeof ContactRoute
+  CuisinesRoute: typeof CuisinesRoute
   DecouvrirRoute: typeof DecouvrirRoute
   DevenirLivreurRoute: typeof DevenirLivreurRoute
   DevenirRestoRoute: typeof DevenirRestoRoute
@@ -719,8 +756,10 @@ export interface RootRouteChildren {
   MboaAiRoute: typeof MboaAiRoute
   MboapassRoute: typeof MboapassRoute
   ParrainageRoute: typeof ParrainageRoute
+  PopulaireRoute: typeof PopulaireRoute
   PreferencesRoute: typeof PreferencesRoute
   ProfilRoute: typeof ProfilRoute
+  ProximiteRoute: typeof ProximiteRoute
   RechercheRoute: typeof RechercheRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   RestaurantRoute: typeof RestaurantRoute
@@ -794,6 +833,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RechercheRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/proximite': {
+      id: '/proximite'
+      path: '/proximite'
+      fullPath: '/proximite'
+      preLoaderRoute: typeof ProximiteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profil': {
       id: '/profil'
       path: '/profil'
@@ -806,6 +852,13 @@ declare module '@tanstack/react-router' {
       path: '/preferences'
       fullPath: '/preferences'
       preLoaderRoute: typeof PreferencesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/populaire': {
+      id: '/populaire'
+      path: '/populaire'
+      fullPath: '/populaire'
+      preLoaderRoute: typeof PopulaireRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/parrainage': {
@@ -883,6 +936,13 @@ declare module '@tanstack/react-router' {
       path: '/decouvrir'
       fullPath: '/decouvrir'
       preLoaderRoute: typeof DecouvrirRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cuisines': {
+      id: '/cuisines'
+      path: '/cuisines'
+      fullPath: '/cuisines'
+      preLoaderRoute: typeof CuisinesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -1229,6 +1289,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConfidentialiteRoute: ConfidentialiteRoute,
   ConnexionRoute: ConnexionRoute,
   ContactRoute: ContactRoute,
+  CuisinesRoute: CuisinesRoute,
   DecouvrirRoute: DecouvrirRoute,
   DevenirLivreurRoute: DevenirLivreurRoute,
   DevenirRestoRoute: DevenirRestoRoute,
@@ -1240,8 +1301,10 @@ const rootRouteChildren: RootRouteChildren = {
   MboaAiRoute: MboaAiRoute,
   MboapassRoute: MboapassRoute,
   ParrainageRoute: ParrainageRoute,
+  PopulaireRoute: PopulaireRoute,
   PreferencesRoute: PreferencesRoute,
   ProfilRoute: ProfilRoute,
+  ProximiteRoute: ProximiteRoute,
   RechercheRoute: RechercheRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   RestaurantRoute: RestaurantRoute,

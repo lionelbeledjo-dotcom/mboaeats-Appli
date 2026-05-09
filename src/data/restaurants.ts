@@ -259,6 +259,262 @@ const accompagnementsYaounde: Dish[] = [
   { id: "alloco-yaounde", name: "Plantain mûr frit (Alloco)", description: "Plantain bien mûr frit, croustillant dehors, fondant dedans.", price: 1500, image: dishPouletDg },
 ];
 
+// ===== 10 NOUVEAUX RESTAURANTS DOUALA =====
+
+const okokutDishes: Dish[] = [
+  { id: "ok-poulet-braise", name: "Poulet braisé entier", description: "Poulet entier mariné aux herbes locales, braisé au feu de bois.", price: 6500, image: dishPouletDg, popular: true, options: [pimentOptions] },
+  { id: "ok-soya-piquant", name: "Soya piquant maison", description: "Brochettes de bœuf au yaji, oignons et tomates frais.", price: 2500, image: dishSuya, spicy: true, options: [pimentOptions] },
+  { id: "ok-poisson-braise", name: "Poisson braisé piment vert", description: "Bar entier braisé, sauce piment vert et bobolo.", price: 5500, image: dishPoisson, popular: true },
+  { id: "ok-ndole-classique", name: "Ndolé classique", description: "Ndolé feuilles, arachides, viande de bœuf et plantain mûr.", price: 4000, image: dishNdole, options: [tailleOptions] },
+  { id: "ok-eru-water-fufu", name: "Eru + Water Fufu", description: "Eru du Sud-Ouest mijoté à l'huile de palme, water fufu maison.", price: 3500, image: dishEru },
+  { id: "ok-alloco-poulet", name: "Alloco + Ailes de poulet", description: "Alloco caramélisé et ailes de poulet épicées.", price: 3000, image: dishPouletDg },
+];
+
+const lOvalieDishes: Dish[] = [
+  { id: "ov-cote-boeuf", name: "Côte de bœuf grillée", description: "Côte de bœuf maturée, grillée à la braise, sauce poivre de Penja.", price: 9500, image: dishSuya, popular: true },
+  { id: "ov-burger-mboa", name: "Burger Mboa", description: "Pain brioché, steak haché 200g, cheddar fondant, sauce maison, frites de plantain.", price: 5500, image: dishPouletDg, popular: true },
+  { id: "ov-poulet-fermier", name: "Poulet fermier rôti", description: "Demi poulet fermier rôti, jus corsé, gratin de macabo.", price: 6000, image: dishPouletDg },
+  { id: "ov-tartare-boeuf", name: "Tartare de bœuf au couteau", description: "Bœuf coupé au couteau, câpres, échalotes, jaune d'œuf, frites maison.", price: 6500, image: dishSuya },
+  { id: "ov-saumon-grille", name: "Pavé de saumon grillé", description: "Saumon Atlantique grillé, légumes croquants, beurre citronné.", price: 7500, image: dishPoisson },
+  { id: "ov-cesar", name: "Salade César au poulet", description: "Romaine, poulet grillé, parmesan, croûtons, sauce César maison.", price: 4500, image: dishEru },
+  { id: "ov-tiramisu", name: "Tiramisu maison", description: "Mascarpone, café Robusta du Cameroun, biscuit cuillère et cacao.", price: 2500, image: dishEru },
+];
+
+const penjaPoivreDishes: Dish[] = [
+  { id: "pp-magret-canard", name: "Magret de canard sauce Penja", description: "Magret rosé, sauce poivre blanc de Penja AOP, écrasé de macabo.", price: 8500, image: dishSuya, popular: true },
+  { id: "pp-crevettes-ail", name: "Crevettes sautées à l'ail", description: "Grosses crevettes sautées ail-persil, riz parfumé.", price: 6500, image: dishSuya, popular: true },
+  { id: "pp-bar-ligne", name: "Bar de ligne aux herbes", description: "Bar entier aux herbes fraîches, citron confit et légumes vapeur.", price: 8000, image: dishPoisson },
+  { id: "pp-ndole-gambas", name: "Ndolé aux gambas", description: "Ndolé crémeux, gambas sauvages et miondo artisanal.", price: 6000, image: dishNdole, options: [tailleOptions] },
+  { id: "pp-risotto-cep", name: "Risotto aux cèpes", description: "Risotto crémeux, cèpes poêlés, parmesan affiné 24 mois.", price: 5500, image: dishEru },
+  { id: "pp-creme-brulee", name: "Crème brûlée vanille", description: "Crème onctueuse à la vanille de Madagascar, caramel craquant.", price: 2500, image: dishEru },
+];
+
+const wouriBistroDishes: Dish[] = [
+  { id: "wb-capitaine-bananes", name: "Capitaine sauce bananes", description: "Capitaine du Wouri, sauce bananes vertes pimentée, bobolo.", price: 5000, image: dishPoisson, popular: true, spicy: true },
+  { id: "wb-poulet-citronnelle", name: "Poulet citronnelle-gingembre", description: "Poulet mariné citronnelle-gingembre, riz au coco.", price: 4500, image: dishPouletDg },
+  { id: "wb-soya-mouton", name: "Soya de mouton braisé", description: "Brochettes de mouton au yaji, oignons rouges, tomates.", price: 3500, image: dishSuya, spicy: true, options: [pimentOptions] },
+  { id: "wb-ndole-bistro", name: "Ndolé bistro royal", description: "Ndolé crevettes-bœuf, plantain mûr et miondo.", price: 4500, image: dishNdole, options: [tailleOptions] },
+  { id: "wb-accras-crevettes", name: "Accras de crevettes", description: "Beignets de crevettes croustillants, sauce piment maison.", price: 2800, image: dishPouletDg, popular: true },
+  { id: "wb-jus-gingembre", name: "Jus de gingembre frais", description: "Gingembre frais pressé, citron vert et un soupçon de menthe.", price: 1200, image: dishEru },
+];
+
+const bonaberiGrillDishes: Dish[] = [
+  { id: "bg-poulet-yassa", name: "Poulet Yassa", description: "Poulet mariné citron-oignons, longuement mijoté, riz blanc.", price: 4000, image: dishPouletDg, popular: true },
+  { id: "bg-tilapia-braise", name: "Tilapia entier braisé", description: "Tilapia frais braisé, sauce tomate piment, alloco.", price: 4500, image: dishPoisson, popular: true, options: [pimentOptions] },
+  { id: "bg-suya-mixte", name: "Suya mixte (bœuf-poulet)", description: "Brochettes mixtes au yaji, oignons crus.", price: 3500, image: dishSuya, spicy: true },
+  { id: "bg-poisson-fume-pile", name: "Poisson fumé pilé", description: "Poisson fumé, sauce arachide et bâton de manioc.", price: 3500, image: dishPoisson },
+  { id: "bg-okok-bobolo", name: "Okok au bobolo", description: "Feuilles d'okok pilées, arachides et bobolo traditionnel.", price: 3000, image: dishEru },
+  { id: "bg-jus-corossol", name: "Jus de corossol", description: "Pulpe de corossol mixée, lait, sucre roux.", price: 1500, image: dishEru },
+];
+
+const mamiNyangaDishes: Dish[] = [
+  { id: "mn-poisson-pile", name: "Poisson pilé sauce arachide", description: "Spécialité côtière : poisson pilé, sauce arachide, bâton de manioc.", price: 3500, image: dishPoisson, popular: true },
+  { id: "mn-mbongo", name: "Mbongo Tchobi", description: "Sauce noire pimentée aux épices traditionnelles, poisson ou viande.", price: 4000, image: dishNdole, spicy: true, popular: true, options: [pimentOptions] },
+  { id: "mn-kondre", name: "Kondré de chèvre", description: "Ragoût de chèvre, plantain non mûr et épices de l'Ouest.", price: 4500, image: dishPouletDg },
+  { id: "mn-eru-traditionnel", name: "Eru traditionnel", description: "Eru du Sud-Ouest, water fufu, peau de bœuf.", price: 3000, image: dishEru },
+  { id: "mn-koki-mais", name: "Koki de maïs", description: "Pâte de maïs cuite à la vapeur dans la feuille, huile de palme.", price: 2000, image: dishEru },
+  { id: "mn-bissap-glace", name: "Bissap glacé maison", description: "Hibiscus, gingembre, menthe et glace pilée.", price: 1000, image: dishEru },
+];
+
+const akwaPalaceDishes: Dish[] = [
+  { id: "ap-buffet-mboa", name: "Buffet Mboa Royal", description: "Plateau découverte : ndolé, eru, soya, alloco, plantain et riz parfumé.", price: 8500, image: dishNdole, popular: true, options: [tailleOptions] },
+  { id: "ap-langouste-grillee", name: "Langouste grillée beurre citron", description: "Langouste fraîche grillée, beurre citron, riz pilaf.", price: 12000, image: dishPoisson, popular: true },
+  { id: "ap-filet-boeuf", name: "Filet de bœuf sauce poivre", description: "Filet 220g rosé, sauce poivre vert, gratin dauphinois.", price: 8500, image: dishSuya },
+  { id: "ap-poulet-coco", name: "Poulet sauce coco", description: "Poulet fermier mijoté, sauce coco-curry, riz basmati.", price: 5500, image: dishPouletDg },
+  { id: "ap-crevettes-flambees", name: "Crevettes flambées au whisky", description: "Gambas flambées au whisky, ail et persil.", price: 7500, image: dishSuya },
+  { id: "ap-fondant-choco", name: "Fondant au chocolat", description: "Cœur coulant chocolat noir 70%, glace vanille.", price: 2800, image: dishEru },
+];
+
+const bonapriroBistroDishes: Dish[] = [
+  { id: "bb-poulet-arachide", name: "Poulet sauce arachide", description: "Poulet fermier dans sauce arachide onctueuse, riz blanc.", price: 4500, image: dishPouletDg, popular: true },
+  { id: "bb-ndole-poisson", name: "Ndolé au poisson fumé", description: "Ndolé classique aux arachides, poisson fumé du Wouri.", price: 4000, image: dishNdole, options: [tailleOptions] },
+  { id: "bb-kati-kati", name: "Kati Kati de poulet", description: "Spécialité du Nord-Ouest : poulet grillé puis mijoté à l'huile de palme.", price: 4500, image: dishPouletDg, popular: true },
+  { id: "bb-soya-foie", name: "Soya de foie de bœuf", description: "Brochettes de foie de bœuf au yaji, alloco.", price: 2500, image: dishSuya, spicy: true },
+  { id: "bb-poisson-roti", name: "Poisson rôti aux légumes", description: "Maquereau rôti, légumes du marché et igname.", price: 3500, image: dishPoisson },
+  { id: "bb-jus-tamarin", name: "Jus de tamarin", description: "Tamarin frais, gingembre et un peu de citron.", price: 1000, image: dishEru },
+];
+
+const douaInternationalDishes: Dish[] = [
+  { id: "di-pizza-mboa", name: "Pizza Mboa (poulet DG)", description: "Pâte fine maison, sauce tomate, poulet DG, plantain et fromage fondu.", price: 5500, image: dishPouletDg, popular: true },
+  { id: "di-pizza-margherita", name: "Pizza Margherita", description: "Sauce tomate San Marzano, mozzarella fior di latte, basilic frais.", price: 4500, image: dishPouletDg },
+  { id: "di-burger-double", name: "Double cheeseburger", description: "Deux steaks 100g, double cheddar, oignons confits, frites.", price: 5000, image: dishSuya, popular: true },
+  { id: "di-pates-crevettes", name: "Pâtes aux crevettes", description: "Linguine, crevettes, ail-persil, tomates cerises.", price: 5500, image: dishSuya },
+  { id: "di-poulet-cesar", name: "Wrap poulet César", description: "Tortilla, poulet grillé, romaine, parmesan, sauce César.", price: 3500, image: dishPouletDg },
+  { id: "di-frites-plantain", name: "Frites de plantain", description: "Plantain frit en fines lamelles, sel & paprika.", price: 1500, image: dishPouletDg },
+];
+
+const oceanFreshDishes: Dish[] = [
+  { id: "of-plateau-fruits-mer", name: "Plateau de fruits de mer", description: "Crevettes, langoustines, calamars et poisson grillés du jour.", price: 11000, image: dishPoisson, popular: true },
+  { id: "of-calamars-grilles", name: "Calamars grillés à la plancha", description: "Calamars frais, ail-persil, citron et alloco.", price: 5500, image: dishPoisson },
+  { id: "of-poisson-jour", name: "Poisson du jour braisé", description: "Pêche du jour braisée au feu de bois, sauce tomate-piment, miondo.", price: 5000, image: dishPoisson, popular: true, spicy: true },
+  { id: "of-soupe-poisson", name: "Soupe de poisson épicée", description: "Soupe corsée au poisson, gingembre, citronnelle et piment.", price: 3500, image: dishPoisson, options: [pimentOptions] },
+  { id: "of-crevettes-coco", name: "Crevettes au lait de coco", description: "Crevettes mijotées au lait de coco et curry doux.", price: 6000, image: dishSuya },
+  { id: "of-riz-fruits-mer", name: "Riz aux fruits de mer", description: "Riz parfumé sauté aux crevettes, calamars et moules.", price: 5500, image: dishEru },
+];
+
+// 10 nouveaux restaurants Douala
+const restaurantsDoualaExtras: Restaurant[] = [
+  {
+    id: "okokut-bonanjo",
+    name: "O'Kokut",
+    tagline: "Grillades de quartier — Bonanjo, Douala",
+    city: "Douala",
+    neighborhood: "Bonanjo",
+    rating: 4.6,
+    eta: "20-30 min",
+    cover: dishPouletDg,
+    badge: "Grillades",
+    categories: [
+      { id: "grillades", label: "Grillades & braisés", dishes: okokutDishes.slice(0, 3) },
+      { id: "tradition", label: "Tradition", dishes: okokutDishes.slice(3) },
+    ],
+  },
+  {
+    id: "lovalie-bonapriso",
+    name: "L'Ovalie",
+    tagline: "Brasserie française — Bonapriso, Douala",
+    city: "Douala",
+    neighborhood: "Bonapriso",
+    rating: 4.7,
+    eta: "30-45 min",
+    cover: dishSuya,
+    badge: "Brasserie",
+    categories: [
+      { id: "viandes", label: "Viandes & burgers", dishes: lOvalieDishes.slice(0, 3) },
+      { id: "carte", label: "Carte du chef", dishes: lOvalieDishes.slice(3, 6) },
+      { id: "desserts", label: "Desserts", dishes: lOvalieDishes.slice(6) },
+    ],
+  },
+  {
+    id: "penja-poivre",
+    name: "Penja Poivre",
+    tagline: "Gastronomie au poivre de Penja — Bonapriso, Douala",
+    city: "Douala",
+    neighborhood: "Bonapriso",
+    rating: 4.9,
+    eta: "30-40 min",
+    cover: dishPoisson,
+    badge: "Gastronomique",
+    categories: [
+      { id: "signatures", label: "Signatures", dishes: penjaPoivreDishes.slice(0, 3) },
+      { id: "tradition-fusion", label: "Tradition revisitée", dishes: penjaPoivreDishes.slice(3, 5) },
+      { id: "desserts", label: "Desserts", dishes: penjaPoivreDishes.slice(5) },
+    ],
+  },
+  {
+    id: "wouri-bistro",
+    name: "Wouri Bistro",
+    tagline: "Cuisine du fleuve — Deido, Douala",
+    city: "Douala",
+    neighborhood: "Deido",
+    rating: 4.6,
+    eta: "25-35 min",
+    cover: dishPoisson,
+    badge: "Local",
+    categories: [
+      { id: "fleuve", label: "Saveurs du fleuve", dishes: wouriBistroDishes.slice(0, 3) },
+      { id: "plats", label: "Plats maison", dishes: wouriBistroDishes.slice(3, 5) },
+      { id: "boissons", label: "Boissons fraîches", dishes: wouriBistroDishes.slice(5) },
+    ],
+  },
+  {
+    id: "bonaberi-grill",
+    name: "Bonabéri Grill",
+    tagline: "Grillades populaires — Bonabéri, Douala",
+    city: "Douala",
+    neighborhood: "Bonabéri",
+    rating: 4.5,
+    eta: "20-30 min",
+    cover: dishPouletDg,
+    badge: "Populaire",
+    categories: [
+      { id: "grill", label: "Grillades", dishes: bonaberiGrillDishes.slice(0, 3) },
+      { id: "tradition", label: "Tradition", dishes: bonaberiGrillDishes.slice(3, 5) },
+      { id: "boissons", label: "Boissons", dishes: bonaberiGrillDishes.slice(5) },
+    ],
+  },
+  {
+    id: "mami-nyanga",
+    name: "Mami Nyanga",
+    tagline: "Saveurs côtières — New Bell, Douala",
+    city: "Douala",
+    neighborhood: "New Bell",
+    rating: 4.7,
+    eta: "25-35 min",
+    cover: dishNdole,
+    badge: "Tradition",
+    categories: [
+      { id: "specialites", label: "Spécialités côtières", dishes: mamiNyangaDishes.slice(0, 3) },
+      { id: "tradition", label: "Tradition", dishes: mamiNyangaDishes.slice(3, 5) },
+      { id: "boissons", label: "Boissons", dishes: mamiNyangaDishes.slice(5) },
+    ],
+  },
+  {
+    id: "akwa-palace",
+    name: "Akwa Palace",
+    tagline: "Restaurant gastronomique — Akwa, Douala",
+    city: "Douala",
+    neighborhood: "Akwa",
+    rating: 4.8,
+    eta: "30-45 min",
+    cover: dishPoisson,
+    badge: "Premium",
+    categories: [
+      { id: "signatures", label: "Plateaux signatures", dishes: akwaPalaceDishes.slice(0, 2) },
+      { id: "viandes-mer", label: "Viandes & mer", dishes: akwaPalaceDishes.slice(2, 5) },
+      { id: "desserts", label: "Desserts", dishes: akwaPalaceDishes.slice(5) },
+    ],
+  },
+  {
+    id: "bonapriso-bistro",
+    name: "Bonapriso Bistro",
+    tagline: "Cuisine camerounaise raffinée — Bonapriso, Douala",
+    city: "Douala",
+    neighborhood: "Bonapriso",
+    rating: 4.6,
+    eta: "25-35 min",
+    cover: dishPouletDg,
+    badge: "Bistro",
+    categories: [
+      { id: "plats", label: "Plats du jour", dishes: bonapriroBistroDishes.slice(0, 3) },
+      { id: "grill", label: "Grillades", dishes: bonapriroBistroDishes.slice(3, 5) },
+      { id: "boissons", label: "Boissons", dishes: bonapriroBistroDishes.slice(5) },
+    ],
+  },
+  {
+    id: "doua-international",
+    name: "Doua International",
+    tagline: "Pizzas & burgers fusion — Akwa, Douala",
+    city: "Douala",
+    neighborhood: "Akwa",
+    rating: 4.5,
+    eta: "20-35 min",
+    cover: dishPouletDg,
+    badge: "Fusion",
+    categories: [
+      { id: "pizzas", label: "Pizzas signature", dishes: douaInternationalDishes.slice(0, 2) },
+      { id: "burgers", label: "Burgers & pâtes", dishes: douaInternationalDishes.slice(2, 4) },
+      { id: "snacks", label: "Snacks", dishes: douaInternationalDishes.slice(4) },
+    ],
+  },
+  {
+    id: "ocean-fresh",
+    name: "Ocean Fresh",
+    tagline: "Spécialiste fruits de mer — Bonanjo, Douala",
+    city: "Douala",
+    neighborhood: "Bonanjo",
+    rating: 4.8,
+    eta: "30-45 min",
+    cover: dishPoisson,
+    badge: "Fruits de mer",
+    categories: [
+      { id: "plateaux", label: "Plateaux & grillades", dishes: oceanFreshDishes.slice(0, 3) },
+      { id: "soupes", label: "Soupes & sauces", dishes: oceanFreshDishes.slice(3, 5) },
+      { id: "riz", label: "Riz & accompagnements", dishes: oceanFreshDishes.slice(5) },
+    ],
+  },
+];
+
 export const restaurants: Restaurant[] = [
   {
     id: "la-braiserie-du-wouri",
@@ -366,6 +622,7 @@ export const restaurants: Restaurant[] = [
       { id: "tradition", label: "Tradition camerounaise", dishes: villageAkwaDishes.slice(1) },
     ],
   },
+  ...restaurantsDoualaExtras,
 ];
 
 export function getRestaurant(id: string) {

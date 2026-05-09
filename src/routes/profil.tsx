@@ -138,15 +138,15 @@ function ProfilPage() {
 
   return (
     <div data-brand-actions className="min-h-screen bg-background text-foreground">
-      <header className="glass border-b border-border/40">
+      <header className="border-b border-border/40 bg-white text-foreground dark:border-brand-cm-green/30 dark:bg-brand-cm-green/15">
         <div className="mx-auto max-w-md px-4 py-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-primary text-xl font-bold text-primary-foreground shadow-glow">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-cm-green text-xl font-bold text-brand-cm-green-fg shadow-[0_8px_24px_-8px_rgba(6,193,103,0.6)]">
               {initials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-display text-lg font-bold capitalize">{displayName}</p>
-              <p className="truncate text-xs text-muted-foreground">{identifier}</p>
+              <p className="font-display text-lg font-bold capitalize text-foreground dark:text-white">{displayName}</p>
+              <p className="truncate text-xs font-medium text-muted-foreground dark:text-white/85">{identifier}</p>
             </div>
             {authed ? (
               <button onClick={() => setEditing((v) => !v)} className="rounded-full border border-border bg-surface/60 px-3 py-1.5 text-xs font-semibold">
@@ -198,23 +198,23 @@ function ProfilPage() {
 
           <Link
             to="/fidelite"
-            className="mt-4 flex items-center justify-between rounded-2xl border border-brand-cm-green/40 bg-gradient-to-r from-brand-cm-green/15 to-brand-cm-green/5 p-3 shadow-[0_8px_24px_-12px_rgba(6,193,103,0.45)] transition-all hover:scale-[1.01] dark:border-brand-cm-green/50 dark:from-brand-cm-green/20 dark:to-brand-cm-green/5 dark:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.6)]"
+            className="mt-4 flex items-center justify-between rounded-2xl border border-brand-cm-green/40 bg-gradient-to-r from-brand-cm-green/15 to-brand-cm-green/5 p-3 shadow-[0_8px_24px_-12px_rgba(6,193,103,0.45)] transition-all hover:scale-[1.01] dark:border-brand-cm-green/70 dark:bg-brand-cm-green dark:from-brand-cm-green dark:to-brand-cm-green dark:shadow-[0_8px_24px_-12px_rgba(6,193,103,0.6)]"
           >
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-cm-green/20 dark:bg-brand-cm-green/25">
-                <Crown className="h-5 w-5 text-brand-cm-green" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-cm-green/20 dark:bg-white/20">
+                <Crown className="h-5 w-5 text-brand-cm-green dark:text-white" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-foreground/80">
+                <p className="text-xs font-semibold text-foreground/80 dark:text-white">
                   Mboa {loyalty?.currentTier ?? "Pistache"}
                 </p>
-                <p className="font-bold text-foreground">
+                <p className="font-bold text-foreground dark:text-white">
                   {(loyalty?.points ?? 0).toLocaleString("fr-FR")}{" "}
-                  <span className="text-xs font-normal text-foreground/70">points</span>
+                  <span className="text-xs font-normal text-foreground/70 dark:text-white/85">points</span>
                 </p>
               </div>
             </div>
-            <ChevronRight className="h-4 w-4 text-brand-cm-green" />
+            <ChevronRight className="h-4 w-4 text-brand-cm-green dark:text-white" />
           </Link>
         </div>
       </header>
@@ -303,7 +303,7 @@ function ProfilPage() {
           <button
             type="button"
             onClick={() => setConfirm(true)}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-3.5 text-sm font-semibold text-destructive transition hover:bg-destructive/20 active:scale-[0.99]"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-brand-cm-green/50 bg-brand-cm-green/10 px-4 py-3.5 text-sm font-semibold text-brand-cm-green transition hover:bg-brand-cm-green hover:text-brand-cm-green-fg active:scale-[0.99] dark:border-brand-cm-green/70 dark:bg-brand-cm-green/20 dark:text-white"
           >
             <LogOut className="h-4 w-4" />
             Se déconnecter

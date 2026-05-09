@@ -30,9 +30,9 @@ export const Route = createFileRoute("/")({
 });
 
 const filters = [
-  { key: "nearby", label: "À proximité", icon: "📍" },
-  { key: "popular", label: "Populaire", icon: "🔥" },
-  { key: "cuisines", label: "Cuisines", icon: "🍽️" },
+  { key: "nearby", label: "À proximité", icon: "📍", to: "/proximite" as const },
+  { key: "popular", label: "Populaire", icon: "🔥", to: "/populaire" as const },
+  { key: "cuisines", label: "Cuisines", icon: "🍽️", to: "/cuisines" as const },
 ];
 
 type Card = {
@@ -67,7 +67,7 @@ const cards: Card[] = realRestaurants.map((r, i) => {
 });
 
 function Index() {
-  const [active, setActive] = useState("popular");
+  const [active] = useState("popular");
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
@@ -77,24 +77,24 @@ function Index() {
   }, [query]);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#D9E8D8" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "#D9E8D8", overflowAnchor: "none" }}>
       <div className="mx-auto max-w-md px-4 pb-28 pt-[calc(env(safe-area-inset-top)+1rem)]">
-        {/* Top bar */}
-        <header className="mb-4 flex items-center justify-between gap-3">
+        {/* Top bar — hauteur fixe pour éviter tout layout shift */}
+        <header className="mb-4 flex h-12 items-center justify-between gap-3">
           <HamburgerMenu />
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium" style={{ color: "#888888" }}>
               Livrer à
             </p>
             <button className="flex items-center gap-1 text-sm font-bold truncate" style={{ color: "#1A1A1A" }}>
-              <MapPin className="h-4 w-4" style={{ color: "#00B14F" }} />
-              Douala, CM
+              <MapPin className="h-4 w-4 shrink-0" style={{ color: "#00B14F" }} />
+              <span className="truncate">Douala, CM</span>
             </button>
           </div>
           <Link
             to="/profil"
             aria-label="Notifications"
-            className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm"
+            className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm"
           >
             <Bell className="h-5 w-5" style={{ color: "#1A1A1A" }} />
             <span
@@ -104,29 +104,30 @@ function Index() {
           </Link>
         </header>
 
-        {/* Search */}
+        {/* Search — hauteur fixe + outline custom (évite jump au focus) */}
         <div
-          className="flex items-center gap-2 rounded-2xl bg-white px-4 py-3.5"
+          className="flex h-12 items-center gap-2 rounded-2xl bg-white px-4 outline-none ring-0 transition-shadow focus-within:ring-2 focus-within:ring-[#00B14F]/40"
           style={{ boxShadow: "0 2px 12px -6px rgba(0,0,0,0.08)" }}
         >
-          <Search className="h-5 w-5" style={{ color: "#888888" }} />
+          <Search className="h-5 w-5 shrink-0" style={{ color: "#888888" }} />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Que voulez-vous manger ?"
-            className="flex-1 bg-transparent text-sm outline-none"
+            className="h-full flex-1 bg-transparent text-sm outline-none"
             style={{ color: "#1A1A1A" }}
           />
         </div>
 
-        {/* Filter tabs */}
+        {/* Filter tabs — chaque bouton redirige vers sa page dédiée */}
         <div className="mt-5 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {filters.map((f) => {
             const isActive = f.key === active;
             return (
-              <button
+              <Link
                 key={f.key}
-                onClick={() => setActive(f.key)}
+                to={f.to}
+                preload="intent"
                 className="flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-all"
                 style={{
                   backgroundColor: isActive ? "#00B14F" : "#FFFFFF",
@@ -141,7 +142,7 @@ function Index() {
                   {f.icon}
                 </span>
                 {f.label}
-              </button>
+              </Link>
             );
           })}
         </div>
