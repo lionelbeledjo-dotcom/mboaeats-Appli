@@ -377,6 +377,33 @@
   letter-spacing: 0.02em;
 }
 
+/* Mobile : légère hausse de taille + line-height plus aéré, devise plus contrastée */
+@media (max-width: 767px) {
+  .price {
+    font-size: 1rem;        /* 16px — meilleure lisibilité */
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.005em;
+  }
+  .price-sm {
+    font-size: 0.9375rem;   /* 15px */
+    font-weight: 600;       /* +contraste sur petits écrans */
+    line-height: 1.3;
+  }
+  .price-lg {
+    font-size: 1.0625rem;   /* 17px CTAs */
+    font-weight: 700;
+    line-height: 1.25;
+  }
+  .price .currency,
+  .price-currency {
+    font-size: 0.75rem;     /* 12px — plus lisible */
+    font-weight: 600;
+    opacity: 0.9;           /* +contraste */
+    margin-left: 0.2em;
+  }
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
