@@ -398,7 +398,7 @@ function ChooseMethod({
         onClick={onPay}
         className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-4 text-base font-bold text-primary-foreground shadow-glow transition-transform hover:scale-[1.01]"
       >
-        Payer {total.toLocaleString("fr-FR")} FCFA <ChevronRight className="h-5 w-5" />
+        Payer <span className="price price-lg">{total.toLocaleString("fr-FR")}<span className="price-currency">FCFA</span></span> <ChevronRight className="h-5 w-5" />
       </button>
     </>
   );
