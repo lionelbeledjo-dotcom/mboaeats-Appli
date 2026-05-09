@@ -9,7 +9,7 @@ import { SplashScreen } from "@/components/SplashScreen";
 import { SiteHeader } from "@/components/SiteHeader";
 
 const PUBLIC_ROUTES = ["/connexion", "/inscription", "/reset-password", "/cgu", "/confidentialite", "/admin/login", "/healthcheck"];
-const PUBLIC_PREFIXES = ["/admin"];
+const PUBLIC_PREFIXES = ["/admin", "/r", "/restaurants"];
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const location = useLocation();
