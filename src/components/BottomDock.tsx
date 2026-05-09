@@ -43,6 +43,8 @@ export function BottomDock() {
               <Link
                 key={it.to}
                 to={it.to}
+                preload="intent"
+                preloadDelay={0}
                 aria-label={it.label}
                 aria-current={active ? "page" : undefined}
                 className="group relative flex flex-1 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cm-green/60"

@@ -4,14 +4,14 @@ const STORAGE_KEY = "mboaeats:splash:shown";
 
 // Timings (ms)
 const LETTERS = "MboaEats";
-const LETTER_STAGGER = 90; // décalage entre chaque lettre
-const LETTER_DURATION = 380; // durée d'apparition d'une lettre
-const TYPEWRITER_TOTAL = (LETTERS.length - 1) * LETTER_STAGGER + LETTER_DURATION; // ≈ 1010ms
-const BADGE_DELAY = TYPEWRITER_TOTAL + 120; // démarre juste après la dernière lettre
-const BADGE_DURATION = 500;
-const HOLD_AFTER_COMPLETE = 1000; // 1s de pause une fois le logo complet
-const VISIBLE_MS = BADGE_DELAY + BADGE_DURATION + HOLD_AFTER_COMPLETE; // ≈ 2630ms
-const EXIT_MS = 650;
+const LETTER_STAGGER = 35;
+const LETTER_DURATION = 220;
+const TYPEWRITER_TOTAL = (LETTERS.length - 1) * LETTER_STAGGER + LETTER_DURATION;
+const BADGE_DELAY = TYPEWRITER_TOTAL + 40;
+const BADGE_DURATION = 220;
+const HOLD_AFTER_COMPLETE = 200;
+const VISIBLE_MS = BADGE_DELAY + BADGE_DURATION + HOLD_AFTER_COMPLETE;
+const EXIT_MS = 280;
 
 const MBOA = "Mboa";
 const EATS = "Eats";

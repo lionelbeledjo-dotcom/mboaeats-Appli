@@ -43,7 +43,7 @@ function RestaurantPage() {
   const qtyOf = (dishId: string) => cartItems.find((i) => i.id === `${dishId}__default`)?.qty ?? 0;
 
   return (
-    <div className="min-h-screen bg-background animate-fade-in">
+    <div className="min-h-screen bg-background">
       {/* Banner — image seule, pas de titre par-dessus pour éviter tout chevauchement */}
       <div className="relative mt-16 h-36 w-full overflow-hidden sm:mt-20 sm:h-52 md:h-64">
         <img

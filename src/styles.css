@@ -540,13 +540,14 @@
 .animate-pulse-ring { animation: pulse-ring 1.8s cubic-bezier(0.4,0,0.6,1) infinite; }
 .animate-fade-up { animation: fade-up 0.7s cubic-bezier(0.2,0.8,0.2,1) both; }
 .animate-scale-in { animation: scale-in 0.5s cubic-bezier(0.2,0.8,0.2,1) both; }
-.animate-content-in { animation: content-in 0.32s cubic-bezier(0.2,0.8,0.2,1) both; }
-.animate-skeleton-out { animation: skeleton-out 0.18s ease-out both; }
+.animate-content-in { animation: content-in 0.18s ease-out both; }
+.animate-skeleton-out { animation: skeleton-out 0.12s ease-out both; }
 
-/* Mobile : transition plus courte et sans translation pour un ressenti instantané */
+/* Mobile : transition quasi instantanée */
 @media (max-width: 767px) {
   .animate-content-in {
-    animation: content-in-mobile 0.16s ease-out both;
+    animation: content-in-mobile 0.1s ease-out both;
+    animation-delay: 0ms !important;
   }
 }
 @media (prefers-reduced-motion: reduce) {
