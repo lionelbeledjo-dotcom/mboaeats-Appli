@@ -10,6 +10,10 @@ import { addToCart } from "@/hooks/use-cart";
 
 export const Route = createFileRoute("/r/$slug_/plats/$dishId")({
   component: DbDishPage,
+  // Préchargement (hover desktop / focus mobile) déclenché par defaultPreload="intent"
+  loader: ({ params }) =>
+    getDishBySlugAndId({ data: { slug: params.slug, dishId: params.dishId } }),
+  staleTime: 60_000,
   head: ({ params }) => ({
     meta: [
       { title: `Plat · ${params.slug} · MboaEats` },
