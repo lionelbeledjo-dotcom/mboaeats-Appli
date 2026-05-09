@@ -133,7 +133,7 @@ function RestoLivePage() {
       </div>
 
       {/* Resto info card */}
-      <main className="mx-auto -mt-8 max-w-3xl px-4">
+      <main className="mx-auto mt-6 max-w-3xl px-4 sm:mt-8">
         <div
           className="rounded-[1.5rem] border border-neutral-200 bg-card p-5 dark:border-neutral-800"
           style={{ boxShadow: "var(--shadow-soft)" }}
