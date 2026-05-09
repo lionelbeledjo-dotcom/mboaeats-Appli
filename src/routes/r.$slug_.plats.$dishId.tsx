@@ -96,7 +96,7 @@ function DbDishPage() {
   const canOrder = !!resto.is_open && !!dish.is_available;
 
   return (
-    <div className="min-h-screen bg-background pb-32">
+    <div className="min-h-screen bg-background pb-32 animate-content-in">
       {/* Cover */}
       <div className="relative h-72 w-full overflow-hidden bg-muted md:h-96">
         {dish.image_url ? (
