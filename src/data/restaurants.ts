@@ -515,7 +515,77 @@ const restaurantsDoualaExtras: Restaurant[] = [
   },
 ];
 
+// ===== Restaurants vedettes (Douala) — affichés en tête de la page d'accueil =====
+const featuredDishes = (price: number, image: string): Dish[] => [
+  {
+    id: `feat-${Math.random().toString(36).slice(2, 8)}`,
+    name: "Spécialité du jour",
+    description: "Plat signature de la maison, préparé avec des produits frais du marché.",
+    price,
+    image,
+    popular: true,
+  },
+];
+
+const featuredRestaurants: Restaurant[] = [
+  {
+    id: "le-gout-du-terroir",
+    name: "Le Goût du Terroir",
+    tagline: "Spécialités locales — Douala, CM",
+    city: "Douala", neighborhood: "Akwa",
+    rating: 4.7, eta: "30-40 min",
+    cover: dishNdole, badge: "Terroir",
+    categories: [{ id: "plats", label: "Plats", dishes: featuredDishes(2500, dishNdole) }],
+  },
+  {
+    id: "chez-pauline",
+    name: "Chez Pauline",
+    tagline: "Cuisine africaine — Douala, CM",
+    city: "Douala", neighborhood: "Bonapriso",
+    rating: 4.6, eta: "25-35 min",
+    cover: dishEru, badge: "Maison",
+    categories: [{ id: "plats", label: "Plats", dishes: featuredDishes(2000, dishEru) }],
+  },
+  {
+    id: "jollof-riz",
+    name: "Jollof (Riz)",
+    tagline: "Riz épicé à la camerounaise — Douala, CM",
+    city: "Douala", neighborhood: "Bonanjo",
+    rating: 4.5, eta: "25-35 min",
+    cover: dishSuya, badge: "Épicé",
+    categories: [{ id: "plats", label: "Plats", dishes: featuredDishes(2000, dishSuya) }],
+  },
+  {
+    id: "poulet-dg-resto",
+    name: "Poulet DG",
+    tagline: "Poulet sauté à la camerounaise — Douala, CM",
+    city: "Douala", neighborhood: "Akwa",
+    rating: 4.8, eta: "20-30 min",
+    cover: dishPouletDg, badge: "Populaire",
+    categories: [{ id: "plats", label: "Plats", dishes: featuredDishes(2500, dishPouletDg) }],
+  },
+  {
+    id: "case-bamileke",
+    name: "La Case Bamiléké",
+    tagline: "Spécialités bamiléké — Douala, CM",
+    city: "Douala", neighborhood: "Bonamoussadi",
+    rating: 4.8, eta: "30-45 min",
+    cover: dishEru, badge: "Authentique",
+    categories: [{ id: "plats", label: "Plats", dishes: featuredDishes(2500, dishEru) }],
+  },
+  {
+    id: "saveurs-soleil",
+    name: "Saveurs du Soleil",
+    tagline: "Cuisine camerounaise — Douala, CM",
+    city: "Douala", neighborhood: "Deido",
+    rating: 4.3, eta: "30-40 min",
+    cover: dishPoisson, badge: "Du marché",
+    categories: [{ id: "plats", label: "Plats", dishes: featuredDishes(2000, dishPoisson) }],
+  },
+];
+
 export const restaurants: Restaurant[] = [
+  ...featuredRestaurants,
   {
     id: "la-braiserie-du-wouri",
     name: "La Braiserie du Wouri",

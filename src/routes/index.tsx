@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { Search, Star, Clock, Plus, MapPin, Bell } from "lucide-react";
-import { HamburgerMenu } from "@/components/HamburgerMenu";
-
+import { Search, Star, Clock, Plus } from "lucide-react";
+import { AppTopBar } from "@/components/AppTopBar";
 import { restaurants as realRestaurants, getRestaurant } from "@/data/restaurants";
+import { addToCart } from "@/hooks/use-cart";
+import { toast } from "sonner";
 
 const imageCache = new Set<string>();
 function prefetchRestaurantImages(restoId: string) {
@@ -22,18 +23,12 @@ function prefetchRestaurantImages(restoId: string) {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "MboaEats — Vos plats camerounais livrés" },
-      { name: "description", content: "Commandez vos plats préférés, livrés rapidement chez vous." },
+      { title: "MboaEats — Vos plats camerounais livrés à Douala" },
+      { name: "description", content: "Commandez les meilleurs plats du terroir camerounais, livrés rapidement à Douala." },
     ],
   }),
   component: Index,
 });
-
-const filters = [
-  { key: "nearby", label: "À proximité", icon: "📍", to: "/proximite" as const },
-  { key: "popular", label: "Populaire", icon: "🔥", to: "/populaire" as const },
-  { key: "cuisines", label: "Cuisines", icon: "🍽️", to: "/cuisines" as const },
-];
 
 type Card = {
   slug: string;
@@ -42,16 +37,13 @@ type Card = {
   rating: number;
   eta: string;
   img: string;
-  badge: string;
   price: number;
-  oldPrice: number;
-  promo: number;
+  firstDish: { id: string; name: string; price: number; image: string };
 };
 
-const cards: Card[] = realRestaurants.map((r, i) => {
+const cards: Card[] = realRestaurants.slice(0, 12).map((r) => {
+  const firstDish = r.categories[0]?.dishes[0];
   const minPrice = Math.min(...r.categories.flatMap((c) => c.dishes.map((d) => d.price)));
-  const promo = [10, 15, 20, 25, 30][i % 5];
-  const oldPrice = Math.round((minPrice / (1 - promo / 100)) / 100) * 100;
   return {
     slug: r.id,
     name: r.name,
@@ -59,15 +51,12 @@ const cards: Card[] = realRestaurants.map((r, i) => {
     rating: r.rating,
     eta: r.eta,
     img: r.cover,
-    badge: r.badge ?? r.neighborhood,
     price: minPrice,
-    oldPrice,
-    promo,
+    firstDish: firstDish ? { id: firstDish.id, name: firstDish.name, price: firstDish.price, image: firstDish.image } : { id: "default", name: r.name, price: minPrice, image: r.cover },
   };
 });
 
 function Index() {
-  const [active] = useState("popular");
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
@@ -77,87 +66,43 @@ function Index() {
   }, [query]);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#D9E8D8", overflowAnchor: "none" }}>
-      <div className="mx-auto max-w-md px-4 pb-28 pt-[calc(env(safe-area-inset-top)+1rem)]">
-        {/* Top bar — hauteur fixe pour éviter tout layout shift */}
-        <header className="mb-4 flex h-12 items-center justify-between gap-3">
-          <HamburgerMenu />
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium" style={{ color: "#888888" }}>
-              Livrer à
-            </p>
-            <button className="flex items-center gap-1 text-sm font-bold truncate" style={{ color: "#1A1A1A" }}>
-              <MapPin className="h-4 w-4 shrink-0" style={{ color: "#00B14F" }} />
-              <span className="truncate">Douala, CM</span>
-            </button>
-          </div>
-          <Link
-            to="/profil"
-            aria-label="Notifications"
-            className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm"
-          >
-            <Bell className="h-5 w-5" style={{ color: "#1A1A1A" }} />
-            <span
-              className="absolute right-2 top-2 h-2 w-2 rounded-full"
-              style={{ backgroundColor: "#FF4D4D" }}
-            />
-          </Link>
-        </header>
+    <div className="min-h-screen" style={{ backgroundColor: "#F5F0E8", overflowAnchor: "none" }}>
+      <AppTopBar />
 
-        {/* Search — hauteur fixe + outline custom (évite jump au focus) */}
-        <div
-          className="flex h-12 items-center gap-2 rounded-2xl bg-white px-4 outline-none ring-0 transition-shadow focus-within:ring-2 focus-within:ring-[#00B14F]/40"
-          style={{ boxShadow: "0 2px 12px -6px rgba(0,0,0,0.08)" }}
+      <div className="mx-auto max-w-md px-4 pb-28 pt-4">
+        <h1
+          className="text-[24px] font-bold leading-tight"
+          style={{ color: "#2D5A27", fontFamily: "Inter, system-ui, sans-serif" }}
         >
-          <Search className="h-5 w-5 shrink-0" style={{ color: "#888888" }} />
+          Bienvenue sur MboaEats
+        </h1>
+        <p className="mt-1 text-[13px]" style={{ color: "#6B6B6B", fontWeight: 300 }}>
+          Le meilleur du terroir camerounais, livré chez vous.
+        </p>
+
+        {/* Recherche */}
+        <label
+          className="mt-4 flex h-12 items-center gap-2 rounded-xl bg-white px-4"
+          style={{ border: "1px solid #E5E5E5" }}
+        >
+          <Search className="h-5 w-5" style={{ color: "#6B6B6B" }} />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Que voulez-vous manger ?"
+            placeholder="Rechercher un plat ou un restaurant"
             className="h-full flex-1 bg-transparent text-sm outline-none"
             style={{ color: "#1A1A1A" }}
           />
-        </div>
+        </label>
 
-        {/* Filter tabs — chaque bouton redirige vers sa page dédiée */}
-        <div className="mt-5 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {filters.map((f) => {
-            const isActive = f.key === active;
-            return (
-              <Link
-                key={f.key}
-                to={f.to}
-                preload="intent"
-                className="flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-all"
-                style={{
-                  backgroundColor: isActive ? "#00B14F" : "#FFFFFF",
-                  color: isActive ? "#FFFFFF" : "#1A1A1A",
-                  boxShadow: isActive ? "0 4px 14px -4px rgba(0,177,79,0.4)" : "0 1px 4px rgba(0,0,0,0.04)",
-                }}
-              >
-                <span
-                  className="flex h-6 w-6 items-center justify-center rounded-full text-xs"
-                  style={{ backgroundColor: isActive ? "rgba(255,255,255,0.2)" : "#F4F4F4" }}
-                >
-                  {f.icon}
-                </span>
-                {f.label}
-              </Link>
-            );
-          })}
-        </div>
+        {/* Section restaurants */}
+        <h2
+          className="mt-6 mb-3 text-[20px] font-semibold"
+          style={{ color: "#1A1A1A", fontFamily: "Inter, system-ui, sans-serif" }}
+        >
+          Restaurants populaires
+        </h2>
 
-        {/* Section title */}
-        <div className="mt-6 mb-3 flex items-center justify-between">
-          <h2 className="text-base font-bold" style={{ color: "#1A1A1A" }}>
-            Populaires près de chez vous
-          </h2>
-          <Link to="/decouvrir" className="text-xs font-semibold" style={{ color: "#00B14F" }}>
-            Tout voir
-          </Link>
-        </div>
-
-        {/* Restaurant cards */}
         <div className="space-y-3">
           {filtered.map((r) => (
             <Link
@@ -168,58 +113,65 @@ function Index() {
               onMouseEnter={() => prefetchRestaurantImages(r.slug)}
               onTouchStart={() => prefetchRestaurantImages(r.slug)}
               className="block rounded-2xl bg-white p-3 transition active:scale-[0.99]"
-              style={{ boxShadow: "0 2px 12px -6px rgba(0,0,0,0.08)" }}
+              style={{ boxShadow: "0 2px 12px -8px rgba(0,0,0,0.08)" }}
             >
               <div className="flex gap-3">
-                {/* Image */}
-                <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl">
-                  <img src={r.img} alt={r.name} className="h-full w-full object-cover" loading="lazy" />
-                  <span
-                    className="absolute left-1.5 top-1.5 rounded-md px-1.5 py-0.5 text-[10px] font-bold text-white"
-                    style={{ backgroundColor: "#FF4D4D" }}
-                  >
-                    {r.promo}% OFF
-                  </span>
-                </div>
-
-                {/* Content */}
+                <img
+                  src={r.img}
+                  alt={r.name}
+                  width={80}
+                  height={80}
+                  loading="lazy"
+                  className="h-20 w-20 shrink-0 rounded-xl object-cover"
+                />
                 <div className="flex min-w-0 flex-1 flex-col">
-                  <h3 className="truncate text-sm font-bold" style={{ color: "#1A1A1A" }}>
+                  <h3
+                    className="truncate text-[15px] font-bold"
+                    style={{ color: "#1A1A1A", fontFamily: "Inter, system-ui, sans-serif" }}
+                  >
                     {r.name}
                   </h3>
-                  <p className="mt-0.5 truncate text-xs" style={{ color: "#888888" }}>
+                  <p className="mt-0.5 truncate text-[12px]" style={{ color: "#6B6B6B", fontWeight: 300 }}>
                     {r.tag}
                   </p>
 
-                  <div className="mt-1.5 flex items-center gap-3 text-xs" style={{ color: "#888888" }}>
+                  <div className="mt-1 flex items-center gap-3 text-[13px]" style={{ color: "#6B6B6B" }}>
                     <span className="inline-flex items-center gap-1">
-                      <Star className="h-3 w-3 fill-current" style={{ color: "#FFC107" }} />
-                      <span className="font-semibold" style={{ color: "#1A1A1A" }}>
-                        {r.rating}
-                      </span>
+                      <Star className="h-3.5 w-3.5 fill-current" style={{ color: "#F4A623" }} />
+                      <span className="font-semibold" style={{ color: "#1A1A1A" }}>{r.rating}</span>
                     </span>
                     <span className="inline-flex items-center gap-1">
-                      <Clock className="h-3 w-3" /> {r.eta}
+                      <Clock className="h-3.5 w-3.5" /> {r.eta}
                     </span>
                   </div>
 
                   <div className="mt-auto flex items-end justify-between pt-2">
                     <div className="leading-tight">
-                      <span className="text-[11px] line-through" style={{ color: "#AAAAAA" }}>
-                        {r.oldPrice.toLocaleString("fr-FR")} F
-                      </span>
-                      <div className="text-sm font-bold" style={{ color: "#1A1A1A" }}>
-                        {r.price.toLocaleString("fr-FR")} F
+                      <span className="text-[11px]" style={{ color: "#6B6B6B" }}>À partir de</span>
+                      <div className="text-[16px] font-bold tabular-nums" style={{ color: "#1A1A1A" }}>
+                        {r.price.toLocaleString("fr-FR")} FCFA
                       </div>
                     </div>
                     <button
                       onClick={(e) => {
                         e.preventDefault();
+                        e.stopPropagation();
+                        addToCart({
+                          id: `${r.slug}__${r.firstDish.id}`,
+                          dishId: r.firstDish.id,
+                          restoId: r.slug,
+                          name: r.firstDish.name,
+                          price: r.firstDish.price,
+                          qty: 1,
+                          image: r.firstDish.image,
+                        });
+                        toast.success(`Ajouté : ${r.firstDish.name}`);
                       }}
-                      className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold text-white transition active:scale-95"
-                      style={{ backgroundColor: "#00B14F" }}
+                      aria-label={`Ajouter ${r.name} au panier`}
+                      className="inline-flex items-center gap-1 rounded-full px-3.5 py-2 text-[13px] font-bold text-white transition active:scale-95"
+                      style={{ backgroundColor: "#2D5A27", minHeight: 36 }}
                     >
-                      <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
+                      <Plus className="h-4 w-4" strokeWidth={2.6} />
                       Ajouter
                     </button>
                   </div>
