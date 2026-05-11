@@ -50,7 +50,7 @@ export function BottomDock() {
             const active = it.exact ? path === it.to : path.startsWith(it.to);
             const Icon = it.icon;
             const badge = it.label === "Panier" ? count : it.label === "Commandes" ? activeOrders : 0;
-            const color = active ? "#2D5A27" : "#9CA3AF";
+            const color = active ? "#06C167" : "#9CA3AF";
             return (
               <Link
                 key={it.to}
@@ -66,7 +66,7 @@ export function BottomDock() {
                   e.preventDefault();
                   navigate({ to: it.to });
                 }}
-                className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-1 touch-manipulation focus-visible:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-[#2D5A27]/60"
+                className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-1 touch-manipulation focus-visible:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-[#06C167]/60"
                 style={{ minHeight: 44 }}
               >
                 <span className="relative flex h-7 w-7 items-center justify-center" style={{ color }}>
@@ -74,7 +74,7 @@ export function BottomDock() {
                   {badge > 0 && (
                     <span
                       className="absolute -right-2 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white tabular-nums"
-                      style={{ backgroundColor: "#2D5A27" }}
+                      style={{ backgroundColor: "#06C167" }}
                     >
                       {badge > 99 ? "99+" : badge}
                     </span>

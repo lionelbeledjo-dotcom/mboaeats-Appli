@@ -72,7 +72,7 @@ function Index() {
       <div className="mx-auto max-w-md px-4 pb-28 pt-4">
         <h1
           className="text-[24px] font-bold leading-tight"
-          style={{ color: "#2D5A27", fontFamily: "Inter, system-ui, sans-serif" }}
+          style={{ color: "#06C167", fontFamily: "Inter, system-ui, sans-serif" }}
         >
           Bienvenue sur MboaEats
         </h1>
@@ -169,7 +169,7 @@ function Index() {
                       }}
                       aria-label={`Ajouter ${r.name} au panier`}
                       className="inline-flex items-center gap-1 rounded-full px-3.5 py-2 text-[13px] font-bold text-white transition active:scale-95"
-                      style={{ backgroundColor: "#2D5A27", minHeight: 36 }}
+                      style={{ backgroundColor: "#06C167", minHeight: 36 }}
                     >
                       <Plus className="h-4 w-4" strokeWidth={2.6} />
                       Ajouter
