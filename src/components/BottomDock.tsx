@@ -1,11 +1,11 @@
 import { Link, useLocation, useRouter, useNavigate } from "@tanstack/react-router";
-import { Home, ShoppingBag, Package, User, Compass } from "lucide-react";
+import { Home, ShoppingBag, Package, User } from "lucide-react";
 import { useEffect } from "react";
 import { useCart } from "@/hooks/use-cart";
 import { useActiveOrdersCount } from "@/hooks/use-active-orders";
 
 type Item = {
-  to: "/" | "/decouvrir" | "/commandes" | "/checkout" | "/profil";
+  to: "/" | "/commandes" | "/checkout" | "/profil";
   label: string;
   icon: typeof Home;
   exact?: boolean;
@@ -13,9 +13,8 @@ type Item = {
 
 const items: Item[] = [
   { to: "/", label: "Accueil", icon: Home, exact: true },
-  { to: "/decouvrir", label: "Découvrir", icon: Compass },
-  { to: "/checkout", label: "Panier", icon: ShoppingBag },
   { to: "/commandes", label: "Commandes", icon: Package },
+  { to: "/checkout", label: "Panier", icon: ShoppingBag },
   { to: "/profil", label: "Profil", icon: User },
 ];
 
