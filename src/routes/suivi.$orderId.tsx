@@ -28,7 +28,7 @@ export const Route = createFileRoute("/suivi/$orderId")({
     <div className="p-8 text-center text-sm" style={{ color: "#888888" }}>
       {error.message}
       <div className="mt-3">
-        <Link to="/commandes" className="font-semibold" style={{ color: "#2D5A27" }}>
+        <Link to="/commandes" className="font-semibold" style={{ color: "#06C167" }}>
           Retour aux commandes
         </Link>
       </div>
@@ -115,7 +115,7 @@ function SuiviPage() {
             <p className="mt-1 text-4xl font-bold tabular-nums" style={{ color: "#1A1A1A" }}>
               {order.delivered_at ? "✓" : etaTarget ? `${minutes} min` : "—"}
             </p>
-            <p className="mt-1 text-sm font-semibold" style={{ color: "#2D5A27" }}>
+            <p className="mt-1 text-sm font-semibold" style={{ color: "#06C167" }}>
               {currentStep.label} · {currentStep.desc}
             </p>
           </div>
@@ -131,13 +131,13 @@ function SuiviPage() {
                     {i > 0 && (
                       <div
                         className="h-1 flex-1 rounded-full"
-                        style={{ backgroundColor: i <= stepIdx ? "#2D5A27" : "#E5E5E5" }}
+                        style={{ backgroundColor: i <= stepIdx ? "#06C167" : "#E5E5E5" }}
                       />
                     )}
                     <div
                       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
                       style={{
-                        backgroundColor: reached ? "#2D5A27" : "#F4F4F4",
+                        backgroundColor: reached ? "#06C167" : "#F4F4F4",
                         color: reached ? "#FFFFFF" : "#AAAAAA",
                       }}
                     >
@@ -150,7 +150,7 @@ function SuiviPage() {
                     {i < STEPS.length - 1 && (
                       <div
                         className="h-1 flex-1 rounded-full"
-                        style={{ backgroundColor: i < stepIdx ? "#2D5A27" : "#E5E5E5" }}
+                        style={{ backgroundColor: i < stepIdx ? "#06C167" : "#E5E5E5" }}
                       />
                     )}
                   </div>
@@ -172,14 +172,14 @@ function SuiviPage() {
             <div className="relative">
               <div
                 className="flex h-12 w-12 items-center justify-center rounded-full text-lg font-bold text-white"
-                style={{ backgroundColor: "#2D5A27" }}
+                style={{ backgroundColor: "#06C167" }}
               >
                 {(order.driver_id ?? "M").slice(0, 1).toUpperCase()}
               </div>
               <span
                 className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-white"
               >
-                <Truck className="h-2.5 w-2.5" style={{ color: "#2D5A27" }} />
+                <Truck className="h-2.5 w-2.5" style={{ color: "#06C167" }} />
               </span>
             </div>
             <div className="min-w-0 flex-1">
@@ -202,7 +202,7 @@ function SuiviPage() {
             <button
               aria-label="Appeler le livreur"
               className="flex h-10 w-10 items-center justify-center rounded-full text-white"
-              style={{ backgroundColor: "#2D5A27" }}
+              style={{ backgroundColor: "#06C167" }}
             >
               <Phone className="h-5 w-5" />
             </button>
@@ -216,7 +216,7 @@ function SuiviPage() {
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
               style={{ backgroundColor: "#F5F0E8" }}
             >
-              <MapPin className="h-4 w-4" style={{ color: "#2D5A27" }} />
+              <MapPin className="h-4 w-4" style={{ color: "#06C167" }} />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold" style={{ color: "#888888" }}>
@@ -246,7 +246,7 @@ function SuiviPage() {
             {data.items.map((it) => (
               <li key={it.id} className="flex items-center justify-between">
                 <span className="truncate" style={{ color: "#1A1A1A" }}>
-                  <span className="font-bold" style={{ color: "#2D5A27" }}>{it.qty}×</span> {it.name}
+                  <span className="font-bold" style={{ color: "#06C167" }}>{it.qty}×</span> {it.name}
                 </span>
                 <span className="tabular-nums" style={{ color: "#888888" }}>
                   {(it.line_total ?? it.unit_price * it.qty).toLocaleString("fr-FR")} F
@@ -282,8 +282,8 @@ function SuiviPage() {
 function Row({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className="flex items-center justify-between">
-      <span style={{ color: accent ? "#2D5A27" : "#888888" }}>{label}</span>
-      <span className="tabular-nums" style={{ color: accent ? "#2D5A27" : "#1A1A1A" }}>{value}</span>
+      <span style={{ color: accent ? "#06C167" : "#888888" }}>{label}</span>
+      <span className="tabular-nums" style={{ color: accent ? "#06C167" : "#1A1A1A" }}>{value}</span>
     </div>
   );
 }
@@ -299,8 +299,8 @@ function FauxMap({ progress }: { progress: number }) {
             <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#CFE0CC" strokeWidth="1" />
           </pattern>
           <linearGradient id="route" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#2D5A27" />
-            <stop offset="100%" stopColor="#2D5A27" stopOpacity="0.4" />
+            <stop offset="0%" stopColor="#06C167" />
+            <stop offset="100%" stopColor="#06C167" stopOpacity="0.4" />
           </linearGradient>
         </defs>
         <rect width="400" height="320" fill="url(#grid)" />
@@ -336,7 +336,7 @@ function FauxMap({ progress }: { progress: number }) {
 
         {/* Destination pin */}
         <g transform="translate(360,270)">
-          <circle r="16" fill="#2D5A27" />
+          <circle r="16" fill="#06C167" />
           <circle r="6" fill="#FFFFFF" />
         </g>
 
@@ -368,11 +368,11 @@ function DriverMarker({ progress }: { progress: number }) {
   const y = a.y + (b.y - a.y) * segT;
   return (
     <g transform={`translate(${x},${y})`}>
-      <circle r="18" fill="#2D5A27" opacity="0.2">
+      <circle r="18" fill="#06C167" opacity="0.2">
         <animate attributeName="r" from="18" to="28" dur="1.5s" repeatCount="indefinite" />
         <animate attributeName="opacity" from="0.4" to="0" dur="1.5s" repeatCount="indefinite" />
       </circle>
-      <circle r="12" fill="#FFFFFF" stroke="#2D5A27" strokeWidth="3" />
+      <circle r="12" fill="#FFFFFF" stroke="#06C167" strokeWidth="3" />
       <text textAnchor="middle" y="4" fontSize="12">🛵</text>
     </g>
   );
