@@ -72,8 +72,8 @@ function RecherchePage() {
     (cuisine !== "all" ? 1 : 0) + (promosOnly ? 1 : 0) + (maxEta ? 1 : 0) + (sort !== "relevance" ? 1 : 0);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#F5F0E8" }}>
-      <header className="sticky top-0 z-40 bg-white" style={{ boxShadow: "0 2px 12px -8px rgba(0,0,0,0.10)" }}>
+    <div className="min-h-screen w-full max-w-[100vw] overflow-x-hidden" style={{ backgroundColor: "#F5F0E8" }}>
+      <header className="sticky top-0 z-40 w-full max-w-[100vw] overflow-x-hidden bg-white" style={{ boxShadow: "0 2px 12px -8px rgba(0,0,0,0.10)" }}>
         <div className="mx-auto max-w-md px-4 py-3">
           <div className="flex items-center gap-2 rounded-2xl px-3 py-2.5" style={{ border: "1px solid #E5E5E5" }}>
             <Search className="h-4 w-4" style={{ color: "#6B6B6B" }} />
@@ -157,22 +157,22 @@ function RecherchePage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-md px-4 py-4">
+      <main className="mx-auto w-full max-w-md px-4 py-4 overflow-x-hidden">
         <p className="text-xs" style={{ color: "#6B6B6B" }}>
           {results.length} résultat{results.length > 1 ? "s" : ""}
           {q && <> pour « {q} »</>}
         </p>
 
-        <ul className="mt-3 space-y-3">
+        <ul className="mt-3 space-y-3 w-full">
           {results.map((r) => {
             const badge = badgeMeta(catalogBadge(r));
             const fee = deliveryFee(r);
             return (
-              <li key={r.id}>
+              <li key={r.id} className="w-full max-w-full">
                 <Link
                   to="/restaurants/$restoId"
                   params={{ restoId: r.id }}
-                  className="flex gap-3 rounded-2xl bg-white p-3 transition active:scale-[0.99]"
+                  className="flex w-full max-w-full gap-3 overflow-hidden rounded-2xl bg-white p-3 transition active:scale-[0.99]"
                   style={{ boxShadow: "0 2px 12px -8px rgba(0,0,0,0.08)" }}
                 >
                   <div className="relative h-20 w-20 shrink-0">
