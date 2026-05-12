@@ -798,6 +798,7 @@ export type Database = {
           notes: string | null
           paid_at: string | null
           payment_id: string | null
+          payment_method: string | null
           picked_up_at: string | null
           promo_code: string | null
           promo_discount: number
@@ -824,6 +825,7 @@ export type Database = {
           notes?: string | null
           paid_at?: string | null
           payment_id?: string | null
+          payment_method?: string | null
           picked_up_at?: string | null
           promo_code?: string | null
           promo_discount?: number
@@ -850,6 +852,7 @@ export type Database = {
           notes?: string | null
           paid_at?: string | null
           payment_id?: string | null
+          payment_method?: string | null
           picked_up_at?: string | null
           promo_code?: string | null
           promo_discount?: number
@@ -1281,6 +1284,69 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_transactions: {
+        Row: {
+          amount_fcfa: number
+          balance_after: number
+          created_at: string
+          description: string | null
+          id: string
+          order_id: string | null
+          payment_id: string | null
+          reference: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount_fcfa: number
+          balance_after: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          order_id?: string | null
+          payment_id?: string | null
+          reference?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount_fcfa?: number
+          balance_after?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          order_id?: string | null
+          payment_id?: string | null
+          reference?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wallets: {
+        Row: {
+          balance_fcfa: number
+          created_at: string
+          currency: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance_fcfa?: number
+          created_at?: string
+          currency?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance_fcfa?: number
+          created_at?: string
+          currency?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -1320,8 +1386,30 @@ export type Database = {
           read_ct: number
         }[]
       }
+      refund_order_to_wallet: {
+        Args: { _order_id: string }
+        Returns: {
+          new_balance: number
+          refunded_amount: number
+        }[]
+      }
       user_exists_by_email: { Args: { _email: string }; Returns: boolean }
       user_exists_by_phone: { Args: { _phone: string }; Returns: boolean }
+      wallet_apply: {
+        Args: {
+          _delta: number
+          _description?: string
+          _order_id?: string
+          _payment_id?: string
+          _reference?: string
+          _type: string
+          _user_id: string
+        }
+        Returns: {
+          new_balance: number
+          transaction_id: string
+        }[]
+      }
     }
     Enums: {
       app_role:
