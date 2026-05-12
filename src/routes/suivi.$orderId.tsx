@@ -1,12 +1,16 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import {
   CheckCircle2, ChefHat, Package, Truck, Home,
-  MapPin, ArrowLeft, Phone, MessageCircle, Star,
+  MapPin, ArrowLeft, Phone, MessageCircle, Star, AlertTriangle, X, PartyPopper,
 } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getOrder } from "@/server/marketplace.functions";
+import { getDriverContact, reportOrderIssue } from "@/server/tracking.functions";
 import { useRealtimeOrder } from "@/hooks/use-realtime-order";
+import { useDriverLocation } from "@/hooks/use-driver-location";
 import { ReviewForm } from "@/components/ReviewForm";
 
 export const Route = createFileRoute("/suivi/$orderId")({
@@ -48,7 +52,29 @@ const STATUS_INDEX: Record<string, number> = {
   ready: 1, picked_up: 2, delivering: 2, delivered: 3,
 };
 
+const STATUS_TOAST: Record<string, { title: string; emoji: string }> = {
+  accepted: { title: "Commande acceptée par le restaurant", emoji: "✅" },
+  preparing: { title: "Votre commande est en préparation", emoji: "🍳" },
+  ready: { title: "Commande prête — un livreur arrive", emoji: "📦" },
+  picked_up: { title: "Le livreur est en route !", emoji: "🛵" },
+  delivering: { title: "Arrivée imminente", emoji: "📍" },
+  delivered: { title: "Commande livrée — bon appétit !", emoji: "🎉" },
+  cancelled: { title: "Commande annulée", emoji: "❌" },
+};
+
 type OrderItem = { id: string; name: string; qty: number; unit_price: number; line_total: number };
+
+// Distance haversine en km
+function distanceKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
+  const R = 6371;
+  const toRad = (x: number) => (x * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const lat1 = toRad(a.lat);
+  const lat2 = toRad(b.lat);
+  const h = Math.sin(dLat / 2) ** 2 + Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
 
 function SuiviPage() {
   const data = Route.useLoaderData() as {
@@ -57,20 +83,61 @@ function SuiviPage() {
       delivery_fee: number; promo_code: string | null; promo_discount: number;
       total: number; eta_minutes: number | null; paid_at: string | null;
       delivered_at: string | null; reference: string; driver_id: string | null;
-      restaurant?: { name?: string } | null;
-      delivery_address?: { line?: string; city?: string } | null;
+      restaurant?: { name?: string; lat?: number | null; lng?: number | null } | null;
+      delivery_address?: { line?: string; city?: string; lat?: number | null; lng?: number | null } | null;
     };
     items: OrderItem[];
   };
   const { order: live } = useRealtimeOrder(data.order.id);
   const order = { ...data.order, ...(live ?? {}) };
+
   const stepIdx = STATUS_INDEX[order.status] ?? -1;
   const currentStep = STEPS[Math.max(0, Math.min(stepIdx, STEPS.length - 1))];
+  const driverLoc = useDriverLocation(order.driver_id);
+
+  // Notifications à chaque changement de statut
+  const lastStatus = useRef<string>(order.status);
+  useEffect(() => {
+    if (lastStatus.current === order.status) return;
+    const t = STATUS_TOAST[order.status];
+    if (t) {
+      if (order.status === "delivered") toast.success(`${t.emoji} ${t.title}`);
+      else if (order.status === "cancelled") toast.error(`${t.emoji} ${t.title}`);
+      else toast.message(`${t.emoji} ${t.title}`);
+    }
+    lastStatus.current = order.status;
+  }, [order.status]);
+
+  // Contact livreur (chargé uniquement quand un livreur est assigné)
+  const fetchContact = useServerFn(getDriverContact);
+  const [driver, setDriver] = useState<{ name: string; phone: string | null; avatar_url: string | null } | null>(null);
+  useEffect(() => {
+    if (!order.driver_id) {
+      setDriver(null);
+      return;
+    }
+    fetchContact({ data: { orderId: order.id } })
+      .then((r) => setDriver(r.driver))
+      .catch(() => setDriver({ name: "Livreur", phone: null, avatar_url: null }));
+  }, [order.driver_id, order.id, fetchContact]);
+
+  // ETA dynamique : si on a la position du livreur + destination, on recalcule
+  const dynamicEtaMin = useMemo(() => {
+    const dest = order.delivery_address;
+    if (driverLoc && dest?.lat != null && dest?.lng != null) {
+      const km = distanceKm({ lat: driverLoc.lat, lng: driverLoc.lng }, { lat: dest.lat, lng: dest.lng });
+      // 22 km/h moyenne en ville (moto) → minutes, +2 min de marge
+      return Math.max(1, Math.round((km / 22) * 60) + 2);
+    }
+    return null;
+  }, [driverLoc, order.delivery_address]);
 
   const etaTarget = useMemo(() => {
-    if (order.delivered_at || !order.paid_at || !order.eta_minutes) return null;
+    if (order.delivered_at) return null;
+    if (dynamicEtaMin != null) return Date.now() + dynamicEtaMin * 60_000;
+    if (!order.paid_at || !order.eta_minutes) return null;
     return new Date(order.paid_at).getTime() + order.eta_minutes * 60_000;
-  }, [order.paid_at, order.eta_minutes, order.delivered_at]);
+  }, [order.paid_at, order.eta_minutes, order.delivered_at, dynamicEtaMin]);
 
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -81,13 +148,38 @@ function SuiviPage() {
   const remainingMs = etaTarget ? Math.max(0, etaTarget - now) : 0;
   const minutes = Math.floor(remainingMs / 60000);
 
+  // Animation de livraison
+  const [showCelebration, setShowCelebration] = useState(false);
+  useEffect(() => {
+    if (order.delivered_at && !sessionStorage.getItem(`celebrated:${order.id}`)) {
+      setShowCelebration(true);
+      sessionStorage.setItem(`celebrated:${order.id}`, "1");
+      const t = setTimeout(() => setShowCelebration(false), 3500);
+      return () => clearTimeout(t);
+    }
+  }, [order.delivered_at, order.id]);
+
+  // Position relative livreur sur la carte (0..1)
+  const mapProgress = useMemo(() => {
+    const dest = order.delivery_address;
+    const resto = order.restaurant;
+    if (driverLoc && dest?.lat != null && dest?.lng != null && resto?.lat != null && resto?.lng != null) {
+      const total = distanceKm({ lat: resto.lat, lng: resto.lng }, { lat: dest.lat, lng: dest.lng });
+      const remaining = distanceKm({ lat: driverLoc.lat, lng: driverLoc.lng }, { lat: dest.lat, lng: dest.lng });
+      if (total > 0) return Math.max(0, Math.min(1, 1 - remaining / total));
+    }
+    return Math.min(1, (stepIdx + 1) / STEPS.length);
+  }, [driverLoc, order.delivery_address, order.restaurant, stepIdx]);
+
+  const [issueOpen, setIssueOpen] = useState(false);
+  const canReportIssue = stepIdx >= 1 && !order.delivered_at && order.status !== "cancelled";
+
   return (
     <div className="min-h-screen pb-32" style={{ backgroundColor: "#F5F0E8" }}>
       {/* Map area */}
       <div className="relative h-[42vh] min-h-[280px] overflow-hidden">
-        <FauxMap progress={Math.min(1, (stepIdx + 1) / STEPS.length)} />
+        <FauxMap progress={mapProgress} live={!!driverLoc} />
 
-        {/* Top bar overlay */}
         <div className="absolute inset-x-0 top-0 z-20 px-4 pt-4">
           <div className="mx-auto flex max-w-md items-center justify-between">
             <Link
@@ -102,12 +194,21 @@ function SuiviPage() {
             </div>
           </div>
         </div>
+
+        {driverLoc && (
+          <div className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold shadow-md" style={{ color: "#06C167" }}>
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#06C167] opacity-60" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#06C167]" />
+            </span>
+            EN DIRECT
+          </div>
+        )}
       </div>
 
       {/* Bottom sheet */}
       <div className="relative -mt-6 mx-auto max-w-md px-4">
         <div className="rounded-3xl bg-white p-5 shadow-[0_-4px_24px_-12px_rgba(0,0,0,0.15)]">
-          {/* ETA hero */}
           <div className="text-center">
             <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#888888" }}>
               {order.delivered_at ? "Commande livrée" : "Arrivée estimée"}
@@ -120,7 +221,6 @@ function SuiviPage() {
             </p>
           </div>
 
-          {/* Step pills */}
           <div className="mt-5 flex items-center justify-between">
             {STEPS.map((s, i) => {
               const reached = i <= stepIdx;
@@ -167,45 +267,63 @@ function SuiviPage() {
         </div>
 
         {/* Driver card */}
-        {stepIdx >= 2 && !order.delivered_at && (
+        {stepIdx >= 2 && !order.delivered_at && order.driver_id && (
           <div className="mt-3 flex items-center gap-3 rounded-2xl bg-white p-3 shadow-[0_2px_12px_-6px_rgba(0,0,0,0.1)]">
             <div className="relative">
-              <div
-                className="flex h-12 w-12 items-center justify-center rounded-full text-lg font-bold text-white"
-                style={{ backgroundColor: "#06C167" }}
-              >
-                {(order.driver_id ?? "M").slice(0, 1).toUpperCase()}
-              </div>
-              <span
-                className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-white"
-              >
+              {driver?.avatar_url ? (
+                <img src={driver.avatar_url} alt="" className="h-12 w-12 rounded-full object-cover" />
+              ) : (
+                <div
+                  className="flex h-12 w-12 items-center justify-center rounded-full text-lg font-bold text-white"
+                  style={{ backgroundColor: "#06C167" }}
+                >
+                  {(driver?.name ?? "M").slice(0, 1).toUpperCase()}
+                </div>
+              )}
+              <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-white">
                 <Truck className="h-2.5 w-2.5" style={{ color: "#06C167" }} />
               </span>
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold" style={{ color: "#1A1A1A" }}>
-                Votre livreur
+                {driver?.name ?? "Votre livreur"}
               </p>
               <p className="flex items-center gap-1 text-xs" style={{ color: "#888888" }}>
                 <Star className="h-3 w-3 fill-current" style={{ color: "#FFC107" }} />
                 <span className="font-semibold" style={{ color: "#1A1A1A" }}>4.9</span>
-                · Moto · CM-{(order.driver_id ?? "0000").slice(0, 4).toUpperCase()}
+                {driver?.phone ? <span>· {driver.phone}</span> : <span>· Moto</span>}
               </p>
             </div>
-            <button
-              aria-label="Envoyer un message"
+            <a
+              href={driver?.phone ? `sms:${driver.phone}` : undefined}
+              aria-disabled={!driver?.phone}
+              onClick={(e) => {
+                if (!driver?.phone) {
+                  e.preventDefault();
+                  toast.message("Numéro indisponible pour le moment");
+                }
+              }}
+              aria-label="Envoyer un SMS"
               className="flex h-10 w-10 items-center justify-center rounded-full"
               style={{ backgroundColor: "#F4F4F4" }}
             >
               <MessageCircle className="h-5 w-5" style={{ color: "#1A1A1A" }} />
-            </button>
-            <button
+            </a>
+            <a
+              href={driver?.phone ? `tel:${driver.phone}` : undefined}
+              aria-disabled={!driver?.phone}
+              onClick={(e) => {
+                if (!driver?.phone) {
+                  e.preventDefault();
+                  toast.message("Numéro indisponible pour le moment");
+                }
+              }}
               aria-label="Appeler le livreur"
               className="flex h-10 w-10 items-center justify-center rounded-full text-white"
               style={{ backgroundColor: "#06C167" }}
             >
               <Phone className="h-5 w-5" />
-            </button>
+            </a>
           </div>
         )}
 
@@ -230,6 +348,19 @@ function SuiviPage() {
               </p>
             </div>
           </div>
+        )}
+
+        {/* Report issue button */}
+        {canReportIssue && (
+          <button
+            type="button"
+            onClick={() => setIssueOpen(true)}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed bg-white py-3 text-sm font-semibold transition hover:bg-orange-50"
+            style={{ borderColor: "#FFB74D", color: "#E65100" }}
+          >
+            <AlertTriangle className="h-4 w-4" />
+            Signaler un problème
+          </button>
         )}
 
         {/* Order summary */}
@@ -270,11 +401,26 @@ function SuiviPage() {
         </div>
 
         {order.delivered_at && (
-          <div className="mt-3">
+          <div className="mt-3 rounded-2xl bg-white p-4 shadow-[0_2px_12px_-6px_rgba(0,0,0,0.08)]">
+            <div className="mb-3 flex items-center gap-2">
+              <PartyPopper className="h-5 w-5" style={{ color: "#06C167" }} />
+              <h3 className="text-sm font-bold" style={{ color: "#1A1A1A" }}>
+                Comment s'est passée votre expérience ?
+              </h3>
+            </div>
             <ReviewForm restaurantId={order.restaurant_id} orderId={order.id} />
           </div>
         )}
       </div>
+
+      {issueOpen && (
+        <IssueModal
+          orderId={order.id}
+          onClose={() => setIssueOpen(false)}
+        />
+      )}
+
+      {showCelebration && <DeliveryCelebration />}
     </div>
   );
 }
@@ -288,12 +434,132 @@ function Row({ label, value, accent }: { label: string; value: string; accent?: 
   );
 }
 
-/* Stylized SVG map (no API key needed). Animated dashed route line + driver pin moving along progress. */
-function FauxMap({ progress }: { progress: number }) {
+const ISSUE_REASONS = [
+  { key: "livreur_introuvable", label: "Livreur introuvable" },
+  { key: "retard_important", label: "Retard important" },
+  { key: "mauvaise_adresse", label: "Mauvaise adresse" },
+  { key: "commande_incomplete", label: "Commande incomplète" },
+  { key: "qualite", label: "Problème de qualité" },
+  { key: "autre", label: "Autre" },
+] as const;
+
+function IssueModal({ orderId, onClose }: { orderId: string; onClose: () => void }) {
+  const reportFn = useServerFn(reportOrderIssue);
+  const [reason, setReason] = useState<typeof ISSUE_REASONS[number]["key"]>("retard_important");
+  const [description, setDescription] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const submit = async () => {
+    setSubmitting(true);
+    try {
+      await reportFn({ data: { orderId, reason, description: description.trim() || undefined } });
+      toast.success("Signalement envoyé — notre équipe vous recontacte");
+      onClose();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Échec du signalement");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center" onClick={onClose}>
+      <div
+        className="w-full max-w-md rounded-3xl bg-white p-5 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="flex items-center gap-2 text-base font-bold" style={{ color: "#1A1A1A" }}>
+            <AlertTriangle className="h-5 w-5" style={{ color: "#E65100" }} />
+            Signaler un problème
+          </h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-full"
+            style={{ backgroundColor: "#F4F4F4" }}
+            aria-label="Fermer"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <p className="mt-2 text-xs" style={{ color: "#888888" }}>
+          Choisissez la raison principale, on vous répond rapidement.
+        </p>
+
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          {ISSUE_REASONS.map((r) => (
+            <button
+              key={r.key}
+              type="button"
+              onClick={() => setReason(r.key)}
+              className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
+                reason === r.key ? "border-[#06C167] bg-[#06C167]/10 text-[#06C167]" : "border-border text-foreground"
+              }`}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value.slice(0, 800))}
+          rows={3}
+          placeholder="Détails (facultatif)…"
+          className="mt-3 w-full resize-none rounded-xl border border-border bg-background p-3 text-sm outline-none focus:border-[#06C167]"
+        />
+
+        <button
+          type="button"
+          disabled={submitting}
+          onClick={submit}
+          className="mt-3 w-full rounded-xl bg-[#06C167] py-3 text-sm font-bold text-white disabled:opacity-50"
+        >
+          {submitting ? "Envoi…" : "Envoyer le signalement"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function DeliveryCelebration() {
+  return (
+    <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/30" />
+      <div
+        className="relative flex flex-col items-center rounded-3xl bg-white px-8 py-6 shadow-2xl"
+        style={{ animation: "celebrationPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)" }}
+      >
+        <div className="text-6xl" style={{ animation: "celebrationBounce 0.8s ease-in-out infinite alternate" }}>
+          🎉
+        </div>
+        <p className="mt-3 text-lg font-extrabold" style={{ color: "#06C167" }}>
+          Commande livrée !
+        </p>
+        <p className="mt-1 text-xs" style={{ color: "#888888" }}>
+          Bon appétit 🍽️
+        </p>
+      </div>
+      <style>{`
+        @keyframes celebrationPop {
+          0% { transform: scale(0.5); opacity: 0; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes celebrationBounce {
+          0% { transform: translateY(0) rotate(-10deg); }
+          100% { transform: translateY(-10px) rotate(10deg); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function FauxMap({ progress, live }: { progress: number; live: boolean }) {
   return (
     <div className="absolute inset-0" style={{ backgroundColor: "#EBE3D5" }}>
       <svg viewBox="0 0 400 320" className="h-full w-full" preserveAspectRatio="xMidYMid slice">
-        {/* Soft grid */}
         <defs>
           <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
             <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#CFE0CC" strokeWidth="1" />
@@ -305,11 +571,9 @@ function FauxMap({ progress }: { progress: number }) {
         </defs>
         <rect width="400" height="320" fill="url(#grid)" />
 
-        {/* Roads */}
         <path d="M 0 220 Q 80 200 160 210 T 320 180 T 400 160" stroke="#FFFFFF" strokeWidth="22" fill="none" strokeLinecap="round" />
         <path d="M 60 0 L 80 80 L 120 140 L 200 180 L 280 200 L 360 320" stroke="#FFFFFF" strokeWidth="14" fill="none" strokeLinecap="round" opacity="0.85" />
 
-        {/* Buildings */}
         <g fill="#CFE0CC">
           <rect x="20" y="60" width="40" height="50" rx="4" />
           <rect x="240" y="40" width="60" height="70" rx="4" />
@@ -317,7 +581,6 @@ function FauxMap({ progress }: { progress: number }) {
           <rect x="40" y="250" width="70" height="50" rx="4" />
         </g>
 
-        {/* Route */}
         <path
           d="M 50 80 C 120 100, 160 180, 240 200 S 340 240, 360 270"
           stroke="url(#route)"
@@ -325,41 +588,36 @@ function FauxMap({ progress }: { progress: number }) {
           fill="none"
           strokeLinecap="round"
           strokeDasharray="10 8"
-        />
+        >
+          {live && (
+            <animate attributeName="stroke-dashoffset" from="0" to="-36" dur="1.5s" repeatCount="indefinite" />
+          )}
+        </path>
 
-        {/* Restaurant pin */}
         <g transform="translate(50,80)">
           <circle r="14" fill="#FFFFFF" />
           <circle r="9" fill="#1A1A1A" />
           <text textAnchor="middle" y="4" fontSize="11" fill="#FFFFFF">🍴</text>
         </g>
 
-        {/* Destination pin */}
         <g transform="translate(360,270)">
           <circle r="16" fill="#06C167" />
           <circle r="6" fill="#FFFFFF" />
         </g>
 
-        {/* Driver marker, position along progress */}
         <DriverMarker progress={progress} />
       </svg>
-      {/* Top fade */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/15 to-transparent" />
     </div>
   );
 }
 
 function DriverMarker({ progress }: { progress: number }) {
-  // Sample point along the curved route (approximate Bezier)
   const t = Math.max(0, Math.min(1, progress));
-  const p0 = { x: 50, y: 80 };
-  const p1 = { x: 120, y: 100 };
-  const p2 = { x: 160, y: 180 };
-  const p3 = { x: 240, y: 200 };
-  const p4 = { x: 340, y: 240 };
-  const p5 = { x: 360, y: 270 };
-  // Piecewise linear sampling for simplicity
-  const pts = [p0, p1, p2, p3, p4, p5];
+  const pts = [
+    { x: 50, y: 80 }, { x: 120, y: 100 }, { x: 160, y: 180 },
+    { x: 240, y: 200 }, { x: 340, y: 240 }, { x: 360, y: 270 },
+  ];
   const segIdx = Math.min(pts.length - 2, Math.floor(t * (pts.length - 1)));
   const segT = t * (pts.length - 1) - segIdx;
   const a = pts[segIdx];
@@ -367,7 +625,7 @@ function DriverMarker({ progress }: { progress: number }) {
   const x = a.x + (b.x - a.x) * segT;
   const y = a.y + (b.y - a.y) * segT;
   return (
-    <g transform={`translate(${x},${y})`}>
+    <g transform={`translate(${x},${y})`} style={{ transition: "transform 1s linear" }}>
       <circle r="18" fill="#06C167" opacity="0.2">
         <animate attributeName="r" from="18" to="28" dur="1.5s" repeatCount="indefinite" />
         <animate attributeName="opacity" from="0.4" to="0" dur="1.5s" repeatCount="indefinite" />

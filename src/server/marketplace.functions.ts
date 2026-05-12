@@ -157,6 +157,8 @@ export const createOrder = createServerFn({ method: "POST" })
             city: z.string().min(2).max(80),
             neighborhood: z.string().max(80).optional(),
             landmark: z.string().max(200).optional(),
+            lat: z.number().optional().nullable(),
+            lng: z.number().optional().nullable(),
           })
           .optional(),
         promo_code: z.string().max(40).optional(),
