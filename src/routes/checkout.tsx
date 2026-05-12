@@ -180,8 +180,11 @@ function Checkout() {
 
   const start = async () => {
     setTopError(null);
-    if (delivery_.address.line.trim().length < 8) {
-      setDeliveryErr("Précise une adresse complète (≥ 8 caractères)");
+    const errs = validateDeliveryContact(contact);
+    setContactErrors(errs);
+    if (Object.keys(errs).length > 0) {
+      setDeliveryErr(errs.address ?? "Vérifiez vos informations de livraison");
+      setTopError("Complétez l'adresse, les instructions et le téléphone avant de payer.");
       return;
     }
     setDeliveryErr(null);
