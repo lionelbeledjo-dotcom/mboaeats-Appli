@@ -12,6 +12,7 @@ import { invalidateSessionCache } from "@/hooks/useSessionUser";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { MboaEatsLogo } from "@/components/brand/MboaEatsLogo";
+import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 
 export const Route = createFileRoute("/connexion")({
   component: Connexion,
@@ -368,6 +369,18 @@ function Connexion() {
           <p className="mt-1 text-center text-sm text-[#6B6B6B]">
             Choisissez votre méthode de connexion
           </p>
+
+          {/* Google Sign-In (managé Lovable) */}
+          <div className="mt-5">
+            <GoogleSignInButton />
+          </div>
+
+          {/* Séparateur visuel */}
+          <div className="my-5 flex items-center gap-3" aria-hidden="true">
+            <div className="h-px flex-1 bg-neutral-200" />
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#9b9b9b]">ou</span>
+            <div className="h-px flex-1 bg-neutral-200" />
+          </div>
 
           {/* Tabs — Pills (ARIA tablist) */}
           <div
