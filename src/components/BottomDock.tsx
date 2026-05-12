@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useCart } from "@/hooks/use-cart";
 
 type Item = {
-  to: "/" | "/recherche" | "/checkout" | "/commandes" | "/profil";
+  to: "/" | "/explorer" | "/panier" | "/commandes" | "/profil";
   label: string;
   icon: typeof Home;
   exact?: boolean;
@@ -13,8 +13,8 @@ type Item = {
 
 const items: Item[] = [
   { to: "/", label: "Accueil", icon: Home, exact: true },
-  { to: "/recherche", label: "Explorer", icon: Search, match: /^\/(recherche|cuisines|categorie|decouvrir|populaire|proximite)/ },
-  { to: "/checkout", label: "Panier", icon: ShoppingCart },
+  { to: "/explorer", label: "Explorer", icon: Search, match: /^\/(explorer|recherche|cuisines|categorie|decouvrir|populaire|proximite)/ },
+  { to: "/panier", label: "Panier", icon: ShoppingCart, match: /^\/(panier|checkout)/ },
   { to: "/commandes", label: "Commandes", icon: ClipboardList, match: /^\/(commandes|suivi)/ },
   { to: "/profil", label: "Profil", icon: User, match: /^\/(profil|compte|adresses|preferences|fidelite|parrainage|mboapass|favoris)/ },
 ];
@@ -32,24 +32,24 @@ export function BottomDock() {
     });
   }, [router]);
 
-  // Cachée sur Login, Inscription, Onboarding, Splash, Admin, Dashboards pro
   if (/^\/(connexion|inscription|reset-password|admin|superadmin|restaurant|livreur)/.test(path)) {
     return null;
   }
 
   return (
     <>
-      {/* Spacer 80px pour que le contenu ne soit jamais masqué */}
+      {/* Spacer 80px (70px barre + safe area) */}
       <div className="h-[calc(80px+env(safe-area-inset-bottom))]" aria-hidden />
       <nav
         aria-label="Navigation principale"
         className="fixed inset-x-0 bottom-0 z-50 bg-white pb-[env(safe-area-inset-bottom)]"
         style={{
           boxShadow: "0 -2px 12px rgba(0,0,0,0.08)",
+          borderTop: "1px solid #F3F4F6",
           fontFamily: "Poppins, Inter, sans-serif",
         }}
       >
-        <div className="mx-auto flex h-16 max-w-md items-stretch justify-around px-2">
+        <div className="mx-auto flex h-[70px] max-w-md items-stretch justify-around px-1">
           {items.map((it) => {
             const active = it.exact
               ? path === it.to
@@ -73,32 +73,46 @@ export function BottomDock() {
                   e.preventDefault();
                   navigate({ to: it.to });
                 }}
-                className="relative flex flex-1 items-center justify-center py-1.5 touch-manipulation focus-visible:outline-none"
-                style={{ minHeight: 44 }}
+                className="group relative flex min-w-[60px] flex-1 items-center justify-center py-1.5 touch-manipulation focus-visible:outline-none active:scale-95 transition-transform duration-150"
+                style={{ minHeight: 60 }}
               >
                 <span
-                  className="flex flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-1.5 transition-all duration-200"
+                  className="flex flex-col items-center justify-center gap-1 rounded-2xl py-1.5 transition-all duration-200"
                   style={{
+                    paddingLeft: active ? 16 : 8,
+                    paddingRight: active ? 16 : 8,
                     backgroundColor: active ? "#F0FDF4" : "transparent",
                     color: active ? "#22C55E" : "#9CA3AF",
                   }}
                 >
                   <span className="relative flex h-6 w-6 items-center justify-center">
-                    <Icon className="h-5 w-5" strokeWidth={active ? 2.4 : 2} />
+                    <Icon
+                      className="transition-transform duration-200"
+                      style={{
+                        width: 22,
+                        height: 22,
+                        transform: active ? "scale(1.1)" : "scale(1)",
+                        strokeWidth: active ? 2.4 : 2,
+                      }}
+                    />
                     {showCartBadge && (
                       <span
-                        className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white tabular-nums"
-                        style={{ backgroundColor: "#EF4444" }}
+                        className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 leading-none text-white ring-2 ring-white tabular-nums"
+                        style={{
+                          backgroundColor: "#EF4444",
+                          fontSize: 10,
+                          fontWeight: 700,
+                        }}
                       >
                         {count > 99 ? "99+" : count}
                       </span>
                     )}
                   </span>
                   <span
-                    className="leading-none"
+                    className="leading-none whitespace-nowrap"
                     style={{
                       fontSize: 10,
-                      fontWeight: active ? 700 : 500,
+                      fontWeight: active ? 700 : 400,
                       letterSpacing: "0.01em",
                     }}
                   >

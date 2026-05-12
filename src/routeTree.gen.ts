@@ -21,6 +21,7 @@ import { Route as ProfilRouteImport } from './routes/profil'
 import { Route as PreferencesRouteImport } from './routes/preferences'
 import { Route as PopulaireRouteImport } from './routes/populaire'
 import { Route as ParrainageRouteImport } from './routes/parrainage'
+import { Route as PanierRouteImport } from './routes/panier'
 import { Route as MboapassRouteImport } from './routes/mboapass'
 import { Route as MboaAiRouteImport } from './routes/mboa-ai'
 import { Route as LivreurRouteImport } from './routes/livreur'
@@ -28,6 +29,7 @@ import { Route as InscriptionRouteImport } from './routes/inscription'
 import { Route as HealthcheckRouteImport } from './routes/healthcheck'
 import { Route as FideliteRouteImport } from './routes/fidelite'
 import { Route as FavorisRouteImport } from './routes/favoris'
+import { Route as ExplorerRouteImport } from './routes/explorer'
 import { Route as DevenirRestoRouteImport } from './routes/devenir-resto'
 import { Route as DevenirLivreurRouteImport } from './routes/devenir-livreur'
 import { Route as DecouvrirRouteImport } from './routes/decouvrir'
@@ -130,6 +132,11 @@ const ParrainageRoute = ParrainageRouteImport.update({
   path: '/parrainage',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PanierRoute = PanierRouteImport.update({
+  id: '/panier',
+  path: '/panier',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MboapassRoute = MboapassRouteImport.update({
   id: '/mboapass',
   path: '/mboapass',
@@ -163,6 +170,11 @@ const FideliteRoute = FideliteRouteImport.update({
 const FavorisRoute = FavorisRouteImport.update({
   id: '/favoris',
   path: '/favoris',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExplorerRoute = ExplorerRouteImport.update({
+  id: '/explorer',
+  path: '/explorer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DevenirRestoRoute = DevenirRestoRouteImport.update({
@@ -388,6 +400,7 @@ export interface FileRoutesByFullPath {
   '/decouvrir': typeof DecouvrirRoute
   '/devenir-livreur': typeof DevenirLivreurRoute
   '/devenir-resto': typeof DevenirRestoRoute
+  '/explorer': typeof ExplorerRoute
   '/favoris': typeof FavorisRoute
   '/fidelite': typeof FideliteRoute
   '/healthcheck': typeof HealthcheckRoute
@@ -395,6 +408,7 @@ export interface FileRoutesByFullPath {
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
   '/mboapass': typeof MboapassRoute
+  '/panier': typeof PanierRoute
   '/parrainage': typeof ParrainageRoute
   '/populaire': typeof PopulaireRoute
   '/preferences': typeof PreferencesRoute
@@ -449,6 +463,7 @@ export interface FileRoutesByTo {
   '/decouvrir': typeof DecouvrirRoute
   '/devenir-livreur': typeof DevenirLivreurRoute
   '/devenir-resto': typeof DevenirRestoRoute
+  '/explorer': typeof ExplorerRoute
   '/favoris': typeof FavorisRoute
   '/fidelite': typeof FideliteRoute
   '/healthcheck': typeof HealthcheckRoute
@@ -456,6 +471,7 @@ export interface FileRoutesByTo {
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
   '/mboapass': typeof MboapassRoute
+  '/panier': typeof PanierRoute
   '/parrainage': typeof ParrainageRoute
   '/populaire': typeof PopulaireRoute
   '/preferences': typeof PreferencesRoute
@@ -511,6 +527,7 @@ export interface FileRoutesById {
   '/decouvrir': typeof DecouvrirRoute
   '/devenir-livreur': typeof DevenirLivreurRoute
   '/devenir-resto': typeof DevenirRestoRoute
+  '/explorer': typeof ExplorerRoute
   '/favoris': typeof FavorisRoute
   '/fidelite': typeof FideliteRoute
   '/healthcheck': typeof HealthcheckRoute
@@ -518,6 +535,7 @@ export interface FileRoutesById {
   '/livreur': typeof LivreurRoute
   '/mboa-ai': typeof MboaAiRoute
   '/mboapass': typeof MboapassRoute
+  '/panier': typeof PanierRoute
   '/parrainage': typeof ParrainageRoute
   '/populaire': typeof PopulaireRoute
   '/preferences': typeof PreferencesRoute
@@ -575,6 +593,7 @@ export interface FileRouteTypes {
     | '/decouvrir'
     | '/devenir-livreur'
     | '/devenir-resto'
+    | '/explorer'
     | '/favoris'
     | '/fidelite'
     | '/healthcheck'
@@ -582,6 +601,7 @@ export interface FileRouteTypes {
     | '/livreur'
     | '/mboa-ai'
     | '/mboapass'
+    | '/panier'
     | '/parrainage'
     | '/populaire'
     | '/preferences'
@@ -636,6 +656,7 @@ export interface FileRouteTypes {
     | '/decouvrir'
     | '/devenir-livreur'
     | '/devenir-resto'
+    | '/explorer'
     | '/favoris'
     | '/fidelite'
     | '/healthcheck'
@@ -643,6 +664,7 @@ export interface FileRouteTypes {
     | '/livreur'
     | '/mboa-ai'
     | '/mboapass'
+    | '/panier'
     | '/parrainage'
     | '/populaire'
     | '/preferences'
@@ -697,6 +719,7 @@ export interface FileRouteTypes {
     | '/decouvrir'
     | '/devenir-livreur'
     | '/devenir-resto'
+    | '/explorer'
     | '/favoris'
     | '/fidelite'
     | '/healthcheck'
@@ -704,6 +727,7 @@ export interface FileRouteTypes {
     | '/livreur'
     | '/mboa-ai'
     | '/mboapass'
+    | '/panier'
     | '/parrainage'
     | '/populaire'
     | '/preferences'
@@ -760,6 +784,7 @@ export interface RootRouteChildren {
   DecouvrirRoute: typeof DecouvrirRoute
   DevenirLivreurRoute: typeof DevenirLivreurRoute
   DevenirRestoRoute: typeof DevenirRestoRoute
+  ExplorerRoute: typeof ExplorerRoute
   FavorisRoute: typeof FavorisRoute
   FideliteRoute: typeof FideliteRoute
   HealthcheckRoute: typeof HealthcheckRoute
@@ -767,6 +792,7 @@ export interface RootRouteChildren {
   LivreurRoute: typeof LivreurRoute
   MboaAiRoute: typeof MboaAiRoute
   MboapassRoute: typeof MboapassRoute
+  PanierRoute: typeof PanierRoute
   ParrainageRoute: typeof ParrainageRoute
   PopulaireRoute: typeof PopulaireRoute
   PreferencesRoute: typeof PreferencesRoute
@@ -882,6 +908,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ParrainageRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/panier': {
+      id: '/panier'
+      path: '/panier'
+      fullPath: '/panier'
+      preLoaderRoute: typeof PanierRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mboapass': {
       id: '/mboapass'
       path: '/mboapass'
@@ -929,6 +962,13 @@ declare module '@tanstack/react-router' {
       path: '/favoris'
       fullPath: '/favoris'
       preLoaderRoute: typeof FavorisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/explorer': {
+      id: '/explorer'
+      path: '/explorer'
+      fullPath: '/explorer'
+      preLoaderRoute: typeof ExplorerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/devenir-resto': {
@@ -1303,6 +1343,7 @@ const rootRouteChildren: RootRouteChildren = {
   DecouvrirRoute: DecouvrirRoute,
   DevenirLivreurRoute: DevenirLivreurRoute,
   DevenirRestoRoute: DevenirRestoRoute,
+  ExplorerRoute: ExplorerRoute,
   FavorisRoute: FavorisRoute,
   FideliteRoute: FideliteRoute,
   HealthcheckRoute: HealthcheckRoute,
@@ -1310,6 +1351,7 @@ const rootRouteChildren: RootRouteChildren = {
   LivreurRoute: LivreurRoute,
   MboaAiRoute: MboaAiRoute,
   MboapassRoute: MboapassRoute,
+  PanierRoute: PanierRoute,
   ParrainageRoute: ParrainageRoute,
   PopulaireRoute: PopulaireRoute,
   PreferencesRoute: PreferencesRoute,
