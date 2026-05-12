@@ -282,6 +282,17 @@ function Checkout() {
           {step === "choose" && (
             <>
               <DeliveryDetails value={delivery_} onChange={setDelivery} error={deliveryErr} />
+              <DeliveryTypeSelector
+                value={delivery_.schedule.type === "scheduled" ? "scheduled" : "standard"}
+                onChange={(t) => {
+                  if (t === "scheduled") {
+                    const when = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+                    setDelivery({ ...delivery_, schedule: { type: "scheduled", when } });
+                  } else {
+                    setDelivery({ ...delivery_, schedule: { type: "now" } });
+                  }
+                }}
+              />
               <ChooseMethod
                 method={method} setMethod={setMethod}
                 phone={phone} setPhone={setPhone}
