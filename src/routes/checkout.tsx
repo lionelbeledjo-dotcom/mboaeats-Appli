@@ -10,8 +10,9 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { initiatePayment, verifyPayment, getActiveMboaPass, initiateCardPayment, pollPaymentStatus } from "@/server/payments.functions";
 import { createOrder, markOrderPaid } from "@/server/marketplace.functions";
-import { useCart, clearCart, addToCart, setQty as setCartQty, removeFromCart, type CartItem } from "@/hooks/use-cart";
+import { useCart, clearCart, addToCart, setQty as setCartQty, removeFromCart, setItemNote, type CartItem } from "@/hooks/use-cart";
 import { QuantityStepper } from "@/components/QuantityStepper";
+import { DeliveryDetails, type DeliveryDetailsState } from "@/components/checkout/DeliveryDetails";
 
 export const Route = createFileRoute("/checkout")({
   component: Checkout,
@@ -34,7 +35,7 @@ const UPSELL_ITEMS: { id: string; name: string; price: number; image: string; em
 ];
 
 
-const landmarkSchema = z.string().trim().min(8, "Décrivez un repère visible (≥ 8 caractères)").max(140);
+const TAX_RATE = 0; // TVA incluse au Cameroun (prix TTC affichés)
 
 function Checkout() {
   const navigate = useNavigate();
@@ -55,12 +56,17 @@ function Checkout() {
   const [hasPass, setHasPass] = useState(false);
   const [promo, setPromo] = useState<{ code: string; discount: number } | null>(null);
   const delivery = hasPass || subtotal === 0 ? 0 : 800;
-  const total = Math.max(0, subtotal + delivery - (promo?.discount ?? 0));
+  const taxes = Math.round((subtotal + delivery) * TAX_RATE);
+  const total = Math.max(0, subtotal + delivery + taxes - (promo?.discount ?? 0));
 
   const [method, setMethod] = useState<Method>("momo");
   const [phone, setPhone] = useState("690 00 00 00");
-  const [landmark, setLandmark] = useState("");
-  const [landmarkErr, setLandmarkErr] = useState<string | null>(null);
+  const [delivery_, setDelivery] = useState<DeliveryDetailsState>({
+    address: { line: "", city: "Douala", neighborhood: "" },
+    schedule: { type: "now" },
+    instructions: "",
+  });
+  const [deliveryErr, setDeliveryErr] = useState<string | null>(null);
   const [step, setStep] = useState<Step>("choose");
   const [reference, setReference] = useState<string | null>(null);
   const [topError, setTopError] = useState<string | null>(null);
