@@ -13,6 +13,12 @@ import { createOrder, markOrderPaid } from "@/server/marketplace.functions";
 import { useCart, clearCart, addToCart, setQty as setCartQty, removeFromCart, setItemNote, type CartItem } from "@/hooks/use-cart";
 import { QuantityStepper } from "@/components/QuantityStepper";
 import { DeliveryDetails, type DeliveryDetailsState } from "@/components/checkout/DeliveryDetails";
+import {
+  DeliveryContactRows,
+  validateDeliveryContact,
+  type DeliveryContact,
+  type DeliveryContactErrors,
+} from "@/components/checkout/DeliveryContactRows";
 
 export const Route = createFileRoute("/checkout")({
   component: Checkout,
