@@ -478,11 +478,41 @@ function Courses({
         </>
       )}
 
-      {history.length > 0 && (
+      {todayDeliveries.length > 0 && (
+        <div>
+          <div className="mt-6 flex items-end justify-between">
+            <h2 className="font-display text-lg font-bold">Livraisons du jour</h2>
+            <p className="text-sm font-bold text-emerald-400">
+              +{todayEarnings.toLocaleString("fr-FR")} FCFA
+            </p>
+          </div>
+          <div className="mt-3 space-y-2">
+            {todayDeliveries.map((r) => (
+              <div key={r.id} className="flex items-center justify-between rounded-2xl border border-border bg-surface/40 p-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400">
+                    <Check className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold">{r.restaurants?.name ?? "Restaurant"}</p>
+                    <p className="text-xs text-muted-foreground">
+                      #{r.reference}
+                      {r.delivered_at && ` · ${new Date(r.delivered_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-sm font-bold">+{(r.delivery_fee ?? 0).toLocaleString("fr-FR")} FCFA</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {history.length > todayDeliveries.length && (
         <div>
           <h2 className="mt-6 font-display text-lg font-bold">Historique récent</h2>
           <div className="mt-3 space-y-2">
-            {history.map((r) => (
+            {history.filter((h) => !todayDeliveries.find((t) => t.id === h.id)).map((r) => (
               <div key={r.id} className="flex items-center justify-between rounded-2xl border border-border bg-surface/40 p-3">
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
