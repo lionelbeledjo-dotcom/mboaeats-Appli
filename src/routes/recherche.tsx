@@ -168,11 +168,11 @@ function RecherchePage() {
             const badge = badgeMeta(catalogBadge(r));
             const fee = deliveryFee(r);
             return (
-              <li key={r.id}>
+              <li key={r.id} className="w-full max-w-full">
                 <Link
                   to="/restaurants/$restoId"
                   params={{ restoId: r.id }}
-                  className="flex gap-3 rounded-2xl bg-white p-3 transition active:scale-[0.99]"
+                  className="flex w-full max-w-full gap-3 overflow-hidden rounded-2xl bg-white p-3 transition active:scale-[0.99]"
                   style={{ boxShadow: "0 2px 12px -8px rgba(0,0,0,0.08)" }}
                 >
                   <div className="relative h-20 w-20 shrink-0">
