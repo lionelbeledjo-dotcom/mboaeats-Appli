@@ -64,6 +64,19 @@ function validateCmPhone(input: string): { ok: boolean; digits: string; error?: 
   return { ok: true, digits };
 }
 
+async function geocodeCm(query: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=fr&countrycodes=cm&q=${encodeURIComponent(query)}`;
+    const res = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!res.ok) return null;
+    const arr = (await res.json()) as Array<{ lat: string; lon: string }>;
+    if (!arr?.length) return null;
+    return { lat: parseFloat(arr[0].lat), lng: parseFloat(arr[0].lon) };
+  } catch {
+    return null;
+  }
+}
+
 function AddressesPage() {
   const navigate = useNavigate();
   // Préremplit avec la dernière ville/quartier valides mémorisés
