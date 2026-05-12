@@ -74,14 +74,22 @@ function Livreur() {
   const [available, setAvailable] = useState<MissionRow[]>([]);
   const [mine, setMine] = useState<MissionRow[]>([]);
   const [earnings, setEarnings] = useState<Earnings | null>(null);
+  const [reviews, setReviews] = useState<{ list: DriverReview[]; avg: number | null; count: number }>({
+    list: [], avg: null, count: 0,
+  });
   const [loading, setLoading] = useState(true);
+  const [arrivedAt, setArrivedAt] = useState<Record<string, boolean>>({});
+  const [incoming, setIncoming] = useState<MissionRow | null>(null);
+  const seenAvailable = useRef<Set<string>>(new Set());
 
   const fetchAvailable = useServerFn(listAvailableMissions);
   const fetchMine = useServerFn(listMyMissions);
   const fetchEarnings = useServerFn(getMyEarnings);
+  const fetchReviews = useServerFn(getMyDriverReviews);
   const sendLocation = useServerFn(updateMyLocation);
   const doClaim = useServerFn(claimMission);
   const doUpdate = useServerFn(updateMissionStatus);
+  const doArrived = useServerFn(markArrivedAtRestaurant);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
