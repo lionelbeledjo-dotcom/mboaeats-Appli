@@ -125,7 +125,7 @@ export const sendOrderReceipt = createServerFn({ method: "POST" })
     const phone = normalizeCmPhone(profile?.phone);
     const email = userRes?.user?.email ?? null;
 
-    const results: Record<string, unknown> = {};
+    const results: Record<string, { ok?: boolean; skipped?: boolean; reason?: string; error?: string }> = {};
 
     if (phone) {
       results.sms = await sendSms(phone, smsBody);
