@@ -72,8 +72,8 @@ function RecherchePage() {
     (cuisine !== "all" ? 1 : 0) + (promosOnly ? 1 : 0) + (maxEta ? 1 : 0) + (sort !== "relevance" ? 1 : 0);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#F5F0E8" }}>
-      <header className="sticky top-0 z-40 bg-white" style={{ boxShadow: "0 2px 12px -8px rgba(0,0,0,0.10)" }}>
+    <div className="min-h-screen w-full max-w-[100vw] overflow-x-hidden" style={{ backgroundColor: "#F5F0E8" }}>
+      <header className="sticky top-0 z-40 w-full max-w-[100vw] overflow-x-hidden bg-white" style={{ boxShadow: "0 2px 12px -8px rgba(0,0,0,0.10)" }}>
         <div className="mx-auto max-w-md px-4 py-3">
           <div className="flex items-center gap-2 rounded-2xl px-3 py-2.5" style={{ border: "1px solid #E5E5E5" }}>
             <Search className="h-4 w-4" style={{ color: "#6B6B6B" }} />
