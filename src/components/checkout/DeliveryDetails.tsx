@@ -53,6 +53,8 @@ export function DeliveryDetails({
     line: "",
     city: "Douala",
     neighborhood: "",
+    lat: null,
+    lng: null,
   });
   const [saving, setSaving] = useState(false);
   const [locating, setLocating] = useState(false);
