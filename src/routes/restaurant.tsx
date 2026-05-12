@@ -22,7 +22,7 @@ import {
 } from "@/server/restaurant.functions";
 
 export const Route = createFileRoute("/restaurant")({
-  component: RestaurantSpace,
+  component: RestaurantSpaceGuarded,
   head: () => ({
     meta: [
       { title: "Espace Restaurant · MboaEats" },
@@ -981,5 +981,20 @@ function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void })
         </button>
       </div>
     </div>
+  );
+}
+
+import { RoleGuard } from "@/components/RoleGuard";
+function RestaurantSpaceGuarded() {
+  return (
+    <RoleGuard
+      role="restaurateur"
+      title="Espace restaurateur"
+      description="Cet espace est réservé aux restaurateurs partenaires MboaEats."
+      ctaTo="/devenir-resto"
+      ctaLabel="Devenir restaurateur"
+    >
+      <RestaurantSpace />
+    </RoleGuard>
   );
 }

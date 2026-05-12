@@ -17,7 +17,7 @@ import {
 } from "@/server/driver.functions";
 
 export const Route = createFileRoute("/livreur")({
-  component: Livreur,
+  component: LivreurGuarded,
   head: () => ({
     meta: [
       { title: "Espace Livreur · MboaEats" },
@@ -678,5 +678,20 @@ function Portefeuille({ earnings, mine }: { earnings: Earnings | null; mine: Mis
         </div>
       </div>
     </div>
+  );
+}
+
+import { RoleGuard } from "@/components/RoleGuard";
+function LivreurGuarded() {
+  return (
+    <RoleGuard
+      role="livreur"
+      title="Espace livreur"
+      description="Cet espace est réservé aux livreurs partenaires MboaEats."
+      ctaTo="/devenir-livreur"
+      ctaLabel="Devenir livreur"
+    >
+      <Livreur />
+    </RoleGuard>
   );
 }

@@ -7,9 +7,27 @@ import { useSessionUser } from "@/hooks/useSessionUser";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { SplashScreen } from "@/components/SplashScreen";
 import { SiteHeader } from "@/components/SiteHeader";
+import { OnboardingCarousel } from "@/components/OnboardingCarousel";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
-const PUBLIC_ROUTES = ["/connexion", "/inscription", "/reset-password", "/cgu", "/confidentialite", "/admin/login", "/healthcheck"];
-const PUBLIC_PREFIXES = ["/admin", "/r/", "/restaurants/"];
+// Mode invité : pages de découverte accessibles sans compte. Le checkout reste protégé via une porte dédiée.
+const PUBLIC_ROUTES = [
+  "/", "/connexion", "/inscription", "/reset-password", "/cgu", "/confidentialite",
+  "/admin/login", "/healthcheck", "/recherche", "/cuisines", "/proximite", "/populaire",
+  "/decouvrir", "/aide", "/contact", "/devenir-livreur", "/devenir-resto", "/mboapass",
+  "/parrainage", "/favoris",
+];
+const PUBLIC_PREFIXES = ["/admin", "/r/", "/restaurants/", "/categorie/", "/aide/"];
+
+function OnboardingGate() {
+  const { seen, hydrated, markSeen } = useOnboarding();
+  const location = useLocation();
+  // Ne pas afficher l'onboarding sur les pages auth/admin
+  const blocked = location.pathname.startsWith("/admin") ||
+    ["/connexion", "/inscription", "/reset-password"].includes(location.pathname);
+  if (!hydrated || seen || blocked) return null;
+  return <OnboardingCarousel onDone={markSeen} />;
+}
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const location = useLocation();
@@ -135,6 +153,7 @@ function RootComponent() {
         {!hideDock && <BottomDock />}
         <Toaster position="top-right" richColors closeButton />
       </AuthGate>
+      <OnboardingGate />
     </ThemeProvider>
   );
 }

@@ -918,6 +918,39 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_methods: {
+        Row: {
+          created_at: string
+          id: string
+          is_default: boolean
+          label: string | null
+          masked_number: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          label?: string | null
+          masked_number: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          label?: string | null
+          masked_number?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount_fcfa: number
@@ -992,27 +1025,48 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           city: string | null
           created_at: string
+          default_role: string
           full_name: string | null
           id: string
+          onboarding_completed: boolean
           phone: string | null
+          phone_verified: boolean
+          phone_verified_at: string | null
+          preferred_language: string
+          updated_at: string
           user_id: string
         }
         Insert: {
+          avatar_url?: string | null
           city?: string | null
           created_at?: string
+          default_role?: string
           full_name?: string | null
           id?: string
+          onboarding_completed?: boolean
           phone?: string | null
+          phone_verified?: boolean
+          phone_verified_at?: string | null
+          preferred_language?: string
+          updated_at?: string
           user_id: string
         }
         Update: {
+          avatar_url?: string | null
           city?: string | null
           created_at?: string
+          default_role?: string
           full_name?: string | null
           id?: string
+          onboarding_completed?: boolean
           phone?: string | null
+          phone_verified?: boolean
+          phone_verified_at?: string | null
+          preferred_language?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []

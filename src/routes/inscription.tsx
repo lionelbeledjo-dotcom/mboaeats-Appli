@@ -15,6 +15,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 
 export const Route = createFileRoute("/inscription")({
   head: () => ({
@@ -148,6 +149,14 @@ function InscriptionPage() {
         <div className="mt-8 mb-6">
           <h1 className="text-3xl font-bold tracking-tight text-black">Créer un compte</h1>
           <p className="mt-2 text-sm text-neutral-600">Rejoins MboaEats en moins d'une minute.</p>
+        </div>
+
+        <GoogleSignInButton label="S'inscrire avec Google" />
+
+        <div className="my-5 flex items-center gap-3" aria-hidden="true">
+          <div className="h-px flex-1 bg-neutral-200" />
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">ou par email</span>
+          <div className="h-px flex-1 bg-neutral-200" />
         </div>
 
         <form onSubmit={submit} className="space-y-3">
