@@ -12,6 +12,7 @@ import { getDriverContact, reportOrderIssue } from "@/server/tracking.functions"
 import { useRealtimeOrder } from "@/hooks/use-realtime-order";
 import { useDriverLocation } from "@/hooks/use-driver-location";
 import { ReviewForm } from "@/components/ReviewForm";
+import { OrderChat } from "@/components/OrderChat";
 
 export const Route = createFileRoute("/suivi/$orderId")({
   beforeLoad: async ({ params }) => {
@@ -120,6 +121,14 @@ function SuiviPage() {
       .then((r) => setDriver(r.driver))
       .catch(() => setDriver({ name: "Livreur", phone: null, avatar_url: null }));
   }, [order.driver_id, order.id, fetchContact]);
+
+  // Identité courante (pour le chat)
+  const [meId, setMeId] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setMeId(data.user?.id ?? null));
+  }, []);
+  const meRole: "client" | "driver" = meId && meId === order.driver_id ? "driver" : "client";
+  const showChat = !!order.driver_id && !!meId && !order.delivered_at && order.status !== "cancelled";
 
   // ETA dynamique : si on a la position du livreur + destination, on recalcule
   const dynamicEtaMin = useMemo(() => {
@@ -412,6 +421,17 @@ function SuiviPage() {
           </div>
         )}
       </div>
+
+      {showChat && meId && (
+        <div className="fixed bottom-5 right-5 z-40">
+          <OrderChat
+            orderId={order.id}
+            meId={meId}
+            meRole={meRole}
+            peerName={meRole === "client" ? driver?.name ?? "Livreur" : "Client"}
+          />
+        </div>
+      )}
 
       {issueOpen && (
         <IssueModal
