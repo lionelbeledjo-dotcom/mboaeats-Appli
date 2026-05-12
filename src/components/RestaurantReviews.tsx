@@ -22,8 +22,16 @@ function loadReviews(restoId: string): Review[] {
   }
 }
 
+const REVIEWS_EVENT = "mboa:reviews-updated";
+
 function saveReviews(restoId: string, list: Review[]) {
   localStorage.setItem(STORAGE_PREFIX + restoId, JSON.stringify(list));
+  // Notify other components in the same tab (storage event only fires cross-tab)
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent(REVIEWS_EVENT, { detail: { restoId } }),
+    );
+  }
 }
 
 export function RestaurantReviews({
