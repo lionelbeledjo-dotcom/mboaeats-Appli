@@ -517,7 +517,7 @@ const ISSUE_REASONS = [
   { key: "autre", label: "Autre" },
 ] as const;
 
-function IssueModal({ orderId, onClose }: { orderId: string; onClose: () => void }) {
+function IssueModal({ orderId, onClose, onSubmitted }: { orderId: string; onClose: () => void; onSubmitted?: () => void }) {
   const reportFn = useServerFn(reportOrderIssue);
   const [reason, setReason] = useState<typeof ISSUE_REASONS[number]["key"]>("retard_important");
   const [description, setDescription] = useState("");
