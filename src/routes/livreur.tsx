@@ -31,7 +31,7 @@ export const Route = createFileRoute("/livreur")({
   }),
 });
 
-type Tab = "courses" | "navigation" | "portefeuille";
+type Tab = "courses" | "navigation" | "portefeuille" | "evals";
 
 type MissionRow = {
   id: string;
@@ -40,12 +40,12 @@ type MissionRow = {
   total: number;
   delivery_fee: number | null;
   eta_minutes: number | null;
-  delivery_address: { line?: string; neighborhood?: string; city?: string } | null;
+  delivery_address: { line?: string; neighborhood?: string; city?: string; lat?: number | null; lng?: number | null } | null;
   created_at: string;
   ready_at?: string | null;
   picked_up_at?: string | null;
   delivered_at?: string | null;
-  restaurants?: { name: string; address: string | null; neighborhood: string | null } | null;
+  restaurants?: { name: string; address: string | null; neighborhood: string | null; lat?: number | null; lng?: number | null } | null;
 };
 
 type Earnings = {
@@ -54,6 +54,15 @@ type Earnings = {
   countToday: number;
   countWeek: number;
   week: { d: string; v: number }[];
+};
+
+type DriverReview = {
+  id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  reference: string;
+  restaurant_name: string;
 };
 
 function Livreur() {
