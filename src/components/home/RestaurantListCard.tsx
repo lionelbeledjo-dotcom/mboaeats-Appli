@@ -33,15 +33,16 @@ export function RestaurantListCard({ restaurant: r, minPrice, onAdd, onPrefetch 
       className="block w-full max-w-full overflow-hidden rounded-2xl bg-white p-3 transition active:scale-[0.99]"
       style={{ boxShadow: "0 2px 12px -8px rgba(0,0,0,0.08)" }}
     >
-      <div className="flex w-full max-w-full gap-3">
-        <div className="relative h-20 w-20 shrink-0">
+      <div className="grid w-full max-w-full grid-cols-[5rem_minmax(0,1fr)] gap-3 overflow-hidden">
+        <div className="relative aspect-square w-20 shrink-0 overflow-hidden rounded-xl bg-muted">
           <img
             src={r.cover}
             alt={r.name}
             width={80}
             height={80}
             loading="lazy"
-            className="h-20 w-20 rounded-xl object-cover"
+            decoding="async"
+            className="h-full w-full object-cover"
           />
           {badge && (
             <span
@@ -74,7 +75,7 @@ export function RestaurantListCard({ restaurant: r, minPrice, onAdd, onPrefetch 
             {r.tagline.split("—")[0].trim()}
           </p>
 
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12px]" style={{ color: "#6B6B6B" }}>
+          <div className="mt-1 flex max-w-full flex-wrap items-center gap-x-2 gap-y-0.5 overflow-hidden text-[12px]" style={{ color: "#6B6B6B" }}>
             <span className="inline-flex items-center gap-1">
               <Star className="h-3.5 w-3.5 fill-current" style={{ color: "#F4A623" }} />
               <span className="font-semibold" style={{ color: "#1A1A1A" }}>{r.rating}</span>
@@ -88,8 +89,8 @@ export function RestaurantListCard({ restaurant: r, minPrice, onAdd, onPrefetch 
             <span>· {dist} km</span>
           </div>
 
-          <div className="mt-auto flex items-end justify-between pt-2">
-            <div className="leading-tight">
+          <div className="mt-auto grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2 pt-2">
+            <div className="min-w-0 leading-tight">
               <span className="text-[11px]" style={{ color: "#6B6B6B" }}>À partir de</span>
               <div className="text-[15px] font-bold tabular-nums" style={{ color: "#1A1A1A" }}>
                 {minPrice.toLocaleString("fr-FR")} FCFA
@@ -103,11 +104,11 @@ export function RestaurantListCard({ restaurant: r, minPrice, onAdd, onPrefetch 
                   onAdd();
                 }}
                 aria-label={`Ajouter ${r.name} au panier`}
-                className="inline-flex items-center gap-1 rounded-full px-3.5 py-2 text-[13px] font-bold text-white transition active:scale-95"
+                className="inline-flex max-w-[7.75rem] shrink-0 items-center justify-center gap-1 overflow-hidden rounded-full px-3 py-2 text-[13px] font-bold text-white transition active:scale-95"
                 style={{ backgroundColor: "#06C167", minHeight: 36 }}
               >
                 <Plus className="h-4 w-4" strokeWidth={2.6} />
-                Ajouter
+                <span className="truncate">Ajouter</span>
               </button>
             )}
           </div>
