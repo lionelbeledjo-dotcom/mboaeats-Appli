@@ -14,7 +14,7 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 // Mode invité : pages de découverte accessibles sans compte. Le checkout reste protégé via une porte dédiée.
 const PUBLIC_ROUTES = [
   "/", "/connexion", "/inscription", "/reset-password", "/cgu", "/confidentialite",
-  "/admin/login", "/healthcheck", "/recherche", "/cuisines", "/proximite", "/populaire",
+  "/admin/login", "/healthcheck", "/recherche", "/explorer", "/panier", "/cuisines", "/proximite", "/populaire",
   "/decouvrir", "/aide", "/contact", "/devenir-livreur", "/devenir-resto", "/mboapass",
   "/parrainage", "/favoris",
 ];
