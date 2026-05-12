@@ -21,7 +21,7 @@ function normalizeCartItems(value: unknown): CartItem[] {
   return value
     .filter((item): item is Partial<CartItem> => !!item && typeof item === "object")
     .map((item) => ({
-      id: typeof item.id === "string" && item.id ? item.id : `cart-${crypto.randomUUID?.() ?? Date.now()}`,
+      id: typeof item.id === "string" && item.id ? item.id : `cart-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       dishId: typeof item.dishId === "string" ? item.dishId : "",
       restoId: typeof item.restoId === "string" ? item.restoId : "",
       name: typeof item.name === "string" && item.name ? item.name : "Article",
