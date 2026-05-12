@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft, Bike, Navigation, Wallet, TrendingUp, Clock, MapPin,
   Check, X, Star, Coins, Power, Package, Loader2, ShoppingBag,
+  Store, Send, MessageSquare,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
@@ -14,6 +15,10 @@ import {
   updateMissionStatus,
   updateMyLocation,
   getMyEarnings,
+  getMyDriverReviews,
+  markArrivedAtRestaurant,
+  requestPayout,
+  getPayoutBalance,
 } from "@/server/driver.functions";
 
 export const Route = createFileRoute("/livreur")({
