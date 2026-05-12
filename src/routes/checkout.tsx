@@ -581,8 +581,8 @@ function PaymentStatusBadge({ status, method }: { status: "idle" | "pending" | "
   );
 }
 
-function Summary({ cartItems, subtotal, delivery, total, hasPass, landmark, promo, setPromo, paymentStatus, method, reference }: {
-  cartItems: CartItem[]; subtotal: number; delivery: number; total: number; hasPass: boolean; landmark: string;
+function Summary({ cartItems, subtotal, delivery, taxes, total, hasPass, addressLine, promo, setPromo, paymentStatus, method, reference }: {
+  cartItems: CartItem[]; subtotal: number; delivery: number; taxes?: number; total: number; hasPass: boolean; addressLine?: string;
   promo: { code: string; discount: number } | null;
   setPromo: (p: { code: string; discount: number } | null) => void;
   paymentStatus: "idle" | "pending" | "succeeded" | "failed";
