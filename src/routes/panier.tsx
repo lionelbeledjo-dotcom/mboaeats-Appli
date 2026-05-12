@@ -44,9 +44,12 @@ function PanierPage() {
   const restoName = resto?.name ?? "Votre commande";
 
   return (
-    <main className="min-h-screen bg-white text-black pb-44 font-sans">
-      {/* Header X / profil */}
-      <header className="sticky top-0 z-20 bg-white">
+    <main
+      className="fixed inset-x-0 top-0 z-10 flex flex-col bg-white text-black font-sans overflow-hidden touch-pan-y overscroll-none"
+      style={{ bottom: "calc(70px + env(safe-area-inset-bottom))" }}
+    >
+      {/* Header fixe */}
+      <header className="shrink-0 bg-white border-b border-gray-100">
         <div className="flex items-center justify-between px-4 pt-4 pb-2">
           <Link to="/" aria-label="Fermer" className="p-2 -ml-2 active:scale-95 transition-transform">
             <X className="h-6 w-6 text-black" strokeWidth={2.5} />
@@ -59,108 +62,114 @@ function PanierPage() {
             <UserPlus className="h-6 w-6 text-black" strokeWidth={2.25} />
           </button>
         </div>
-        <h1 className="px-4 pt-2 pb-4 text-3xl font-bold tracking-tight">{restoName}</h1>
+        <h1 className="px-4 pt-1 pb-3 text-3xl font-bold tracking-tight">{restoName}</h1>
       </header>
 
-      {/* Liste articles */}
-      <ul className="divide-y divide-gray-100">
-        {items.map((it) => (
-          <li key={it.id} className="flex gap-3 px-4 py-5">
-            {it.image ? (
-              <img
-                src={it.image}
-                alt={it.name}
-                loading="lazy"
-                className="h-24 w-24 shrink-0 rounded-2xl object-cover bg-gray-100"
-              />
-            ) : (
-              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-gray-100">
-                <ShoppingBag className="h-7 w-7 text-gray-400" />
-              </div>
-            )}
-            <div className="flex flex-1 flex-col min-w-0">
-              <h3 className="text-[15px] font-bold leading-snug text-black">{it.name}</h3>
-              {it.options && Object.keys(it.options).length > 0 && (
-                <p className="mt-1 text-[13px] text-gray-500 leading-snug line-clamp-3">
-                  {Object.entries(it.options).map(([k, v]) => `${k}: ${v}`).join(" · ")}
-                </p>
+      {/* Zone scrollable */}
+      <div
+        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain touch-pan-y"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
+        {/* Liste articles */}
+        <ul className="divide-y divide-gray-100">
+          {items.map((it) => (
+            <li key={it.id} className="flex gap-3 px-4 py-5">
+              {it.image ? (
+                <img
+                  src={it.image}
+                  alt={it.name}
+                  loading="lazy"
+                  className="h-24 w-24 shrink-0 rounded-2xl object-cover bg-gray-100"
+                />
+              ) : (
+                <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-gray-100">
+                  <ShoppingBag className="h-7 w-7 text-gray-400" />
+                </div>
               )}
-              {it.note && (
-                <p className="mt-1 text-[13px] text-gray-500 italic line-clamp-2">{it.note}</p>
-              )}
-              <div className="mt-2 flex items-end justify-between gap-2">
-                <span className="text-[15px] font-semibold text-black">
-                  {(it.price * it.qty).toLocaleString("fr-FR")} FCFA
-                </span>
-                {/* Stepper avec poubelle/+ */}
-                <div className="flex items-center gap-1 rounded-full bg-gray-100 px-1 py-1">
-                  <button
-                    type="button"
-                    onClick={() => (it.qty <= 1 ? remove(it.id) : setQty(it.id, it.qty - 1))}
-                    aria-label={it.qty <= 1 ? `Supprimer ${it.name}` : "Diminuer la quantité"}
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white active:scale-95 transition-transform"
-                  >
-                    {it.qty <= 1 ? (
-                      <Trash2 className="h-4 w-4 text-black" />
-                    ) : (
-                      <Minus className="h-4 w-4 text-black" strokeWidth={2.5} />
-                    )}
-                  </button>
-                  <span className="min-w-[1.5rem] text-center text-[15px] font-semibold tabular-nums text-black">
-                    {it.qty}
+              <div className="flex flex-1 flex-col min-w-0">
+                <h3 className="text-[15px] font-bold leading-snug text-black">{it.name}</h3>
+                {it.options && Object.keys(it.options).length > 0 && (
+                  <p className="mt-1 text-[13px] text-gray-500 leading-snug line-clamp-3">
+                    {Object.entries(it.options).map(([k, v]) => `${k}: ${v}`).join(" · ")}
+                  </p>
+                )}
+                {it.note && (
+                  <p className="mt-1 text-[13px] text-gray-500 italic line-clamp-2">{it.note}</p>
+                )}
+                <div className="mt-2 flex items-end justify-between gap-2">
+                  <span className="text-[15px] font-semibold text-black">
+                    {(it.price * it.qty).toLocaleString("fr-FR")} FCFA
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => setQty(it.id, it.qty + 1)}
-                    aria-label="Augmenter la quantité"
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white active:scale-95 transition-transform"
-                  >
-                    <Plus className="h-4 w-4 text-black" strokeWidth={2.5} />
-                  </button>
+                  <div className="flex items-center gap-1 rounded-full bg-gray-100 px-1 py-1">
+                    <button
+                      type="button"
+                      onClick={() => (it.qty <= 1 ? remove(it.id) : setQty(it.id, it.qty - 1))}
+                      aria-label={it.qty <= 1 ? `Supprimer ${it.name}` : "Diminuer la quantité"}
+                      className="flex h-9 w-9 items-center justify-center rounded-full bg-white active:scale-95 transition-transform"
+                    >
+                      {it.qty <= 1 ? (
+                        <Trash2 className="h-4 w-4 text-black" />
+                      ) : (
+                        <Minus className="h-4 w-4 text-black" strokeWidth={2.5} />
+                      )}
+                    </button>
+                    <span className="min-w-[1.5rem] text-center text-[15px] font-semibold tabular-nums text-black">
+                      {it.qty}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setQty(it.id, it.qty + 1)}
+                      aria-label="Augmenter la quantité"
+                      className="flex h-9 w-9 items-center justify-center rounded-full bg-white active:scale-95 transition-transform"
+                    >
+                      <Plus className="h-4 w-4 text-black" strokeWidth={2.5} />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </li>
-        ))}
-      </ul>
+            </li>
+          ))}
+        </ul>
 
-      {/* + Ajouter des articles */}
-      <div className="px-4 py-4 flex justify-end">
+        {/* + Ajouter des articles */}
+        <div className="px-4 py-4 flex justify-end">
+          <button
+            type="button"
+            onClick={() => restoId && navigate({ to: "/restaurants/$restoId", params: { restoId } })}
+            className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-5 py-3 text-[14px] font-semibold text-black active:scale-[0.98] transition-transform"
+          >
+            <Plus className="h-4 w-4" strokeWidth={2.5} />
+            Ajouter des articles
+          </button>
+        </div>
+
+        {/* Envoyez en cadeau */}
         <button
           type="button"
-          onClick={() => restoId && navigate({ to: "/restaurants/$restoId", params: { restoId } })}
-          className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-5 py-3 text-[14px] font-semibold text-black active:scale-[0.98] transition-transform"
+          className="w-full flex items-center gap-3 px-4 py-4 border-t border-gray-100 active:bg-gray-50 transition-colors"
         >
-          <Plus className="h-4 w-4" strokeWidth={2.5} />
-          Ajouter des articles
+          <span className="text-2xl" aria-hidden>🎁</span>
+          <span className="flex-1 text-left">
+            <span className="block text-[15px] font-bold text-black">Envoyez en cadeau</span>
+            <span className="block text-[13px] text-gray-500">Et personnalisez une carte numérique</span>
+          </span>
+          <ChevronRight className="h-5 w-5 text-gray-400" />
         </button>
+
+        {/* Sous-total */}
+        <div className="flex items-center justify-between px-4 py-4 border-t border-gray-100">
+          <span className="text-[18px] font-bold text-black">Sous-total</span>
+          <span className="text-[18px] font-bold text-black">
+            {subtotal.toLocaleString("fr-FR")} FCFA
+          </span>
+        </div>
+
+        {/* Espace de sécurité pour ne pas être masqué par le footer */}
+        <div aria-hidden className="h-6" />
       </div>
 
-      {/* Envoyez en cadeau */}
-      <button
-        type="button"
-        className="w-full flex items-center gap-3 px-4 py-4 border-t border-gray-100 active:bg-gray-50 transition-colors"
-      >
-        <span className="text-2xl" aria-hidden>🎁</span>
-        <span className="flex-1 text-left">
-          <span className="block text-[15px] font-bold text-black">Envoyez en cadeau</span>
-          <span className="block text-[13px] text-gray-500">Et personnalisez une carte numérique</span>
-        </span>
-        <ChevronRight className="h-5 w-5 text-gray-400" />
-      </button>
-
-      {/* Sous-total */}
-      <div className="flex items-center justify-between px-4 py-4 border-t border-gray-100">
-        <span className="text-[18px] font-bold text-black">Sous-total</span>
-        <span className="text-[18px] font-bold text-black">
-          {subtotal.toLocaleString("fr-FR")} FCFA
-        </span>
-      </div>
-
-      {/* Footer fixe : promo + bouton noir */}
-      <div
-        className="fixed inset-x-0 bottom-[calc(70px+env(safe-area-inset-bottom))] z-30 bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"
-      >
+      {/* Footer fixe (en bas du conteneur, au-dessus du BottomDock) */}
+      <div className="shrink-0 bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
         <label className="flex items-start gap-3 px-4 py-3 cursor-pointer">
           <input
             type="checkbox"
