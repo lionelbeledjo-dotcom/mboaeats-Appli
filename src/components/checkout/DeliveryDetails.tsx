@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { MapPin, Clock, Bike, Plus, Check, Home, Briefcase, ChevronRight } from "lucide-react";
+import { MapPin, Clock, Bike, Plus, Check, Home, Briefcase, ChevronRight, LocateFixed, Loader2 } from "lucide-react";
 import { listMyAddresses, upsertMyAddress } from "@/server/account.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -53,6 +53,66 @@ export function DeliveryDetails({
     neighborhood: "",
   });
   const [saving, setSaving] = useState(false);
+  const [locating, setLocating] = useState(false);
+
+  const useMyLocation = () => {
+    if (!("geolocation" in navigator)) {
+      toast.error("Géolocalisation non supportée par votre navigateur");
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          // Reverse geocoding via OpenStreetMap Nominatim (gratuit, sans clé)
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&accept-language=fr&zoom=18`,
+            { headers: { "Accept": "application/json" } },
+          );
+          if (!res.ok) throw new Error("reverse-failed");
+          const data = await res.json();
+          const a = data.address ?? {};
+          const line: string =
+            data.display_name?.split(",").slice(0, 3).join(",").trim() ||
+            [a.road, a.house_number].filter(Boolean).join(" ") ||
+            `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+          const city: string =
+            a.city || a.town || a.village || a.municipality || a.county || draft.city || "Douala";
+          const neighborhood: string =
+            a.suburb || a.neighbourhood || a.quarter || a.city_district || draft.neighborhood || "";
+          setShowNew(true);
+          setDraft((d) => ({
+            ...d,
+            line,
+            city,
+            neighborhood,
+          }));
+          toast.success("Position détectée — vérifiez l'adresse");
+        } catch {
+          setShowNew(true);
+          setDraft((d) => ({
+            ...d,
+            line: `Position GPS : ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`,
+          }));
+          toast.message("Position captée — précisez le repère manuellement");
+        } finally {
+          setLocating(false);
+        }
+      },
+      (err) => {
+        setLocating(false);
+        const msg =
+          err.code === err.PERMISSION_DENIED
+            ? "Autorisation refusée — activez la localisation dans le navigateur"
+            : err.code === err.TIMEOUT
+              ? "Délai dépassé — réessayez"
+              : "Impossible d'obtenir votre position";
+        toast.error(msg);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+    );
+  };
 
   useEffect(() => {
     (async () => {
@@ -163,13 +223,28 @@ export function DeliveryDetails({
         )}
 
         {!showNew ? (
-          <button
-            type="button"
-            onClick={() => setShowNew(true)}
-            className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-background py-2.5 text-xs font-semibold text-muted-foreground transition hover:border-[#06C167] hover:text-[#06C167]"
-          >
-            <Plus className="h-3.5 w-3.5" /> Ajouter une nouvelle adresse
-          </button>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setShowNew(true)}
+              className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-background py-2.5 text-xs font-semibold text-muted-foreground transition hover:border-[#06C167] hover:text-[#06C167]"
+            >
+              <Plus className="h-3.5 w-3.5" /> Nouvelle adresse
+            </button>
+            <button
+              type="button"
+              disabled={locating}
+              onClick={useMyLocation}
+              className="flex items-center justify-center gap-2 rounded-xl border border-[#06C167]/40 bg-[#06C167]/5 py-2.5 text-xs font-semibold text-[#06C167] transition hover:bg-[#06C167]/10 disabled:opacity-60"
+            >
+              {locating ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <LocateFixed className="h-3.5 w-3.5" />
+              )}
+              {locating ? "Localisation…" : "Utiliser ma position"}
+            </button>
+          </div>
         ) : (
           <div className="mt-3 space-y-2 rounded-2xl border border-border bg-background p-3">
             <div className="grid grid-cols-2 gap-2">
@@ -199,8 +274,21 @@ export function DeliveryDetails({
               rows={2}
               className="w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[#06C167]"
             />
+            <button
+              type="button"
+              disabled={locating}
+              onClick={useMyLocation}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#06C167]/40 bg-[#06C167]/5 py-2 text-xs font-semibold text-[#06C167] transition hover:bg-[#06C167]/10 disabled:opacity-60"
+            >
+              {locating ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <LocateFixed className="h-3.5 w-3.5" />
+              )}
+              {locating ? "Localisation en cours…" : "📍 Utiliser ma position actuelle"}
+            </button>
             <p className="text-[10px] text-muted-foreground">
-              💡 Géolocalisation Google Maps disponible bientôt — pour l'instant, décris bien le repère.
+              💡 Astuce : autorisez la géolocalisation, puis ajustez le repère visible si besoin.
             </p>
             <div className="flex gap-2">
               <button
