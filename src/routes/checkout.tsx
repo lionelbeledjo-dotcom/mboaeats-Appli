@@ -13,6 +13,12 @@ import { createOrder, markOrderPaid } from "@/server/marketplace.functions";
 import { useCart, clearCart, addToCart, setQty as setCartQty, removeFromCart, setItemNote, type CartItem } from "@/hooks/use-cart";
 import { QuantityStepper } from "@/components/QuantityStepper";
 import { DeliveryDetails, type DeliveryDetailsState } from "@/components/checkout/DeliveryDetails";
+import {
+  DeliveryContactRows,
+  validateDeliveryContact,
+  type DeliveryContact,
+  type DeliveryContactErrors,
+} from "@/components/checkout/DeliveryContactRows";
 
 export const Route = createFileRoute("/checkout")({
   component: Checkout,
@@ -77,6 +83,23 @@ function Checkout() {
   const [extrasSeen, setExtrasSeen] = useState(false);
   const [cardLink, setCardLink] = useState<string | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "pending" | "succeeded" | "failed">("idle");
+  const [contactErrors, setContactErrors] = useState<DeliveryContactErrors>({});
+
+  // Contact de livraison (adresse / instructions / téléphone) — synchronisé avec delivery_
+  const contact: DeliveryContact = {
+    address: delivery_.address.line,
+    instructions: delivery_.instructions,
+    phone,
+  };
+  const setContact = (next: DeliveryContact) => {
+    setDelivery({
+      ...delivery_,
+      address: { ...delivery_.address, line: next.address },
+      instructions: next.instructions,
+    });
+    setPhone(next.phone);
+    setContactErrors(validateDeliveryContact(next));
+  };
 
   // Détection MboaPass (livraison gratuite)
   useEffect(() => {
@@ -157,8 +180,11 @@ function Checkout() {
 
   const start = async () => {
     setTopError(null);
-    if (delivery_.address.line.trim().length < 8) {
-      setDeliveryErr("Précise une adresse complète (≥ 8 caractères)");
+    const errs = validateDeliveryContact(contact);
+    setContactErrors(errs);
+    if (Object.keys(errs).length > 0) {
+      setDeliveryErr(errs.address ?? "Vérifiez vos informations de livraison");
+      setTopError("Complétez l'adresse, les instructions et le téléphone avant de payer.");
       return;
     }
     setDeliveryErr(null);
@@ -281,6 +307,7 @@ function Checkout() {
           )}
           {step === "choose" && (
             <>
+              <DeliveryContactRows value={contact} onChange={setContact} errors={contactErrors} />
               <DeliveryDetails value={delivery_} onChange={setDelivery} error={deliveryErr} />
               <DeliveryTypeSelector
                 value={delivery_.schedule.type === "scheduled" ? "scheduled" : "standard"}
