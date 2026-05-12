@@ -1,9 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { Search, Star, Clock, Plus } from "lucide-react";
+import { Search, Zap, Sparkles, TrendingUp, ChevronRight } from "lucide-react";
 import { AppTopBar } from "@/components/AppTopBar";
-import { restaurants as realRestaurants, getRestaurant } from "@/data/restaurants";
+import { PromoBanner } from "@/components/home/PromoBanner";
+import { CategoriesRow } from "@/components/home/CategoriesRow";
+import { RestaurantListCard } from "@/components/home/RestaurantListCard";
+import { restaurants as realRestaurants, getRestaurant, type Restaurant } from "@/data/restaurants";
 import { addToCart } from "@/hooks/use-cart";
+import { etaMinAvg, isFastDelivery, isNew } from "@/lib/restaurant-meta";
 import { toast } from "sonner";
 
 const imageCache = new Set<string>();
@@ -24,46 +28,59 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "MboaEats — Vos plats camerounais livrés à Douala" },
-      { name: "description", content: "Commandez les meilleurs plats du terroir camerounais, livrés rapidement à Douala." },
+      { name: "description", content: "Commandez les meilleurs plats du terroir camerounais, livrés rapidement à Douala et Yaoundé." },
     ],
   }),
   component: Index,
 });
 
-type Card = {
-  slug: string;
-  name: string;
-  tag: string;
-  rating: number;
-  eta: string;
-  img: string;
-  price: number;
-  firstDish: { id: string; name: string; price: number; image: string };
-};
+function minPriceOf(r: Restaurant) {
+  return Math.min(...r.categories.flatMap((c) => c.dishes.map((d) => d.price)));
+}
 
-const cards: Card[] = realRestaurants.slice(0, 12).map((r) => {
-  const firstDish = r.categories[0]?.dishes[0];
-  const minPrice = Math.min(...r.categories.flatMap((c) => c.dishes.map((d) => d.price)));
-  return {
-    slug: r.id,
-    name: r.name,
-    tag: r.tagline.split("—")[0].trim(),
-    rating: r.rating,
-    eta: r.eta,
-    img: r.cover,
-    price: minPrice,
-    firstDish: firstDish ? { id: firstDish.id, name: firstDish.name, price: firstDish.price, image: firstDish.image } : { id: "default", name: r.name, price: minPrice, image: r.cover },
-  };
-});
+function firstDishOf(r: Restaurant) {
+  const fd = r.categories[0]?.dishes[0];
+  if (fd) return { id: fd.id, name: fd.name, price: fd.price, image: fd.image };
+  return { id: "default", name: r.name, price: minPriceOf(r), image: r.cover };
+}
 
 function Index() {
   const [query, setQuery] = useState("");
 
-  const filtered = useMemo(() => {
-    if (!query.trim()) return cards;
+  const searchResults = useMemo(() => {
+    if (!query.trim()) return null;
     const q = query.toLowerCase();
-    return cards.filter((c) => c.name.toLowerCase().includes(q) || c.tag.toLowerCase().includes(q));
+    return realRestaurants.filter(
+      (r) =>
+        r.name.toLowerCase().includes(q) ||
+        r.tagline.toLowerCase().includes(q) ||
+        r.categories.some((c) => c.dishes.some((d) => d.name.toLowerCase().includes(q))),
+    );
   }, [query]);
+
+  const popular = useMemo(
+    () => [...realRestaurants].sort((a, b) => b.rating - a.rating).slice(0, 8),
+    [],
+  );
+  const fast = useMemo(
+    () => realRestaurants.filter(isFastDelivery).sort((a, b) => etaMinAvg(a.eta) - etaMinAvg(b.eta)).slice(0, 6),
+    [],
+  );
+  const news = useMemo(() => realRestaurants.filter(isNew), []);
+
+  const handleAdd = (r: Restaurant) => {
+    const fd = firstDishOf(r);
+    addToCart({
+      id: `${r.id}__${fd.id}`,
+      dishId: fd.id,
+      restoId: r.id,
+      name: fd.name,
+      price: fd.price,
+      qty: 1,
+      image: fd.image,
+    });
+    toast.success(`Ajouté : ${fd.name}`);
+  };
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#F5F0E8", overflowAnchor: "none" }}>
@@ -93,94 +110,156 @@ function Index() {
             className="h-full flex-1 bg-transparent text-sm outline-none"
             style={{ color: "#1A1A1A" }}
           />
+          <Link
+            to="/recherche"
+            className="text-[12px] font-semibold"
+            style={{ color: "#06C167" }}
+          >
+            Filtres
+          </Link>
         </label>
 
-        {/* Section restaurants */}
+        {searchResults ? (
+          <section className="mt-6">
+            <h2 className="mb-3 text-[16px] font-semibold" style={{ color: "#1A1A1A" }}>
+              {searchResults.length} résultat{searchResults.length > 1 ? "s" : ""} pour « {query} »
+            </h2>
+            <div className="space-y-3">
+              {searchResults.map((r) => (
+                <RestaurantListCard
+                  key={r.id}
+                  restaurant={r}
+                  minPrice={minPriceOf(r)}
+                  onAdd={() => handleAdd(r)}
+                  onPrefetch={() => prefetchRestaurantImages(r.id)}
+                />
+              ))}
+            </div>
+          </section>
+        ) : (
+          <>
+            <PromoBanner />
+            <CategoriesRow />
+
+            {fast.length > 0 && (
+              <Section
+                icon={<Zap className="h-4 w-4" style={{ color: "#06C167" }} />}
+                title="Livraison rapide < 30 min"
+                href="/proximite"
+              >
+                <HorizontalRail restaurants={fast} />
+              </Section>
+            )}
+
+            {news.length > 0 && (
+              <Section
+                icon={<Sparkles className="h-4 w-4" style={{ color: "#06C167" }} />}
+                title="Nouveautés"
+              >
+                <div className="space-y-3">
+                  {news.map((r) => (
+                    <RestaurantListCard
+                      key={r.id}
+                      restaurant={r}
+                      minPrice={minPriceOf(r)}
+                      onAdd={() => handleAdd(r)}
+                      onPrefetch={() => prefetchRestaurantImages(r.id)}
+                    />
+                  ))}
+                </div>
+              </Section>
+            )}
+
+            <Section
+              icon={<TrendingUp className="h-4 w-4" style={{ color: "#06C167" }} />}
+              title="Restaurants populaires"
+              href="/populaire"
+            >
+              <div className="space-y-3">
+                {popular.map((r) => (
+                  <RestaurantListCard
+                    key={r.id}
+                    restaurant={r}
+                    minPrice={minPriceOf(r)}
+                    onAdd={() => handleAdd(r)}
+                    onPrefetch={() => prefetchRestaurantImages(r.id)}
+                  />
+                ))}
+              </div>
+            </Section>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Section({
+  icon,
+  title,
+  href,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  href?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="mt-6">
+      <div className="mb-3 flex items-center justify-between">
         <h2
-          className="mt-6 mb-3 text-[20px] font-semibold"
+          className="flex items-center gap-2 text-[18px] font-semibold"
           style={{ color: "#1A1A1A", fontFamily: "Inter, system-ui, sans-serif" }}
         >
-          Restaurants populaires
+          {icon}
+          {title}
         </h2>
-
-        <div className="space-y-3">
-          {filtered.map((r) => (
-            <Link
-              key={r.slug}
-              to="/restaurants/$restoId"
-              params={{ restoId: r.slug }}
-              preload="intent"
-              onMouseEnter={() => prefetchRestaurantImages(r.slug)}
-              onTouchStart={() => prefetchRestaurantImages(r.slug)}
-              className="block rounded-2xl bg-white p-3 transition active:scale-[0.99]"
-              style={{ boxShadow: "0 2px 12px -8px rgba(0,0,0,0.08)" }}
-            >
-              <div className="flex gap-3">
-                <img
-                  src={r.img}
-                  alt={r.name}
-                  width={80}
-                  height={80}
-                  loading="lazy"
-                  className="h-20 w-20 shrink-0 rounded-xl object-cover"
-                />
-                <div className="flex min-w-0 flex-1 flex-col">
-                  <h3
-                    className="truncate text-[15px] font-bold"
-                    style={{ color: "#1A1A1A", fontFamily: "Inter, system-ui, sans-serif" }}
-                  >
-                    {r.name}
-                  </h3>
-                  <p className="mt-0.5 truncate text-[12px]" style={{ color: "#6B6B6B", fontWeight: 300 }}>
-                    {r.tag}
-                  </p>
-
-                  <div className="mt-1 flex items-center gap-3 text-[13px]" style={{ color: "#6B6B6B" }}>
-                    <span className="inline-flex items-center gap-1">
-                      <Star className="h-3.5 w-3.5 fill-current" style={{ color: "#F4A623" }} />
-                      <span className="font-semibold" style={{ color: "#1A1A1A" }}>{r.rating}</span>
-                    </span>
-                    <span className="inline-flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5" /> {r.eta}
-                    </span>
-                  </div>
-
-                  <div className="mt-auto flex items-end justify-between pt-2">
-                    <div className="leading-tight">
-                      <span className="text-[11px]" style={{ color: "#6B6B6B" }}>À partir de</span>
-                      <div className="text-[16px] font-bold tabular-nums" style={{ color: "#1A1A1A" }}>
-                        {r.price.toLocaleString("fr-FR")} FCFA
-                      </div>
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        addToCart({
-                          id: `${r.slug}__${r.firstDish.id}`,
-                          dishId: r.firstDish.id,
-                          restoId: r.slug,
-                          name: r.firstDish.name,
-                          price: r.firstDish.price,
-                          qty: 1,
-                          image: r.firstDish.image,
-                        });
-                        toast.success(`Ajouté : ${r.firstDish.name}`);
-                      }}
-                      aria-label={`Ajouter ${r.name} au panier`}
-                      className="inline-flex items-center gap-1 rounded-full px-3.5 py-2 text-[13px] font-bold text-white transition active:scale-95"
-                      style={{ backgroundColor: "#06C167", minHeight: 36 }}
-                    >
-                      <Plus className="h-4 w-4" strokeWidth={2.6} />
-                      Ajouter
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+        {href && (
+          <Link to={href} className="inline-flex items-center text-[12px] font-semibold" style={{ color: "#06C167" }}>
+            Voir tout <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
+        )}
       </div>
+      {children}
+    </section>
+  );
+}
+
+function HorizontalRail({ restaurants }: { restaurants: Restaurant[] }) {
+  return (
+    <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {restaurants.map((r) => (
+        <Link
+          key={r.id}
+          to="/restaurants/$restoId"
+          params={{ restoId: r.id }}
+          preload="intent"
+          className="block shrink-0 rounded-2xl bg-white p-2 transition active:scale-[0.98]"
+          style={{ width: 200, boxShadow: "0 2px 12px -8px rgba(0,0,0,0.08)" }}
+        >
+          <div className="relative">
+            <img
+              src={r.cover}
+              alt={r.name}
+              loading="lazy"
+              className="h-24 w-full rounded-xl object-cover"
+            />
+            <span
+              className="absolute left-1.5 top-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-extrabold uppercase"
+              style={{ backgroundColor: "#06C167", color: "#FFFFFF" }}
+            >
+              {etaMinAvg(r.eta)} min
+            </span>
+          </div>
+          <p className="mt-2 truncate text-[13px] font-bold" style={{ color: "#1A1A1A" }}>
+            {r.name}
+          </p>
+          <p className="truncate text-[11px]" style={{ color: "#6B6B6B" }}>
+            ⭐ {r.rating} · {r.eta}
+          </p>
+        </Link>
+      ))}
     </div>
   );
 }
