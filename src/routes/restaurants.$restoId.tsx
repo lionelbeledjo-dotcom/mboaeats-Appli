@@ -1,11 +1,24 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { Star, Clock, MapPin, Flame, Plus, Search, Heart, ChevronRight } from "lucide-react";
+import { Star, Clock, MapPin, Flame, Plus, Search, Heart, ChevronRight, Bike } from "lucide-react";
 import { toast } from "sonner";
 import { SmartBack } from "@/components/SmartBack";
 import { RestaurantSkeleton } from "@/components/Skeleton";
 import { getRestaurant, type Restaurant } from "@/data/restaurants";
 import { addToCart, useCart, setQty as setCartQty } from "@/hooks/use-cart";
 import { QuantityStepper } from "@/components/QuantityStepper";
+import {
+  badgeMeta,
+  catalogBadge,
+  deliveryFee,
+  dishAllergens,
+  hasPromo,
+  isOpenNow,
+  openingHours,
+  promoLabel,
+  reviewCount,
+  DAY_LABEL,
+  type DayKey,
+} from "@/lib/restaurant-meta";
 
 export const Route = createFileRoute("/restaurants/$restoId")({
   loader: ({ params }) => {
@@ -42,19 +55,24 @@ function RestaurantPage() {
   const { items: cartItems } = useCart();
   const qtyOf = (dishId: string) => cartItems.find((i) => i.id === `${dishId}__default`)?.qty ?? 0;
 
+  const badge = badgeMeta(catalogBadge(restaurant));
+  const fee = deliveryFee(restaurant);
+  const open = isOpenNow(restaurant);
+  const hours = openingHours(restaurant);
+  const promo = hasPromo(restaurant) ? promoLabel(restaurant) : null;
+  const reviews = reviewCount(restaurant);
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Banner — image seule, pas de titre par-dessus pour éviter tout chevauchement */}
+      {/* Banner */}
       <div className="relative mt-16 h-36 w-full overflow-hidden sm:mt-20 sm:h-52 md:h-64">
         <img
           src={restaurant.cover}
           alt={restaurant.name}
           className="absolute inset-0 z-0 h-full w-full object-cover"
         />
-        {/* Overlay top → lisibilité des contrôles */}
         <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-black/60 via-black/10 to-transparent" />
 
-        {/* Top bar: SmartBack + favorite */}
         <div className="absolute inset-x-0 top-0 z-30 flex items-start gap-3 p-4 pt-5">
           <div className="flex-1">
             <SmartBack
@@ -72,10 +90,18 @@ function RestaurantPage() {
             <Heart className="h-5 w-5" />
           </button>
         </div>
+
+        {badge && (
+          <span
+            className="absolute bottom-3 left-4 z-30 rounded-full px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wide"
+            style={{ backgroundColor: badge.bg, color: badge.fg }}
+          >
+            {badge.label}
+          </span>
+        )}
       </div>
 
       <div className="container mx-auto mt-8 max-w-3xl px-4 pb-12 sm:mt-10">
-        {/* Restaurant identity card — titre TOUJOURS visible sous la bannière */}
         <div className="rounded-3xl border border-border/60 bg-card p-5 shadow-glow animate-fade-up">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
@@ -87,20 +113,52 @@ function RestaurantPage() {
                 <span className="flex items-center gap-1">
                   <Star className="h-4 w-4 fill-gold text-gold" />
                   <span>{restaurant.rating}</span>
-                  <span className="text-muted-foreground">(2.4k)</span>
+                  <span className="text-muted-foreground">({reviews.toLocaleString("fr-FR")})</span>
                 </span>
                 <span className="flex items-center gap-1">
                   <Clock className="h-3.5 w-3.5" /> {restaurant.eta}
                 </span>
                 <span className="flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5" /> {restaurant.city}
+                  <Bike className="h-3.5 w-3.5" /> {fee.toLocaleString("fr-FR")} FCFA
+                </span>
+                <span className="flex items-center gap-1">
+                  <MapPin className="h-3.5 w-3.5" /> {restaurant.neighborhood}, {restaurant.city}
                 </span>
               </div>
+              {promo && (
+                <span
+                  className="mt-2 inline-block rounded-md px-2 py-0.5 text-[11px] font-bold"
+                  style={{ backgroundColor: "#FFEBEE", color: "#D32F2F" }}
+                >
+                  🎁 {promo}
+                </span>
+              )}
             </div>
-            <span className="shrink-0 rounded-full bg-[#06C167]/15 px-3 py-1 text-xs font-semibold text-[#06C167]">
-              ● Ouvert
+            <span
+              className="shrink-0 rounded-full px-3 py-1 text-xs font-semibold"
+              style={{
+                backgroundColor: open ? "rgba(6,193,103,0.15)" : "#F5F0E8",
+                color: open ? "#06C167" : "#6B6B6B",
+              }}
+            >
+              {open ? "● Ouvert" : "● Fermé"}
             </span>
           </div>
+
+          <details className="group mt-4">
+            <summary className="flex cursor-pointer items-center justify-between text-xs font-semibold text-foreground/80">
+              <span>Horaires d'ouverture</span>
+              <ChevronRight className="h-3.5 w-3.5 transition-transform group-open:rotate-90" />
+            </summary>
+            <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+              {(["lun", "mar", "mer", "jeu", "ven", "sam", "dim"] as DayKey[]).map((d) => (
+                <div key={d} className="flex justify-between">
+                  <span>{DAY_LABEL[d]}</span>
+                  <span className="font-medium text-foreground/80">{hours[d]}</span>
+                </div>
+              ))}
+            </div>
+          </details>
         </div>
 
         {/* Sticky search + category tabs */}
@@ -169,6 +227,20 @@ function RestaurantPage() {
                         <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
                           {dish.description}
                         </p>
+                        {dishAllergens(dish.id).length > 0 && (
+                          <div className="mt-1.5 flex flex-wrap gap-1">
+                            {dishAllergens(dish.id).map((a) => (
+                              <span
+                                key={a}
+                                className="rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide"
+                                style={{ backgroundColor: "#FFF4E0", color: "#92580E" }}
+                                title={`Contient : ${a}`}
+                              >
+                                ⚠ {a}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                         <div className="mt-auto flex items-center justify-between gap-2 pt-2">
                           <span className="price text-[#06C167]">
                             {dish.price.toLocaleString("fr-FR")}
