@@ -15,7 +15,7 @@ const PUBLIC_ROUTES = [
   "/", "/connexion", "/inscription", "/reset-password", "/cgu", "/confidentialite",
   "/admin/login", "/healthcheck", "/recherche", "/cuisines", "/proximite", "/populaire",
   "/decouvrir", "/aide", "/contact", "/devenir-livreur", "/devenir-resto", "/mboapass",
-  "/parrainage", "/checkout", "/favoris",
+  "/parrainage", "/favoris",
 ];
 const PUBLIC_PREFIXES = ["/admin", "/r/", "/restaurants/", "/categorie/", "/aide/"];
 
