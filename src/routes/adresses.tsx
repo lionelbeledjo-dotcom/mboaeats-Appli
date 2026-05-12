@@ -189,6 +189,7 @@ function AddressesPage() {
     };
     setSaved((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
     try {
+      const geo = await geocodeCm(`${updated.neighborhood}, ${updated.city}, Cameroun`);
       await upsertMyAddress({
         data: {
           id: updated.id.startsWith("local-") ? undefined : updated.id,
@@ -196,6 +197,8 @@ function AddressesPage() {
           city: updated.city,
           neighborhood: updated.neighborhood,
           line: `${updated.neighborhood}${phoneFull ? ` · Tél : ${phoneFull}` : ""}`,
+          lat: geo?.lat ?? null,
+          lng: geo?.lng ?? null,
         },
       });
     } catch {
