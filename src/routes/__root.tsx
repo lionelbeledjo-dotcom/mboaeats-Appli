@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { SplashScreen } from "@/components/SplashScreen";
 import { SiteHeader } from "@/components/SiteHeader";
 import { OnboardingCarousel } from "@/components/OnboardingCarousel";
+import { OfflineBanner } from "@/components/OfflineBanner";
 import { useOnboarding } from "@/hooks/useOnboarding";
 
 // Mode invité : pages de découverte accessibles sans compte. Le checkout reste protégé via une porte dédiée.
@@ -88,18 +89,18 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "MboaEats — Livraison de repas premium au Cameroun" },
-      { name: "description", content: "Commandez vos plats préférés à Douala, Yaoundé et Bafoussam. Livraison rapide, paiement Mobile Money, mode Tablée." },
-      { name: "theme-color", content: "#1A1A2E" },
-      { property: "og:title", content: "MboaEats — Livraison de repas premium au Cameroun" },
-      { property: "og:description", content: "Commandez vos plats préférés à Douala, Yaoundé et Bafoussam. Livraison rapide, paiement Mobile Money, mode Tablée." },
+      { title: "MboaEats — Commandez vos repas préférés livrés chez vous au Cameroun" },
+      { name: "description", content: "Commandez vos repas préférés livrés chez vous au Cameroun. Livraison rapide à Douala, Yaoundé et Bafoussam, paiement Mobile Money." },
+      { name: "theme-color", content: "#22C55E" },
+      { property: "og:title", content: "MboaEats — Livraison de repas au Cameroun" },
+      { property: "og:description", content: "Commandez vos repas préférés livrés chez vous au Cameroun." },
       { property: "og:type", content: "website" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "MboaEats" },
       { name: "mobile-web-app-capable", content: "yes" },
-      { name: "twitter:title", content: "MboaEats — Livraison de repas premium au Cameroun" },
-      { name: "twitter:description", content: "Commandez vos plats préférés à Douala, Yaoundé et Bafoussam. Livraison rapide, paiement Mobile Money, mode Tablée." },
+      { name: "twitter:title", content: "MboaEats — Livraison de repas au Cameroun" },
+      { name: "twitter:description", content: "Commandez vos repas préférés livrés chez vous au Cameroun." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1d3729ec-9cf5-45e7-96f4-a8819c3aa5ef/id-preview-649f056f--0ac923c5-ec65-4717-8223-98b35712ae67.lovable.app-1778071659144.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1d3729ec-9cf5-45e7-96f4-a8819c3aa5ef/id-preview-649f056f--0ac923c5-ec65-4717-8223-98b35712ae67.lovable.app-1778071659144.png" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -111,7 +112,7 @@ export const Route = createRootRoute({
       { rel: "apple-touch-icon", href: "/icon-512.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" },
     ],
   }),
   shellComponent: RootShell,
@@ -146,6 +147,7 @@ function RootComponent() {
   return (
     <ThemeProvider defaultTheme="light">
       <SplashScreen />
+      <OfflineBanner />
       <AuthGate>
         {!hideDock && <SiteHeader />}
         <Outlet />
