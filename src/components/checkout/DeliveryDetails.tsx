@@ -141,6 +141,19 @@ export function DeliveryDetails({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const forwardGeocode = async (q: string): Promise<{ lat: number; lng: number } | null> => {
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=fr&q=${encodeURIComponent(q)}`;
+      const res = await fetch(url, { headers: { Accept: "application/json" } });
+      if (!res.ok) return null;
+      const arr = (await res.json()) as Array<{ lat: string; lon: string }>;
+      if (!arr?.length) return null;
+      return { lat: parseFloat(arr[0].lat), lng: parseFloat(arr[0].lon) };
+    } catch {
+      return null;
+    }
+  };
+
   const saveNew = async () => {
     if (draft.line.trim().length < 8) {
       toast.error("Adresse trop courte (≥ 8 caractères)");
@@ -148,14 +161,30 @@ export function DeliveryDetails({
     }
     setSaving(true);
     try {
+      let { lat, lng } = draft;
+      // Si pas de GPS capturé, on tente un géocodage direct (best-effort)
+      if (lat == null || lng == null) {
+        const q = [draft.line, draft.neighborhood, draft.city, "Cameroun"].filter(Boolean).join(", ");
+        const geo = await forwardGeocode(q);
+        if (geo) {
+          lat = geo.lat;
+          lng = geo.lng;
+        }
+      }
+      const payload: DeliveryAddress = {
+        ...draft,
+        line: draft.line.trim(),
+        lat: lat ?? null,
+        lng: lng ?? null,
+      };
       if (authed) {
-        const res = await upsertFn({ data: { ...draft, line: draft.line.trim() } });
-        const saved: DeliveryAddress = { ...draft, id: res.id };
+        const res = await upsertFn({ data: payload });
+        const saved: DeliveryAddress = { ...payload, id: res.id };
         setAddresses((a) => [saved, ...a]);
         onChange({ ...value, address: saved });
-        toast.success("Adresse enregistrée");
+        toast.success(lat != null ? "Adresse enregistrée 📍 GPS sauvegardé" : "Adresse enregistrée");
       } else {
-        onChange({ ...value, address: draft });
+        onChange({ ...value, address: payload });
       }
       setShowNew(false);
     } catch (e) {
