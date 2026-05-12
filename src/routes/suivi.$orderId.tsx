@@ -487,6 +487,10 @@ function SuiviPage() {
         <IssueModal
           orderId={order.id}
           onClose={() => setIssueOpen(false)}
+          onSubmitted={() => {
+            setIssueOpen(false);
+            refetchDisputes();
+          }}
         />
       )}
 
