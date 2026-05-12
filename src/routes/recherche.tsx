@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState, useTransition } from "react";
 import { Search, SlidersHorizontal, X, Star, Clock, Bike } from "lucide-react";
 import { restaurants } from "@/data/restaurants";
 import {
@@ -36,15 +36,27 @@ const SORT_LABELS: Record<SortKey, string> = {
 };
 
 function RecherchePage() {
+  // Saisie immédiate (UI) vs requête appliquée (filtrage) — debouncée + transition
   const [q, setQ] = useState("");
+  const [appliedQ, setAppliedQ] = useState("");
+  const deferredQ = useDeferredValue(appliedQ);
+  const [isPending, startTransition] = useTransition();
   const [sort, setSort] = useState<SortKey>("relevance");
   const [cuisine, setCuisine] = useState<CuisineKey | "all">("all");
   const [promosOnly, setPromosOnly] = useState(false);
   const [maxEta, setMaxEta] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
+  // Debounce 180 ms : ne déclenche le recalcul qu'à la pause de frappe.
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      startTransition(() => setAppliedQ(q));
+    }, 180);
+    return () => window.clearTimeout(t);
+  }, [q]);
+
   const results = useMemo(() => {
-    const needle = q.trim().toLowerCase();
+    const needle = deferredQ.trim().toLowerCase();
     let list = restaurants.filter((r) => {
       if (needle) {
         const inResto = r.name.toLowerCase().includes(needle) || r.tagline.toLowerCase().includes(needle);
@@ -66,7 +78,9 @@ function RecherchePage() {
       sorted.sort((a, b) => min(a) - min(b));
     }
     return sorted;
-  }, [q, sort, cuisine, promosOnly, maxEta]);
+  }, [deferredQ, sort, cuisine, promosOnly, maxEta]);
+
+  const isStale = isPending || deferredQ !== appliedQ || appliedQ !== q;
 
   const activeCount =
     (cuisine !== "all" ? 1 : 0) + (promosOnly ? 1 : 0) + (maxEta ? 1 : 0) + (sort !== "relevance" ? 1 : 0);
@@ -83,6 +97,13 @@ function RecherchePage() {
               onChange={(e) => setQ(e.target.value)}
               placeholder="Cherche un plat, restaurant ou cuisine…"
               className="flex-1 bg-transparent text-sm outline-none"
+              type="search"
+              inputMode="search"
+              enterKeyHint="search"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
             />
             {q && (
               <button onClick={() => setQ("")} aria-label="Effacer">
@@ -160,10 +181,14 @@ function RecherchePage() {
       <main className="mx-auto w-full max-w-md px-4 py-4 overflow-x-hidden">
         <p className="text-xs" style={{ color: "#6B6B6B" }}>
           {results.length} résultat{results.length > 1 ? "s" : ""}
-          {q && <> pour « {q} »</>}
+          {appliedQ && <> pour « {appliedQ} »</>}
+          {isStale && <span className="ml-2 text-[10px] opacity-60">…</span>}
         </p>
 
-        <ul className="mt-3 space-y-3 w-full">
+        <ul
+          className="mt-3 space-y-3 w-full transition-opacity duration-150"
+          style={{ opacity: isStale ? 0.7 : 1, contain: "layout paint" }}
+        >
           {results.map((r) => {
             const badge = badgeMeta(catalogBadge(r));
             const fee = deliveryFee(r);
