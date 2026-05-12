@@ -97,6 +97,13 @@ function RecherchePage() {
               onChange={(e) => setQ(e.target.value)}
               placeholder="Cherche un plat, restaurant ou cuisine…"
               className="flex-1 bg-transparent text-sm outline-none"
+              type="search"
+              inputMode="search"
+              enterKeyHint="search"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
             />
             {q && (
               <button onClick={() => setQ("")} aria-label="Effacer">
