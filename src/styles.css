@@ -621,3 +621,7 @@ body {
 /* Empêche les sticky/fixed de sauter quand le clavier ouvre */
 body.kb-open { overflow: hidden; }
 .kb-safe-bottom { padding-bottom: calc(var(--kb-inset) + env(safe-area-inset-bottom)); }
+
+/* Garde-fous anti-débordement (Explorer & cartes) */
+img, video, canvas, svg { max-width: 100%; height: auto; }
+.no-x-overflow { max-width: 100vw; overflow-x: hidden; }
