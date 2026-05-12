@@ -129,12 +129,14 @@ export function DeliveryDetails({
       setAuthed(true);
       try {
         const r = await listFn();
-        setAddresses(r.addresses as DeliveryAddress[]);
-        if (!value.address.line && r.addresses?.length) {
-          const def = r.addresses.find((a) => a.is_default === true) ?? r.addresses[0];
+        const safeAddresses = Array.isArray(r?.addresses) ? (r.addresses as DeliveryAddress[]) : [];
+        setAddresses(safeAddresses);
+        if (!value.address.line && safeAddresses.length) {
+          const def = safeAddresses.find((a) => a.is_default === true) ?? safeAddresses[0];
           onChange({ ...value, address: def as DeliveryAddress });
         }
       } catch {
+        setAddresses([]);
         /* ignore */
       }
     })();
@@ -219,7 +221,7 @@ export function DeliveryDetails({
           <MapPin className="h-4 w-4 text-[#06C167]" /> Adresse de livraison
         </h2>
 
-        {addresses.length > 0 && (
+        {Array.isArray(addresses) && addresses.length > 0 && (
           <div className="mt-3 space-y-2">
             {addresses.map((a) => {
               const active = value.address.id === a.id;
