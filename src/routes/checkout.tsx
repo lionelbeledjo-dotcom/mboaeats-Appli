@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { Component, useEffect, useState, type ReactNode } from "react";
 import {
   ArrowLeft, Smartphone, CreditCard, Banknote, Check, Loader2, ShieldCheck,
   Lock, ChevronRight, Webhook, MapPin, Tag, Crown, AlertCircle, X, Plus, Sparkles,
@@ -21,7 +21,7 @@ import {
 } from "@/components/checkout/DeliveryContactRows";
 
 export const Route = createFileRoute("/checkout")({
-  component: Checkout,
+  component: CheckoutRoute,
   head: () => ({
     meta: [
       { title: "Paiement · MboaEats" },
@@ -29,6 +29,65 @@ export const Route = createFileRoute("/checkout")({
     ],
   }),
 });
+
+class CheckoutErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
+  state = { hasError: false, error: null as Error | null };
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: unknown) {
+    // eslint-disable-next-line no-console
+    console.error("[Checkout] render error", error);
+  }
+  reset = () => this.setState({ hasError: false, error: null });
+  render() {
+    if (this.state.hasError) {
+      return (
+        <main className="min-h-[calc(100vh-80px)] bg-background px-6 py-10">
+          <div className="mx-auto max-w-md rounded-2xl border border-border bg-card p-6 text-center shadow-sm">
+            <AlertCircle className="mx-auto mb-3 h-10 w-10 text-destructive" />
+            <h1 className="text-lg font-bold">Une erreur est survenue lors du paiement</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {this.state.error?.message ?? "Veuillez réessayer dans un instant."}
+            </p>
+            <div className="mt-5 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={this.reset}
+                className="h-11 w-full rounded-xl bg-foreground text-background font-semibold active:scale-[0.98]"
+              >
+                Réessayer
+              </button>
+              <Link
+                to="/panier"
+                className="h-11 w-full inline-flex items-center justify-center rounded-xl border border-border font-semibold"
+              >
+                Retour au panier
+              </Link>
+            </div>
+          </div>
+        </main>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function CheckoutRoute() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) {
+    return <main className="min-h-[calc(100vh-80px)] bg-background" aria-busy="true" />;
+  }
+  return (
+    <CheckoutErrorBoundary>
+      <Checkout />
+    </CheckoutErrorBoundary>
+  );
+}
 
 type Method = "momo" | "orange" | "card" | "cash";
 type Step = "choose" | "ussd" | "otp" | "card" | "success";
