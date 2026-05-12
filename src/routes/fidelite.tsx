@@ -26,16 +26,43 @@ function Fidelite() {
   const [loading, setLoading] = useState(true);
   const [authed, setAuthed] = useState(false);
   const [data, setData] = useState<{ points: number; currentTier: string; nextTier: string; nextThreshold: number; pct: number; orders30: number } | null>(null);
+  const [catalog, setCatalog] = useState<Array<{ id: string; code: string; name: string; cost_points: number; type: string; min_tier: string; icon: string | null }>>([]);
+  const [redeeming, setRedeeming] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
+
+  const reload = async () => {
+    try {
+      const [loy, cat] = await Promise.all([getMyLoyalty(), getMyRewardsCatalog()]);
+      setData(loy);
+      setCatalog(cat.catalog as any);
+    } catch { /* ignore */ }
+  };
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: u }) => {
       if (u.user) {
         setAuthed(true);
-        try { setData(await getMyLoyalty()); } catch {}
+        await reload();
       }
       setLoading(false);
     });
   }, []);
+
+  const onRedeem = async (rewardCode: string) => {
+    setRedeeming(rewardCode);
+    setToast(null);
+    try {
+      const r = await redeemMyReward({ data: { rewardCode } });
+      setToast({ tone: "ok", text: `${r.reward} débloqué ! Nouveau solde : ${r.new_balance} pts.` });
+      await reload();
+    } catch (err: any) {
+      const m = (err?.message ?? "").toLowerCase();
+      setToast({ tone: "err", text: m.includes("insufficient") ? "Pas assez de points." : "Échec de l'échange." });
+    } finally {
+      setRedeeming(null);
+      setTimeout(() => setToast(null), 4000);
+    }
+  };
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
