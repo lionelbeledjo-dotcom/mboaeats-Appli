@@ -10,6 +10,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { OnboardingCarousel } from "@/components/OnboardingCarousel";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { useOnboarding } from "@/hooks/useOnboarding";
+import { useKeyboardViewport } from "@/hooks/useKeyboardViewport";
 
 // Mode invité : pages de découverte accessibles sans compte. Le checkout reste protégé via une porte dédiée.
 const PUBLIC_ROUTES = [
