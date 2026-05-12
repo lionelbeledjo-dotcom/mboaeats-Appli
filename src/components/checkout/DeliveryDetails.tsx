@@ -274,8 +274,21 @@ export function DeliveryDetails({
               rows={2}
               className="w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[#06C167]"
             />
+            <button
+              type="button"
+              disabled={locating}
+              onClick={useMyLocation}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#06C167]/40 bg-[#06C167]/5 py-2 text-xs font-semibold text-[#06C167] transition hover:bg-[#06C167]/10 disabled:opacity-60"
+            >
+              {locating ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <LocateFixed className="h-3.5 w-3.5" />
+              )}
+              {locating ? "Localisation en cours…" : "📍 Utiliser ma position actuelle"}
+            </button>
             <p className="text-[10px] text-muted-foreground">
-              💡 Géolocalisation Google Maps disponible bientôt — pour l'instant, décris bien le repère.
+              💡 Astuce : autorisez la géolocalisation, puis ajustez le repère visible si besoin.
             </p>
             <div className="flex gap-2">
               <button
