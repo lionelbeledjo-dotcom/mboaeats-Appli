@@ -625,3 +625,21 @@ body.kb-open { overflow: hidden; }
 /* Garde-fous anti-débordement (Explorer & cartes) */
 img, video, canvas, svg { max-width: 100%; height: auto; }
 .no-x-overflow { max-width: 100vw; overflow-x: hidden; }
+
+/* Stabilise tout conteneur scrollable : empêche le rubber-band de propager au body */
+[class*="overflow-y-auto"],
+[class*="overflow-y-scroll"],
+[class*="overflow-auto"],
+[class*="overflow-scroll"] {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Fallback mobile-safe pour background-attachment: fixed (iOS le casse) */
+@media (max-width: 768px) {
+  [style*="background-attachment: fixed"],
+  .bg-fixed { background-attachment: scroll !important; }
+}
+
+/* Réserve d'espace pour images sans dimensions explicites — réduit le CLS */
+img:not([width]):not([height]) { aspect-ratio: attr(data-aspect, auto, 16 / 9); }
