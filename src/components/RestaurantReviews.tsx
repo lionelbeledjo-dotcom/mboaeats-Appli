@@ -22,8 +22,16 @@ function loadReviews(restoId: string): Review[] {
   }
 }
 
+const REVIEWS_EVENT = "mboa:reviews-updated";
+
 function saveReviews(restoId: string, list: Review[]) {
   localStorage.setItem(STORAGE_PREFIX + restoId, JSON.stringify(list));
+  // Notify other components in the same tab (storage event only fires cross-tab)
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent(REVIEWS_EVENT, { detail: { restoId } }),
+    );
+  }
 }
 
 export function RestaurantReviews({
@@ -39,9 +47,28 @@ export function RestaurantReviews({
   const [hover, setHover] = useState(0);
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [highlightId, setHighlightId] = useState<string | null>(null);
 
+  // Initial load + live sync (cross-tab via 'storage', same-tab via custom event)
   useEffect(() => {
     setReviews(loadReviews(restoId));
+
+    const refresh = () => setReviews(loadReviews(restoId));
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_PREFIX + restoId) refresh();
+    };
+    const onCustom = (e: Event) => {
+      const detail = (e as CustomEvent<{ restoId: string }>).detail;
+      if (!detail || detail.restoId === restoId) refresh();
+    };
+
+    window.addEventListener("storage", onStorage);
+    window.addEventListener(REVIEWS_EVENT, onCustom);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener(REVIEWS_EVENT, onCustom);
+    };
   }, [restoId]);
 
   const avg = useMemo(() => {
@@ -69,6 +96,8 @@ export function RestaurantReviews({
     const list = [next, ...reviews];
     setReviews(list);
     saveReviews(restoId, list);
+    setHighlightId(next.id);
+    setTimeout(() => setHighlightId((id) => (id === next.id ? null : id)), 2500);
     setRating(0);
     setComment("");
     setAuthor("");
@@ -159,7 +188,11 @@ export function RestaurantReviews({
           reviews.map((r) => (
             <article
               key={r.id}
-              className="rounded-2xl border border-border/60 bg-card p-4"
+              className={`rounded-2xl border bg-card p-4 transition-all duration-500 ${
+                highlightId === r.id
+                  ? "animate-in fade-in slide-in-from-top-2 border-[#06C167] ring-2 ring-[#06C167]/30"
+                  : "border-border/60"
+              }`}
             >
               <header className="mb-2 flex items-center justify-between">
                 <div>

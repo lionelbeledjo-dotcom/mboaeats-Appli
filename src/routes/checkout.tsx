@@ -581,8 +581,8 @@ function PaymentStatusBadge({ status, method }: { status: "idle" | "pending" | "
   );
 }
 
-function Summary({ cartItems, subtotal, delivery, total, hasPass, landmark, promo, setPromo, paymentStatus, method, reference }: {
-  cartItems: CartItem[]; subtotal: number; delivery: number; total: number; hasPass: boolean; landmark: string;
+function Summary({ cartItems, subtotal, delivery, taxes, total, hasPass, addressLine, promo, setPromo, paymentStatus, method, reference }: {
+  cartItems: CartItem[]; subtotal: number; delivery: number; taxes?: number; total: number; hasPass: boolean; addressLine?: string;
   promo: { code: string; discount: number } | null;
   setPromo: (p: { code: string; discount: number } | null) => void;
   paymentStatus: "idle" | "pending" | "succeeded" | "failed";
@@ -692,10 +692,13 @@ function Summary({ cartItems, subtotal, delivery, total, hasPass, landmark, prom
           </div>
         )}
         <div className="flex justify-between font-display text-xl font-extrabold"><span>Total</span><span className="text-gradient-gold">{total.toLocaleString("fr-FR")} F</span></div>
+        {typeof taxes === "number" && taxes > 0 && (
+          <div className="flex justify-between text-[11px] text-muted-foreground"><span>dont TVA incluse</span><span>{taxes.toLocaleString("fr-FR")} F</span></div>
+        )}
       </div>
-      {landmark && (
+      {addressLine && (
         <p className="mt-3 rounded-xl border border-border bg-background/50 p-2 text-[11px] text-muted-foreground">
-          📍 Repère : <span className="text-foreground">{landmark}</span>
+          📍 Livraison : <span className="text-foreground">{addressLine}</span>
         </p>
       )}
       {promo ? (
