@@ -1,89 +1,109 @@
-# Refonte complète MboaEats — Style "Terroir"
 
-## 1. Identité visuelle (src/styles.css)
-Remplacer la palette actuelle (vert Mboa #06C167, fonds sombres) par :
-- `--background` : #F5F0E8 (beige crème)
-- `--foreground` : #1A1A1A
-- `--muted-foreground` : #6B6B6B
-- `--primary` : #2D5A27 (vert forêt) / `--primary-foreground` : #FFFFFF
-- `--accent` : #4A7C3F (vert clair hover)
-- `--card` : #FFFFFF
-- `--rating` : #F4A623 (étoiles)
-- Police : importer Inter via `@import` Google Fonts, l'appliquer en `--font-sans` ; tailles H1 24/700, H2 20/600, body 13/300, prix 16/700, navbar 11/500
-- Garder les anciennes variables `--brand-cm-green` mais les pointer vers le nouveau vert pour ne rien casser
 
-## 2. Logo (src/components/brand/MboaEatsLogo.tsx)
-- Drapeau Cameroun SVG : 3 bandes verticales vert (#007A5E) / rouge (#CE1126) / jaune (#FCD116) avec étoile jaune centrée sur la bande rouge
-- Texte « Mboa » (#2D5A27) + « Eats » (#4A7C3F), police Inter bold
-- Version compacte pour topbar
+## Vision
 
-## 3. Navbar (src/components/BottomDock.tsx)
-- 4 onglets seulement : Accueil / Commandes / Panier / Profil (suppression Découvrir)
-- Fond blanc #FFFFFF, hauteur 64px, ombre `0 -2px 12px rgba(0,0,0,0.08)`
-- Actif : icône + label #2D5A27 (label visible) ; inactif : #9CA3AF
-- Badge panier : pastille verte #2D5A27
-- Aucune transition de page (déjà fait, vérifier 0ms)
+Transformer l'auth actuelle (email + magic link partiel) en système production-ready multi-rôles, avec OTP SMS via Twilio, Google Sign-In managé, onboarding 3 écrans, profils riches et mode invité contrôlé.
 
-## 4. Topbar (nouveau composant `src/components/AppTopBar.tsx`)
-- Fond blanc + ombre légère
-- Logo + drapeau à gauche, hamburger ☰ à droite
-- Réutilisé sur Accueil, Commandes, Panier, Profil
+## Phase 1 — Base de données & rôles
 
-## 5. Données restaurants (src/data/restaurants.ts)
-Remplacement complet par les 6 entrées du brief, ville Douala, devise FCFA, photos depuis Unsplash (WebP, lazy loading) :
-1. Le Goût du Terroir — 4.7 / 30-40 min / 2 500 F
-2. Chez Pauline — 4.6 / 25-35 min / 2 000 F
-3. Jollof (Riz) — 4.5 / 25-35 min / 2 000 F
-4. Poulet DG — 4.8 / 20-30 min / 2 500 F
-5. La Case Bamiléké — 4.8 / 30-45 min / 2 500 F
-6. Saveurs du Soleil — 4.3 / 30-40 min / 2 000 F
+Migration Supabase :
 
-## 6. Page Accueil (src/routes/index.tsx)
-- Titre H1 « Bienvenue sur MboaEats » vert foncé
-- Barre de recherche blanche, bordure #E5E5E5, radius 12px, placeholder « Rechercher un plat ou un restaurant »
-- Section « Restaurants populaires » : carte horizontale (image 80×80, nom 15/700, description 12 fine grise, ⭐ note + ⏱ délai, prix « À partir de X FCFA » + bouton « + Ajouter » vert)
-- Bouton « + Ajouter » : ajoute au panier via store + incrémente badge navbar
+- Enum `app_role` étendu avec `client`, `restaurateur`, `livreur` (admin/superadmin existent déjà).
+- Table `profiles` enrichie : `avatar_url`, `phone_verified` (bool), `phone_verified_at`, `default_role` (text), `onboarding_completed` (bool), `preferred_language` (text défaut `fr`).
+- Trigger `handle_new_user` mis à jour : crée le profil + assigne automatiquement le rôle `client` dans `user_roles` à l'inscription.
+- Bucket Storage `avatars` (public read, upload par utilisateur authentifié sur son dossier).
+- Table `payment_methods` (user_id, type `mtn|orange|card`, masked_number, is_default) pour la section "moyens de paiement" du profil.
 
-## 7. Page Panier (src/routes/checkout.tsx)
-Refonte avec : titre « Mon panier », photo ronde + nom + stepper [−][+] + prix + ✕, résumé sous-total / livraison 500 F / total bold, bouton pleine largeur vert « PASSER LA COMMANDE »
+## Phase 2 — Google OAuth managé + refonte page connexion
 
-## 8. Page Suivi (src/routes/suivi.$orderId.tsx)
-- Titre « Suivi de commande — Commande #ID »
-- Statut « En cours — Estimation : 30-40 min »
-- Frise horizontale 4 étapes (Reçue → En préparation → En route → Livrée) avec ronds connectés
-- Carte (placeholder ou Maps existante)
-- Détails adresse / paiement / total
-- Bouton outline vert « BESOIN D'AIDE ? »
+- Activation `supabase--configure_social_auth` providers `["google"]` (managé Lovable, zéro config).
+- Génération du module `lovable.auth` via outil dédié.
+- `src/routes/connexion.tsx` : ajout bouton "Continuer avec Google" (utilise `lovable.auth.signInWithOAuth("google")`), conservation du formulaire email + lien mot de passe oublié + lien création compte (déjà en place).
+- `src/routes/inscription.tsx` : ajout choix de rôle à l'inscription (Client par défaut / Je suis restaurateur / Je suis livreur) — stocké dans `user_metadata.intended_role`, attribué après confirmation email.
 
-## 9. État global Zustand
-- `bun add zustand`
-- Créer `src/stores/`:
-  - `cart-store.ts` (persisté localStorage) — remplace `use-cart.ts` (garder export `useCart` avec même API pour ne rien casser)
-  - `user-store.ts` (persisté)
-  - `restaurants-store.ts` (chargé une fois)
-  - `orders-store.ts`
-- Migrer les imports existants ; conserver la signature `{ items, count, subtotal, add, remove, … }` pour éviter de casser les pages non-touchées
+## Phase 3 — OTP SMS Twilio
 
-## 10. Performance
-- `defaultPreload: "intent"` déjà actif dans router → vérifier
-- `preload="intent"` sur tous les `<Link>` navbar (déjà fait)
-- Suppression animations route (déjà fait via styles.css)
-- Lazy loading natif `loading="lazy"` + `width/height` fixes sur toutes les `<img>` (CLS=0)
+Server function `src/lib/sms-otp.functions.ts` :
 
-## Détails techniques
-- Tokens Tailwind : exposer `bg-terroir-cream`, `text-forest`, `bg-forest`, `text-forest-light` via `@theme` dans styles.css
-- Composants UI shadcn (button, card) : ajouter variante `terroir` si nécessaire ; sinon utiliser classes utilitaires
-- Pages secondaires non listées (recherche, profil, fidélité, etc.) : héritent automatiquement des nouveaux tokens — un pass visuel léger pour vérifier la lisibilité, mais pas de refonte
-- Auth : aucun changement (connexion.tsx, inscription.tsx intacts)
-- Drapeau Cameroun : SVG inline 24×16 dans le logo
+- `sendPhoneOtp({ phone })` : génère un code 6 chiffres, hash SHA-256 stocké dans `otp_codes` (table existe déjà), envoie SMS via Twilio gateway (`POST /Messages.json` — `TWILIO_API_KEY` + `TWILIO_FROM_NUMBER` déjà configurés). TTL 5 min, max 5 tentatives, rate-limit 1 envoi/min/numéro.
+- `verifyPhoneOtp({ phone, code })` : vérifie hash, marque `consumed_at`, met à jour `profiles.phone` + `phone_verified=true`.
+- Composant `<PhoneVerificationDialog />` réutilisable (input téléphone E.164 Cameroun préfixé +237, étape 1 saisie / étape 2 code 6 chiffres avec resend après 60s).
+- Branchement dans `inscription.tsx` (étape post-email pour utilisateurs qui veulent vérifier leur numéro) et dans `compte.securite.tsx` (vérification à tout moment).
 
-## Ordre d'exécution
-1. styles.css (palette + Inter) + dépendance Zustand
-2. Logo + Topbar
-3. Stores Zustand (cart en priorité, API compatible)
-4. Données restaurants
-5. Navbar 4 onglets
-6. Accueil
-7. Panier
-8. Suivi
-9. QA visuel rapide sur pages secondaires (lisibilité textes secondaires)
+## Phase 4 — Profils, dashboards par rôle, mode invité
+
+**Profil client** (`src/routes/profil.tsx` enrichi) :
+
+- En-tête : avatar (upload Storage `avatars`), nom, badge téléphone vérifié.
+- Sections : adresses sauvegardées (table `addresses` existe), historique commandes (table `orders` existe — affichage 10 dernières), moyens de paiement (nouvelle table).
+
+**Dashboards par rôle** (route guard via `_authenticated/`) :
+
+- `src/routes/restaurant.tsx` (existe) → vérification rôle `restaurateur`, sinon CTA "Devenir restaurateur" → `/devenir-resto`.
+- `src/routes/livreur.tsx` (existe) → vérification rôle `livreur`, sinon CTA "Devenir livreur" → `/devenir-livreur`.
+- Hook `useUserRoles()` qui interroge `user_roles` via server fn dédié.
+
+**Mode invité** :
+
+- Suppression de tout `requireAuth` sur la home, la liste restaurants, la fiche resto, la recherche.
+- `src/routes/checkout.tsx` : si non-connecté → modal "Connectez-vous pour finaliser" avec 3 options (Email, Google, Téléphone OTP) + redirect-back vers `/checkout` après login (`?redirect=/checkout`).
+- Le panier Zustand reste persistant en localStorage et survit au login (déjà OK).
+
+## Phase 5 — Onboarding 3 écrans + récupération mot de passe
+
+**Onboarding** :
+
+- 3 illustrations IA (premium quality) générées : "Découvrir les saveurs du Cameroun", "Commander en 2 clics", "Suivre ton livreur en direct".
+- Composant `<OnboardingCarousel />` plein écran, swipe + dots + boutons "Passer" / "Suivant" / "Commencer".
+- Affiché uniquement si `localStorage.mboa_onboarding_seen !== "1"` ET (utilisateur non connecté OU `profiles.onboarding_completed = false`).
+- Marqué vu à la fin → `localStorage` + update profil si connecté.
+- Monté dans `__root.tsx` au-dessus de `<Outlet />`.
+
+**Récupération mot de passe** :
+
+- Page `/mot-de-passe-oublie` (nouvelle) : champ email → `supabase.auth.resetPasswordForEmail` avec `redirectTo: window.location.origin + '/reset-password'`.
+- `/reset-password` (existe déjà) : vérifier qu'elle gère `type=recovery` + `updateUser({ password })`.
+- Option "Recevoir un code SMS" si l'utilisateur a un numéro vérifié → réutilise OTP de Phase 3 + écran de saisie nouveau mot de passe.
+
+## Section technique
+
+**Sécurité** :
+
+- Toutes les server fn OTP utilisent `supabaseAdmin` (bypass RLS) car elles écrivent dans `otp_codes` côté serveur. RLS reste active.
+- Validation Zod stricte sur tous les inputs (téléphone E.164 `+237\d{9}`, code `\d{6}`, password min 8 + 1 majuscule + 1 chiffre).
+- Rate-limit OTP en mémoire process (acceptable pour MVP, à migrer Redis plus tard).
+- HIBP activé via `configure_auth({ password_hibp_enabled: true })`.
+
+**Architecture fichiers nouveaux** :
+
+```
+src/lib/
+  sms-otp.functions.ts          # send/verify OTP via Twilio
+  user-roles.functions.ts        # getMyRoles, requestRole(restaurateur|livreur)
+  profile.functions.ts           # updateProfile, uploadAvatar
+src/components/
+  PhoneVerificationDialog.tsx
+  OnboardingCarousel.tsx
+  GoogleSignInButton.tsx
+  GuestCheckoutGate.tsx
+  RoleGuard.tsx                  # affiche CTA si rôle manquant
+src/hooks/
+  useUserRoles.ts
+  useOnboarding.ts
+src/routes/
+  mot-de-passe-oublie.tsx
+  _authenticated.tsx             # layout avec beforeLoad redirect /connexion
+src/assets/onboarding/
+  step-1.jpg, step-2.jpg, step-3.jpg   # IA premium
+```
+
+**Ce que je NE touche PAS** :
+
+- `connexion.tsx` (uniquement +bouton Google), `inscription.tsx` (uniquement +choix rôle), `reset-password.tsx`.
+- Logique panier / commande / paiement Campay.
+- Routes admin / superadmin.
+
+**Ordre d'exécution** : Phase 1 (DB) → Phase 2 (Google + UI auth) → Phase 3 (OTP) → Phase 4 (profils/rôles/invité) → Phase 5 (onboarding + reset). Chaque phase est livrable indépendamment.
+
+**Estimation** : ~25-30 fichiers créés/modifiés au total. Je livre phase par phase et te demande validation entre chaque (sinon trop risqué de tout casser d'un coup).
+
