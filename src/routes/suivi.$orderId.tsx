@@ -709,3 +709,75 @@ function DriverMarker({ progress }: { progress: number }) {
     </g>
   );
 }
+
+const REASON_LABELS: Record<string, string> = {
+  livreur_introuvable: "Livreur introuvable",
+  retard_important: "Retard important",
+  mauvaise_adresse: "Mauvaise adresse",
+  commande_incomplete: "Commande incomplète",
+  qualite: "Problème de qualité",
+  autre: "Autre",
+};
+
+function DisputeCard({
+  dispute,
+}: {
+  dispute: {
+    id: string;
+    reason: string;
+    description: string | null;
+    status: string;
+    resolution: string | null;
+    priority: string;
+    created_at: string;
+    resolved_at: string | null;
+  };
+}) {
+  const statusMap: Record<string, { label: string; color: string; bg: string; Icon: typeof Clock }> = {
+    open: { label: "En attente", color: "#E65100", bg: "#FFF3E0", Icon: Clock },
+    in_progress: { label: "En cours de traitement", color: "#1565C0", bg: "#E3F2FD", Icon: AlertTriangle },
+    resolved: { label: "Résolu", color: "#1B7F3A", bg: "#E8F7EE", Icon: ShieldCheck },
+    closed: { label: "Clôturé", color: "#555555", bg: "#F0F0F0", Icon: CheckCircle2 },
+    rejected: { label: "Rejeté", color: "#B71C1C", bg: "#FFEBEE", Icon: XCircle },
+  };
+  const s = statusMap[dispute.status] ?? statusMap.open;
+  const Icon = s.Icon;
+  const date = new Date(dispute.created_at).toLocaleString("fr-FR", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return (
+    <div className="rounded-2xl bg-white p-4 shadow-[0_2px_12px_-6px_rgba(0,0,0,0.08)]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#888888" }}>
+            Signalement · {date}
+          </p>
+          <p className="mt-0.5 truncate text-sm font-bold" style={{ color: "#1A1A1A" }}>
+            {REASON_LABELS[dispute.reason] ?? dispute.reason}
+          </p>
+        </div>
+        <span
+          className="flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold"
+          style={{ color: s.color, backgroundColor: s.bg }}
+        >
+          <Icon className="h-3 w-3" />
+          {s.label}
+        </span>
+      </div>
+      {dispute.description && (
+        <p className="mt-2 text-xs leading-relaxed" style={{ color: "#555555" }}>
+          « {dispute.description} »
+        </p>
+      )}
+      {dispute.resolution && (
+        <div className="mt-2 rounded-xl p-2.5 text-xs" style={{ backgroundColor: "#E8F7EE", color: "#1B7F3A" }}>
+          <p className="font-bold">Réponse de l'équipe</p>
+          <p className="mt-0.5" style={{ color: "#1A1A1A" }}>{dispute.resolution}</p>
+        </div>
+      )}
+    </div>
+  );
+}
