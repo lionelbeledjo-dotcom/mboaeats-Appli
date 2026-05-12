@@ -227,6 +227,20 @@ function RestaurantPage() {
                         <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
                           {dish.description}
                         </p>
+                        {dishAllergens(dish.id).length > 0 && (
+                          <div className="mt-1.5 flex flex-wrap gap-1">
+                            {dishAllergens(dish.id).map((a) => (
+                              <span
+                                key={a}
+                                className="rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide"
+                                style={{ backgroundColor: "#FFF4E0", color: "#92580E" }}
+                                title={`Contient : ${a}`}
+                              >
+                                ⚠ {a}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                         <div className="mt-auto flex items-center justify-between gap-2 pt-2">
                           <span className="price text-[#06C167]">
                             {dish.price.toLocaleString("fr-FR")}
