@@ -680,3 +680,18 @@ function Portefeuille({ earnings, mine }: { earnings: Earnings | null; mine: Mis
     </div>
   );
 }
+
+import { RoleGuard } from "@/components/RoleGuard";
+function LivreurGuarded() {
+  return (
+    <RoleGuard
+      role="livreur"
+      title="Espace livreur"
+      description="Cet espace est réservé aux livreurs partenaires MboaEats."
+      ctaTo="/devenir-livreur"
+      ctaLabel="Devenir livreur"
+    >
+      <Livreur />
+    </RoleGuard>
+  );
+}

@@ -983,3 +983,18 @@ function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void })
     </div>
   );
 }
+
+import { RoleGuard } from "@/components/RoleGuard";
+function RestaurantSpaceGuarded() {
+  return (
+    <RoleGuard
+      role="restaurateur"
+      title="Espace restaurateur"
+      description="Cet espace est réservé aux restaurateurs partenaires MboaEats."
+      ctaTo="/devenir-resto"
+      ctaLabel="Devenir restaurateur"
+    >
+      <RestaurantSpace />
+    </RoleGuard>
+  );
+}
