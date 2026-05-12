@@ -56,6 +56,7 @@ function DbDishPage() {
   const [dish, setDish] = useState<Dish | null>(initial?.dish ?? null);
   const [loading, setLoading] = useState(!initial?.dish);
   const [qty, setQty] = useState(1);
+  const [note, setNote] = useState("");
 
   useEffect(() => {
     // Re-sync when params change (loader data already primes initial render)
@@ -183,6 +184,35 @@ function DbDishPage() {
           </section>
         )}
 
+        {/* Instructions spéciales */}
+        <section className="mt-5 rounded-2xl border border-border/60 bg-card p-4 animate-content-in">
+          <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-muted-foreground">
+            Instructions spéciales
+          </h2>
+          <div className="mb-2 flex flex-wrap gap-2">
+            {["Sans oignon", "Sans piment", "Extra sauce", "Bien cuit", "Peu salé"].map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() =>
+                  setNote((n) => (n.includes(tag) ? n : (n ? n + ", " : "") + tag))
+                }
+                className="rounded-full border border-border/60 bg-background px-3 py-1 text-xs font-medium text-foreground transition hover:border-[#06C167]/60 hover:text-[#06C167]"
+              >
+                + {tag}
+              </button>
+            ))}
+          </div>
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value.slice(0, 200))}
+            rows={2}
+            placeholder="Ex : pas d'oignon, sauce à part…"
+            className="w-full resize-none rounded-xl border border-border/60 bg-background p-3 text-sm outline-none focus:border-[#06C167]"
+          />
+          <p className="mt-1 text-right text-[10px] text-muted-foreground">{note.length}/200</p>
+        </section>
+
         {/* Quantity */}
         <div className="mt-6 flex items-center justify-between rounded-2xl border border-border/60 bg-card p-3 animate-content-in" style={{ animationDelay: "0ms" }}>
           <span className="text-sm font-semibold text-foreground">Quantité</span>
@@ -222,16 +252,17 @@ function DbDishPage() {
             disabled={!canOrder}
             onClick={() => {
               addToCart({
-                id: `db__${dish.id}`,
+                id: `db__${dish.id}__${(note || "").slice(0, 20)}`,
                 dishId: dish.id,
                 restoId: resto.id,
                 name: dish.name,
                 price: dish.price,
                 qty,
                 image: dish.image_url ?? undefined,
+                note: note.trim() || undefined,
               });
               toast.success("L'article a été ajouté au panier !", {
-                description: `${qty} × ${dish.name}`,
+                description: `${qty} × ${dish.name}${note ? ` · ${note.slice(0, 30)}` : ""}`,
                 action: {
                   label: "Voir le panier",
                   onClick: () => navigate({ to: "/checkout" }),
