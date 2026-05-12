@@ -193,3 +193,153 @@ export const getMyEarnings = createServerFn({ method: "GET" })
       week: buckets,
     };
   });
+
+// Évaluations clients reçues (rating laissé par les clients sur les commandes livrées par ce livreur)
+export const getMyDriverReviews = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { userId } = context;
+    const { data: orders } = await supabaseAdmin
+      .from("orders")
+      .select("id, reference, restaurant_id, restaurants(name)")
+      .eq("driver_id", userId)
+      .eq("status", "delivered")
+      .limit(200);
+    const orderIds = (orders ?? []).map((o) => o.id);
+    if (orderIds.length === 0) {
+      return { reviews: [], avg: null, count: 0 };
+    }
+    const { data: reviews } = await supabaseAdmin
+      .from("restaurant_reviews")
+      .select("id, rating, comment, created_at, order_id")
+      .in("order_id", orderIds)
+      .order("created_at", { ascending: false });
+    const list = (reviews ?? []).map((r) => {
+      const o = (orders ?? []).find((x) => x.id === r.order_id);
+      return {
+        id: r.id,
+        rating: r.rating,
+        comment: r.comment,
+        created_at: r.created_at,
+        reference: o?.reference ?? "",
+        restaurant_name: (o as { restaurants?: { name?: string } } | undefined)?.restaurants?.name ?? "Restaurant",
+      };
+    });
+    const avg = list.length > 0 ? list.reduce((s, r) => s + (r.rating ?? 0), 0) / list.length : null;
+    return { reviews: list, avg, count: list.length };
+  });
+
+// Étape intermédiaire : le livreur signale son arrivée au restaurant
+export const markArrivedAtRestaurant = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ order_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { userId } = context;
+    const { error } = await supabaseAdmin
+      .from("order_events")
+      .insert({
+        order_id: data.order_id,
+        event_type: "driver_arrived_restaurant",
+        created_by: userId,
+        payload: { at: new Date().toISOString() },
+      });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// Demande de virement des gains vers MTN MoMo / Orange Money
+export const requestPayout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z
+      .object({
+        amount_fcfa: z.number().int().positive().max(2_000_000),
+        method: z.enum(["mtn_momo", "orange_money"]),
+        msisdn: z.string().regex(/^(\+?237)?6\d{8}$/, "Numéro Cameroun invalide"),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { userId } = context;
+
+    // Vérifie les gains nets disponibles (livraisons livrées 30j - retraits 30j)
+    const since = new Date();
+    since.setDate(since.getDate() - 30);
+    const [{ data: orders }, { data: payouts }] = await Promise.all([
+      supabaseAdmin
+        .from("orders")
+        .select("delivery_fee, delivered_at")
+        .eq("driver_id", userId)
+        .eq("status", "delivered")
+        .gte("delivered_at", since.toISOString()),
+      supabaseAdmin
+        .from("payments")
+        .select("amount_fcfa, status")
+        .eq("user_id", userId)
+        .eq("purpose", "driver_payout")
+        .in("status", ["pending", "succeeded"]),
+    ]);
+    const earned = (orders ?? []).reduce((s, r) => s + (r.delivery_fee ?? 0), 0);
+    const withdrawn = (payouts ?? []).reduce((s, r) => s + (r.amount_fcfa ?? 0), 0);
+    const available = earned - withdrawn;
+    if (data.amount_fcfa > available) {
+      throw new Error(`Solde insuffisant. Disponible : ${available.toLocaleString("fr-FR")} FCFA`);
+    }
+
+    const reference = `PAYOUT-${Date.now().toString(36).toUpperCase()}`;
+    const { error } = await supabaseAdmin.from("payments").insert({
+      user_id: userId,
+      provider: data.method === "mtn_momo" ? "mtn" : "orange",
+      reference,
+      msisdn: data.msisdn,
+      amount_fcfa: data.amount_fcfa,
+      purpose: "driver_payout",
+      status: "pending",
+      metadata: { kind: "driver_payout", method: data.method },
+    });
+    if (error) throw new Error(error.message);
+
+    // Notifier le livreur
+    await supabaseAdmin.from("notifications").insert({
+      user_id: userId,
+      type: "wallet",
+      title: "📤 Demande de virement reçue",
+      body: `Votre demande de ${data.amount_fcfa.toLocaleString("fr-FR")} FCFA est en cours de traitement.`,
+      data: { reference, amount: data.amount_fcfa, method: data.method },
+    });
+
+    return { ok: true, reference, available_after: available - data.amount_fcfa };
+  });
+
+// Solde disponible pour retrait
+export const getPayoutBalance = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { userId } = context;
+    const since = new Date();
+    since.setDate(since.getDate() - 30);
+    const [{ data: orders }, { data: payouts }] = await Promise.all([
+      supabaseAdmin
+        .from("orders")
+        .select("delivery_fee, delivered_at")
+        .eq("driver_id", userId)
+        .eq("status", "delivered")
+        .gte("delivered_at", since.toISOString()),
+      supabaseAdmin
+        .from("payments")
+        .select("amount_fcfa, status, reference, created_at")
+        .eq("user_id", userId)
+        .eq("purpose", "driver_payout")
+        .order("created_at", { ascending: false })
+        .limit(20),
+    ]);
+    const earned = (orders ?? []).reduce((s, r) => s + (r.delivery_fee ?? 0), 0);
+    const reserved = (payouts ?? [])
+      .filter((p) => p.status === "pending" || p.status === "succeeded")
+      .reduce((s, r) => s + (r.amount_fcfa ?? 0), 0);
+    return {
+      available: Math.max(0, earned - reserved),
+      earned_30d: earned,
+      payouts: payouts ?? [],
+    };
+  });
