@@ -299,7 +299,7 @@ function Livreur() {
         ) : tab === "portefeuille" ? (
           <Portefeuille earnings={earnings} mine={mine} />
         ) : (
-          <Evaluations reviews={reviews.list} avg={reviews.avg} count={reviews.count} />
+          <Evaluations reviews={reviews.list} avg={reviews.avg ?? 0} count={reviews.count} />
         )}
       </main>
 
@@ -905,6 +905,70 @@ function Portefeuille({ earnings, mine }: { earnings: Earnings | null; mine: Mis
               <p className="text-sm font-bold">+{(r.delivery_fee ?? 0).toLocaleString("fr-FR")} FCFA</p>
             </div>
           ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Evaluations({ reviews, avg, count }: { reviews: DriverReview[]; avg: number; count: number }) {
+  return (
+    <div className="space-y-4">
+      <div className="rounded-2xl border border-border bg-card p-5">
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">Note moyenne</p>
+        <div className="mt-2 flex items-baseline gap-2">
+          <span className="font-display text-4xl font-extrabold text-gold">{avg.toFixed(1)}</span>
+          <span className="text-sm text-muted-foreground">/ 5 · {count} avis</span>
+        </div>
+      </div>
+      <div className="space-y-3">
+        {reviews.length === 0 ? (
+          <p className="rounded-2xl border border-dashed border-border bg-surface/40 p-6 text-center text-sm text-muted-foreground">Pas encore d'avis.</p>
+        ) : reviews.map((r) => (
+          <div key={r.id} className="rounded-2xl border border-border bg-card p-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-gold">{"★".repeat(r.rating)}<span className="text-muted-foreground">{"★".repeat(5 - r.rating)}</span></p>
+              <p className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString("fr-FR")}</p>
+            </div>
+            {r.comment && <p className="mt-2 text-sm">{r.comment}</p>}
+            <p className="mt-2 text-xs text-muted-foreground">{r.restaurant_name} · {r.reference}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function IncomingMissionAlert({ mission, onAccept, onDecline }: { mission: MissionRow; onAccept: () => void; onDecline: () => void }) {
+  const [secs, setSecs] = useState(30);
+  useEffect(() => {
+    const t = setInterval(() => setSecs((s) => s - 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+  useEffect(() => { if (secs <= 0) onDecline(); }, [secs, onDecline]);
+  const fee = (mission.delivery_fee ?? 0).toLocaleString("fr-FR");
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 sm:items-center">
+      <div className="w-full max-w-md rounded-3xl border-2 border-primary bg-card p-6 shadow-glow">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold uppercase tracking-wider text-primary">Nouvelle mission</p>
+          <span className="rounded-full bg-primary/15 px-3 py-1 text-sm font-bold text-primary">{secs}s</span>
+        </div>
+        <h3 className="mt-2 font-display text-xl font-bold">{mission.restaurants?.name ?? "Restaurant"}</h3>
+        <p className="text-sm text-muted-foreground">→ {mission.delivery_address?.line ?? mission.delivery_address?.neighborhood ?? "Client"}</p>
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="rounded-xl bg-surface/60 p-3">
+            <p className="text-xs text-muted-foreground">Gain estimé</p>
+            <p className="font-display text-lg font-bold text-gold">+{fee} F</p>
+          </div>
+          <div className="rounded-xl bg-surface/60 p-3">
+            <p className="text-xs text-muted-foreground">Réf.</p>
+            <p className="font-mono text-sm font-semibold">{mission.reference}</p>
+          </div>
+        </div>
+        <div className="mt-5 grid grid-cols-2 gap-3">
+          <button onClick={onDecline} className="rounded-full border border-border bg-surface/60 py-3 text-sm font-semibold">Refuser</button>
+          <button onClick={onAccept} className="rounded-full bg-gradient-primary py-3 text-sm font-bold text-primary-foreground shadow-glow">Accepter</button>
         </div>
       </div>
     </div>

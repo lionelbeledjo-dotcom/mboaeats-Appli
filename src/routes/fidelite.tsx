@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, Crown, Flame, Gift, Sparkles, Trophy, Lock, Check, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyLoyalty } from "@/server/account.functions";
+import { getMyRewardsCatalog, redeemMyReward } from "@/server/loyalty.functions";
 
 export const Route = createFileRoute("/fidelite")({
   component: Fidelite,
@@ -25,16 +26,43 @@ function Fidelite() {
   const [loading, setLoading] = useState(true);
   const [authed, setAuthed] = useState(false);
   const [data, setData] = useState<{ points: number; currentTier: string; nextTier: string; nextThreshold: number; pct: number; orders30: number } | null>(null);
+  const [catalog, setCatalog] = useState<Array<{ id: string; code: string; name: string; cost_points: number; type: string; min_tier: string; icon: string | null }>>([]);
+  const [redeeming, setRedeeming] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
+
+  const reload = async () => {
+    try {
+      const [loy, cat] = await Promise.all([getMyLoyalty(), getMyRewardsCatalog()]);
+      setData(loy);
+      setCatalog(cat.catalog as any);
+    } catch { /* ignore */ }
+  };
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: u }) => {
       if (u.user) {
         setAuthed(true);
-        try { setData(await getMyLoyalty()); } catch {}
+        await reload();
       }
       setLoading(false);
     });
   }, []);
+
+  const onRedeem = async (rewardCode: string) => {
+    setRedeeming(rewardCode);
+    setToast(null);
+    try {
+      const r = await redeemMyReward({ data: { rewardCode } });
+      setToast({ tone: "ok", text: `${r.reward} débloqué ! Nouveau solde : ${r.new_balance} pts.` });
+      await reload();
+    } catch (err: any) {
+      const m = (err?.message ?? "").toLowerCase();
+      setToast({ tone: "err", text: m.includes("insufficient") ? "Pas assez de points." : "Échec de l'échange." });
+    } finally {
+      setRedeeming(null);
+      setTimeout(() => setToast(null), 4000);
+    }
+  };
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
@@ -176,19 +204,19 @@ function Fidelite() {
             <Gift className="h-5 w-5 text-primary" />
             <h2 className="font-display text-xl font-bold">Boutique des récompenses</h2>
           </div>
+          {toast && (
+            <div className={`mt-3 rounded-xl px-4 py-2 text-sm ${toast.tone === "ok" ? "bg-primary/15 text-primary" : "bg-destructive/15 text-destructive"}`}>{toast.text}</div>
+          )}
           <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-4">
-            {[
-              { name: "Livraison offerte", cost: 500, icon: "🛵" },
-              { name: "Beignets surprise", cost: 800, icon: "🥯" },
-              { name: "-30% Tablée", cost: 1200, icon: "🍽️" },
-              { name: "Plat signature", cost: 2500, icon: "👑" },
-            ].map((r) => {
-              const can = points >= r.cost;
+            {catalog.map((r) => {
+              const can = points >= r.cost_points;
+              const busy = redeeming === r.code;
               return (
-                <button key={r.name} disabled={!can} className={`group flex flex-col items-start gap-2 rounded-2xl border p-4 text-left transition ${can ? "border-border bg-surface/60 hover:border-primary hover:shadow-glow" : "border-border bg-surface/30 opacity-60"}`}>
-                  <span className="text-3xl">{r.icon}</span>
+                <button key={r.id} disabled={!can || busy} onClick={() => onRedeem(r.code)} className={`group flex flex-col items-start gap-2 rounded-2xl border p-4 text-left transition ${can ? "border-border bg-surface/60 hover:border-primary hover:shadow-glow" : "border-border bg-surface/30 opacity-60"}`}>
+                  <span className="text-3xl">{r.icon ?? "🎁"}</span>
                   <span className="text-sm font-semibold">{r.name}</span>
-                  <span className="flex items-center gap-1 text-xs text-gold"><Flame className="h-3 w-3" /> {r.cost} pts</span>
+                  <span className="flex items-center gap-1 text-xs text-gold"><Flame className="h-3 w-3" /> {r.cost_points} pts</span>
+                  {busy && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
                 </button>
               );
             })}
