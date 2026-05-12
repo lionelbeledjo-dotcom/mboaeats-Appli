@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useDeferredValue, useEffect, useMemo, useState, useTransition } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { Search, SlidersHorizontal, X, Star, Clock, Bike } from "lucide-react";
 import { restaurants } from "@/data/restaurants";
 import {
