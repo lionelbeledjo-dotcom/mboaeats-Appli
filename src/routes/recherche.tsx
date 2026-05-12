@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useDeferredValue, useEffect, useMemo, useState, useTransition } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { Search, SlidersHorizontal, X, Star, Clock, Bike } from "lucide-react";
 import { restaurants } from "@/data/restaurants";
 import {
@@ -185,55 +186,102 @@ function RecherchePage() {
           {isStale && <span className="ml-2 text-[10px] opacity-60">…</span>}
         </p>
 
-        <ul
-          className="mt-3 space-y-3 w-full transition-opacity duration-150"
-          style={{ opacity: isStale ? 0.7 : 1, contain: "layout paint" }}
-        >
-          {results.map((r) => {
-            const badge = badgeMeta(catalogBadge(r));
-            const fee = deliveryFee(r);
-            return (
-              <li key={r.id} className="w-full max-w-full">
-                <Link
-                  to="/restaurants/$restoId"
-                  params={{ restoId: r.id }}
-                  className="flex w-full max-w-full gap-3 overflow-hidden rounded-2xl bg-white p-3 transition active:scale-[0.99]"
-                  style={{ boxShadow: "0 2px 12px -8px rgba(0,0,0,0.08)" }}
-                >
-                  <div className="relative h-20 w-20 shrink-0">
-                    <img src={r.cover} alt={r.name} className="h-20 w-20 rounded-xl object-cover" loading="lazy" />
-                    {badge && (
-                      <span
-                        className="absolute left-1 top-1 rounded-full px-1.5 py-0.5 text-[9px] font-extrabold uppercase"
-                        style={{ backgroundColor: badge.bg, color: badge.fg }}
-                      >
-                        {badge.label}
-                      </span>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[15px] font-bold" style={{ color: "#1A1A1A" }}>{r.name}</p>
-                    <p className="truncate text-[12px]" style={{ color: "#6B6B6B" }}>{r.tagline.split("—")[0].trim()}</p>
-                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12px]" style={{ color: "#6B6B6B" }}>
-                      <span className="inline-flex items-center gap-1">
-                        <Star className="h-3.5 w-3.5 fill-current" style={{ color: "#F4A623" }} />
-                        <span className="font-semibold" style={{ color: "#1A1A1A" }}>{r.rating}</span>
-                      </span>
-                      <span className="inline-flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {r.eta}</span>
-                      <span className="inline-flex items-center gap-1"><Bike className="h-3.5 w-3.5" /> {fee.toLocaleString("fr-FR")}</span>
-                    </div>
-                  </div>
-                </Link>
-              </li>
-            );
-          })}
-          {results.length === 0 && (
-            <li className="rounded-xl bg-white p-6 text-center text-sm" style={{ color: "#6B6B6B", border: "1px solid #E5E5E5" }}>
-              Aucun résultat. Essayez d'élargir vos filtres.
-            </li>
-          )}
-        </ul>
+        {results.length === 0 ? (
+          <div
+            className="mt-3 rounded-xl bg-white p-6 text-center text-sm transition-opacity duration-150"
+            style={{ color: "#6B6B6B", border: "1px solid #E5E5E5", opacity: isStale ? 0.7 : 1 }}
+          >
+            Aucun résultat. Essayez d'élargir vos filtres.
+          </div>
+        ) : (
+          <VirtualResults results={results} isStale={isStale} />
+        )}
       </main>
+    </div>
+  );
+}
+
+const ROW_HEIGHT = 116; // hauteur estimée d'une carte (104px contenu + 12px gap)
+
+function VirtualResults({
+  results,
+  isStale,
+}: {
+  results: typeof restaurants;
+  isStale: boolean;
+}) {
+  const listRef = useRef<HTMLDivElement | null>(null);
+
+  const virtualizer = useWindowVirtualizer({
+    count: results.length,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 6,
+    scrollMargin: listRef.current?.offsetTop ?? 0,
+    getItemKey: (index) => results[index].id,
+  });
+
+  const items = virtualizer.getVirtualItems();
+  const totalSize = virtualizer.getTotalSize();
+  const offset = listRef.current?.offsetTop ?? 0;
+
+  return (
+    <div
+      ref={listRef}
+      className="relative mt-3 w-full transition-opacity duration-150"
+      style={{
+        opacity: isStale ? 0.7 : 1,
+        contain: "layout paint",
+        height: `${totalSize}px`,
+      }}
+    >
+      {items.map((virtualRow) => {
+        const r = results[virtualRow.index];
+        const badge = badgeMeta(catalogBadge(r));
+        const fee = deliveryFee(r);
+        return (
+          <div
+            key={virtualRow.key}
+            data-index={virtualRow.index}
+            ref={virtualizer.measureElement}
+            className="absolute left-0 right-0 w-full max-w-full px-0"
+            style={{
+              transform: `translateY(${virtualRow.start - offset}px)`,
+              paddingBottom: 12,
+            }}
+          >
+            <Link
+              to="/restaurants/$restoId"
+              params={{ restoId: r.id }}
+              className="flex w-full max-w-full gap-3 overflow-hidden rounded-2xl bg-white p-3 transition active:scale-[0.99]"
+              style={{ boxShadow: "0 2px 12px -8px rgba(0,0,0,0.08)" }}
+            >
+              <div className="relative h-20 w-20 shrink-0">
+                <img src={r.cover} alt={r.name} className="h-20 w-20 rounded-xl object-cover" loading="lazy" />
+                {badge && (
+                  <span
+                    className="absolute left-1 top-1 rounded-full px-1.5 py-0.5 text-[9px] font-extrabold uppercase"
+                    style={{ backgroundColor: badge.bg, color: badge.fg }}
+                  >
+                    {badge.label}
+                  </span>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[15px] font-bold" style={{ color: "#1A1A1A" }}>{r.name}</p>
+                <p className="truncate text-[12px]" style={{ color: "#6B6B6B" }}>{r.tagline.split("—")[0].trim()}</p>
+                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12px]" style={{ color: "#6B6B6B" }}>
+                  <span className="inline-flex items-center gap-1">
+                    <Star className="h-3.5 w-3.5 fill-current" style={{ color: "#F4A623" }} />
+                    <span className="font-semibold" style={{ color: "#1A1A1A" }}>{r.rating}</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {r.eta}</span>
+                  <span className="inline-flex items-center gap-1"><Bike className="h-3.5 w-3.5" /> {fee.toLocaleString("fr-FR")}</span>
+                </div>
+              </div>
+            </Link>
+          </div>
+        );
+      })}
     </div>
   );
 }
