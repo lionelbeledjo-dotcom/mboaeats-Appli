@@ -615,3 +615,9 @@ body {
   /* Defensive: ensure no element forces horizontal overflow via min-width default */
   min-width: 0;
 }
+
+/* Keyboard inset (mobile) — alimenté par useKeyboardViewport */
+:root { --kb-inset: 0px; }
+/* Empêche les sticky/fixed de sauter quand le clavier ouvre */
+body.kb-open { overflow: hidden; }
+.kb-safe-bottom { padding-bottom: calc(var(--kb-inset) + env(safe-area-inset-bottom)); }
