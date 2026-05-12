@@ -30,10 +30,10 @@ export function RestaurantListCard({ restaurant: r, minPrice, onAdd, onPrefetch 
       preload="intent"
       onMouseEnter={onPrefetch}
       onTouchStart={onPrefetch}
-      className="block rounded-2xl bg-white p-3 transition active:scale-[0.99]"
+      className="block w-full max-w-full overflow-hidden rounded-2xl bg-white p-3 transition active:scale-[0.99]"
       style={{ boxShadow: "0 2px 12px -8px rgba(0,0,0,0.08)" }}
     >
-      <div className="flex gap-3">
+      <div className="flex w-full max-w-full gap-3">
         <div className="relative h-20 w-20 shrink-0">
           <img
             src={r.cover}
