@@ -429,7 +429,7 @@ function fmtAddr(a: MissionRow["delivery_address"]) {
 }
 
 function Courses({
-  online, available, current, mine, onClaim, onStatus,
+  online, available, current, mine, onClaim, onStatus, onArrived, arrivedAt,
 }: {
   online: boolean;
   available: MissionRow[];
@@ -437,14 +437,29 @@ function Courses({
   mine: MissionRow[];
   onClaim: (id: string) => void;
   onStatus: (id: string, s: "picked_up" | "delivering" | "delivered" | "cancelled") => void;
+  onArrived: (id: string) => void;
+  arrivedAt: Record<string, boolean>;
 }) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayDeliveries = mine.filter(
+    (m) => m.status === "delivered" && m.delivered_at && new Date(m.delivered_at) >= today,
+  );
+  const todayEarnings = todayDeliveries.reduce((s, m) => s + (m.delivery_fee ?? 0), 0);
   const history = mine.filter((m) => m.status === "delivered").slice(0, 8);
 
   return (
     <div className="space-y-4 py-4">
       {!online && !current && <EmptyOffline />}
 
-      {current && <ActiveCourse mission={current} onStatus={onStatus} />}
+      {current && (
+        <ActiveCourse
+          mission={current}
+          onStatus={onStatus}
+          onArrived={onArrived}
+          arrived={!!arrivedAt[current.id]}
+        />
+      )}
 
       {online && !current && (
         <>
