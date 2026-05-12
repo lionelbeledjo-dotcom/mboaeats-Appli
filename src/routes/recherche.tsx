@@ -285,10 +285,6 @@ function VirtualResults({
     </div>
   );
 }
-      </main>
-    </div>
-  );
-}
 
 function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
