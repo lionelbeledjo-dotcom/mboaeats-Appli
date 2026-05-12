@@ -204,19 +204,19 @@ function Fidelite() {
             <Gift className="h-5 w-5 text-primary" />
             <h2 className="font-display text-xl font-bold">Boutique des récompenses</h2>
           </div>
+          {toast && (
+            <div className={`mt-3 rounded-xl px-4 py-2 text-sm ${toast.tone === "ok" ? "bg-primary/15 text-primary" : "bg-destructive/15 text-destructive"}`}>{toast.text}</div>
+          )}
           <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-4">
-            {[
-              { name: "Livraison offerte", cost: 500, icon: "🛵" },
-              { name: "Beignets surprise", cost: 800, icon: "🥯" },
-              { name: "-30% Tablée", cost: 1200, icon: "🍽️" },
-              { name: "Plat signature", cost: 2500, icon: "👑" },
-            ].map((r) => {
-              const can = points >= r.cost;
+            {catalog.map((r) => {
+              const can = points >= r.cost_points;
+              const busy = redeeming === r.code;
               return (
-                <button key={r.name} disabled={!can} className={`group flex flex-col items-start gap-2 rounded-2xl border p-4 text-left transition ${can ? "border-border bg-surface/60 hover:border-primary hover:shadow-glow" : "border-border bg-surface/30 opacity-60"}`}>
-                  <span className="text-3xl">{r.icon}</span>
+                <button key={r.id} disabled={!can || busy} onClick={() => onRedeem(r.code)} className={`group flex flex-col items-start gap-2 rounded-2xl border p-4 text-left transition ${can ? "border-border bg-surface/60 hover:border-primary hover:shadow-glow" : "border-border bg-surface/30 opacity-60"}`}>
+                  <span className="text-3xl">{r.icon ?? "🎁"}</span>
                   <span className="text-sm font-semibold">{r.name}</span>
-                  <span className="flex items-center gap-1 text-xs text-gold"><Flame className="h-3 w-3" /> {r.cost} pts</span>
+                  <span className="flex items-center gap-1 text-xs text-gold"><Flame className="h-3 w-3" /> {r.cost_points} pts</span>
+                  {busy && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
                 </button>
               );
             })}
