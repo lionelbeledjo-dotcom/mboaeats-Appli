@@ -91,6 +91,8 @@ export function DeliveryDetails({
             line,
             city,
             neighborhood,
+            lat: latitude,
+            lng: longitude,
           }));
           toast.success("Position détectée — vérifiez l'adresse");
         } catch {
@@ -98,6 +100,8 @@ export function DeliveryDetails({
           setDraft((d) => ({
             ...d,
             line: `Position GPS : ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`,
+            lat: latitude,
+            lng: longitude,
           }));
           toast.message("Position captée — précisez le repère manuellement");
         } finally {
