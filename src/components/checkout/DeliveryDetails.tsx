@@ -132,7 +132,7 @@ export function DeliveryDetails({
         const safeAddresses = Array.isArray(r?.addresses) ? (r.addresses as DeliveryAddress[]) : [];
         setAddresses(safeAddresses);
         if (!value.address.line && safeAddresses.length) {
-          const def = safeAddresses.find((a) => a.is_default === true) ?? safeAddresses[0];
+          const def = safeAddresses.find((a) => (a as DeliveryAddress & { is_default?: boolean }).is_default === true) ?? safeAddresses[0];
           onChange({ ...value, address: def as DeliveryAddress });
         }
       } catch {
