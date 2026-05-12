@@ -12,6 +12,7 @@ import { getDriverContact, reportOrderIssue } from "@/server/tracking.functions"
 import { useRealtimeOrder } from "@/hooks/use-realtime-order";
 import { useDriverLocation } from "@/hooks/use-driver-location";
 import { ReviewForm } from "@/components/ReviewForm";
+import { OrderChat } from "@/components/OrderChat";
 
 export const Route = createFileRoute("/suivi/$orderId")({
   beforeLoad: async ({ params }) => {
