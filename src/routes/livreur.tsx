@@ -299,7 +299,7 @@ function Livreur() {
         ) : tab === "portefeuille" ? (
           <Portefeuille earnings={earnings} mine={mine} />
         ) : (
-          <Evaluations reviews={reviews.list} avg={reviews.avg} count={reviews.count} />
+          <Evaluations reviews={reviews.list} avg={reviews.avg ?? 0} count={reviews.count} />
         )}
       </main>
 
