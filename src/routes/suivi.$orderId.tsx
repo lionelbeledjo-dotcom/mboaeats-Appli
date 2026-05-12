@@ -184,6 +184,44 @@ function SuiviPage() {
   const [issueOpen, setIssueOpen] = useState(false);
   const canReportIssue = stepIdx >= 1 && !order.delivered_at && order.status !== "cancelled";
 
+  // Signalements (disputes) liés à la commande — temps réel
+  type Dispute = {
+    id: string;
+    reason: string;
+    description: string | null;
+    status: string;
+    resolution: string | null;
+    priority: string;
+    created_at: string;
+    resolved_at: string | null;
+  };
+  const [disputes, setDisputes] = useState<Dispute[]>([]);
+  const refetchDisputes = useMemo(
+    () => async () => {
+      const { data: rows } = await supabase
+        .from("disputes")
+        .select("id, reason, description, status, resolution, priority, created_at, resolved_at")
+        .eq("order_id", order.id)
+        .order("created_at", { ascending: false });
+      setDisputes((rows ?? []) as Dispute[]);
+    },
+    [order.id],
+  );
+  useEffect(() => {
+    refetchDisputes();
+    const ch = supabase
+      .channel(`disputes:${order.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "disputes", filter: `order_id=eq.${order.id}` },
+        () => refetchDisputes(),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [order.id, refetchDisputes]);
+
   return (
     <div className="min-h-screen pb-32" style={{ backgroundColor: "#F5F0E8" }}>
       {/* Map area */}
