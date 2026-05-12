@@ -28,17 +28,20 @@ export function useKeyboardViewport() {
     vv?.addEventListener("scroll", setInset);
     window.addEventListener("orientationchange", setInset);
 
-    // Empêche le navigateur de "scroller" toute la page lors du focus,
-    // puis ramène le champ visible avec une animation douce.
+    // Garde le champ focus visible sans recentrer brutalement toute la page.
     const onFocusIn = (e: FocusEvent) => {
       const t = e.target as HTMLElement | null;
       if (!t) return;
       const tag = t.tagName;
       if (tag !== "INPUT" && tag !== "TEXTAREA" && !(t as HTMLElement).isContentEditable) return;
-      // laisse le clavier s'ouvrir, puis ajuste
       window.setTimeout(() => {
         try {
-          t.scrollIntoView({ block: "center", behavior: "smooth" });
+          const viewportHeight = vv?.height ?? window.innerHeight;
+          const rect = t.getBoundingClientRect();
+          const margin = 16;
+          if (rect.bottom > viewportHeight - margin || rect.top < margin) {
+            t.scrollIntoView({ block: "nearest", behavior: "auto" });
+          }
         } catch {
           /* noop */
         }
