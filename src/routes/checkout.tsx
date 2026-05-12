@@ -113,11 +113,11 @@ function Checkout() {
   const markPaidFn = useServerFn(markOrderPaid);
 
   const cartHook = useCart();
-  const cartItems = cartHook?.items ?? [];
-  const subtotal = cartHook?.subtotal ?? 0;
-  const cart = cartItems.map((i) => ({ name: i?.name ?? "", qty: i?.qty ?? 0, price: i?.price ?? 0 }));
+  const cartItems = Array.isArray(cartHook?.items) ? cartHook.items.filter(Boolean) : [];
+  const subtotal = Number.isFinite(cartHook?.subtotal) ? cartHook.subtotal : 0;
+  const cart = cartItems.map((i) => ({ name: i?.name ?? "Article", qty: i?.qty ?? 0, price: i?.price ?? 0 }));
   // Items provenant de la base (préfixés "db__") → vraie commande live
-  const dbItems = cartItems.filter((i) => i.id.startsWith("db__"));
+  const dbItems = cartItems.filter((i) => i?.id?.startsWith("db__"));
   const isLiveOrder = dbItems.length > 0;
   const liveRestoId = dbItems[0]?.restoId ?? null;
   const [hasPass, setHasPass] = useState(false);
@@ -241,6 +241,10 @@ function Checkout() {
 
   const start = async () => {
     setTopError(null);
+    if (cartItems.length === 0) {
+      setTopError("Votre panier est vide. Ajoutez un plat avant de passer au paiement.");
+      return;
+    }
     const errs = validateDeliveryContact(contact);
     setContactErrors(errs);
     if (Object.keys(errs).length > 0) {
@@ -268,7 +272,7 @@ function Checkout() {
             amount: total,
             purpose: "order",
             return_url: typeof window !== "undefined" ? window.location.href : "https://mboaeats.lovable.app/checkout",
-            metadata: { delivery: delivery_, cart: cart.map((c) => c.name), order_id: activeOrderId },
+            metadata: { delivery: delivery_, cart: cart.map((c) => c.name).filter(Boolean), order_id: activeOrderId },
           },
         });
         if (!res.ok || !res.link) throw new Error(res.error ?? "Échec d'initiation carte");
@@ -296,7 +300,7 @@ function Checkout() {
           msisdn: `237${cleanMsisdn}`,
           amount: total,
           purpose: "order",
-          metadata: { delivery: delivery_, cart: cart.map((c) => c.name), order_id: activeOrderId },
+          metadata: { delivery: delivery_, cart: cart.map((c) => c.name).filter(Boolean), order_id: activeOrderId },
         },
       });
       if (!res.ok) throw new Error(res.error ?? "Échec d'initiation");
