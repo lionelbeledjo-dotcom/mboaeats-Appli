@@ -347,7 +347,9 @@ function SignInGate() {
   );
 }
 
-function Header({ online, setOnline }: { online: boolean; setOnline: (v: boolean) => void }) {
+function Header({
+  online, setOnline, avgRating,
+}: { online: boolean; setOnline: () => void; avgRating: number | null }) {
   return (
     <header className="sticky top-0 z-40 glass">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 md:px-8">
@@ -360,19 +362,25 @@ function Header({ online, setOnline }: { online: boolean; setOnline: (v: boolean
           </div>
           <div>
             <p className="text-xs text-muted-foreground leading-none">Livreur</p>
-            <p className="text-xs flex items-center gap-1"><Star className="h-3 w-3 text-gold" /> 4.92</p>
+            <p className="text-xs flex items-center gap-1">
+              <Star className="h-3 w-3 text-gold" /> {avgRating != null ? avgRating.toFixed(2) : "—"}
+            </p>
           </div>
         </div>
         <button
-          onClick={() => setOnline(!online)}
-          className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition ${
+          onClick={setOnline}
+          aria-pressed={online}
+          className={`relative flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition ${
             online
-              ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/40"
+              ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 shadow-glow"
               : "bg-surface text-muted-foreground border border-border"
           }`}
         >
-          <span className={`h-2 w-2 rounded-full ${online ? "bg-emerald-400 animate-pulse" : "bg-muted-foreground"}`} />
-          {online ? "En ligne" : "Hors ligne"}
+          <span className={`relative flex h-2.5 w-2.5`}>
+            {online && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />}
+            <span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${online ? "bg-emerald-400" : "bg-muted-foreground"}`} />
+          </span>
+          {online ? "EN LIGNE" : "HORS LIGNE"}
         </button>
       </div>
     </header>
