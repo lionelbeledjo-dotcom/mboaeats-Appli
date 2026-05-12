@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, Crown, Flame, Gift, Sparkles, Trophy, Lock, Check, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyLoyalty } from "@/server/account.functions";
+import { getMyRewardsCatalog, redeemMyReward } from "@/server/loyalty.functions";
 
 export const Route = createFileRoute("/fidelite")({
   component: Fidelite,
