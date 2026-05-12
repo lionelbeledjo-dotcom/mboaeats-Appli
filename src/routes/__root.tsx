@@ -152,7 +152,7 @@ function RootComponent() {
         {!hideDock && <SiteHeader />}
         <Outlet />
         {!hideDock && <CartFab />}
-        {!hideDock && <BottomDock />}
+        <BottomDock />
         <Toaster position="top-right" richColors closeButton />
       </AuthGate>
       <OnboardingGate />
