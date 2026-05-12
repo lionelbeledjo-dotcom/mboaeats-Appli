@@ -181,10 +181,14 @@ function RecherchePage() {
       <main className="mx-auto w-full max-w-md px-4 py-4 overflow-x-hidden">
         <p className="text-xs" style={{ color: "#6B6B6B" }}>
           {results.length} résultat{results.length > 1 ? "s" : ""}
-          {q && <> pour « {q} »</>}
+          {appliedQ && <> pour « {appliedQ} »</>}
+          {isStale && <span className="ml-2 text-[10px] opacity-60">…</span>}
         </p>
 
-        <ul className="mt-3 space-y-3 w-full">
+        <ul
+          className="mt-3 space-y-3 w-full transition-opacity duration-150"
+          style={{ opacity: isStale ? 0.7 : 1, contain: "layout paint" }}
+        >
           {results.map((r) => {
             const badge = badgeMeta(catalogBadge(r));
             const fee = deliveryFee(r);
