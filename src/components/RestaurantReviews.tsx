@@ -47,9 +47,28 @@ export function RestaurantReviews({
   const [hover, setHover] = useState(0);
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [highlightId, setHighlightId] = useState<string | null>(null);
 
+  // Initial load + live sync (cross-tab via 'storage', same-tab via custom event)
   useEffect(() => {
     setReviews(loadReviews(restoId));
+
+    const refresh = () => setReviews(loadReviews(restoId));
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_PREFIX + restoId) refresh();
+    };
+    const onCustom = (e: Event) => {
+      const detail = (e as CustomEvent<{ restoId: string }>).detail;
+      if (!detail || detail.restoId === restoId) refresh();
+    };
+
+    window.addEventListener("storage", onStorage);
+    window.addEventListener(REVIEWS_EVENT, onCustom);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener(REVIEWS_EVENT, onCustom);
+    };
   }, [restoId]);
 
   const avg = useMemo(() => {
