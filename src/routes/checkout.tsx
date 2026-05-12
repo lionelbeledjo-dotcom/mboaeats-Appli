@@ -119,6 +119,18 @@ function Checkout() {
   const ensureLiveOrder = async (): Promise<string | null> => {
     if (!isLiveOrder || !liveRestoId) return null;
     if (liveOrderId) return liveOrderId;
+    const addr = delivery_.address;
+    const scheduled =
+      delivery_.schedule.type === "scheduled" ? delivery_.schedule.when : null;
+    const orderNotes = [
+      delivery_.instructions && `Livreur: ${delivery_.instructions}`,
+      scheduled && `Programmée: ${new Date(scheduled).toLocaleString("fr-FR")}`,
+      ...dbItems
+        .filter((i) => i.note)
+        .map((i) => `${i.name}: ${i.note}`),
+    ]
+      .filter(Boolean)
+      .join(" · ");
     const res = await createOrderFn({
       data: {
         restaurant_id: liveRestoId,
@@ -128,9 +140,13 @@ function Checkout() {
           qty: i.qty,
           unit_price: i.price,
         })),
-        delivery_address: { line: landmark, city: "Douala" },
+        delivery_address: {
+          line: addr.line,
+          city: addr.city,
+          neighborhood: addr.neighborhood ?? undefined,
+        },
         promo_code: promo?.code,
-        notes: landmark,
+        notes: orderNotes || addr.line,
       },
     });
     setLiveOrderId(res.order.id);
@@ -139,12 +155,11 @@ function Checkout() {
 
   const start = async () => {
     setTopError(null);
-    const parsed = landmarkSchema.safeParse(landmark);
-    if (!parsed.success) {
-      setLandmarkErr(parsed.error.issues[0]?.message ?? "Repère requis");
+    if (delivery_.address.line.trim().length < 8) {
+      setDeliveryErr("Précise une adresse complète (≥ 8 caractères)");
       return;
     }
-    setLandmarkErr(null);
+    setDeliveryErr(null);
 
     let activeOrderId: string | null = liveOrderId;
     try {
