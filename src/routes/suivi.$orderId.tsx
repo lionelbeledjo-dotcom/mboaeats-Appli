@@ -398,6 +398,15 @@ function SuiviPage() {
           </div>
         )}
 
+        {/* Disputes status */}
+        {disputes.length > 0 && (
+          <div className="mt-3 space-y-2">
+            {disputes.map((d) => (
+              <DisputeCard key={d.id} dispute={d} />
+            ))}
+          </div>
+        )}
+
         {/* Report issue button */}
         {canReportIssue && (
           <button
@@ -407,7 +416,9 @@ function SuiviPage() {
             style={{ borderColor: "#FFB74D", color: "#E65100" }}
           >
             <AlertTriangle className="h-4 w-4" />
-            Signaler un problème
+            {disputes.some((d) => d.status === "open" || d.status === "in_progress")
+              ? "Ajouter un autre signalement"
+              : "Signaler un problème"}
           </button>
         )}
 
