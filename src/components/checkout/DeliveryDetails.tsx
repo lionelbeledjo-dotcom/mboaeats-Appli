@@ -63,7 +63,7 @@ export function DeliveryDetails({
         const r = await listFn();
         setAddresses(r.addresses as DeliveryAddress[]);
         if (!value.address.line && r.addresses?.length) {
-          const def = r.addresses.find((a: { is_default?: boolean }) => a.is_default) ?? r.addresses[0];
+          const def = r.addresses.find((a) => a.is_default === true) ?? r.addresses[0];
           onChange({ ...value, address: def as DeliveryAddress });
         }
       } catch {
