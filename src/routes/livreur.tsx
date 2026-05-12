@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft, Bike, Navigation, Wallet, TrendingUp, Clock, MapPin,
   Check, X, Star, Coins, Power, Package, Loader2, ShoppingBag,
+  Store, Send, MessageSquare,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
@@ -14,6 +15,10 @@ import {
   updateMissionStatus,
   updateMyLocation,
   getMyEarnings,
+  getMyDriverReviews,
+  markArrivedAtRestaurant,
+  requestPayout,
+  getPayoutBalance,
 } from "@/server/driver.functions";
 
 export const Route = createFileRoute("/livreur")({
@@ -26,7 +31,7 @@ export const Route = createFileRoute("/livreur")({
   }),
 });
 
-type Tab = "courses" | "navigation" | "portefeuille";
+type Tab = "courses" | "navigation" | "portefeuille" | "evals";
 
 type MissionRow = {
   id: string;
@@ -35,12 +40,12 @@ type MissionRow = {
   total: number;
   delivery_fee: number | null;
   eta_minutes: number | null;
-  delivery_address: { line?: string; neighborhood?: string; city?: string } | null;
+  delivery_address: { line?: string; neighborhood?: string; city?: string; lat?: number | null; lng?: number | null } | null;
   created_at: string;
   ready_at?: string | null;
   picked_up_at?: string | null;
   delivered_at?: string | null;
-  restaurants?: { name: string; address: string | null; neighborhood: string | null } | null;
+  restaurants?: { name: string; address: string | null; neighborhood: string | null; lat?: number | null; lng?: number | null } | null;
 };
 
 type Earnings = {
@@ -49,6 +54,15 @@ type Earnings = {
   countToday: number;
   countWeek: number;
   week: { d: string; v: number }[];
+};
+
+type DriverReview = {
+  id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  reference: string;
+  restaurant_name: string;
 };
 
 function Livreur() {
@@ -60,14 +74,22 @@ function Livreur() {
   const [available, setAvailable] = useState<MissionRow[]>([]);
   const [mine, setMine] = useState<MissionRow[]>([]);
   const [earnings, setEarnings] = useState<Earnings | null>(null);
+  const [reviews, setReviews] = useState<{ list: DriverReview[]; avg: number | null; count: number }>({
+    list: [], avg: null, count: 0,
+  });
   const [loading, setLoading] = useState(true);
+  const [arrivedAt, setArrivedAt] = useState<Record<string, boolean>>({});
+  const [incoming, setIncoming] = useState<MissionRow | null>(null);
+  const seenAvailable = useRef<Set<string>>(new Set());
 
   const fetchAvailable = useServerFn(listAvailableMissions);
   const fetchMine = useServerFn(listMyMissions);
   const fetchEarnings = useServerFn(getMyEarnings);
+  const fetchReviews = useServerFn(getMyDriverReviews);
   const sendLocation = useServerFn(updateMyLocation);
   const doClaim = useServerFn(claimMission);
   const doUpdate = useServerFn(updateMissionStatus);
+  const doArrived = useServerFn(markArrivedAtRestaurant);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -79,18 +101,38 @@ function Livreur() {
   const reload = useCallback(async () => {
     setLoading(true);
     try {
-      const [a, m, e] = await Promise.all([
+      const [a, m, e, r] = await Promise.all([
         fetchAvailable().catch(() => ({ missions: [] })),
         fetchMine().catch(() => ({ missions: [] })),
         fetchEarnings().catch(() => null),
+        fetchReviews().catch(() => ({ reviews: [], avg: null, count: 0 })),
       ]);
-      setAvailable((a.missions ?? []) as MissionRow[]);
+      const newAvail = (a.missions ?? []) as MissionRow[];
+      // Détecte une nouvelle mission entrante
+      if (online) {
+        const fresh = newAvail.find((mi) => !seenAvailable.current.has(mi.id));
+        if (fresh) setIncoming(fresh);
+      }
+      newAvail.forEach((mi) => seenAvailable.current.add(mi.id));
+      setAvailable(newAvail);
       setMine((m.missions ?? []) as MissionRow[]);
       if (e) setEarnings(e as Earnings);
+      setReviews({ list: r.reviews ?? [], avg: r.avg ?? null, count: r.count ?? 0 });
     } finally {
       setLoading(false);
     }
-  }, [fetchAvailable, fetchMine, fetchEarnings]);
+  }, [fetchAvailable, fetchMine, fetchEarnings, fetchReviews, online]);
+
+  // Restore arrived-at-restaurant per-mission flag
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("driver_arrived");
+      if (raw) setArrivedAt(JSON.parse(raw));
+    } catch { /* noop */ }
+  }, []);
+  useEffect(() => {
+    try { localStorage.setItem("driver_arrived", JSON.stringify(arrivedAt)); } catch { /* noop */ }
+  }, [arrivedAt]);
 
   useEffect(() => {
     if (signedIn) reload();
@@ -181,26 +223,52 @@ function Livreur() {
     }
   };
 
+  const handleArrived = async (id: string) => {
+    try {
+      await doArrived({ data: { order_id: id } });
+      setArrivedAt((s) => ({ ...s, [id]: true }));
+      toast.success("Arrivée au restaurant signalée");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erreur");
+    }
+  };
+
+  // Toggle online — pousse le statut sur driver_locations
+  const toggleOnline = async () => {
+    const next = !online;
+    setOnline(next);
+    if (!next && lastPos.current) {
+      try {
+        await sendLocation({
+          data: { lat: lastPos.current.lat, lng: lastPos.current.lng, status: "offline" },
+        });
+      } catch { /* noop */ }
+    }
+  };
+
   if (!authReady) return <Splash />;
   if (!signedIn) return <SignInGate />;
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-24">
-      <Header online={online} setOnline={setOnline} />
+      <Header online={online} setOnline={toggleOnline} avgRating={reviews.avg} />
       <Stats online={online} earnings={earnings} />
 
-      <nav className="sticky top-[64px] z-30 mx-auto flex max-w-5xl gap-2 px-4 py-3 md:px-8">
-        {(["courses", "navigation", "portefeuille"] as Tab[]).map((t) => (
+      <nav className="sticky top-[64px] z-30 mx-auto flex max-w-5xl gap-2 px-4 py-3 md:px-8 overflow-x-auto">
+        {(["courses", "navigation", "portefeuille", "evals"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`flex-1 rounded-2xl px-4 py-2.5 text-sm font-semibold capitalize transition ${
+            className={`flex-1 min-w-[110px] rounded-2xl px-4 py-2.5 text-sm font-semibold capitalize transition ${
               tab === t
                 ? "bg-gradient-primary text-primary-foreground shadow-glow"
                 : "border border-border bg-surface/60 text-muted-foreground hover:text-foreground"
             }`}
           >
-            {t === "courses" ? "Courses" : t === "navigation" ? "Navigation" : "Portefeuille"}
+            {t === "courses" ? "Courses"
+              : t === "navigation" ? "Navigation"
+              : t === "portefeuille" ? "Portefeuille"
+              : "Évaluations"}
           </button>
         ))}
       </nav>
@@ -218,13 +286,34 @@ function Livreur() {
             mine={mine}
             onClaim={handleClaim}
             onStatus={handleStatus}
+            onArrived={handleArrived}
+            arrivedAt={arrivedAt}
           />
         ) : tab === "navigation" ? (
-          <NavigationView mission={currentMission} onStatus={handleStatus} />
-        ) : (
+          <NavigationView
+            mission={currentMission}
+            onStatus={handleStatus}
+            onArrived={handleArrived}
+            arrived={!!(currentMission && arrivedAt[currentMission.id])}
+          />
+        ) : tab === "portefeuille" ? (
           <Portefeuille earnings={earnings} mine={mine} />
+        ) : (
+          <Evaluations reviews={reviews.list} avg={reviews.avg} count={reviews.count} />
         )}
       </main>
+
+      {incoming && (
+        <IncomingMissionAlert
+          mission={incoming}
+          onAccept={async () => {
+            const id = incoming.id;
+            setIncoming(null);
+            await handleClaim(id);
+          }}
+          onDecline={() => setIncoming(null)}
+        />
+      )}
     </div>
   );
 }
@@ -258,7 +347,9 @@ function SignInGate() {
   );
 }
 
-function Header({ online, setOnline }: { online: boolean; setOnline: (v: boolean) => void }) {
+function Header({
+  online, setOnline, avgRating,
+}: { online: boolean; setOnline: () => void; avgRating: number | null }) {
   return (
     <header className="sticky top-0 z-40 glass">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 md:px-8">
@@ -271,19 +362,25 @@ function Header({ online, setOnline }: { online: boolean; setOnline: (v: boolean
           </div>
           <div>
             <p className="text-xs text-muted-foreground leading-none">Livreur</p>
-            <p className="text-xs flex items-center gap-1"><Star className="h-3 w-3 text-gold" /> 4.92</p>
+            <p className="text-xs flex items-center gap-1">
+              <Star className="h-3 w-3 text-gold" /> {avgRating != null ? avgRating.toFixed(2) : "—"}
+            </p>
           </div>
         </div>
         <button
-          onClick={() => setOnline(!online)}
-          className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition ${
+          onClick={setOnline}
+          aria-pressed={online}
+          className={`relative flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition ${
             online
-              ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/40"
+              ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 shadow-glow"
               : "bg-surface text-muted-foreground border border-border"
           }`}
         >
-          <span className={`h-2 w-2 rounded-full ${online ? "bg-emerald-400 animate-pulse" : "bg-muted-foreground"}`} />
-          {online ? "En ligne" : "Hors ligne"}
+          <span className={`relative flex h-2.5 w-2.5`}>
+            {online && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />}
+            <span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${online ? "bg-emerald-400" : "bg-muted-foreground"}`} />
+          </span>
+          {online ? "EN LIGNE" : "HORS LIGNE"}
         </button>
       </div>
     </header>
@@ -332,7 +429,7 @@ function fmtAddr(a: MissionRow["delivery_address"]) {
 }
 
 function Courses({
-  online, available, current, mine, onClaim, onStatus,
+  online, available, current, mine, onClaim, onStatus, onArrived, arrivedAt,
 }: {
   online: boolean;
   available: MissionRow[];
@@ -340,14 +437,29 @@ function Courses({
   mine: MissionRow[];
   onClaim: (id: string) => void;
   onStatus: (id: string, s: "picked_up" | "delivering" | "delivered" | "cancelled") => void;
+  onArrived: (id: string) => void;
+  arrivedAt: Record<string, boolean>;
 }) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayDeliveries = mine.filter(
+    (m) => m.status === "delivered" && m.delivered_at && new Date(m.delivered_at) >= today,
+  );
+  const todayEarnings = todayDeliveries.reduce((s, m) => s + (m.delivery_fee ?? 0), 0);
   const history = mine.filter((m) => m.status === "delivered").slice(0, 8);
 
   return (
     <div className="space-y-4 py-4">
       {!online && !current && <EmptyOffline />}
 
-      {current && <ActiveCourse mission={current} onStatus={onStatus} />}
+      {current && (
+        <ActiveCourse
+          mission={current}
+          onStatus={onStatus}
+          onArrived={onArrived}
+          arrived={!!arrivedAt[current.id]}
+        />
+      )}
 
       {online && !current && (
         <>
@@ -366,11 +478,41 @@ function Courses({
         </>
       )}
 
-      {history.length > 0 && (
+      {todayDeliveries.length > 0 && (
+        <div>
+          <div className="mt-6 flex items-end justify-between">
+            <h2 className="font-display text-lg font-bold">Livraisons du jour</h2>
+            <p className="text-sm font-bold text-emerald-400">
+              +{todayEarnings.toLocaleString("fr-FR")} FCFA
+            </p>
+          </div>
+          <div className="mt-3 space-y-2">
+            {todayDeliveries.map((r) => (
+              <div key={r.id} className="flex items-center justify-between rounded-2xl border border-border bg-surface/40 p-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400">
+                    <Check className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold">{r.restaurants?.name ?? "Restaurant"}</p>
+                    <p className="text-xs text-muted-foreground">
+                      #{r.reference}
+                      {r.delivered_at && ` · ${new Date(r.delivered_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-sm font-bold">+{(r.delivery_fee ?? 0).toLocaleString("fr-FR")} FCFA</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {history.length > todayDeliveries.length && (
         <div>
           <h2 className="mt-6 font-display text-lg font-bold">Historique récent</h2>
           <div className="mt-3 space-y-2">
-            {history.map((r) => (
+            {history.filter((h) => !todayDeliveries.find((t) => t.id === h.id)).map((r) => (
               <div key={r.id} className="flex items-center justify-between rounded-2xl border border-border bg-surface/40 p-3">
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -454,12 +596,26 @@ function EmptyOffline() {
 }
 
 function ActiveCourse({
-  mission, onStatus,
+  mission, onStatus, onArrived, arrived,
 }: {
   mission: MissionRow;
   onStatus: (id: string, s: "picked_up" | "delivering" | "delivered" | "cancelled") => void;
+  onArrived: (id: string) => void;
+  arrived: boolean;
 }) {
+  const beforePickup = ["accepted", "preparing", "ready"].includes(mission.status);
   const next = nextStatus(mission.status);
+  const restoQuery = encodeURIComponent(
+    [mission.restaurants?.name, mission.restaurants?.address, mission.restaurants?.neighborhood]
+      .filter(Boolean).join(", ") || mission.restaurants?.name || "Restaurant",
+  );
+  const restoCoords = mission.restaurants?.lat != null && mission.restaurants?.lng != null
+    ? `${mission.restaurants.lat},${mission.restaurants.lng}` : null;
+  const clientCoords = mission.delivery_address?.lat != null && mission.delivery_address?.lng != null
+    ? `${mission.delivery_address.lat},${mission.delivery_address.lng}` : null;
+  const restoLink = `https://www.google.com/maps/dir/?api=1&destination=${restoCoords ?? restoQuery}&travelmode=driving`;
+  const clientLink = `https://www.google.com/maps/dir/?api=1&destination=${clientCoords ?? encodeURIComponent(fmtAddr(mission.delivery_address))}&travelmode=driving`;
+
   return (
     <div className="rounded-3xl border border-emerald-500/30 bg-emerald-500/5 p-5">
       <div className="flex items-center justify-between">
@@ -470,33 +626,65 @@ function ActiveCourse({
       </div>
       <h3 className="mt-2 font-display text-xl font-bold">{mission.restaurants?.name ?? "Restaurant"}</h3>
       <p className="mt-1 text-sm text-muted-foreground">{fmtAddr(mission.delivery_address)}</p>
-      <p className="mt-1 text-xs text-muted-foreground">Étape : {labelStatus(mission.status)}</p>
+      <p className="mt-1 text-xs text-muted-foreground">Étape : {labelStatus(mission.status)}{arrived && beforePickup ? " · arrivé sur place" : ""}</p>
 
-      <div className="mt-4 grid grid-cols-2 gap-2">
-        <button
-          onClick={() => onStatus(mission.id, "cancelled")}
-          className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-background py-3 text-sm font-semibold"
+      {/* GPS shortcuts */}
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <a
+          href={restoLink} target="_blank" rel="noreferrer"
+          className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-background py-2.5 text-xs font-semibold"
         >
-          <X className="h-4 w-4" /> Annuler
-        </button>
-        {next && (
-          <button
-            onClick={() => onStatus(mission.id, next.value)}
-            className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3 text-sm font-bold text-primary-foreground shadow-glow"
-          >
-            <Check className="h-4 w-4" /> {next.label}
-          </button>
-        )}
+          <Store className="h-4 w-4 text-primary" /> GPS resto
+        </a>
+        <a
+          href={clientLink} target="_blank" rel="noreferrer"
+          className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-background py-2.5 text-xs font-semibold"
+        >
+          <Navigation className="h-4 w-4 text-primary" /> GPS client
+        </a>
       </div>
 
-      {mission.status === "delivering" && (
+      {/* Steps */}
+      <div className="mt-4 space-y-2">
+        {beforePickup && !arrived && (
+          <button
+            onClick={() => onArrived(mission.id)}
+            className="w-full rounded-2xl border border-primary/40 bg-primary/10 py-3 text-sm font-bold text-primary hover:bg-primary/20"
+          >
+            🏬 Je suis arrivé au restaurant
+          </button>
+        )}
+        {beforePickup && arrived && (
+          <button
+            onClick={() => onStatus(mission.id, "picked_up")}
+            className="w-full rounded-2xl bg-gradient-primary py-3 text-sm font-bold text-primary-foreground shadow-glow"
+          >
+            📦 Commande récupérée
+          </button>
+        )}
+        {!beforePickup && next && (
+          <button
+            onClick={() => onStatus(mission.id, next.value)}
+            className="w-full rounded-2xl bg-gradient-primary py-3 text-sm font-bold text-primary-foreground shadow-glow"
+          >
+            <Check className="inline h-4 w-4" /> {next.label}
+          </button>
+        )}
+        {mission.status === "delivering" && (
+          <button
+            onClick={() => onStatus(mission.id, "delivered")}
+            className="w-full rounded-2xl border border-emerald-500/40 bg-emerald-500/10 py-3 text-sm font-bold text-emerald-300 hover:bg-emerald-500/20"
+          >
+            ✅ Commande livrée · +{(mission.delivery_fee ?? 0).toLocaleString("fr-FR")} FCFA
+          </button>
+        )}
         <button
-          onClick={() => onStatus(mission.id, "delivered")}
-          className="mt-3 w-full rounded-2xl border border-emerald-500/40 bg-emerald-500/10 py-3 text-sm font-bold text-emerald-300 hover:bg-emerald-500/20"
+          onClick={() => onStatus(mission.id, "cancelled")}
+          className="w-full rounded-2xl border border-border bg-background py-2.5 text-xs font-semibold text-muted-foreground"
         >
-          Marquer livré · +{(mission.delivery_fee ?? 0).toLocaleString("fr-FR")} FCFA
+          <X className="inline h-3 w-3" /> Annuler la course
         </button>
-      )}
+      </div>
     </div>
   );
 }
@@ -518,10 +706,12 @@ function labelStatus(s: string) {
 }
 
 function NavigationView({
-  mission, onStatus,
+  mission, onStatus, onArrived, arrived,
 }: {
   mission: MissionRow | null;
   onStatus: (id: string, s: "picked_up" | "delivering" | "delivered" | "cancelled") => void;
+  onArrived: (id: string) => void;
+  arrived: boolean;
 }) {
   if (!mission) {
     return (
@@ -530,14 +720,27 @@ function NavigationView({
       </div>
     );
   }
+  const beforePickup = ["accepted", "preparing", "ready"].includes(mission.status);
+  const restoCoords = mission.restaurants?.lat != null && mission.restaurants?.lng != null
+    ? `${mission.restaurants.lat},${mission.restaurants.lng}`
+    : encodeURIComponent([mission.restaurants?.name, mission.restaurants?.address].filter(Boolean).join(", ") || "Restaurant");
+  const clientCoords = mission.delivery_address?.lat != null && mission.delivery_address?.lng != null
+    ? `${mission.delivery_address.lat},${mission.delivery_address.lng}`
+    : encodeURIComponent(fmtAddr(mission.delivery_address));
+  const target = beforePickup ? restoCoords : clientCoords;
+
   return (
     <div className="space-y-4 py-4">
       <div className="relative overflow-hidden rounded-3xl border border-border shadow-card aspect-[4/3]">
         <MapboxMock />
         <div className="absolute left-4 right-4 top-4 rounded-2xl glass p-3">
-          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Destination</p>
-          <p className="font-display text-lg font-bold">{fmtAddr(mission.delivery_address)}</p>
-          <p className="text-xs text-muted-foreground">Étape : {labelStatus(mission.status)}</p>
+          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+            {beforePickup ? "Aller au restaurant" : "Livrer au client"}
+          </p>
+          <p className="font-display text-lg font-bold">
+            {beforePickup ? mission.restaurants?.name ?? "Restaurant" : fmtAddr(mission.delivery_address)}
+          </p>
+          <p className="text-xs text-muted-foreground">Étape : {labelStatus(mission.status)}{arrived && beforePickup ? " · arrivé" : ""}</p>
         </div>
 
         <div className="absolute bottom-4 left-4 right-4 grid grid-cols-3 gap-2 rounded-2xl border border-border bg-surface/90 p-3 backdrop-blur">
@@ -547,20 +750,47 @@ function NavigationView({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <button
-          onClick={() => onStatus(mission.id, "delivering")}
-          className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface/60 py-3 text-sm font-semibold"
-        >
-          <MapPin className="h-4 w-4 text-primary" /> En route
-        </button>
-        <a
-          href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fmtAddr(mission.delivery_address))}`}
-          target="_blank" rel="noreferrer"
-          className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3 text-sm font-bold text-primary-foreground shadow-glow"
-        >
-          <Navigation className="h-4 w-4" /> Ouvrir GPS
-        </a>
+      <a
+        href={`https://www.google.com/maps/dir/?api=1&destination=${target}&travelmode=driving`}
+        target="_blank" rel="noreferrer"
+        className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3 text-sm font-bold text-primary-foreground shadow-glow"
+      >
+        <Navigation className="h-4 w-4" /> Ouvrir Google Maps · {beforePickup ? "Restaurant" : "Client"}
+      </a>
+
+      <div className="grid grid-cols-1 gap-2">
+        {beforePickup && !arrived && (
+          <button
+            onClick={() => onArrived(mission.id)}
+            className="rounded-2xl border border-primary/40 bg-primary/10 py-3 text-sm font-bold text-primary"
+          >
+            🏬 Je suis arrivé au restaurant
+          </button>
+        )}
+        {beforePickup && arrived && (
+          <button
+            onClick={() => onStatus(mission.id, "picked_up")}
+            className="rounded-2xl bg-gradient-primary py-3 text-sm font-bold text-primary-foreground shadow-glow"
+          >
+            📦 Commande récupérée
+          </button>
+        )}
+        {mission.status === "picked_up" && (
+          <button
+            onClick={() => onStatus(mission.id, "delivering")}
+            className="rounded-2xl border border-border bg-surface/60 py-3 text-sm font-semibold"
+          >
+            🛵 En route vers le client
+          </button>
+        )}
+        {(mission.status === "picked_up" || mission.status === "delivering") && (
+          <button
+            onClick={() => onStatus(mission.id, "delivered")}
+            className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 py-3 text-sm font-bold text-emerald-300"
+          >
+            ✅ Commande livrée
+          </button>
+        )}
       </div>
     </div>
   );
