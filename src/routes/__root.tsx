@@ -136,6 +136,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  useKeyboardViewport();
   const location = useLocation();
   const path = location.pathname;
   const isPreview =
