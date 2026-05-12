@@ -223,26 +223,52 @@ function Livreur() {
     }
   };
 
+  const handleArrived = async (id: string) => {
+    try {
+      await doArrived({ data: { order_id: id } });
+      setArrivedAt((s) => ({ ...s, [id]: true }));
+      toast.success("Arrivée au restaurant signalée");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erreur");
+    }
+  };
+
+  // Toggle online — pousse le statut sur driver_locations
+  const toggleOnline = async () => {
+    const next = !online;
+    setOnline(next);
+    if (!next && lastPos.current) {
+      try {
+        await sendLocation({
+          data: { lat: lastPos.current.lat, lng: lastPos.current.lng, status: "offline" },
+        });
+      } catch { /* noop */ }
+    }
+  };
+
   if (!authReady) return <Splash />;
   if (!signedIn) return <SignInGate />;
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-24">
-      <Header online={online} setOnline={setOnline} />
+      <Header online={online} setOnline={toggleOnline} avgRating={reviews.avg} />
       <Stats online={online} earnings={earnings} />
 
-      <nav className="sticky top-[64px] z-30 mx-auto flex max-w-5xl gap-2 px-4 py-3 md:px-8">
-        {(["courses", "navigation", "portefeuille"] as Tab[]).map((t) => (
+      <nav className="sticky top-[64px] z-30 mx-auto flex max-w-5xl gap-2 px-4 py-3 md:px-8 overflow-x-auto">
+        {(["courses", "navigation", "portefeuille", "evals"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`flex-1 rounded-2xl px-4 py-2.5 text-sm font-semibold capitalize transition ${
+            className={`flex-1 min-w-[110px] rounded-2xl px-4 py-2.5 text-sm font-semibold capitalize transition ${
               tab === t
                 ? "bg-gradient-primary text-primary-foreground shadow-glow"
                 : "border border-border bg-surface/60 text-muted-foreground hover:text-foreground"
             }`}
           >
-            {t === "courses" ? "Courses" : t === "navigation" ? "Navigation" : "Portefeuille"}
+            {t === "courses" ? "Courses"
+              : t === "navigation" ? "Navigation"
+              : t === "portefeuille" ? "Portefeuille"
+              : "Évaluations"}
           </button>
         ))}
       </nav>
@@ -260,13 +286,34 @@ function Livreur() {
             mine={mine}
             onClaim={handleClaim}
             onStatus={handleStatus}
+            onArrived={handleArrived}
+            arrivedAt={arrivedAt}
           />
         ) : tab === "navigation" ? (
-          <NavigationView mission={currentMission} onStatus={handleStatus} />
-        ) : (
+          <NavigationView
+            mission={currentMission}
+            onStatus={handleStatus}
+            onArrived={handleArrived}
+            arrived={!!(currentMission && arrivedAt[currentMission.id])}
+          />
+        ) : tab === "portefeuille" ? (
           <Portefeuille earnings={earnings} mine={mine} />
+        ) : (
+          <Evaluations reviews={reviews.list} avg={reviews.avg} count={reviews.count} />
         )}
       </main>
+
+      {incoming && (
+        <IncomingMissionAlert
+          mission={incoming}
+          onAccept={async () => {
+            const id = incoming.id;
+            setIncoming(null);
+            await handleClaim(id);
+          }}
+          onDecline={() => setIncoming(null)}
+        />
+      )}
     </div>
   );
 }
