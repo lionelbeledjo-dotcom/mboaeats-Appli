@@ -706,10 +706,12 @@ function labelStatus(s: string) {
 }
 
 function NavigationView({
-  mission, onStatus,
+  mission, onStatus, onArrived, arrived,
 }: {
   mission: MissionRow | null;
   onStatus: (id: string, s: "picked_up" | "delivering" | "delivered" | "cancelled") => void;
+  onArrived: (id: string) => void;
+  arrived: boolean;
 }) {
   if (!mission) {
     return (
@@ -718,14 +720,27 @@ function NavigationView({
       </div>
     );
   }
+  const beforePickup = ["accepted", "preparing", "ready"].includes(mission.status);
+  const restoCoords = mission.restaurants?.lat != null && mission.restaurants?.lng != null
+    ? `${mission.restaurants.lat},${mission.restaurants.lng}`
+    : encodeURIComponent([mission.restaurants?.name, mission.restaurants?.address].filter(Boolean).join(", ") || "Restaurant");
+  const clientCoords = mission.delivery_address?.lat != null && mission.delivery_address?.lng != null
+    ? `${mission.delivery_address.lat},${mission.delivery_address.lng}`
+    : encodeURIComponent(fmtAddr(mission.delivery_address));
+  const target = beforePickup ? restoCoords : clientCoords;
+
   return (
     <div className="space-y-4 py-4">
       <div className="relative overflow-hidden rounded-3xl border border-border shadow-card aspect-[4/3]">
         <MapboxMock />
         <div className="absolute left-4 right-4 top-4 rounded-2xl glass p-3">
-          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Destination</p>
-          <p className="font-display text-lg font-bold">{fmtAddr(mission.delivery_address)}</p>
-          <p className="text-xs text-muted-foreground">Étape : {labelStatus(mission.status)}</p>
+          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+            {beforePickup ? "Aller au restaurant" : "Livrer au client"}
+          </p>
+          <p className="font-display text-lg font-bold">
+            {beforePickup ? mission.restaurants?.name ?? "Restaurant" : fmtAddr(mission.delivery_address)}
+          </p>
+          <p className="text-xs text-muted-foreground">Étape : {labelStatus(mission.status)}{arrived && beforePickup ? " · arrivé" : ""}</p>
         </div>
 
         <div className="absolute bottom-4 left-4 right-4 grid grid-cols-3 gap-2 rounded-2xl border border-border bg-surface/90 p-3 backdrop-blur">
@@ -735,20 +750,47 @@ function NavigationView({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <button
-          onClick={() => onStatus(mission.id, "delivering")}
-          className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface/60 py-3 text-sm font-semibold"
-        >
-          <MapPin className="h-4 w-4 text-primary" /> En route
-        </button>
-        <a
-          href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fmtAddr(mission.delivery_address))}`}
-          target="_blank" rel="noreferrer"
-          className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3 text-sm font-bold text-primary-foreground shadow-glow"
-        >
-          <Navigation className="h-4 w-4" /> Ouvrir GPS
-        </a>
+      <a
+        href={`https://www.google.com/maps/dir/?api=1&destination=${target}&travelmode=driving`}
+        target="_blank" rel="noreferrer"
+        className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3 text-sm font-bold text-primary-foreground shadow-glow"
+      >
+        <Navigation className="h-4 w-4" /> Ouvrir Google Maps · {beforePickup ? "Restaurant" : "Client"}
+      </a>
+
+      <div className="grid grid-cols-1 gap-2">
+        {beforePickup && !arrived && (
+          <button
+            onClick={() => onArrived(mission.id)}
+            className="rounded-2xl border border-primary/40 bg-primary/10 py-3 text-sm font-bold text-primary"
+          >
+            🏬 Je suis arrivé au restaurant
+          </button>
+        )}
+        {beforePickup && arrived && (
+          <button
+            onClick={() => onStatus(mission.id, "picked_up")}
+            className="rounded-2xl bg-gradient-primary py-3 text-sm font-bold text-primary-foreground shadow-glow"
+          >
+            📦 Commande récupérée
+          </button>
+        )}
+        {mission.status === "picked_up" && (
+          <button
+            onClick={() => onStatus(mission.id, "delivering")}
+            className="rounded-2xl border border-border bg-surface/60 py-3 text-sm font-semibold"
+          >
+            🛵 En route vers le client
+          </button>
+        )}
+        {(mission.status === "picked_up" || mission.status === "delivering") && (
+          <button
+            onClick={() => onStatus(mission.id, "delivered")}
+            className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 py-3 text-sm font-bold text-emerald-300"
+          >
+            ✅ Commande livrée
+          </button>
+        )}
       </div>
     </div>
   );
