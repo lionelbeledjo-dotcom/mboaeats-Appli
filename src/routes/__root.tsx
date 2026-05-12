@@ -153,6 +153,7 @@ function RootComponent() {
         {!hideDock && <BottomDock />}
         <Toaster position="top-right" richColors closeButton />
       </AuthGate>
+      <OnboardingGate />
     </ThemeProvider>
   );
 }
