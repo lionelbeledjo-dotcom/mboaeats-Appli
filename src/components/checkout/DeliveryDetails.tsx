@@ -53,6 +53,66 @@ export function DeliveryDetails({
     neighborhood: "",
   });
   const [saving, setSaving] = useState(false);
+  const [locating, setLocating] = useState(false);
+
+  const useMyLocation = () => {
+    if (!("geolocation" in navigator)) {
+      toast.error("Géolocalisation non supportée par votre navigateur");
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          // Reverse geocoding via OpenStreetMap Nominatim (gratuit, sans clé)
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&accept-language=fr&zoom=18`,
+            { headers: { "Accept": "application/json" } },
+          );
+          if (!res.ok) throw new Error("reverse-failed");
+          const data = await res.json();
+          const a = data.address ?? {};
+          const line: string =
+            data.display_name?.split(",").slice(0, 3).join(",").trim() ||
+            [a.road, a.house_number].filter(Boolean).join(" ") ||
+            `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+          const city: string =
+            a.city || a.town || a.village || a.municipality || a.county || draft.city || "Douala";
+          const neighborhood: string =
+            a.suburb || a.neighbourhood || a.quarter || a.city_district || draft.neighborhood || "";
+          setShowNew(true);
+          setDraft((d) => ({
+            ...d,
+            line,
+            city,
+            neighborhood,
+          }));
+          toast.success("Position détectée — vérifiez l'adresse");
+        } catch {
+          setShowNew(true);
+          setDraft((d) => ({
+            ...d,
+            line: `Position GPS : ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`,
+          }));
+          toast.message("Position captée — précisez le repère manuellement");
+        } finally {
+          setLocating(false);
+        }
+      },
+      (err) => {
+        setLocating(false);
+        const msg =
+          err.code === err.PERMISSION_DENIED
+            ? "Autorisation refusée — activez la localisation dans le navigateur"
+            : err.code === err.TIMEOUT
+              ? "Délai dépassé — réessayez"
+              : "Impossible d'obtenir votre position";
+        toast.error(msg);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+    );
+  };
 
   useEffect(() => {
     (async () => {
