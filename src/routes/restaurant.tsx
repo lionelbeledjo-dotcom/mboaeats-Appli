@@ -22,7 +22,7 @@ import {
 } from "@/server/restaurant.functions";
 
 export const Route = createFileRoute("/restaurant")({
-  component: RestaurantSpace,
+  component: RestaurantSpaceGuarded,
   head: () => ({
     meta: [
       { title: "Espace Restaurant · MboaEats" },

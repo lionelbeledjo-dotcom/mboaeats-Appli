@@ -17,7 +17,7 @@ import {
 } from "@/server/driver.functions";
 
 export const Route = createFileRoute("/livreur")({
-  component: Livreur,
+  component: LivreurGuarded,
   head: () => ({
     meta: [
       { title: "Espace Livreur · MboaEats" },
