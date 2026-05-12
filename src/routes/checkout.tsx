@@ -51,7 +51,7 @@ class CheckoutErrorBoundary extends Component<
             <AlertCircle className="mx-auto mb-3 h-10 w-10 text-destructive" />
             <h1 className="text-lg font-bold">Une erreur est survenue lors du paiement</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              {this.state.error?.message ?? "Veuillez réessayer dans un instant."}
+              Veuillez réessayer dans un instant. Si le panier semble vide, ajoutez à nouveau vos plats.
             </p>
             <div className="mt-5 flex flex-col gap-2">
               <button
@@ -687,7 +687,7 @@ function PaymentStatusBadge({ status, method }: { status: "idle" | "pending" | "
   );
 }
 
-function Summary({ cartItems, subtotal, delivery, taxes, total, hasPass, addressLine, promo, setPromo, paymentStatus, method, reference }: {
+function Summary({ cartItems = [], subtotal, delivery, taxes, total, hasPass, addressLine, promo, setPromo, paymentStatus, method, reference }: {
   cartItems: CartItem[]; subtotal: number; delivery: number; taxes?: number; total: number; hasPass: boolean; addressLine?: string;
   promo: { code: string; discount: number } | null;
   setPromo: (p: { code: string; discount: number } | null) => void;
@@ -699,6 +699,7 @@ function Summary({ cartItems, subtotal, delivery, taxes, total, hasPass, address
   const [code, setCode] = useState("");
   const [err, setErr] = useState<string | null>(null);
 
+  const safeCartItems = Array.isArray(cartItems) ? cartItems.filter(Boolean) : [];
   const PROMOS: Record<string, number> = {
     MBOA10: Math.round(subtotal * 0.1),
     BIENVENUE: 1000,
@@ -730,7 +731,7 @@ function Summary({ cartItems, subtotal, delivery, taxes, total, hasPass, address
       <div className="flex items-start justify-between gap-2">
         <div>
           <h3 className="font-display text-lg font-bold">Ta commande</h3>
-          <p className="text-xs text-muted-foreground">{cartItems.length} article{cartItems.length > 1 ? "s" : ""}</p>
+          <p className="text-xs text-muted-foreground">{safeCartItems.length} article{safeCartItems.length > 1 ? "s" : ""}</p>
         </div>
         <PaymentStatusBadge status={paymentStatus} method={method} />
       </div>
@@ -738,7 +739,7 @@ function Summary({ cartItems, subtotal, delivery, taxes, total, hasPass, address
         <p className="mt-2 text-[11px] text-muted-foreground">Réf. paiement : <span className="font-mono">{reference}</span></p>
       )}
       <ul className="mt-4 space-y-3 text-sm">
-        {cartItems.map((i) => (
+        {safeCartItems.map((i) => (
           <li
             key={i.id}
             className="group relative flex items-center gap-3 rounded-2xl border border-border/60 bg-background p-2 pr-3 animate-fade-up"
@@ -773,7 +774,7 @@ function Summary({ cartItems, subtotal, delivery, taxes, total, hasPass, address
             </div>
           </li>
         ))}
-        {cartItems.length === 0 && (
+        {safeCartItems.length === 0 && (
           <li className="rounded-2xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
             Ton panier est vide. <Link to="/" className="font-semibold text-primary">Découvrir des restos</Link>
           </li>
