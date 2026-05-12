@@ -164,7 +164,7 @@ export const payOrderWithWallet = createServerFn({ method: "POST" })
       _description: `Paiement commande ${order.reference}`,
       _reference: order.reference,
       _order_id: order.id,
-      _payment_id: null,
+      _payment_id: undefined,
     });
     if (werr) {
       if (werr.message.includes("insufficient_funds")) {
