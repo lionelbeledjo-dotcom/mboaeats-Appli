@@ -422,6 +422,17 @@ function SuiviPage() {
         )}
       </div>
 
+      {showChat && meId && (
+        <div className="fixed bottom-5 right-5 z-40">
+          <OrderChat
+            orderId={order.id}
+            meId={meId}
+            meRole={meRole}
+            peerName={meRole === "client" ? driver?.name ?? "Livreur" : "Client"}
+          />
+        </div>
+      )}
+
       {issueOpen && (
         <IssueModal
           orderId={order.id}
