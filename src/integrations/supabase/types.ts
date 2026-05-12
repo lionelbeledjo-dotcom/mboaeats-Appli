@@ -1146,6 +1146,57 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          bonus_amount: number
+          code: string
+          created_at: string
+          id: string
+          referred_user_id: string
+          referrer_id: string
+          rewarded_at: string | null
+          status: string
+        }
+        Insert: {
+          bonus_amount?: number
+          code: string
+          created_at?: string
+          id?: string
+          referred_user_id: string
+          referrer_id: string
+          rewarded_at?: string | null
+          status?: string
+        }
+        Update: {
+          bonus_amount?: number
+          code?: string
+          created_at?: string
+          id?: string
+          referred_user_id?: string
+          referrer_id?: string
+          rewarded_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       restaurant_reviews: {
         Row: {
           comment: string | null
@@ -1269,6 +1320,78 @@ export type Database = {
         }
         Relationships: []
       }
+      reward_redemptions: {
+        Row: {
+          cost_points: number
+          created_at: string
+          id: string
+          metadata: Json
+          reward_code: string
+          reward_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          cost_points: number
+          created_at?: string
+          id?: string
+          metadata?: Json
+          reward_code: string
+          reward_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          cost_points?: number
+          created_at?: string
+          id?: string
+          metadata?: Json
+          reward_code?: string
+          reward_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      rewards_catalog: {
+        Row: {
+          code: string
+          cost_points: number
+          created_at: string
+          icon: string | null
+          id: string
+          is_active: boolean
+          min_tier: string
+          name: string
+          type: string
+          value: number
+        }
+        Insert: {
+          code: string
+          cost_points: number
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          min_tier?: string
+          name: string
+          type: string
+          value?: number
+        }
+        Update: {
+          code?: string
+          cost_points?: number
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          min_tier?: string
+          name?: string
+          type?: string
+          value?: number
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -1382,6 +1505,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_referral_code: { Args: { _code: string }; Returns: string }
       claim_super_admin: { Args: never; Returns: boolean }
       claim_superadmin: { Args: never; Returns: boolean }
       delete_email: {
@@ -1392,6 +1516,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      gen_referral_code: { Args: { _uid: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1399,6 +1524,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      loyalty_tier: { Args: { _pts: number }; Returns: string }
       move_to_dlq: {
         Args: {
           dlq_name: string
@@ -1416,6 +1542,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      redeem_reward: { Args: { _reward_code: string }; Returns: Json }
       refund_order_to_wallet: {
         Args: { _order_id: string }
         Returns: {
