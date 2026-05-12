@@ -223,13 +223,28 @@ export function DeliveryDetails({
         )}
 
         {!showNew ? (
-          <button
-            type="button"
-            onClick={() => setShowNew(true)}
-            className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-background py-2.5 text-xs font-semibold text-muted-foreground transition hover:border-[#06C167] hover:text-[#06C167]"
-          >
-            <Plus className="h-3.5 w-3.5" /> Ajouter une nouvelle adresse
-          </button>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setShowNew(true)}
+              className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-background py-2.5 text-xs font-semibold text-muted-foreground transition hover:border-[#06C167] hover:text-[#06C167]"
+            >
+              <Plus className="h-3.5 w-3.5" /> Nouvelle adresse
+            </button>
+            <button
+              type="button"
+              disabled={locating}
+              onClick={useMyLocation}
+              className="flex items-center justify-center gap-2 rounded-xl border border-[#06C167]/40 bg-[#06C167]/5 py-2.5 text-xs font-semibold text-[#06C167] transition hover:bg-[#06C167]/10 disabled:opacity-60"
+            >
+              {locating ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <LocateFixed className="h-3.5 w-3.5" />
+              )}
+              {locating ? "Localisation…" : "Utiliser ma position"}
+            </button>
+          </div>
         ) : (
           <div className="mt-3 space-y-2 rounded-2xl border border-border bg-background p-3">
             <div className="grid grid-cols-2 gap-2">
