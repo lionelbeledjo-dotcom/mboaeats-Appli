@@ -528,7 +528,7 @@ function IssueModal({ orderId, onClose, onSubmitted }: { orderId: string; onClos
     try {
       await reportFn({ data: { orderId, reason, description: description.trim() || undefined } });
       toast.success("Signalement envoyé — notre équipe vous recontacte");
-      onClose();
+      onSubmitted ? onSubmitted() : onClose();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Échec du signalement");
     } finally {
