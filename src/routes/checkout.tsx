@@ -282,6 +282,17 @@ function Checkout() {
           {step === "choose" && (
             <>
               <DeliveryDetails value={delivery_} onChange={setDelivery} error={deliveryErr} />
+              <DeliveryTypeSelector
+                value={delivery_.schedule.type === "scheduled" ? "scheduled" : "standard"}
+                onChange={(t) => {
+                  if (t === "scheduled") {
+                    const when = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+                    setDelivery({ ...delivery_, schedule: { type: "scheduled", when } });
+                  } else {
+                    setDelivery({ ...delivery_, schedule: { type: "now" } });
+                  }
+                }}
+              />
               <ChooseMethod
                 method={method} setMethod={setMethod}
                 phone={phone} setPhone={setPhone}
@@ -368,9 +379,10 @@ function ChooseMethod({
 
       <button
         onClick={onPay}
-        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-4 text-base font-bold text-primary-foreground shadow-glow transition-transform hover:scale-[1.01]"
+        className="flex w-full items-center justify-center gap-3 rounded-2xl bg-black py-5 text-[16px] font-semibold text-white active:scale-[0.98] transition-transform"
       >
-        Payer <span className="price price-lg">{total.toLocaleString("fr-FR")}<span className="price-currency">FCFA</span></span> <ChevronRight className="h-5 w-5" />
+        Commander et payer
+        <span className="text-white/80 font-bold">· {total.toLocaleString("fr-FR")} FCFA</span>
       </button>
     </>
   );
@@ -971,6 +983,52 @@ function ExtrasModal({ onSkip, onClose }: { onSkip: () => void; onClose: () => v
           Non merci, je valide ma commande
         </button>
       </div>
+    </div>
+  );
+}
+
+function DeliveryTypeSelector({
+  value,
+  onChange,
+}: {
+  value: "priority" | "standard" | "scheduled";
+  onChange: (t: "priority" | "standard" | "scheduled") => void;
+}) {
+  const options: {
+    id: "priority" | "standard" | "scheduled";
+    title: string;
+    eta: string;
+    sub?: string;
+    extra?: string;
+    icon?: string;
+  }[] = [
+    { id: "priority", title: "Priorité", eta: "20–25 min", sub: "Livré chez vous", extra: "+500 FCFA", icon: "⚡" },
+    { id: "standard", title: "Standard", eta: "30–40 min" },
+    { id: "scheduled", title: "Planifier", eta: "Au plus tôt" },
+  ];
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      {options.map((o) => {
+        const active = value === o.id;
+        return (
+          <button
+            key={o.id}
+            type="button"
+            onClick={() => onChange(o.id)}
+            className={`flex flex-col items-start gap-1 rounded-2xl bg-white p-3 text-left transition-all ${
+              active ? "border-2 border-black" : "border border-gray-200"
+            }`}
+          >
+            <div className="flex items-center gap-1">
+              <span className="text-[14px] font-bold text-black">{o.title}</span>
+              {o.icon && <span className="text-[14px]" aria-hidden>{o.icon}</span>}
+            </div>
+            <span className="text-[12px] text-gray-500">{o.eta}</span>
+            {o.sub && <span className="text-[12px] font-medium text-emerald-600">{o.sub}</span>}
+            {o.extra && <span className="text-[12px] text-gray-500">{o.extra}</span>}
+          </button>
+        );
+      })}
     </div>
   );
 }
