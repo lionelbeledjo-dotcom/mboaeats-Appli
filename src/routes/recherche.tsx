@@ -256,7 +256,7 @@ function VirtualResults({
               style={{ boxShadow: "0 2px 12px -8px rgba(0,0,0,0.08)" }}
             >
               <div className="relative h-20 w-20 shrink-0">
-                <img src={r.cover} alt={r.name} className="h-20 w-20 rounded-xl object-cover" loading="lazy" />
+                <img src={r.cover} alt={r.name} width={80} height={80} loading="lazy" decoding="async" className="h-20 w-20 rounded-xl object-cover" />
                 {badge && (
                   <span
                     className="absolute left-1 top-1 rounded-full px-1.5 py-0.5 text-[9px] font-extrabold uppercase"
