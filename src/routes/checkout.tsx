@@ -144,6 +144,8 @@ function Checkout() {
           line: addr.line,
           city: addr.city,
           neighborhood: addr.neighborhood ?? undefined,
+          lat: addr.lat ?? null,
+          lng: addr.lng ?? null,
         },
         promo_code: promo?.code,
         notes: orderNotes || addr.line,
