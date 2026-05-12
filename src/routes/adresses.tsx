@@ -64,6 +64,19 @@ function validateCmPhone(input: string): { ok: boolean; digits: string; error?: 
   return { ok: true, digits };
 }
 
+async function geocodeCm(query: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=fr&countrycodes=cm&q=${encodeURIComponent(query)}`;
+    const res = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!res.ok) return null;
+    const arr = (await res.json()) as Array<{ lat: string; lon: string }>;
+    if (!arr?.length) return null;
+    return { lat: parseFloat(arr[0].lat), lng: parseFloat(arr[0].lon) };
+  } catch {
+    return null;
+  }
+}
+
 function AddressesPage() {
   const navigate = useNavigate();
   // Préremplit avec la dernière ville/quartier valides mémorisés
@@ -176,6 +189,7 @@ function AddressesPage() {
     };
     setSaved((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
     try {
+      const geo = await geocodeCm(`${updated.neighborhood}, ${updated.city}, Cameroun`);
       await upsertMyAddress({
         data: {
           id: updated.id.startsWith("local-") ? undefined : updated.id,
@@ -183,6 +197,8 @@ function AddressesPage() {
           city: updated.city,
           neighborhood: updated.neighborhood,
           line: `${updated.neighborhood}${phoneFull ? ` · Tél : ${phoneFull}` : ""}`,
+          lat: geo?.lat ?? null,
+          lng: geo?.lng ?? null,
         },
       });
     } catch {
@@ -247,12 +263,15 @@ function AddressesPage() {
 
     // Tente la persistance distante (silencieuse en cas d'échec)
     try {
+      const geo = await geocodeCm(`${neighborhood.trim()}, ${city}, Cameroun`);
       await upsertMyAddress({
         data: {
           label: label.trim(),
           city,
           neighborhood: neighborhood.trim(),
           line: `${neighborhood.trim()} · Tél : ${phoneFull}`,
+          lat: geo?.lat ?? null,
+          lng: geo?.lng ?? null,
         },
       });
     } catch {
