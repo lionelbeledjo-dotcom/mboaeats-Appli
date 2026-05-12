@@ -36,12 +36,24 @@ const SORT_LABELS: Record<SortKey, string> = {
 };
 
 function RecherchePage() {
+  // Saisie immédiate (UI) vs requête appliquée (filtrage) — debouncée + transition
   const [q, setQ] = useState("");
+  const [appliedQ, setAppliedQ] = useState("");
+  const deferredQ = useDeferredValue(appliedQ);
+  const [isPending, startTransition] = useTransition();
   const [sort, setSort] = useState<SortKey>("relevance");
   const [cuisine, setCuisine] = useState<CuisineKey | "all">("all");
   const [promosOnly, setPromosOnly] = useState(false);
   const [maxEta, setMaxEta] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+
+  // Debounce 180 ms : ne déclenche le recalcul qu'à la pause de frappe.
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      startTransition(() => setAppliedQ(q));
+    }, 180);
+    return () => window.clearTimeout(t);
+  }, [q]);
 
   const results = useMemo(() => {
     const needle = q.trim().toLowerCase();
