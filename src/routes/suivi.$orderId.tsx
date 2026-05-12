@@ -122,6 +122,14 @@ function SuiviPage() {
       .catch(() => setDriver({ name: "Livreur", phone: null, avatar_url: null }));
   }, [order.driver_id, order.id, fetchContact]);
 
+  // Identité courante (pour le chat)
+  const [meId, setMeId] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setMeId(data.user?.id ?? null));
+  }, []);
+  const meRole: "client" | "driver" = meId && meId === order.driver_id ? "driver" : "client";
+  const showChat = !!order.driver_id && !!meId && !order.delivered_at && order.status !== "cancelled";
+
   // ETA dynamique : si on a la position du livreur + destination, on recalcule
   const dynamicEtaMin = useMemo(() => {
     const dest = order.delivery_address;
