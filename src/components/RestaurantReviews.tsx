@@ -188,7 +188,11 @@ export function RestaurantReviews({
           reviews.map((r) => (
             <article
               key={r.id}
-              className="rounded-2xl border border-border/60 bg-card p-4"
+              className={`rounded-2xl border bg-card p-4 transition-all duration-500 ${
+                highlightId === r.id
+                  ? "animate-in fade-in slide-in-from-top-2 border-[#06C167] ring-2 ring-[#06C167]/30"
+                  : "border-border/60"
+              }`}
             >
               <header className="mb-2 flex items-center justify-between">
                 <div>
