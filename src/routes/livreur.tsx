@@ -596,12 +596,26 @@ function EmptyOffline() {
 }
 
 function ActiveCourse({
-  mission, onStatus,
+  mission, onStatus, onArrived, arrived,
 }: {
   mission: MissionRow;
   onStatus: (id: string, s: "picked_up" | "delivering" | "delivered" | "cancelled") => void;
+  onArrived: (id: string) => void;
+  arrived: boolean;
 }) {
+  const beforePickup = ["accepted", "preparing", "ready"].includes(mission.status);
   const next = nextStatus(mission.status);
+  const restoQuery = encodeURIComponent(
+    [mission.restaurants?.name, mission.restaurants?.address, mission.restaurants?.neighborhood]
+      .filter(Boolean).join(", ") || mission.restaurants?.name || "Restaurant",
+  );
+  const restoCoords = mission.restaurants?.lat != null && mission.restaurants?.lng != null
+    ? `${mission.restaurants.lat},${mission.restaurants.lng}` : null;
+  const clientCoords = mission.delivery_address?.lat != null && mission.delivery_address?.lng != null
+    ? `${mission.delivery_address.lat},${mission.delivery_address.lng}` : null;
+  const restoLink = `https://www.google.com/maps/dir/?api=1&destination=${restoCoords ?? restoQuery}&travelmode=driving`;
+  const clientLink = `https://www.google.com/maps/dir/?api=1&destination=${clientCoords ?? encodeURIComponent(fmtAddr(mission.delivery_address))}&travelmode=driving`;
+
   return (
     <div className="rounded-3xl border border-emerald-500/30 bg-emerald-500/5 p-5">
       <div className="flex items-center justify-between">
@@ -612,33 +626,65 @@ function ActiveCourse({
       </div>
       <h3 className="mt-2 font-display text-xl font-bold">{mission.restaurants?.name ?? "Restaurant"}</h3>
       <p className="mt-1 text-sm text-muted-foreground">{fmtAddr(mission.delivery_address)}</p>
-      <p className="mt-1 text-xs text-muted-foreground">Étape : {labelStatus(mission.status)}</p>
+      <p className="mt-1 text-xs text-muted-foreground">Étape : {labelStatus(mission.status)}{arrived && beforePickup ? " · arrivé sur place" : ""}</p>
 
-      <div className="mt-4 grid grid-cols-2 gap-2">
-        <button
-          onClick={() => onStatus(mission.id, "cancelled")}
-          className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-background py-3 text-sm font-semibold"
+      {/* GPS shortcuts */}
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <a
+          href={restoLink} target="_blank" rel="noreferrer"
+          className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-background py-2.5 text-xs font-semibold"
         >
-          <X className="h-4 w-4" /> Annuler
-        </button>
-        {next && (
-          <button
-            onClick={() => onStatus(mission.id, next.value)}
-            className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3 text-sm font-bold text-primary-foreground shadow-glow"
-          >
-            <Check className="h-4 w-4" /> {next.label}
-          </button>
-        )}
+          <Store className="h-4 w-4 text-primary" /> GPS resto
+        </a>
+        <a
+          href={clientLink} target="_blank" rel="noreferrer"
+          className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-background py-2.5 text-xs font-semibold"
+        >
+          <Navigation className="h-4 w-4 text-primary" /> GPS client
+        </a>
       </div>
 
-      {mission.status === "delivering" && (
+      {/* Steps */}
+      <div className="mt-4 space-y-2">
+        {beforePickup && !arrived && (
+          <button
+            onClick={() => onArrived(mission.id)}
+            className="w-full rounded-2xl border border-primary/40 bg-primary/10 py-3 text-sm font-bold text-primary hover:bg-primary/20"
+          >
+            🏬 Je suis arrivé au restaurant
+          </button>
+        )}
+        {beforePickup && arrived && (
+          <button
+            onClick={() => onStatus(mission.id, "picked_up")}
+            className="w-full rounded-2xl bg-gradient-primary py-3 text-sm font-bold text-primary-foreground shadow-glow"
+          >
+            📦 Commande récupérée
+          </button>
+        )}
+        {!beforePickup && next && (
+          <button
+            onClick={() => onStatus(mission.id, next.value)}
+            className="w-full rounded-2xl bg-gradient-primary py-3 text-sm font-bold text-primary-foreground shadow-glow"
+          >
+            <Check className="inline h-4 w-4" /> {next.label}
+          </button>
+        )}
+        {mission.status === "delivering" && (
+          <button
+            onClick={() => onStatus(mission.id, "delivered")}
+            className="w-full rounded-2xl border border-emerald-500/40 bg-emerald-500/10 py-3 text-sm font-bold text-emerald-300 hover:bg-emerald-500/20"
+          >
+            ✅ Commande livrée · +{(mission.delivery_fee ?? 0).toLocaleString("fr-FR")} FCFA
+          </button>
+        )}
         <button
-          onClick={() => onStatus(mission.id, "delivered")}
-          className="mt-3 w-full rounded-2xl border border-emerald-500/40 bg-emerald-500/10 py-3 text-sm font-bold text-emerald-300 hover:bg-emerald-500/20"
+          onClick={() => onStatus(mission.id, "cancelled")}
+          className="w-full rounded-2xl border border-border bg-background py-2.5 text-xs font-semibold text-muted-foreground"
         >
-          Marquer livré · +{(mission.delivery_fee ?? 0).toLocaleString("fr-FR")} FCFA
+          <X className="inline h-3 w-3" /> Annuler la course
         </button>
-      )}
+      </div>
     </div>
   );
 }
