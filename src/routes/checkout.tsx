@@ -179,7 +179,7 @@ function Checkout() {
             amount: total,
             purpose: "order",
             return_url: typeof window !== "undefined" ? window.location.href : "https://mboaeats.lovable.app/checkout",
-            metadata: { landmark, cart: cart.map((c) => c.name), order_id: activeOrderId },
+            metadata: { delivery: delivery_, cart: cart.map((c) => c.name), order_id: activeOrderId },
           },
         });
         if (!res.ok || !res.link) throw new Error(res.error ?? "Échec d'initiation carte");
@@ -207,7 +207,7 @@ function Checkout() {
           msisdn: `237${cleanMsisdn}`,
           amount: total,
           purpose: "order",
-          metadata: { landmark, cart: cart.map((c) => c.name), order_id: activeOrderId },
+          metadata: { delivery: delivery_, cart: cart.map((c) => c.name), order_id: activeOrderId },
         },
       });
       if (!res.ok) throw new Error(res.error ?? "Échec d'initiation");
@@ -278,15 +278,17 @@ function Checkout() {
             </div>
           )}
           {step === "choose" && (
-            <ChooseMethod
-              method={method} setMethod={setMethod}
-              phone={phone} setPhone={setPhone}
-              landmark={landmark} setLandmark={setLandmark} landmarkErr={landmarkErr}
-              onPay={() => {
-                if (!extrasSeen && cartItems.length > 0) setShowExtras(true);
-                else start();
-              }} total={total}
-            />
+            <>
+              <DeliveryDetails value={delivery_} onChange={setDelivery} error={deliveryErr} />
+              <ChooseMethod
+                method={method} setMethod={setMethod}
+                phone={phone} setPhone={setPhone}
+                onPay={() => {
+                  if (!extrasSeen && cartItems.length > 0) setShowExtras(true);
+                  else start();
+                }} total={total}
+              />
+            </>
           )}
           {step === "ussd" && (
             <UssdScreen method={method} phone={phone} pending={pending} seconds={seconds} total={total} onConfirm={goToOtp} />
@@ -306,7 +308,7 @@ function Checkout() {
           {step === "success" && <SuccessScreen method={method} total={total} />}
         </section>
 
-        <Summary cartItems={cartItems} subtotal={subtotal} delivery={delivery} total={total} hasPass={hasPass} landmark={landmark} promo={promo} setPromo={setPromo} paymentStatus={paymentStatus} method={method} reference={reference} />
+        <Summary cartItems={cartItems} subtotal={subtotal} delivery={delivery} taxes={taxes} total={total} hasPass={hasPass} addressLine={delivery_.address.line} promo={promo} setPromo={setPromo} paymentStatus={paymentStatus} method={method} reference={reference} />
       </main>
 
       {showExtras && (
