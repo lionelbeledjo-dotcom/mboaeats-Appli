@@ -3,13 +3,22 @@ import { ArrowLeft, Star, Clock, Plus, Mail } from "lucide-react";
 import { restaurants, type Dish, type Restaurant } from "@/data/restaurants";
 
 const CATEGORIES: Record<string, { label: string; icon: string; keywords: string[] }> = {
+  // Plats spécifiques
   ndole: { label: "Ndolé", icon: "🥬", keywords: ["ndole", "ndolé"] },
-  "poulet-dg": { label: "Poulet DG", icon: "🍗", keywords: ["poulet dg", "poulet"] },
+  "poulet-dg": { label: "Poulet DG", icon: "🍗", keywords: ["poulet dg"] },
   eru: { label: "Eru", icon: "🍲", keywords: ["eru"] },
   poisson: { label: "Poisson braisé", icon: "🐟", keywords: ["poisson", "bar", "capitaine", "maquereau"] },
   suya: { label: "Suya", icon: "🍢", keywords: ["suya", "soya", "brochette"] },
   beignets: { label: "Beignets", icon: "🥯", keywords: ["beignet", "accras", "macabo"] },
   jus: { label: "Jus naturels", icon: "🥤", keywords: ["jus", "bissap"] },
+  // Cuisines globales
+  africain: { label: "Africain", icon: "🥘", keywords: ["ndole", "ndolé", "eru", "koki", "miondo", "bobolo", "alloco", "plantain"] },
+  burgers: { label: "Burgers", icon: "🍔", keywords: ["burger", "smash"] },
+  pizzas: { label: "Pizzas", icon: "🍕", keywords: ["pizza", "margherita"] },
+  poulet: { label: "Poulet", icon: "🍗", keywords: ["poulet", "ailes", "wings"] },
+  sushi: { label: "Sushi", icon: "🍣", keywords: ["sushi", "maki", "sashimi"] },
+  snacks: { label: "Snacks", icon: "🥨", keywords: ["soya", "suya", "brochette", "beignet", "frites"] },
+  boissons: { label: "Boissons", icon: "🥤", keywords: ["jus", "bissap", "boisson", "smoothie", "cocktail"] },
 };
 
 export const Route = createFileRoute("/categorie/$slug")({
