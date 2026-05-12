@@ -217,7 +217,7 @@ function VirtualResults({
     estimateSize: () => ROW_HEIGHT,
     overscan: 6,
     scrollMargin: listRef.current?.offsetTop ?? 0,
-    getItemKey: (index) => results[index].id,
+    getItemKey: (index) => results[index]?.id ?? index,
   });
 
   const items = virtualizer.getVirtualItems();
@@ -242,21 +242,21 @@ function VirtualResults({
           <div
             key={virtualRow.key}
             data-index={virtualRow.index}
-            ref={virtualizer.measureElement}
             className="absolute left-0 right-0 w-full max-w-full px-0"
             style={{
+              height: ROW_HEIGHT,
               transform: `translateY(${virtualRow.start - offset}px)`,
-              paddingBottom: 12,
+              willChange: "transform",
             }}
           >
             <Link
               to="/restaurants/$restoId"
               params={{ restoId: r.id }}
-              className="flex w-full max-w-full gap-3 overflow-hidden rounded-2xl bg-white p-3 transition active:scale-[0.99]"
+              className="grid h-[104px] w-full max-w-full grid-cols-[5rem_minmax(0,1fr)] gap-3 overflow-hidden rounded-2xl bg-white p-3 transition active:bg-white/90"
               style={{ boxShadow: "0 2px 12px -8px rgba(0,0,0,0.08)" }}
             >
-              <div className="relative h-20 w-20 shrink-0">
-                <img src={r.cover} alt={r.name} width={80} height={80} loading="lazy" decoding="async" className="h-20 w-20 rounded-xl object-cover" />
+              <div className="relative aspect-square w-20 shrink-0 overflow-hidden rounded-xl bg-muted">
+                <img src={r.cover} alt={r.name} width={80} height={80} loading="lazy" decoding="async" className="h-full w-full object-cover" />
                 {badge && (
                   <span
                     className="absolute left-1 top-1 rounded-full px-1.5 py-0.5 text-[9px] font-extrabold uppercase"
@@ -266,10 +266,10 @@ function VirtualResults({
                   </span>
                 )}
               </div>
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 overflow-hidden">
                 <p className="truncate text-[15px] font-bold" style={{ color: "#1A1A1A" }}>{r.name}</p>
                 <p className="truncate text-[12px]" style={{ color: "#6B6B6B" }}>{r.tagline.split("—")[0].trim()}</p>
-                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12px]" style={{ color: "#6B6B6B" }}>
+                <div className="mt-1 flex max-w-full flex-wrap items-center gap-x-2 gap-y-0.5 overflow-hidden text-[12px]" style={{ color: "#6B6B6B" }}>
                   <span className="inline-flex items-center gap-1">
                     <Star className="h-3.5 w-3.5 fill-current" style={{ color: "#F4A623" }} />
                     <span className="font-semibold" style={{ color: "#1A1A1A" }}>{r.rating}</span>

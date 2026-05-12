@@ -70,6 +70,9 @@ function RestaurantPage() {
         <img
           src={restaurant.cover}
           alt={restaurant.name}
+          width={1200}
+          height={520}
+          decoding="async"
           className="absolute inset-0 z-0 h-full w-full object-cover"
         />
         <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-black/60 via-black/10 to-transparent" />
@@ -103,14 +106,14 @@ function RestaurantPage() {
       </div>
 
       <div className="container mx-auto mt-8 max-w-3xl px-4 pb-12 sm:mt-10">
-        <div className="rounded-3xl border border-border/60 bg-card p-5 shadow-glow animate-fade-up">
+        <div className="overflow-hidden rounded-3xl border border-border/60 bg-card p-5 shadow-glow animate-fade-up">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <h1 className="font-display text-2xl font-extrabold leading-tight text-foreground sm:text-3xl md:text-4xl">
                 {restaurant.name}
               </h1>
               <p className="mt-1.5 text-sm text-muted-foreground">{restaurant.tagline}</p>
-              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs font-semibold text-foreground/80 sm:text-sm">
+              <div className="mt-3 flex max-w-full flex-wrap items-center gap-x-3 gap-y-1.5 overflow-hidden text-xs font-semibold text-foreground/80 sm:text-sm">
                 <span className="flex items-center gap-1">
                   <Star className="h-4 w-4 fill-gold text-gold" />
                   <span>{restaurant.rating}</span>
@@ -136,7 +139,7 @@ function RestaurantPage() {
               )}
             </div>
             <span
-              className="shrink-0 rounded-full px-3 py-1 text-xs font-semibold"
+              className="max-w-[7.5rem] shrink-0 truncate rounded-full px-3 py-1 text-xs font-semibold"
               style={{
                 backgroundColor: open ? "rgba(6,193,103,0.15)" : "#F5F0E8",
                 color: open ? "#06C167" : "#6B6B6B",
@@ -210,7 +213,7 @@ function RestaurantPage() {
                       params={{ restoId: restaurant.id, platId: dish.id }}
                       preload="intent"
                       aria-label={`Voir les détails de ${dish.name}`}
-                      className="group relative z-10 flex items-stretch gap-4 rounded-2xl border border-border/50 bg-card p-3 transition-all cursor-pointer select-none hover:-translate-y-0.5 hover:border-[#06C167]/60 hover:shadow-[0_10px_28px_-12px_rgba(6,193,103,0.45)] active:scale-[0.985] active:bg-muted/40 active:border-[#06C167] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                      className="group relative z-10 grid min-h-32 grid-cols-[minmax(0,1fr)_7rem] gap-3 overflow-hidden rounded-2xl border border-border/50 bg-card p-3 transition-all cursor-pointer select-none hover:border-[#06C167]/60 hover:shadow-[0_10px_28px_-12px_rgba(6,193,103,0.45)] active:bg-muted/40 active:border-[#06C167] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                     >
                       {/* Text left */}
                       <div className="flex min-w-0 flex-1 flex-col py-1">
@@ -254,14 +257,15 @@ function RestaurantPage() {
                       </div>
 
                       {/* Photo right with floating + button */}
-                      <div className="relative shrink-0">
+                      <div className="relative aspect-square w-28 shrink-0 overflow-hidden rounded-xl bg-muted">
                         <img
                           src={dish.image}
                           alt={dish.name}
                           loading="lazy"
                           width={112}
                           height={112}
-                          className="pointer-events-none h-28 w-28 rounded-xl object-cover transition-transform duration-500 group-hover:scale-105"
+                          decoding="async"
+                          className="pointer-events-none h-full w-full object-cover"
                         />
                         <button
                           aria-label={`Ajouter ${dish.name} au panier`}

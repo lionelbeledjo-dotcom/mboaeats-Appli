@@ -86,7 +86,7 @@ function Index() {
     <div className="min-h-screen" style={{ backgroundColor: "#F5F0E8", overflowAnchor: "none" }}>
       <AppTopBar />
 
-      <div className="mx-auto max-w-md px-4 pb-28 pt-4">
+      <div className="mx-auto w-full max-w-md overflow-hidden px-4 pb-28 pt-4">
         <h1
           className="text-[24px] font-bold leading-tight"
           style={{ color: "#06C167", fontFamily: "Inter, system-ui, sans-serif" }}
@@ -120,11 +120,11 @@ function Index() {
         </label>
 
         {searchResults ? (
-          <section className="mt-6">
+          <section className="mt-6 overflow-hidden">
             <h2 className="mb-3 text-[16px] font-semibold" style={{ color: "#1A1A1A" }}>
               {searchResults.length} résultat{searchResults.length > 1 ? "s" : ""} pour « {query} »
             </h2>
-            <div className="space-y-3">
+            <div className="space-y-3 overflow-hidden">
               {searchResults.map((r) => (
                 <RestaurantListCard
                   key={r.id}
@@ -206,7 +206,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="mt-6">
+    <section className="mt-6 overflow-hidden">
       <div className="mb-3 flex items-center justify-between">
         <h2
           className="flex items-center gap-2 text-[18px] font-semibold"
@@ -228,22 +228,25 @@ function Section({
 
 function HorizontalRail({ restaurants }: { restaurants: Restaurant[] }) {
   return (
-    <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="-mx-4 flex snap-x gap-3 overflow-x-auto overscroll-x-contain px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {restaurants.map((r) => (
         <Link
           key={r.id}
           to="/restaurants/$restoId"
           params={{ restoId: r.id }}
           preload="intent"
-          className="block shrink-0 rounded-2xl bg-white p-2 transition active:scale-[0.98]"
+          className="block shrink-0 snap-start overflow-hidden rounded-2xl bg-white p-2 transition active:bg-white/90"
           style={{ width: 200, boxShadow: "0 2px 12px -8px rgba(0,0,0,0.08)" }}
         >
-          <div className="relative">
+          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl bg-muted">
             <img
               src={r.cover}
               alt={r.name}
+              width={400}
+              height={225}
               loading="lazy"
-              className="h-24 w-full rounded-xl object-cover"
+              decoding="async"
+              className="h-full w-full object-cover"
             />
             <span
               className="absolute left-1.5 top-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-extrabold uppercase"
