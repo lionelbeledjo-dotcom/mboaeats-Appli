@@ -101,18 +101,38 @@ function Livreur() {
   const reload = useCallback(async () => {
     setLoading(true);
     try {
-      const [a, m, e] = await Promise.all([
+      const [a, m, e, r] = await Promise.all([
         fetchAvailable().catch(() => ({ missions: [] })),
         fetchMine().catch(() => ({ missions: [] })),
         fetchEarnings().catch(() => null),
+        fetchReviews().catch(() => ({ reviews: [], avg: null, count: 0 })),
       ]);
-      setAvailable((a.missions ?? []) as MissionRow[]);
+      const newAvail = (a.missions ?? []) as MissionRow[];
+      // Détecte une nouvelle mission entrante
+      if (online) {
+        const fresh = newAvail.find((mi) => !seenAvailable.current.has(mi.id));
+        if (fresh) setIncoming(fresh);
+      }
+      newAvail.forEach((mi) => seenAvailable.current.add(mi.id));
+      setAvailable(newAvail);
       setMine((m.missions ?? []) as MissionRow[]);
       if (e) setEarnings(e as Earnings);
+      setReviews({ list: r.reviews ?? [], avg: r.avg ?? null, count: r.count ?? 0 });
     } finally {
       setLoading(false);
     }
-  }, [fetchAvailable, fetchMine, fetchEarnings]);
+  }, [fetchAvailable, fetchMine, fetchEarnings, fetchReviews, online]);
+
+  // Restore arrived-at-restaurant per-mission flag
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("driver_arrived");
+      if (raw) setArrivedAt(JSON.parse(raw));
+    } catch { /* noop */ }
+  }, []);
+  useEffect(() => {
+    try { localStorage.setItem("driver_arrived", JSON.stringify(arrivedAt)); } catch { /* noop */ }
+  }, [arrivedAt]);
 
   useEffect(() => {
     if (signedIn) reload();
