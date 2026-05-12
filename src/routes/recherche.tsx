@@ -157,13 +157,13 @@ function RecherchePage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-md px-4 py-4">
+      <main className="mx-auto w-full max-w-md px-4 py-4 overflow-x-hidden">
         <p className="text-xs" style={{ color: "#6B6B6B" }}>
           {results.length} résultat{results.length > 1 ? "s" : ""}
           {q && <> pour « {q} »</>}
         </p>
 
-        <ul className="mt-3 space-y-3">
+        <ul className="mt-3 space-y-3 w-full">
           {results.map((r) => {
             const badge = badgeMeta(catalogBadge(r));
             const fee = deliveryFee(r);
