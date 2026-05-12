@@ -3,6 +3,7 @@ import { Star, Clock, MapPin, Flame, Plus, Search, Heart, ChevronRight, Bike } f
 import { toast } from "sonner";
 import { SmartBack } from "@/components/SmartBack";
 import { RestaurantSkeleton } from "@/components/Skeleton";
+import { RestaurantReviews } from "@/components/RestaurantReviews";
 import { getRestaurant, type Restaurant } from "@/data/restaurants";
 import { addToCart, useCart, setQty as setCartQty } from "@/hooks/use-cart";
 import { QuantityStepper } from "@/components/QuantityStepper";
@@ -306,6 +307,8 @@ function RestaurantPage() {
               </ul>
             </section>
           ))}
+
+          <RestaurantReviews restoId={restaurant.id} baseRating={restaurant.rating} />
         </div>
       </div>
     </div>
