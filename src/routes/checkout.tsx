@@ -83,6 +83,23 @@ function Checkout() {
   const [extrasSeen, setExtrasSeen] = useState(false);
   const [cardLink, setCardLink] = useState<string | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "pending" | "succeeded" | "failed">("idle");
+  const [contactErrors, setContactErrors] = useState<DeliveryContactErrors>({});
+
+  // Contact de livraison (adresse / instructions / téléphone) — synchronisé avec delivery_
+  const contact: DeliveryContact = {
+    address: delivery_.address.line,
+    instructions: delivery_.instructions,
+    phone,
+  };
+  const setContact = (next: DeliveryContact) => {
+    setDelivery({
+      ...delivery_,
+      address: { ...delivery_.address, line: next.address },
+      instructions: next.instructions,
+    });
+    setPhone(next.phone);
+    setContactErrors(validateDeliveryContact(next));
+  };
 
   // Détection MboaPass (livraison gratuite)
   useEffect(() => {
