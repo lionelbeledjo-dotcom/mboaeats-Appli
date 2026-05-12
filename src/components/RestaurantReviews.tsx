@@ -96,6 +96,8 @@ export function RestaurantReviews({
     const list = [next, ...reviews];
     setReviews(list);
     saveReviews(restoId, list);
+    setHighlightId(next.id);
+    setTimeout(() => setHighlightId((id) => (id === next.id ? null : id)), 2500);
     setRating(0);
     setComment("");
     setAuthor("");
