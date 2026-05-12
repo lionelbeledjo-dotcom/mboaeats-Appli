@@ -10,8 +10,9 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { initiatePayment, verifyPayment, getActiveMboaPass, initiateCardPayment, pollPaymentStatus } from "@/server/payments.functions";
 import { createOrder, markOrderPaid } from "@/server/marketplace.functions";
-import { useCart, clearCart, addToCart, setQty as setCartQty, removeFromCart, type CartItem } from "@/hooks/use-cart";
+import { useCart, clearCart, addToCart, setQty as setCartQty, removeFromCart, setItemNote, type CartItem } from "@/hooks/use-cart";
 import { QuantityStepper } from "@/components/QuantityStepper";
+import { DeliveryDetails, type DeliveryDetailsState } from "@/components/checkout/DeliveryDetails";
 
 export const Route = createFileRoute("/checkout")({
   component: Checkout,
@@ -34,7 +35,7 @@ const UPSELL_ITEMS: { id: string; name: string; price: number; image: string; em
 ];
 
 
-const landmarkSchema = z.string().trim().min(8, "Décrivez un repère visible (≥ 8 caractères)").max(140);
+const TAX_RATE = 0; // TVA incluse au Cameroun (prix TTC affichés)
 
 function Checkout() {
   const navigate = useNavigate();
@@ -55,12 +56,17 @@ function Checkout() {
   const [hasPass, setHasPass] = useState(false);
   const [promo, setPromo] = useState<{ code: string; discount: number } | null>(null);
   const delivery = hasPass || subtotal === 0 ? 0 : 800;
-  const total = Math.max(0, subtotal + delivery - (promo?.discount ?? 0));
+  const taxes = Math.round((subtotal + delivery) * TAX_RATE);
+  const total = Math.max(0, subtotal + delivery + taxes - (promo?.discount ?? 0));
 
   const [method, setMethod] = useState<Method>("momo");
   const [phone, setPhone] = useState("690 00 00 00");
-  const [landmark, setLandmark] = useState("");
-  const [landmarkErr, setLandmarkErr] = useState<string | null>(null);
+  const [delivery_, setDelivery] = useState<DeliveryDetailsState>({
+    address: { line: "", city: "Douala", neighborhood: "" },
+    schedule: { type: "now" },
+    instructions: "",
+  });
+  const [deliveryErr, setDeliveryErr] = useState<string | null>(null);
   const [step, setStep] = useState<Step>("choose");
   const [reference, setReference] = useState<string | null>(null);
   const [topError, setTopError] = useState<string | null>(null);
@@ -113,6 +119,18 @@ function Checkout() {
   const ensureLiveOrder = async (): Promise<string | null> => {
     if (!isLiveOrder || !liveRestoId) return null;
     if (liveOrderId) return liveOrderId;
+    const addr = delivery_.address;
+    const scheduled =
+      delivery_.schedule.type === "scheduled" ? delivery_.schedule.when : null;
+    const orderNotes = [
+      delivery_.instructions && `Livreur: ${delivery_.instructions}`,
+      scheduled && `Programmée: ${new Date(scheduled).toLocaleString("fr-FR")}`,
+      ...dbItems
+        .filter((i) => i.note)
+        .map((i) => `${i.name}: ${i.note}`),
+    ]
+      .filter(Boolean)
+      .join(" · ");
     const res = await createOrderFn({
       data: {
         restaurant_id: liveRestoId,
@@ -122,9 +140,13 @@ function Checkout() {
           qty: i.qty,
           unit_price: i.price,
         })),
-        delivery_address: { line: landmark, city: "Douala" },
+        delivery_address: {
+          line: addr.line,
+          city: addr.city,
+          neighborhood: addr.neighborhood ?? undefined,
+        },
         promo_code: promo?.code,
-        notes: landmark,
+        notes: orderNotes || addr.line,
       },
     });
     setLiveOrderId(res.order.id);
@@ -133,12 +155,11 @@ function Checkout() {
 
   const start = async () => {
     setTopError(null);
-    const parsed = landmarkSchema.safeParse(landmark);
-    if (!parsed.success) {
-      setLandmarkErr(parsed.error.issues[0]?.message ?? "Repère requis");
+    if (delivery_.address.line.trim().length < 8) {
+      setDeliveryErr("Précise une adresse complète (≥ 8 caractères)");
       return;
     }
-    setLandmarkErr(null);
+    setDeliveryErr(null);
 
     let activeOrderId: string | null = liveOrderId;
     try {
@@ -158,7 +179,7 @@ function Checkout() {
             amount: total,
             purpose: "order",
             return_url: typeof window !== "undefined" ? window.location.href : "https://mboaeats.lovable.app/checkout",
-            metadata: { landmark, cart: cart.map((c) => c.name), order_id: activeOrderId },
+            metadata: { delivery: delivery_, cart: cart.map((c) => c.name), order_id: activeOrderId },
           },
         });
         if (!res.ok || !res.link) throw new Error(res.error ?? "Échec d'initiation carte");
@@ -186,7 +207,7 @@ function Checkout() {
           msisdn: `237${cleanMsisdn}`,
           amount: total,
           purpose: "order",
-          metadata: { landmark, cart: cart.map((c) => c.name), order_id: activeOrderId },
+          metadata: { delivery: delivery_, cart: cart.map((c) => c.name), order_id: activeOrderId },
         },
       });
       if (!res.ok) throw new Error(res.error ?? "Échec d'initiation");
@@ -257,15 +278,17 @@ function Checkout() {
             </div>
           )}
           {step === "choose" && (
-            <ChooseMethod
-              method={method} setMethod={setMethod}
-              phone={phone} setPhone={setPhone}
-              landmark={landmark} setLandmark={setLandmark} landmarkErr={landmarkErr}
-              onPay={() => {
-                if (!extrasSeen && cartItems.length > 0) setShowExtras(true);
-                else start();
-              }} total={total}
-            />
+            <>
+              <DeliveryDetails value={delivery_} onChange={setDelivery} error={deliveryErr} />
+              <ChooseMethod
+                method={method} setMethod={setMethod}
+                phone={phone} setPhone={setPhone}
+                onPay={() => {
+                  if (!extrasSeen && cartItems.length > 0) setShowExtras(true);
+                  else start();
+                }} total={total}
+              />
+            </>
           )}
           {step === "ussd" && (
             <UssdScreen method={method} phone={phone} pending={pending} seconds={seconds} total={total} onConfirm={goToOtp} />
@@ -285,7 +308,7 @@ function Checkout() {
           {step === "success" && <SuccessScreen method={method} total={total} />}
         </section>
 
-        <Summary cartItems={cartItems} subtotal={subtotal} delivery={delivery} total={total} hasPass={hasPass} landmark={landmark} promo={promo} setPromo={setPromo} paymentStatus={paymentStatus} method={method} reference={reference} />
+        <Summary cartItems={cartItems} subtotal={subtotal} delivery={delivery} taxes={taxes} total={total} hasPass={hasPass} addressLine={delivery_.address.line} promo={promo} setPromo={setPromo} paymentStatus={paymentStatus} method={method} reference={reference} />
       </main>
 
       {showExtras && (
@@ -299,67 +322,14 @@ function Checkout() {
 }
 
 function ChooseMethod({
-  method, setMethod, phone, setPhone, landmark, setLandmark, landmarkErr, onPay, total,
+  method, setMethod, phone, setPhone, onPay, total,
 }: {
   method: Method; setMethod: (m: Method) => void;
   phone: string; setPhone: (s: string) => void;
-  landmark: string; setLandmark: (s: string) => void; landmarkErr: string | null;
   onPay: () => void; total: number;
 }) {
   return (
     <>
-      <div className="rounded-3xl border-2 border-brand-cm-green bg-brand-cm-green text-white p-5 shadow-[0_12px_32px_-12px_rgba(6,193,103,0.55)]">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-white" />
-              <h2 className="font-display text-lg font-bold text-white">Livraison à</h2>
-            </div>
-            <p className="mt-1 text-sm font-semibold text-white">Akwa, Douala</p>
-            <p className="mt-0.5 text-xs text-white/85">Arrivée estimée</p>
-          </div>
-          <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1.5 text-xs font-bold text-white ring-1 ring-white/40">
-            ⏱ 15 min
-          </span>
-        </div>
-
-        {/* Mini-map mock */}
-        <div className="relative mt-4 h-28 w-full overflow-hidden rounded-2xl border border-white/30 bg-[linear-gradient(135deg,#f1f5f9_0%,#e2e8f0_100%)]">
-          <svg className="absolute inset-0 h-full w-full opacity-70" viewBox="0 0 400 120" preserveAspectRatio="none">
-            <path d="M0,80 Q120,20 200,60 T400,40" stroke="#0a8f4e" strokeWidth="3" fill="none" strokeDasharray="6 4" />
-            <circle cx="60" cy="78" r="6" fill="#0a8f4e" />
-            <circle cx="340" cy="46" r="8" fill="#000" />
-          </svg>
-          <div className="absolute bottom-2 left-3 rounded-md bg-white/95 px-2 py-0.5 text-[10px] font-semibold text-black shadow-sm">
-            Restaurant
-          </div>
-          <div className="absolute right-3 top-2 rounded-md bg-black px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
-            Vous
-          </div>
-        </div>
-
-        <label className="mt-4 block">
-          <span className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-white">
-            <MapPin className="h-3 w-3 text-white" /> Point de repère visuel <span className="text-white">*</span>
-          </span>
-          <textarea
-            value={landmark}
-            onChange={(e) => setLandmark(e.target.value)}
-            placeholder="Ex: derrière la station Total, portail bleu en face de la pharmacie Jordan…"
-            rows={2}
-            maxLength={140}
-            className={`mt-2 w-full rounded-xl border bg-white/10 px-3 py-3 text-sm text-white placeholder:text-white/70 outline-none focus:border-white focus:bg-white/15 ${
-              landmarkErr ? "border-red-200" : "border-white/40"
-            }`}
-          />
-          <div className="mt-1 flex justify-between text-[11px]">
-            <span className={landmarkErr ? "text-red-100 font-semibold" : "text-white/85"}>
-              {landmarkErr ?? "Aide le livreur à te trouver rapidement (transmis à sa tournée)."}
-            </span>
-            <span className="text-white/80">{landmark.length}/140</span>
-          </div>
-        </label>
-      </div>
 
       <div className="rounded-3xl border border-border bg-surface/60 p-5">
         <h2 className="font-display text-lg font-bold">Méthode de paiement</h2>

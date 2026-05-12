@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
+export type CartItemExtra = { name: string; price: number };
+
 export type CartItem = {
   id: string;
   dishId: string;
@@ -10,6 +12,8 @@ export type CartItem = {
   qty: number;
   image?: string;
   options?: Record<string, string>;
+  extras?: CartItemExtra[];
+  note?: string;
 };
 
 type CartState = {
@@ -17,6 +21,7 @@ type CartState = {
   add: (item: CartItem) => void;
   remove: (id: string) => void;
   setQty: (id: string, qty: number) => void;
+  setNote: (id: string, note: string) => void;
   clear: () => void;
   restore: (items: CartItem[]) => void;
 };
@@ -39,11 +44,15 @@ export const useCartStore = create<CartState>()(
           items: get().items.map((i) => (i.id === id ? { ...i, qty } : i)),
         });
       },
+      setNote: (id, note) =>
+        set({
+          items: get().items.map((i) => (i.id === id ? { ...i, note } : i)),
+        }),
       clear: () => set({ items: [] }),
       restore: (items) => set({ items }),
     }),
     {
-      name: "mboa_cart_v2",
+      name: "mboa_cart_v3",
       storage: createJSONStorage(() => localStorage),
     },
   ),

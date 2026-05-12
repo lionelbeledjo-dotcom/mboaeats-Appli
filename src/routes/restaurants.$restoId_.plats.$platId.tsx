@@ -41,6 +41,7 @@ function DishPage() {
   const { restaurant, dish } = Route.useLoaderData() as { restaurant: Restaurant; dish: Dish };
   const navigate = useNavigate();
   const [qty, setQty] = useState(1);
+  const [note, setNote] = useState("");
   const [picked, setPicked] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {};
     dish.options?.forEach((o) => (init[o.label] = o.choices[0].name));
@@ -142,6 +143,35 @@ function DishPage() {
           </section>
         ))}
 
+        {/* Instructions spéciales */}
+        <section className="mt-6 rounded-2xl border border-border/60 bg-card p-4">
+          <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-muted-foreground">
+            Instructions spéciales
+          </h2>
+          <div className="mb-2 flex flex-wrap gap-2">
+            {["Sans oignon", "Sans piment", "Extra sauce", "Bien cuit", "Peu salé"].map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() =>
+                  setNote((n) => (n.includes(tag) ? n : (n ? n + ", " : "") + tag))
+                }
+                className="rounded-full border border-border/60 bg-background px-3 py-1 text-xs font-medium text-foreground transition hover:border-[#06C167]/60 hover:text-[#06C167]"
+              >
+                + {tag}
+              </button>
+            ))}
+          </div>
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value.slice(0, 200))}
+            rows={2}
+            placeholder="Ex : pas d'oignon, sauce à part…"
+            className="w-full resize-none rounded-xl border border-border/60 bg-background p-3 text-sm outline-none focus:border-[#06C167]"
+          />
+          <p className="mt-1 text-right text-[10px] text-muted-foreground">{note.length}/200</p>
+        </section>
+
         {/* Quantity */}
         <div className="mt-6 flex items-center justify-between rounded-2xl border border-border/60 bg-card p-3">
           <span className="text-sm font-semibold">Quantité</span>
@@ -173,6 +203,12 @@ function DishPage() {
             onClick={() => {
               const unit = total / qty;
               const optKey = Object.entries(picked).map(([k, v]) => `${k}:${v}`).join("|");
+              const extras = (dish.options ?? [])
+                .map((o) => {
+                  const c = o.choices.find((c) => c.name === picked[o.label]);
+                  return c?.extra ? { name: `${o.label}: ${c.name}`, price: c.extra } : null;
+                })
+                .filter((x): x is { name: string; price: number } => x !== null);
               addToCart({
                 id: `${dish.id}__${optKey}`,
                 dishId: dish.id,
@@ -182,9 +218,11 @@ function DishPage() {
                 qty,
                 image: dish.image,
                 options: picked,
+                extras,
+                note: note.trim() || undefined,
               });
               toast.success("L'article a été ajouté au panier !", {
-                description: `${qty} × ${dish.name}`,
+                description: `${qty} × ${dish.name}${note ? ` · ${note.slice(0, 30)}` : ""}`,
                 action: {
                   label: "Voir le panier",
                   onClick: () => navigate({ to: "/checkout" }),
