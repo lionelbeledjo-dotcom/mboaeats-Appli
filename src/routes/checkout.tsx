@@ -987,3 +987,49 @@ function ExtrasModal({ onSkip, onClose }: { onSkip: () => void; onClose: () => v
   );
 }
 
+function DeliveryTypeSelector({
+  value,
+  onChange,
+}: {
+  value: "priority" | "standard" | "scheduled";
+  onChange: (t: "priority" | "standard" | "scheduled") => void;
+}) {
+  const options: {
+    id: "priority" | "standard" | "scheduled";
+    title: string;
+    eta: string;
+    sub?: string;
+    extra?: string;
+    icon?: string;
+  }[] = [
+    { id: "priority", title: "Priorité", eta: "20–25 min", sub: "Livré chez vous", extra: "+500 FCFA", icon: "⚡" },
+    { id: "standard", title: "Standard", eta: "30–40 min" },
+    { id: "scheduled", title: "Planifier", eta: "Au plus tôt" },
+  ];
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      {options.map((o) => {
+        const active = value === o.id;
+        return (
+          <button
+            key={o.id}
+            type="button"
+            onClick={() => onChange(o.id)}
+            className={`flex flex-col items-start gap-1 rounded-2xl bg-white p-3 text-left transition-all ${
+              active ? "border-2 border-black" : "border border-gray-200"
+            }`}
+          >
+            <div className="flex items-center gap-1">
+              <span className="text-[14px] font-bold text-black">{o.title}</span>
+              {o.icon && <span className="text-[14px]" aria-hidden>{o.icon}</span>}
+            </div>
+            <span className="text-[12px] text-gray-500">{o.eta}</span>
+            {o.sub && <span className="text-[12px] font-medium text-emerald-600">{o.sub}</span>}
+            {o.extra && <span className="text-[12px] text-gray-500">{o.extra}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
