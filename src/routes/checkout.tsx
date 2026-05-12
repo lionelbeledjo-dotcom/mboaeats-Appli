@@ -112,8 +112,10 @@ function Checkout() {
   const createOrderFn = useServerFn(createOrder);
   const markPaidFn = useServerFn(markOrderPaid);
 
-  const { items: cartItems, subtotal } = useCart();
-  const cart = cartItems.map((i) => ({ name: i.name, qty: i.qty, price: i.price }));
+  const cartHook = useCart();
+  const cartItems = cartHook?.items ?? [];
+  const subtotal = cartHook?.subtotal ?? 0;
+  const cart = cartItems.map((i) => ({ name: i?.name ?? "", qty: i?.qty ?? 0, price: i?.price ?? 0 }));
   // Items provenant de la base (préfixés "db__") → vraie commande live
   const dbItems = cartItems.filter((i) => i.id.startsWith("db__"));
   const isLiveOrder = dbItems.length > 0;
