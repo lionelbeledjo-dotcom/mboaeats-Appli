@@ -968,7 +968,8 @@ function OtpScreen({ method, phone, total, onSubmit, onSuccess, onBack }: {
 }
 
 function ExtrasModal({ onSkip, onClose }: { onSkip: () => void; onClose: () => void }) {
-  const { items: cartItems } = useCart();
+  const cartHook2 = useCart();
+  const cartItems = cartHook2?.items ?? [];
   const restoId = cartItems[0]?.restoId ?? "extras";
 
   const addExtra = (e: typeof UPSELL_ITEMS[number]) => {
