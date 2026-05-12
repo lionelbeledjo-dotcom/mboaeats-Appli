@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { Component, useEffect, useState, type ReactNode } from "react";
 import { Minus, Plus, Trash2, X, UserPlus, Gift, ChevronRight, ShoppingCart, ShoppingBag } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { EmptyState } from "@/components/EmptyState";
@@ -12,15 +12,67 @@ export const Route = createFileRoute("/panier")({
       { name: "description", content: "Votre panier MboaEats : modifiez vos articles et passez commande." },
     ],
   }),
-  component: PanierPage,
+  component: PanierRoute,
 });
+
+class PanierErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  state = { hasError: false };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: unknown) {
+    // eslint-disable-next-line no-console
+    console.error("[Panier] render error", error);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <main className="min-h-[calc(100vh-80px)] bg-white">
+          <header className="flex items-center justify-between px-4 pt-4 pb-2">
+            <Link to="/" aria-label="Fermer" className="p-2 -ml-2">
+              <X className="h-6 w-6 text-black" strokeWidth={2.5} />
+            </Link>
+          </header>
+          <EmptyState
+            icon={ShoppingCart}
+            title="Votre panier est vide"
+            description="Ajoutez vos plats préférés pour passer commande."
+            ctaLabel="Retour à l'accueil"
+            ctaHref="/"
+          />
+        </main>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function PanierRoute() {
+  // Avoid SSR/CSR mismatch from persisted cart (localStorage) — render after mount.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) {
+    return (
+      <main className="min-h-[calc(100vh-80px)] bg-white" aria-busy="true" />
+    );
+  }
+  return (
+    <PanierErrorBoundary>
+      <PanierPage />
+    </PanierErrorBoundary>
+  );
+}
 
 function PanierPage() {
   const navigate = useNavigate();
-  const { items, subtotal, setQty, remove } = useCart();
+  const cart = useCart();
+  const items = cart?.items ?? [];
+  const subtotal = cart?.subtotal ?? 0;
+  const setQty = cart?.setQty ?? (() => {});
+  const remove = cart?.remove ?? (() => {});
   const [promoChecked, setPromoChecked] = useState(false);
 
-  if (items.length === 0) {
+  if (!items || items.length === 0) {
     return (
       <main className="min-h-[calc(100vh-80px)] bg-white">
         <header className="flex items-center justify-between px-4 pt-4 pb-2">
