@@ -21,6 +21,10 @@ export function setQty(id: string, qty: number) {
   else playCartSound("remove");
 }
 
+export function setItemNote(id: string, note: string) {
+  useCartStore.getState().setNote(id, note);
+}
+
 export function getCartItems(): CartItem[] {
   return useCartStore.getState().items;
 }
