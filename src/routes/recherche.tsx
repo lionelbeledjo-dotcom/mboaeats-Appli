@@ -56,7 +56,7 @@ function RecherchePage() {
   }, [q]);
 
   const results = useMemo(() => {
-    const needle = q.trim().toLowerCase();
+    const needle = deferredQ.trim().toLowerCase();
     let list = restaurants.filter((r) => {
       if (needle) {
         const inResto = r.name.toLowerCase().includes(needle) || r.tagline.toLowerCase().includes(needle);
@@ -78,7 +78,9 @@ function RecherchePage() {
       sorted.sort((a, b) => min(a) - min(b));
     }
     return sorted;
-  }, [q, sort, cuisine, promosOnly, maxEta]);
+  }, [deferredQ, sort, cuisine, promosOnly, maxEta]);
+
+  const isStale = isPending || deferredQ !== appliedQ || appliedQ !== q;
 
   const activeCount =
     (cuisine !== "all" ? 1 : 0) + (promosOnly ? 1 : 0) + (maxEta ? 1 : 0) + (sort !== "relevance" ? 1 : 0);
