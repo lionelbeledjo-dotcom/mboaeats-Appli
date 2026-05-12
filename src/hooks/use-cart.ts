@@ -15,7 +15,7 @@ export function removeFromCart(id: string) {
 }
 
 export function setQty(id: string, qty: number) {
-  const prev = useCartStore.getState().items.find((i) => i.id === id)?.qty ?? 0;
+  const prev = (useCartStore.getState().items ?? []).find((i) => i.id === id)?.qty ?? 0;
   useCartStore.getState().setQty(id, qty);
   if (qty > prev) playCartSound("add");
   else playCartSound("remove");
@@ -26,11 +26,11 @@ export function setItemNote(id: string, note: string) {
 }
 
 export function getCartItems(): CartItem[] {
-  return useCartStore.getState().items;
+  return useCartStore.getState().items ?? [];
 }
 
 export function restoreCartItems(items: CartItem[]) {
-  useCartStore.getState().restore(items);
+  useCartStore.getState().restore(items ?? []);
   playCartSound("add");
 }
 
@@ -39,9 +39,9 @@ export function clearCart() {
 }
 
 export function useCart() {
-  const items = useCartStore((s) => s.items);
-  const subtotal = items.reduce((s, i) => s + i.qty * i.price, 0);
-  const count = items.reduce((s, i) => s + i.qty, 0);
+  const items = useCartStore((s) => s.items ?? []);
+  const subtotal = items.reduce((s, i) => s + (i?.qty ?? 0) * (i?.price ?? 0), 0);
+  const count = items.reduce((s, i) => s + (i?.qty ?? 0), 0);
 
   return {
     items,
