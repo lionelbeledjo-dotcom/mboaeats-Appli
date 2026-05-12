@@ -307,6 +307,7 @@ function Checkout() {
           )}
           {step === "choose" && (
             <>
+              <DeliveryContactRows value={contact} onChange={setContact} errors={contactErrors} />
               <DeliveryDetails value={delivery_} onChange={setDelivery} error={deliveryErr} />
               <DeliveryTypeSelector
                 value={delivery_.schedule.type === "scheduled" ? "scheduled" : "standard"}
