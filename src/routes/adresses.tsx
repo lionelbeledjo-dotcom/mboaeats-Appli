@@ -263,12 +263,15 @@ function AddressesPage() {
 
     // Tente la persistance distante (silencieuse en cas d'échec)
     try {
+      const geo = await geocodeCm(`${neighborhood.trim()}, ${city}, Cameroun`);
       await upsertMyAddress({
         data: {
           label: label.trim(),
           city,
           neighborhood: neighborhood.trim(),
           line: `${neighborhood.trim()} · Tél : ${phoneFull}`,
+          lat: geo?.lat ?? null,
+          lng: geo?.lng ?? null,
         },
       });
     } catch {
