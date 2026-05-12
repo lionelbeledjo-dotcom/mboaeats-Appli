@@ -11,6 +11,8 @@ export type DeliveryAddress = {
   line: string;
   city: string;
   neighborhood?: string | null;
+  lat?: number | null;
+  lng?: number | null;
 };
 
 export type DeliverySchedule =
