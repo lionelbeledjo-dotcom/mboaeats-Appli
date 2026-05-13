@@ -535,9 +535,15 @@ function ChooseMethod({
       </div>
 
       {disabled && disabledReason && (
-        <div className="flex items-start gap-2 rounded-2xl border border-amber-400/50 bg-amber-50 p-3 text-sm text-amber-900">
-          <AlertCircle className="mt-0.5 h-4 w-4" />
-          <span>{disabledReason}</span>
+        <div
+          role="alert"
+          className="relative flex items-start gap-3 overflow-hidden rounded-2xl border border-amber-400/50 bg-gradient-to-br from-amber-50 via-amber-100/50 to-amber-50 p-3.5 text-sm text-amber-900 shadow-[0_8px_22px_-14px_rgba(217,119,6,0.55)] animate-fade-in"
+        >
+          <span aria-hidden className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-amber-500 to-amber-300" />
+          <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-500/15 ring-1 ring-amber-500/40">
+            <AlertCircle className="h-3.5 w-3.5 text-amber-700 animate-scale-in" />
+          </span>
+          <span className="pt-0.5 leading-snug">{disabledReason}</span>
         </div>
       )}
       <button
