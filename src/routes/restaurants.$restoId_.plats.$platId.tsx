@@ -64,7 +64,7 @@ function DishPage() {
         className="relative w-full overflow-hidden"
         style={{ height: "40vh", maxHeight: 420 }}
       >
-        <img src={dish.image} alt={dish.name} className="h-full w-full object-cover" />
+        <SmartImage src={dish.image} alt={dish.name} ratio="4 / 3" loading="eager" wrapperClassName="!aspect-auto h-full" />
         <div className="absolute inset-x-0 top-0 p-4 pt-5">
           <SmartBack
             backTo="/restaurants/$restoId"
