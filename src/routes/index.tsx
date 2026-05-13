@@ -238,15 +238,13 @@ function HorizontalRail({ restaurants }: { restaurants: Restaurant[] }) {
           className="block shrink-0 snap-start overflow-hidden rounded-2xl bg-white p-2 transition active:bg-white/90"
           style={{ width: 200, boxShadow: "0 2px 12px -8px rgba(0,0,0,0.08)" }}
         >
-          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl bg-muted">
-            <img
+          <div className="relative w-full overflow-hidden rounded-xl">
+            <SmartImage
               src={r.cover}
               alt={r.name}
+              ratio="16 / 9"
               width={400}
               height={225}
-              loading="lazy"
-              decoding="async"
-              className="h-full w-full object-cover"
             />
             <span
               className="absolute left-1.5 top-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-extrabold uppercase"
