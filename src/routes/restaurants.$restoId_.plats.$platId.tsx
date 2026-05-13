@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Flame, Minus, Plus, ShoppingCart, Star } from "lucide-react";
+import { SmartImage } from "@/components/SmartImage";
 import { toast } from "sonner";
 import { SmartBack } from "@/components/SmartBack";
 import { DishSkeleton } from "@/components/Skeleton";
