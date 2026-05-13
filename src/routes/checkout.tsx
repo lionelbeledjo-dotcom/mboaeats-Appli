@@ -381,6 +381,7 @@ function Checkout() {
               <Crown className="h-4 w-4 text-gold" />
               <span><strong className="text-gold">MboaPass actif</strong> — livraison offerte sur cette commande.</span>
             </div>
+          )}
           {cartEmpty && step === "choose" && (
             <div className="flex flex-col gap-3 rounded-2xl border border-amber-400/50 bg-amber-50 p-4 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-start gap-2">
