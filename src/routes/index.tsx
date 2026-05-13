@@ -5,6 +5,7 @@ import { AppTopBar } from "@/components/AppTopBar";
 import { PromoBanner } from "@/components/home/PromoBanner";
 import { CategoriesRow } from "@/components/home/CategoriesRow";
 import { RestaurantListCard } from "@/components/home/RestaurantListCard";
+import { SmartImage } from "@/components/SmartImage";
 import { restaurants as realRestaurants, getRestaurant, type Restaurant } from "@/data/restaurants";
 import { addToCart } from "@/hooks/use-cart";
 import { etaMinAvg, isFastDelivery, isNew } from "@/lib/restaurant-meta";
