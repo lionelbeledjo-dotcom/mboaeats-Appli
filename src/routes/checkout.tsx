@@ -372,27 +372,58 @@ function Checkout() {
       <main className="mx-auto grid max-w-5xl gap-6 px-4 py-6 md:grid-cols-[1.4fr_1fr] md:px-8">
         <section className="space-y-5">
           {topError && (
-            <div className="flex items-start gap-2 rounded-2xl border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
-              <AlertCircle className="mt-0.5 h-4 w-4" /> {topError}
+            <div
+              role="alert"
+              className="group relative flex items-start gap-3 overflow-hidden rounded-2xl border border-destructive/30 bg-gradient-to-br from-destructive/10 via-destructive/5 to-transparent p-4 text-sm text-destructive shadow-[0_8px_24px_-12px_rgba(239,68,68,0.45)] backdrop-blur-sm animate-fade-in"
+            >
+              <span aria-hidden className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-destructive to-destructive/40" />
+              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-destructive/15 ring-1 ring-destructive/30">
+                <AlertCircle className="h-4 w-4 animate-scale-in" />
+              </span>
+              <div className="flex-1 pt-1 leading-snug">{topError}</div>
+              <button
+                type="button"
+                aria-label="Fermer"
+                onClick={() => setTopError(null)}
+                className="rounded-full p-1 text-destructive/70 transition-colors hover:bg-destructive/10 hover:text-destructive"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
           )}
           {hasPass && (
-            <div className="flex items-center gap-2 rounded-2xl border border-gold/40 bg-gold/10 p-3 text-sm">
-              <Crown className="h-4 w-4 text-gold" />
-              <span><strong className="text-gold">MboaPass actif</strong> — livraison offerte sur cette commande.</span>
+            <div className="relative flex items-center gap-3 overflow-hidden rounded-2xl border border-gold/40 bg-gradient-to-r from-gold/15 via-gold/8 to-transparent p-3.5 text-sm shadow-[0_8px_24px_-14px_rgba(212,175,55,0.55)] animate-fade-in">
+              <span aria-hidden className="pointer-events-none absolute -top-8 -right-8 h-24 w-24 rounded-full bg-gold/20 blur-2xl" />
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold/20 ring-1 ring-gold/40">
+                <Crown className="h-4 w-4 text-gold" />
+              </span>
+              <span className="leading-snug">
+                <strong className="text-gold">MboaPass actif</strong> — livraison offerte sur cette commande.
+              </span>
+              <Sparkles className="ml-auto h-4 w-4 text-gold/80 animate-pulse" />
             </div>
           )}
           {cartEmpty && step === "choose" && (
-            <div className="flex flex-col gap-3 rounded-2xl border border-amber-400/50 bg-amber-50 p-4 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-start gap-2">
-                <AlertCircle className="mt-0.5 h-4 w-4" />
-                <span>Votre panier est vide. Ajoutez au moins un plat avant de payer.</span>
+            <div
+              role="status"
+              className="relative flex flex-col gap-3 overflow-hidden rounded-2xl border border-amber-400/50 bg-gradient-to-br from-amber-50 via-amber-100/60 to-amber-50 p-4 text-sm text-amber-900 shadow-[0_10px_28px_-16px_rgba(217,119,6,0.55)] animate-fade-in sm:flex-row sm:items-center sm:justify-between"
+            >
+              <span aria-hidden className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-amber-500 to-amber-300" />
+              <div className="flex items-start gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-500/15 ring-1 ring-amber-500/40">
+                  <AlertCircle className="h-4 w-4 text-amber-700 animate-scale-in" />
+                </span>
+                <div className="leading-snug">
+                  <p className="font-semibold">Panier vide</p>
+                  <p className="text-amber-900/80">Ajoutez au moins un plat pour passer commande.</p>
+                </div>
               </div>
               <Link
                 to="/recherche"
-                className="inline-flex h-10 items-center justify-center rounded-xl bg-amber-900 px-4 text-xs font-semibold text-amber-50 active:scale-[0.98]"
+                className="group inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-amber-900 px-4 text-xs font-semibold text-amber-50 shadow-sm transition-all hover:bg-amber-800 active:scale-[0.97]"
               >
                 Découvrir des plats
+                <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
               </Link>
             </div>
           )}
