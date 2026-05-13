@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { SmartImage } from "@/components/SmartImage";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, Flame, Minus, Plus, ShoppingCart, Star } from "lucide-react";
 import { toast } from "sonner";
@@ -104,7 +105,7 @@ function DbDishPage() {
         style={{ height: "40vh", maxHeight: 420, animationDelay: "0ms" }}
       >
         {dish.image_url ? (
-          <img src={dish.image_url} alt={dish.name} className="h-full w-full object-cover" />
+          <SmartImage src={dish.image_url} alt={dish.name} ratio="4 / 3" loading="eager" wrapperClassName="!aspect-auto h-full" />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-background">
             <Flame className="h-12 w-12 text-muted-foreground/40" />

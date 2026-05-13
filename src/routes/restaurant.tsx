@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { SmartImage } from "@/components/SmartImage";
 import {
   ArrowLeft, ChefHat, Power, Loader2, Bell, Plus, Trash2, Pencil,
   Check, X, Clock, ShoppingBag, Coins, TrendingUp, Store,
@@ -707,7 +708,7 @@ function DishRow({
     <li className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3">
       <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-surface">
         {dish.image_url && (
-          <img src={dish.image_url} alt={dish.name} className="h-full w-full object-cover" loading="lazy" />
+          <SmartImage src={dish.image_url} alt={dish.name} ratio="1 / 1" width={56} height={56} wrapperClassName="!h-full" />
         )}
       </div>
       <div className="min-w-0 flex-1">

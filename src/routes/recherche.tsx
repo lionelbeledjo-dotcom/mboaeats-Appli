@@ -3,6 +3,7 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition }
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { Search, SlidersHorizontal, X, Star, Clock, Bike } from "lucide-react";
 import { restaurants } from "@/data/restaurants";
+import { SmartImage } from "@/components/SmartImage";
 import {
   CUISINE_KEYS,
   CUISINE_LABEL,
@@ -256,7 +257,7 @@ function VirtualResults({
               style={{ boxShadow: "0 2px 12px -8px rgba(0,0,0,0.08)" }}
             >
               <div className="relative aspect-square w-20 shrink-0 overflow-hidden rounded-xl bg-muted">
-                <img src={r.cover} alt={r.name} width={80} height={80} loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                <SmartImage src={r.cover} alt={r.name} ratio="1 / 1" width={80} height={80} wrapperClassName="!h-full" />
                 {badge && (
                   <span
                     className="absolute left-1 top-1 rounded-full px-1.5 py-0.5 text-[9px] font-extrabold uppercase"

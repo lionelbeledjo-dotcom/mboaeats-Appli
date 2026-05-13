@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Star, Clock, Plus, Bike } from "lucide-react";
 import type { Restaurant } from "@/data/restaurants";
+import { SmartImage } from "@/components/SmartImage";
 import {
   badgeMeta,
   catalogBadge,
@@ -35,14 +36,13 @@ export function RestaurantListCard({ restaurant: r, minPrice, onAdd, onPrefetch 
     >
       <div className="grid w-full max-w-full grid-cols-[5rem_minmax(0,1fr)] gap-3 overflow-hidden">
         <div className="relative aspect-square w-20 shrink-0 overflow-hidden rounded-xl bg-muted">
-          <img
+          <SmartImage
             src={r.cover}
             alt={r.name}
+            ratio="1 / 1"
             width={80}
             height={80}
-            loading="lazy"
-            decoding="async"
-            className="h-full w-full object-cover"
+            wrapperClassName="!h-full"
           />
           {badge && (
             <span

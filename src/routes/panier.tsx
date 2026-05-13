@@ -3,6 +3,7 @@ import { Component, useEffect, useState, type ReactNode } from "react";
 import { Minus, Plus, Trash2, X, UserPlus, Gift, ChevronRight, ShoppingCart, ShoppingBag } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { EmptyState } from "@/components/EmptyState";
+import { SmartImage } from "@/components/SmartImage";
 import { getRestaurant } from "@/data/restaurants";
 
 export const Route = createFileRoute("/panier")({
@@ -127,15 +128,16 @@ function PanierPage() {
           {items.map((it) => (
             <li key={it.id} className="flex gap-3 px-4 py-5">
               {it.image ? (
-                <img
-                  src={it.image}
-                  alt={it.name}
-                  width={96}
-                  height={96}
-                  loading="lazy"
-                  decoding="async"
-                  className="h-24 w-24 shrink-0 rounded-2xl object-cover bg-gray-100"
-                />
+                <div className="h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-gray-100">
+                  <SmartImage
+                    src={it.image}
+                    alt={it.name}
+                    ratio="1 / 1"
+                    width={96}
+                    height={96}
+                    wrapperClassName="!h-full"
+                  />
+                </div>
               ) : (
                 <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-gray-100">
                   <ShoppingBag className="h-7 w-7 text-gray-400" />

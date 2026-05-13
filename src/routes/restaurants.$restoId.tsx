@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { Star, Clock, MapPin, Flame, Plus, Search, Heart, ChevronRight, Bike } from "lucide-react";
 import { toast } from "sonner";
+import { SmartImage } from "@/components/SmartImage";
 import { SmartBack } from "@/components/SmartBack";
 import { RestaurantSkeleton } from "@/components/Skeleton";
 import { RestaurantReviews } from "@/components/RestaurantReviews";
@@ -66,14 +67,15 @@ function RestaurantPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Banner */}
-      <div className="relative mt-16 h-36 w-full overflow-hidden sm:mt-20 sm:h-52 md:h-64">
-        <img
+      <div className="relative mt-16 w-full overflow-hidden sm:mt-20">
+        <SmartImage
           src={restaurant.cover}
           alt={restaurant.name}
+          ratio="16 / 7"
           width={1200}
           height={520}
-          decoding="async"
-          className="absolute inset-0 z-0 h-full w-full object-cover"
+          loading="eager"
+          wrapperClassName="!aspect-auto h-36 sm:h-52 md:h-64"
         />
         <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-black/60 via-black/10 to-transparent" />
 
@@ -258,14 +260,14 @@ function RestaurantPage() {
 
                       {/* Photo right with floating + button */}
                       <div className="relative aspect-square w-28 shrink-0 overflow-hidden rounded-xl bg-muted">
-                        <img
+                        <SmartImage
                           src={dish.image}
                           alt={dish.name}
-                          loading="lazy"
+                          ratio="1 / 1"
                           width={112}
                           height={112}
-                          decoding="async"
-                          className="pointer-events-none h-full w-full object-cover"
+                          wrapperClassName="!h-full"
+                          className="pointer-events-none"
                         />
                         <button
                           aria-label={`Ajouter ${dish.name} au panier`}
