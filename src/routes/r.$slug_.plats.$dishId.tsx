@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { SmartImage } from "@/components/SmartImage";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, Flame, Minus, Plus, ShoppingCart, Star } from "lucide-react";
 import { toast } from "sonner";
