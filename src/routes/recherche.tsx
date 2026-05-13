@@ -3,6 +3,7 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition }
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { Search, SlidersHorizontal, X, Star, Clock, Bike } from "lucide-react";
 import { restaurants } from "@/data/restaurants";
+import { SmartImage } from "@/components/SmartImage";
 import {
   CUISINE_KEYS,
   CUISINE_LABEL,
