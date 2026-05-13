@@ -381,6 +381,19 @@ function Checkout() {
               <Crown className="h-4 w-4 text-gold" />
               <span><strong className="text-gold">MboaPass actif</strong> — livraison offerte sur cette commande.</span>
             </div>
+          {cartEmpty && step === "choose" && (
+            <div className="flex flex-col gap-3 rounded-2xl border border-amber-400/50 bg-amber-50 p-4 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="mt-0.5 h-4 w-4" />
+                <span>Votre panier est vide. Ajoutez au moins un plat avant de payer.</span>
+              </div>
+              <Link
+                to="/recherche"
+                className="inline-flex h-10 items-center justify-center rounded-xl bg-amber-900 px-4 text-xs font-semibold text-amber-50 active:scale-[0.98]"
+              >
+                Découvrir des plats
+              </Link>
+            </div>
           )}
           {step === "choose" && (
             <>
