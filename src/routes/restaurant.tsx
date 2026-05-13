@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { SmartImage } from "@/components/SmartImage";
 import {
   ArrowLeft, ChefHat, Power, Loader2, Bell, Plus, Trash2, Pencil,
   Check, X, Clock, ShoppingBag, Coins, TrendingUp, Store,
