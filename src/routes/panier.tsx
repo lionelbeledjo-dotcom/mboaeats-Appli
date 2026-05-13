@@ -3,6 +3,7 @@ import { Component, useEffect, useState, type ReactNode } from "react";
 import { Minus, Plus, Trash2, X, UserPlus, Gift, ChevronRight, ShoppingCart, ShoppingBag } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { EmptyState } from "@/components/EmptyState";
+import { SmartImage } from "@/components/SmartImage";
 import { getRestaurant } from "@/data/restaurants";
 
 export const Route = createFileRoute("/panier")({
