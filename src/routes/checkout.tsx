@@ -163,6 +163,17 @@ function Checkout() {
     setContactErrors(validateDeliveryContact(next));
   };
 
+  // Validation live : panier + contact (adresse, instructions, téléphone)
+  const liveContactErrors = validateDeliveryContact(contact);
+  const cartEmpty = cartItems.length === 0;
+  const contactIncomplete = Object.keys(liveContactErrors).length > 0;
+  const payDisabled = cartEmpty || contactIncomplete;
+  const payDisabledReason = cartEmpty
+    ? "Votre panier est vide. Ajoutez un plat pour continuer."
+    : contactIncomplete
+      ? (liveContactErrors.address ?? liveContactErrors.instructions ?? liveContactErrors.phone ?? "Complétez vos informations de livraison")
+      : null;
+
   // Détection MboaPass (livraison gratuite)
   useEffect(() => {
     (async () => {
