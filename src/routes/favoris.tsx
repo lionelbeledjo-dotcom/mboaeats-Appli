@@ -79,7 +79,7 @@ function FavorisPage() {
                 <li key={f.restaurant_id} className="overflow-hidden rounded-2xl border border-border bg-surface/60">
                   <Link to="/r/$slug" params={{ slug: r.slug }} className="flex gap-3 p-3">
                     <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-muted">
-                      {r.image_url && <img src={r.image_url} alt={r.name} loading="lazy" decoding="async" className="h-full w-full object-cover" style={{ aspectRatio: "1 / 1" }} />}
+                      {r.image_url && <SmartImage src={r.image_url} alt={r.name} ratio="1 / 1" width={80} height={80} wrapperClassName="!h-full" />}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-display text-base font-bold">{r.name}</p>
