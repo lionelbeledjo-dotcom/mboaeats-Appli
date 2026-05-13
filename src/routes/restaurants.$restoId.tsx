@@ -80,7 +80,6 @@ function RestaurantPage() {
           loading="eager"
           wrapperClassName="!aspect-auto absolute inset-0 !h-full"
           className="object-cover object-center"
-          style={{ objectPosition: "center" }}
         />
         <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-black/60 via-black/10 to-transparent" />
 
