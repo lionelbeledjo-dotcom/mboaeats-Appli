@@ -489,9 +489,18 @@ function ChooseMethod({
         )}
       </div>
 
+      {disabled && disabledReason && (
+        <div className="flex items-start gap-2 rounded-2xl border border-amber-400/50 bg-amber-50 p-3 text-sm text-amber-900">
+          <AlertCircle className="mt-0.5 h-4 w-4" />
+          <span>{disabledReason}</span>
+        </div>
+      )}
       <button
         onClick={onPay}
-        className="flex w-full items-center justify-center gap-3 rounded-2xl bg-black py-5 text-[16px] font-semibold text-white active:scale-[0.98] transition-transform"
+        disabled={disabled}
+        aria-disabled={disabled}
+        title={disabled ? (disabledReason ?? "") : undefined}
+        className="flex w-full items-center justify-center gap-3 rounded-2xl bg-black py-5 text-[16px] font-semibold text-white transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-neutral-400 disabled:active:scale-100"
       >
         Commander et payer
         <span className="text-white/80 font-bold">· {total.toLocaleString("fr-FR")} FCFA</span>
