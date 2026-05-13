@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Component, useEffect, useState, type ReactNode } from "react";
+import { SmartImage } from "@/components/SmartImage";
 import {
   ArrowLeft, Smartphone, CreditCard, Banknote, Check, Loader2, ShieldCheck,
   Lock, ChevronRight, Webhook, MapPin, Tag, Crown, AlertCircle, X, Plus, Sparkles,
