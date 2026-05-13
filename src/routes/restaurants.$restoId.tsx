@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-ro
 import { Star, Clock, MapPin, Flame, Plus, Search, Heart, ChevronRight, Bike } from "lucide-react";
 import { toast } from "sonner";
 import { SmartImage } from "@/components/SmartImage";
-import { SmartBack } from "@/components/SmartBack";
+
 import { RestaurantSkeleton } from "@/components/Skeleton";
 import { RestaurantReviews } from "@/components/RestaurantReviews";
 import { getRestaurant, type Restaurant } from "@/data/restaurants";
