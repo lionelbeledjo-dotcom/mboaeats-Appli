@@ -163,6 +163,17 @@ function Checkout() {
     setContactErrors(validateDeliveryContact(next));
   };
 
+  // Validation live : panier + contact (adresse, instructions, téléphone)
+  const liveContactErrors = validateDeliveryContact(contact);
+  const cartEmpty = cartItems.length === 0;
+  const contactIncomplete = Object.keys(liveContactErrors).length > 0;
+  const payDisabled = cartEmpty || contactIncomplete;
+  const payDisabledReason = cartEmpty
+    ? "Votre panier est vide. Ajoutez un plat pour continuer."
+    : contactIncomplete
+      ? (liveContactErrors.address ?? liveContactErrors.instructions ?? liveContactErrors.phone ?? "Complétez vos informations de livraison")
+      : null;
+
   // Détection MboaPass (livraison gratuite)
   useEffect(() => {
     (async () => {
@@ -371,6 +382,20 @@ function Checkout() {
               <span><strong className="text-gold">MboaPass actif</strong> — livraison offerte sur cette commande.</span>
             </div>
           )}
+          {cartEmpty && step === "choose" && (
+            <div className="flex flex-col gap-3 rounded-2xl border border-amber-400/50 bg-amber-50 p-4 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="mt-0.5 h-4 w-4" />
+                <span>Votre panier est vide. Ajoutez au moins un plat avant de payer.</span>
+              </div>
+              <Link
+                to="/recherche"
+                className="inline-flex h-10 items-center justify-center rounded-xl bg-amber-900 px-4 text-xs font-semibold text-amber-50 active:scale-[0.98]"
+              >
+                Découvrir des plats
+              </Link>
+            </div>
+          )}
           {step === "choose" && (
             <>
               <DeliveryContactRows value={contact} onChange={setContact} errors={contactErrors} />
@@ -389,7 +414,14 @@ function Checkout() {
               <ChooseMethod
                 method={method} setMethod={setMethod}
                 phone={phone} setPhone={setPhone}
+                disabled={payDisabled}
+                disabledReason={payDisabledReason}
                 onPay={() => {
+                  if (payDisabled) {
+                    setTopError(payDisabledReason);
+                    setContactErrors(liveContactErrors);
+                    return;
+                  }
                   if (!extrasSeen && cartItems.length > 0) setShowExtras(true);
                   else start();
                 }} total={total}
@@ -428,11 +460,12 @@ function Checkout() {
 }
 
 function ChooseMethod({
-  method, setMethod, phone, setPhone, onPay, total,
+  method, setMethod, phone, setPhone, onPay, total, disabled = false, disabledReason = null,
 }: {
   method: Method; setMethod: (m: Method) => void;
   phone: string; setPhone: (s: string) => void;
   onPay: () => void; total: number;
+  disabled?: boolean; disabledReason?: string | null;
 }) {
   return (
     <>
@@ -470,9 +503,18 @@ function ChooseMethod({
         )}
       </div>
 
+      {disabled && disabledReason && (
+        <div className="flex items-start gap-2 rounded-2xl border border-amber-400/50 bg-amber-50 p-3 text-sm text-amber-900">
+          <AlertCircle className="mt-0.5 h-4 w-4" />
+          <span>{disabledReason}</span>
+        </div>
+      )}
       <button
         onClick={onPay}
-        className="flex w-full items-center justify-center gap-3 rounded-2xl bg-black py-5 text-[16px] font-semibold text-white active:scale-[0.98] transition-transform"
+        disabled={disabled}
+        aria-disabled={disabled}
+        title={disabled ? (disabledReason ?? "") : undefined}
+        className="flex w-full items-center justify-center gap-3 rounded-2xl bg-black py-5 text-[16px] font-semibold text-white transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-neutral-400 disabled:active:scale-100"
       >
         Commander et payer
         <span className="text-white/80 font-bold">· {total.toLocaleString("fr-FR")} FCFA</span>
