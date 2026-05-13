@@ -259,14 +259,14 @@ function RestaurantPage() {
 
                       {/* Photo right with floating + button */}
                       <div className="relative aspect-square w-28 shrink-0 overflow-hidden rounded-xl bg-muted">
-                        <img
+                        <SmartImage
                           src={dish.image}
                           alt={dish.name}
-                          loading="lazy"
+                          ratio="1 / 1"
                           width={112}
                           height={112}
-                          decoding="async"
-                          className="pointer-events-none h-full w-full object-cover"
+                          wrapperClassName="!h-full"
+                          className="pointer-events-none"
                         />
                         <button
                           aria-label={`Ajouter ${dish.name} au panier`}
