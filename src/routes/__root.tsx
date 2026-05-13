@@ -92,7 +92,7 @@ export const Route = createRootRoute({
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "MboaEats — Commandez vos repas préférés livrés chez vous au Cameroun" },
       { name: "description", content: "Commandez vos repas préférés livrés chez vous au Cameroun. Livraison rapide à Douala, Yaoundé et Bafoussam, paiement Mobile Money." },
-      { name: "theme-color", content: "#22C55E" },
+      { name: "theme-color", content: "#142D22" },
       { property: "og:title", content: "MboaEats — Livraison de repas au Cameroun" },
       { property: "og:description", content: "Commandez vos repas préférés livrés chez vous au Cameroun." },
       { property: "og:type", content: "website" },
