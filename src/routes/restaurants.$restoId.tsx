@@ -66,8 +66,11 @@ function RestaurantPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Banner */}
-      <div className="relative mt-16 w-full overflow-hidden sm:mt-20">
+      {/* Banner — hauteur fixe pour éviter tout reflow / coupure */}
+      <div
+        className="relative mt-16 w-full overflow-hidden sm:mt-20"
+        style={{ height: 260 }}
+      >
         <SmartImage
           src={restaurant.cover}
           alt={restaurant.name}
@@ -75,7 +78,8 @@ function RestaurantPage() {
           width={1200}
           height={520}
           loading="eager"
-          wrapperClassName="!aspect-auto h-36 sm:h-52 md:h-64"
+          wrapperClassName="!aspect-auto absolute inset-0 !h-full"
+          className="object-cover object-center"
         />
         <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-black/60 via-black/10 to-transparent" />
 
