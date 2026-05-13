@@ -446,11 +446,12 @@ function Checkout() {
 }
 
 function ChooseMethod({
-  method, setMethod, phone, setPhone, onPay, total,
+  method, setMethod, phone, setPhone, onPay, total, disabled = false, disabledReason = null,
 }: {
   method: Method; setMethod: (m: Method) => void;
   phone: string; setPhone: (s: string) => void;
   onPay: () => void; total: number;
+  disabled?: boolean; disabledReason?: string | null;
 }) {
   return (
     <>
