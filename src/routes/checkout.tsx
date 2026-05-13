@@ -400,7 +400,14 @@ function Checkout() {
               <ChooseMethod
                 method={method} setMethod={setMethod}
                 phone={phone} setPhone={setPhone}
+                disabled={payDisabled}
+                disabledReason={payDisabledReason}
                 onPay={() => {
+                  if (payDisabled) {
+                    setTopError(payDisabledReason);
+                    setContactErrors(liveContactErrors);
+                    return;
+                  }
                   if (!extrasSeen && cartItems.length > 0) setShowExtras(true);
                   else start();
                 }} total={total}
