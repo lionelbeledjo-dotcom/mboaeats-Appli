@@ -746,7 +746,7 @@ function Summary({ cartItems = [], subtotal, delivery, taxes, total, hasPass, ad
           >
             <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-muted">
               {i.image ? (
-                <img src={i.image} alt={i.name} width={56} height={56} loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                <SmartImage src={i.image} alt={i.name} ratio="1 / 1" width={56} height={56} wrapperClassName="!h-full" />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-xl">🍽️</div>
               )}
