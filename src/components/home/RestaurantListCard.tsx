@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Star, Clock, Plus, Bike } from "lucide-react";
 import type { Restaurant } from "@/data/restaurants";
+import { SmartImage } from "@/components/SmartImage";
 import {
   badgeMeta,
   catalogBadge,
