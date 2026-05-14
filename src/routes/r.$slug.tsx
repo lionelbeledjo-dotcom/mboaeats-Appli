@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Star, Clock, MapPin, Plus, Flame, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
 import { getRestaurantBySlug } from "@/server/marketplace.functions";
 import { addToCart, useCart } from "@/hooks/use-cart";
 import { FavoriteButton } from "@/components/FavoriteButton";
@@ -53,24 +54,22 @@ function RestoLivePage() {
   const fetcher = useServerFn(getRestaurantBySlug);
   const { items, count, subtotal } = useCart();
 
-  const [resto, setResto] = useState<Resto | null>(null);
-  const [categories, setCategories] = useState<Cat[]>([]);
-  const [dishes, setDishes] = useState<Dish[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeCat, setActiveCat] = useState<string | null>(null);
+  const { data, isLoading } = useQuery({
+    queryKey: ["restaurant-by-slug", slug],
+    queryFn: () => fetcher({ data: { slug } }),
+    staleTime: 2 * 60 * 1000, // 2 min — menu live
+    gcTime: 30 * 60 * 1000,
+  });
 
+  const resto = (data?.resto ?? null) as Resto | null;
+  const categories = useMemo(() => (data?.categories ?? []) as Cat[], [data]);
+  const dishes = useMemo(() => (data?.dishes ?? []) as Dish[], [data]);
+  const loading = isLoading && !data;
+
+  const [activeCat, setActiveCat] = useState<string | null>(null);
   useEffect(() => {
-    setLoading(true);
-    fetcher({ data: { slug } })
-      .then((r) => {
-        setResto(r.resto as Resto | null);
-        const cats = (r.categories ?? []) as Cat[];
-        setCategories(cats);
-        setDishes((r.dishes ?? []) as Dish[]);
-        if (cats[0]) setActiveCat(cats[0].id);
-      })
-      .finally(() => setLoading(false));
-  }, [fetcher, slug]);
+    if (!activeCat && categories[0]) setActiveCat(categories[0].id);
+  }, [categories, activeCat]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, Dish[]>();
