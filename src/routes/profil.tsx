@@ -245,7 +245,56 @@ function ProfilPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-md px-4 py-4 space-y-6">
+      <main className="mx-auto max-w-md px-4 py-5 pb-28 space-y-6">
+        {/* Mes adresses (preview inline) */}
+        <section>
+          <div className="mb-2 flex items-center justify-between px-1">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground dark:text-white">
+              Mes adresses
+            </h2>
+            <Link to="/adresses" className="inline-flex items-center gap-0.5 text-[12px] font-semibold text-primary">
+              Gérer <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+          {addresses.length === 0 ? (
+            <Link
+              to="/adresses"
+              className="flex items-center gap-3 rounded-2xl border border-dashed border-border bg-surface/40 px-4 py-4 transition active:bg-surface/80"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <MapPin className="h-5 w-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold text-foreground">Ajouter une adresse</span>
+                <span className="block text-[12px] text-muted-foreground">Pour des livraisons rapides au Cameroun</span>
+              </span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+            </Link>
+          ) : (
+            <ul className="space-y-2">
+              {addresses.slice(0, 3).map((a) => (
+                <li key={a.id}>
+                  <Link
+                    to="/adresses"
+                    className="flex items-center gap-3 rounded-2xl border border-border bg-surface/60 px-4 py-3.5 transition active:bg-surface/90"
+                  >
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <MapPin className="h-5 w-5" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold text-foreground">{a.label}</span>
+                      <span className="block truncate text-[12px] text-muted-foreground">
+                        {[a.neighborhood, a.city].filter(Boolean).join(" · ") || "—"}
+                      </span>
+                    </span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
         <Section title="Mon compte">
           <Row to="/commandes" icon={Package} label="Mes commandes" />
           <Row to="/favoris" icon={Heart} label="Mes favoris" />
