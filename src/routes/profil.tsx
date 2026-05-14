@@ -311,7 +311,7 @@ function ProfilPage() {
 
         {isAdmin && (
           <Section title="Administration">
-            <Row to="/admin" icon={ShieldCheck} label="Espace Super Admin" />
+            <Row to="/superadmin" icon={ShieldCheck} label="Espace Super Admin" />
           </Section>
         )}
 
