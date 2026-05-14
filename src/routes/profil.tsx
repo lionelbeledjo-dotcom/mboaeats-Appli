@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { isCartSoundEnabled, setCartSoundEnabled, CART_SOUND_EVT } from "@/lib/cart-sound";
-import { getMyProfile, upsertMyProfile, getMyLoyalty } from "@/server/account.functions";
+import { getMyProfile, upsertMyProfile, getMyLoyalty, listMyAddresses } from "@/server/account.functions";
 import { useSessionUser } from "@/hooks/useSessionUser";
 import { useTheme } from "@/components/ThemeProvider";
 
@@ -39,6 +39,7 @@ function ProfilPage() {
   const [saving, setSaving] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [addresses, setAddresses] = useState<Array<{ id: string; label: string; city: string; neighborhood: string }>>([]);
 
   const authed = authedSb || !!sessionUser?.identifier;
 
@@ -63,7 +64,7 @@ function ProfilPage() {
         setIsAdmin(!!role);
       } catch {}
       try {
-        const [p, l] = await Promise.all([getMyProfile(), getMyLoyalty()]);
+        const [p, l, a] = await Promise.all([getMyProfile(), getMyLoyalty(), listMyAddresses()]);
         setProfile(p.profile ?? null);
         setForm({
           full_name: p.profile?.full_name ?? "",
@@ -71,6 +72,12 @@ function ProfilPage() {
           city: p.profile?.city ?? "Douala",
         });
         setLoyalty({ points: l.points, currentTier: l.currentTier });
+        setAddresses(((a as { addresses?: Array<{ id: string; label: string | null; city: string | null; neighborhood: string | null }> })?.addresses ?? []).map((x) => ({
+          id: x.id,
+          label: x.label ?? "Adresse",
+          city: x.city ?? "",
+          neighborhood: x.neighborhood ?? "",
+        })));
       } catch {}
     }).catch(() => { setAuthChecked(true); });
 
@@ -172,30 +179,43 @@ function ProfilPage() {
           )}
 
           {editing && authed && (
-            <div className="mt-4 space-y-2 rounded-2xl border border-border bg-card p-3 animate-fade-in">
-              <input
-                placeholder="Nom complet"
-                value={form.full_name}
-                onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
-              />
-              <input
-                placeholder="+237 6XX XX XX XX"
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
-              />
-              <select
-                value={form.city}
-                onChange={(e) => setForm({ ...form, city: e.target.value })}
-                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
-              >
-                <option>Douala</option><option>Yaoundé</option><option>Bafoussam</option>
-              </select>
+            <div className="mt-4 space-y-4 rounded-2xl border border-border bg-card p-4 animate-fade-in">
+              <label className="block">
+                <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Nom complet</span>
+                <input
+                  placeholder="Ex. Jean Dupont"
+                  value={form.full_name}
+                  onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+                  maxLength={80}
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-[16px] outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Téléphone</span>
+                <input
+                  type="tel"
+                  inputMode="tel"
+                  placeholder="+237 6XX XX XX XX"
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  maxLength={20}
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-[16px] outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Ville</span>
+                <select
+                  value={form.city}
+                  onChange={(e) => setForm({ ...form, city: e.target.value })}
+                  className="w-full appearance-none rounded-xl border border-border bg-background px-4 py-3 text-[16px] outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
+                >
+                  <option>Douala</option><option>Yaoundé</option><option>Bafoussam</option>
+                </select>
+              </label>
               <button
                 onClick={save}
                 disabled={saving}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-primary py-2.5 text-sm font-semibold text-primary-foreground shadow-glow disabled:opacity-60"
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-primary text-[15px] font-bold text-primary-foreground shadow-glow active:scale-[0.99] transition-transform disabled:opacity-60"
               >
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Enregistrer"}
               </button>
@@ -225,7 +245,56 @@ function ProfilPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-md px-4 py-4 space-y-6">
+      <main className="mx-auto max-w-md px-4 py-5 pb-28 space-y-6">
+        {/* Mes adresses (preview inline) */}
+        <section>
+          <div className="mb-2 flex items-center justify-between px-1">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground dark:text-white">
+              Mes adresses
+            </h2>
+            <Link to="/adresses" className="inline-flex items-center gap-0.5 text-[12px] font-semibold text-primary">
+              Gérer <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+          {addresses.length === 0 ? (
+            <Link
+              to="/adresses"
+              className="flex items-center gap-3 rounded-2xl border border-dashed border-border bg-surface/40 px-4 py-4 transition active:bg-surface/80"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <MapPin className="h-5 w-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold text-foreground">Ajouter une adresse</span>
+                <span className="block text-[12px] text-muted-foreground">Pour des livraisons rapides au Cameroun</span>
+              </span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+            </Link>
+          ) : (
+            <ul className="space-y-2">
+              {addresses.slice(0, 3).map((a) => (
+                <li key={a.id}>
+                  <Link
+                    to="/adresses"
+                    className="flex items-center gap-3 rounded-2xl border border-border bg-surface/60 px-4 py-3.5 transition active:bg-surface/90"
+                  >
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <MapPin className="h-5 w-5" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold text-foreground">{a.label}</span>
+                      <span className="block truncate text-[12px] text-muted-foreground">
+                        {[a.neighborhood, a.city].filter(Boolean).join(" · ") || "—"}
+                      </span>
+                    </span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
         <Section title="Mon compte">
           <Row to="/commandes" icon={Package} label="Mes commandes" />
           <Row to="/favoris" icon={Heart} label="Mes favoris" />
