@@ -204,17 +204,7 @@ function Checkout() {
       ? (liveContactErrors.address ?? liveContactErrors.instructions ?? liveContactErrors.phone ?? "Complétez vos informations de livraison")
       : null;
 
-  // Détection MboaPass (livraison gratuite)
-  useEffect(() => {
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      try {
-        const r = await fetchPass({ data: { userId: user.id } });
-        setHasPass(!!r.active);
-      } catch { /* silencieux */ }
-    })();
-  }, [fetchPass]);
+  // (MboaPass détecté via useQuery ci-dessus avec cache 5 min)
 
   useEffect(() => {
     if (step !== "ussd" || !pending) return;
