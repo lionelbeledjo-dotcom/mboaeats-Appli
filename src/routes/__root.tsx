@@ -150,19 +150,35 @@ function RootComponent() {
     isPreview ||
     PUBLIC_ROUTES.includes(path) ||
     PUBLIC_PREFIXES.some((p) => path.startsWith(p));
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 5 * 60 * 1000, // 5 min — données panier/checkout fraîches
+            gcTime: 30 * 60 * 1000, // 30 min en mémoire
+            refetchOnWindowFocus: false,
+            refetchOnReconnect: false,
+            retry: 1,
+          },
+        },
+      }),
+  );
   return (
-    <ThemeProvider defaultTheme="light">
-      <SplashScreen />
-      <OfflineBanner />
-      <AuthGate>
-        {!hideDock && <SiteHeader />}
-        <Outlet />
-        {!hideDock && <CartFab />}
-        <BottomDock />
-        <Toaster position="top-right" richColors closeButton />
-      </AuthGate>
-      <PendingPaymentWatcher />
-      <OnboardingGate />
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="light">
+        <SplashScreen />
+        <OfflineBanner />
+        <AuthGate>
+          {!hideDock && <SiteHeader />}
+          <Outlet />
+          {!hideDock && <CartFab />}
+          <BottomDock />
+          <Toaster position="top-right" richColors closeButton />
+        </AuthGate>
+        <PendingPaymentWatcher />
+        <OnboardingGate />
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
