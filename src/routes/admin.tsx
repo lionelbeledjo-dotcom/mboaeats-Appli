@@ -365,7 +365,7 @@ function AdminSidebar() {
 
   const handleLogout = async () => {
     try { await supabase.auth.signOut({ scope: "global" }); } catch {}
-    navigate({ to: "/admin/login", replace: true });
+    navigate({ to: "/superadmin/login", replace: true });
   };
 
   const isActive = (item: typeof navItems[number]) =>
