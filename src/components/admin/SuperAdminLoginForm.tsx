@@ -87,9 +87,30 @@ export function SuperAdminLoginForm() {
         throw new Error("Accès refusé : ce compte n'est pas SUPER_ADMIN.");
       }
 
-      navigate({ to: "/superadmin" });
+      // Étape 2 : 2FA
+      const status = await get2fa();
+      if (!status.enabled) {
+        navigate({ to: "/superadmin/setup-2fa" });
+        return;
+      }
+      setMode("twofa");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur inconnue");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handle2faSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    if (!twoFaCode) return setError("Code requis");
+    setLoading(true);
+    try {
+      await verify2fa({ data: { code: twoFaCode, useBackup } });
+      navigate({ to: "/superadmin" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Code invalide");
     } finally {
       setLoading(false);
     }
