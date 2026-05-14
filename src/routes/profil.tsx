@@ -39,6 +39,7 @@ function ProfilPage() {
   const [saving, setSaving] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [addresses, setAddresses] = useState<Array<{ id: string; label: string; city: string; neighborhood: string }>>([]);
 
   const authed = authedSb || !!sessionUser?.identifier;
 
