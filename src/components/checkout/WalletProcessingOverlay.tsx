@@ -70,7 +70,6 @@ export function WalletProcessingOverlay({
         {status === "pending" && (
           <div className="mt-6">
             <div className="relative flex h-28 items-center justify-center overflow-hidden rounded-2xl bg-gray-50">
-              <span aria-hidden className="absolute inset-y-0 -left-1/3 w-1/3 animate-[shimmer_1.6s_linear_infinite] bg-gradient-to-r from-transparent via-white to-transparent" />
               <Loader2 className="h-8 w-8 animate-spin text-gray-700" />
             </div>
             <p className="mt-4 text-center text-sm font-semibold text-gray-900">
