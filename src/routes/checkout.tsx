@@ -521,11 +521,13 @@ function Checkout() {
 }
 
 function ChooseMethod({
-  method, setMethod, phone, setPhone, onPay, total, disabled = false, disabledReason = null,
+  method, setMethod, phone, setPhone, onPay, onWalletPay, total, disabled = false, disabledReason = null,
 }: {
   method: Method; setMethod: (m: Method) => void;
   phone: string; setPhone: (s: string) => void;
-  onPay: () => void; total: number;
+  onPay: () => void;
+  onWalletPay?: (wallet: "apple" | "google") => void;
+  total: number;
   disabled?: boolean; disabledReason?: string | null;
 }) {
   return (
@@ -538,9 +540,9 @@ function ChooseMethod({
           <WalletPayButton
             total={total}
             disabled={disabled}
-            onPay={() => {
-              setMethod("card");
-              onPay();
+            onPay={(w) => {
+              if (onWalletPay) onWalletPay(w);
+              else { setMethod("card"); onPay(); }
             }}
           />
         </div>
