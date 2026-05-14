@@ -20,6 +20,7 @@ import {
   type DeliveryContact,
   type DeliveryContactErrors,
 } from "@/components/checkout/DeliveryContactRows";
+import { WalletPayButton } from "@/components/checkout/WalletPayButton";
 
 export const Route = createFileRoute("/checkout")({
   component: CheckoutRoute,
