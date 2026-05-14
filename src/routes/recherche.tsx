@@ -256,8 +256,11 @@ function VirtualResults({
               className="grid h-[104px] w-full max-w-full grid-cols-[5rem_minmax(0,1fr)] gap-3 overflow-hidden rounded-2xl bg-white p-3 transition active:bg-white/90"
               style={{ boxShadow: "0 2px 12px -8px rgba(0,0,0,0.08)" }}
             >
-              <div className="relative aspect-square w-20 shrink-0 overflow-hidden rounded-xl bg-muted">
-                <SmartImage src={r.cover} alt={r.name} ratio="1 / 1" width={80} height={80} wrapperClassName="!h-full" />
+              <div
+                className="relative shrink-0 overflow-hidden rounded-xl bg-muted"
+                style={{ width: 80, height: 80, aspectRatio: "1 / 1", flex: "0 0 80px" }}
+              >
+                <SmartImage src={r.cover} alt={r.name} ratio="1 / 1" width={80} height={80} wrapperClassName="!h-full !w-full" />
                 {badge && (
                   <span
                     className="absolute left-1 top-1 rounded-full px-1.5 py-0.5 text-[9px] font-extrabold uppercase"
