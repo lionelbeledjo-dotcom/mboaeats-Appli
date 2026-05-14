@@ -266,7 +266,7 @@ function RestaurantPage() {
                       params={{ restoId: restaurant.id, platId: dish.id }}
                       preload="intent"
                       aria-label={`Voir les détails de ${dish.name}`}
-                      className="group relative z-10 grid min-h-32 grid-cols-[minmax(0,1fr)_7rem] gap-3 overflow-hidden rounded-2xl border border-border/50 bg-card p-3 transition-all cursor-pointer select-none hover:border-[#06C167]/60 hover:shadow-[0_10px_28px_-12px_rgba(6,193,103,0.45)] active:bg-muted/40 active:border-[#06C167] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                      className="group relative z-10 flex items-stretch gap-3 overflow-hidden rounded-2xl border border-border/50 bg-card p-3 transition-all cursor-pointer select-none hover:border-[#06C167]/60 hover:shadow-[0_10px_28px_-12px_rgba(6,193,103,0.45)] active:bg-muted/40 active:border-[#06C167] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                     >
                       {/* Text left */}
                       <div className="flex min-w-0 flex-1 flex-col py-1">
@@ -298,70 +298,67 @@ function RestaurantPage() {
                             ))}
                           </div>
                         )}
-                        <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-                          <span className="price text-[#06C167]">
-                            {dish.price.toLocaleString("fr-FR")}
-                            <span className="price-currency text-[#06C167]">FCFA</span>
-                          </span>
-                          <span className="inline-flex items-center gap-1 rounded-full bg-[#06C167]/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#06C167] transition-all group-hover:bg-[#06C167] group-hover:text-white group-active:bg-[#06C167] group-active:text-white">
+                        <span className="price mt-2 text-[#06C167]">
+                          {dish.price.toLocaleString("fr-FR")}
+                          <span className="price-currency text-[#06C167]">FCFA</span>
+                        </span>
+                        <div className="mt-2 flex items-center justify-end gap-2">
+                          <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-xl bg-[#06C167]/10 px-3 py-2 text-xs font-bold uppercase tracking-wide text-[#06C167] transition-all group-hover:bg-[#06C167]/15">
                             Voir <ChevronRight className="h-3 w-3" strokeWidth={2.5} />
                           </span>
+                          {qtyOf(dish.id) > 0 ? (
+                            <div onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+                              <QuantityStepper
+                                size="sm"
+                                qty={qtyOf(dish.id)}
+                                onInc={() => setCartQty(`${dish.id}__default`, qtyOf(dish.id) + 1)}
+                                onDec={() => setCartQty(`${dish.id}__default`, qtyOf(dish.id) - 1)}
+                                ariaLabel={`Quantité de ${dish.name}`}
+                              />
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              aria-label={`Ajouter ${dish.name} au panier`}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                addToCart({
+                                  id: `${dish.id}__default`,
+                                  dishId: dish.id,
+                                  restoId: restaurant.id,
+                                  name: dish.name,
+                                  price: dish.price,
+                                  qty: 1,
+                                  image: dish.image,
+                                });
+                                toast.success("L'article a été ajouté au panier !", {
+                                  description: `1 × ${dish.name}`,
+                                  action: {
+                                    label: "Voir le panier",
+                                    onClick: () => navigate({ to: "/checkout" }),
+                                  },
+                                });
+                              }}
+                              className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl bg-[#06C167] px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-[#05a558] hover:shadow-md active:scale-95"
+                            >
+                              Ajouter <Plus className="h-3.5 w-3.5" strokeWidth={2.8} />
+                            </button>
+                          )}
                         </div>
                       </div>
 
-                      {/* Photo right with floating + button (button lives OUTSIDE image clip) */}
-                      <div className="relative shrink-0" style={{ width: 112, paddingRight: 12, paddingBottom: 12 }}>
-                        <div
-                          className="relative overflow-hidden rounded-xl bg-muted"
-                          style={{ width: 112, height: 112, aspectRatio: "1 / 1" }}
-                        >
-                          <SmartImage
-                            src={dish.image}
-                            alt={dish.name}
-                            ratio="1 / 1"
-                            width={112}
-                            height={112}
-                            wrapperClassName="!h-full !w-full"
-                            className="pointer-events-none"
-                          />
-                        </div>
-                        <button
-                          aria-label={`Ajouter ${dish.name} au panier`}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            addToCart({
-                              id: `${dish.id}__default`,
-                              dishId: dish.id,
-                              restoId: restaurant.id,
-                              name: dish.name,
-                              price: dish.price,
-                              qty: 1,
-                              image: dish.image,
-                            });
-                            toast.success("L'article a été ajouté au panier !", {
-                              description: `1 × ${dish.name}`,
-                              action: {
-                                label: "Voir le panier",
-                                onClick: () => navigate({ to: "/checkout" }),
-                              },
-                            });
-                          }}
-                          className={`absolute bottom-0 right-0 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-[#06C167] text-white shadow-[0_8px_20px_-6px_rgba(6,193,103,0.7)] ring-2 ring-white transition-transform hover:scale-110 hover:bg-[#05a558] active:scale-95 ${qtyOf(dish.id) > 0 ? "hidden" : ""}`}
-                        >
-                          <Plus className="h-5 w-5" strokeWidth={2.6} />
-                        </button>
-                        {qtyOf(dish.id) > 0 && (
-                          <div className="absolute bottom-0 right-0 z-10">
-                            <QuantityStepper
-                              size="sm"
-                              qty={qtyOf(dish.id)}
-                              onInc={() => setCartQty(`${dish.id}__default`, qtyOf(dish.id) + 1)}
-                              onDec={() => setCartQty(`${dish.id}__default`, qtyOf(dish.id) - 1)}
-                              ariaLabel={`Quantité de ${dish.name}`}
-                            />
-                          </div>
-                        )}
+                      {/* Image right — never overlapped */}
+                      <div className="relative shrink-0 self-start overflow-hidden rounded-xl bg-muted" style={{ width: 96, height: 96 }}>
+                        <SmartImage
+                          src={dish.image}
+                          alt={dish.name}
+                          ratio="1 / 1"
+                          width={96}
+                          height={96}
+                          wrapperClassName="!h-full !w-full"
+                          className="pointer-events-none"
+                        />
                       </div>
                     </Link>
                   </li>
