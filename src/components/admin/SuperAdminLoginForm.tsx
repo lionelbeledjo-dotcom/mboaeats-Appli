@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ShieldCheck, Loader2, Lock, Mail, Crown } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { ShieldCheck, Loader2, Lock, Mail, Crown, KeyRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { get2faStatus, verifyLogin2fa } from "@/lib/superadmin-2fa.functions";
 
-type Mode = "signin" | "bootstrap";
+type Mode = "signin" | "bootstrap" | "twofa";
 
 export function SuperAdminLoginForm() {
   const navigate = useNavigate();
+  const get2fa = useServerFn(get2faStatus);
+  const verify2fa = useServerFn(verifyLogin2fa);
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

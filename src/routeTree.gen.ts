@@ -47,6 +47,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SuperadminIndexRouteImport } from './routes/superadmin.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TableePaiementRouteImport } from './routes/tablee.paiement'
+import { Route as SuperadminSetup2faRouteImport } from './routes/superadmin_.setup-2fa'
 import { Route as SuperadminLoginRouteImport } from './routes/superadmin_.login'
 import { Route as SuiviOrderIdRouteImport } from './routes/suivi.$orderId'
 import { Route as RestaurantsRestoIdRouteImport } from './routes/restaurants.$restoId'
@@ -263,6 +264,11 @@ const TableePaiementRoute = TableePaiementRouteImport.update({
   path: '/paiement',
   getParentRoute: () => TableeRoute,
 } as any)
+const SuperadminSetup2faRoute = SuperadminSetup2faRouteImport.update({
+  id: '/superadmin_/setup-2fa',
+  path: '/superadmin/setup-2fa',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SuperadminLoginRoute = SuperadminLoginRouteImport.update({
   id: '/superadmin_/login',
   path: '/superadmin/login',
@@ -445,6 +451,7 @@ export interface FileRoutesByFullPath {
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
   '/superadmin/login': typeof SuperadminLoginRoute
+  '/superadmin/setup-2fa': typeof SuperadminSetup2faRoute
   '/tablee/paiement': typeof TableePaiementRoute
   '/admin/': typeof AdminIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
@@ -508,6 +515,7 @@ export interface FileRoutesByTo {
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
   '/superadmin/login': typeof SuperadminLoginRoute
+  '/superadmin/setup-2fa': typeof SuperadminSetup2faRoute
   '/tablee/paiement': typeof TableePaiementRoute
   '/admin': typeof AdminIndexRoute
   '/superadmin': typeof SuperadminIndexRoute
@@ -574,6 +582,7 @@ export interface FileRoutesById {
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
   '/superadmin_/login': typeof SuperadminLoginRoute
+  '/superadmin_/setup-2fa': typeof SuperadminSetup2faRoute
   '/tablee/paiement': typeof TableePaiementRoute
   '/admin/': typeof AdminIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
@@ -641,6 +650,7 @@ export interface FileRouteTypes {
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
     | '/superadmin/login'
+    | '/superadmin/setup-2fa'
     | '/tablee/paiement'
     | '/admin/'
     | '/superadmin/'
@@ -704,6 +714,7 @@ export interface FileRouteTypes {
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
     | '/superadmin/login'
+    | '/superadmin/setup-2fa'
     | '/tablee/paiement'
     | '/admin'
     | '/superadmin'
@@ -769,6 +780,7 @@ export interface FileRouteTypes {
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
     | '/superadmin_/login'
+    | '/superadmin_/setup-2fa'
     | '/tablee/paiement'
     | '/admin/'
     | '/superadmin/'
@@ -826,6 +838,7 @@ export interface RootRouteChildren {
   RSlugRoute: typeof RSlugRoute
   RestaurantsRestoIdRoute: typeof RestaurantsRestoIdRouteWithChildren
   SuperadminLoginRoute: typeof SuperadminLoginRoute
+  SuperadminSetup2faRoute: typeof SuperadminSetup2faRoute
   ApiPublicCampayWebhookRoute: typeof ApiPublicCampayWebhookRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -1101,6 +1114,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/tablee/paiement'
       preLoaderRoute: typeof TableePaiementRouteImport
       parentRoute: typeof TableeRoute
+    }
+    '/superadmin_/setup-2fa': {
+      id: '/superadmin_/setup-2fa'
+      path: '/superadmin/setup-2fa'
+      fullPath: '/superadmin/setup-2fa'
+      preLoaderRoute: typeof SuperadminSetup2faRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/superadmin_/login': {
       id: '/superadmin_/login'
@@ -1403,6 +1423,7 @@ const rootRouteChildren: RootRouteChildren = {
   RSlugRoute: RSlugRoute,
   RestaurantsRestoIdRoute: RestaurantsRestoIdRouteWithChildren,
   SuperadminLoginRoute: SuperadminLoginRoute,
+  SuperadminSetup2faRoute: SuperadminSetup2faRoute,
   ApiPublicCampayWebhookRoute: ApiPublicCampayWebhookRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
