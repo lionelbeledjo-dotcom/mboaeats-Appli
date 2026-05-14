@@ -64,7 +64,7 @@ function ProfilPage() {
         setIsAdmin(!!role);
       } catch {}
       try {
-        const [p, l] = await Promise.all([getMyProfile(), getMyLoyalty()]);
+        const [p, l, a] = await Promise.all([getMyProfile(), getMyLoyalty(), listMyAddresses()]);
         setProfile(p.profile ?? null);
         setForm({
           full_name: p.profile?.full_name ?? "",
@@ -72,6 +72,12 @@ function ProfilPage() {
           city: p.profile?.city ?? "Douala",
         });
         setLoyalty({ points: l.points, currentTier: l.currentTier });
+        setAddresses(((a as { addresses?: Array<{ id: string; label: string | null; city: string | null; neighborhood: string | null }> })?.addresses ?? []).map((x) => ({
+          id: x.id,
+          label: x.label ?? "Adresse",
+          city: x.city ?? "",
+          neighborhood: x.neighborhood ?? "",
+        })));
       } catch {}
     }).catch(() => { setAuthChecked(true); });
 
