@@ -241,9 +241,9 @@ function PanierPage() {
             type="checkbox"
             checked={promoChecked}
             onChange={(e) => setPromoChecked(e.target.checked)}
-            className="mt-0.5 h-5 w-5 rounded border-2 border-gray-300 accent-black"
+            className="mt-0.5 h-5 w-5 shrink-0 rounded border-2 border-gray-300 accent-black"
           />
-          <span className="text-[13px] leading-snug text-black">
+          <span className="min-w-0 text-[13px] leading-snug text-black">
             Économisez <span className="font-bold text-amber-600">500 FCFA</span> sur cette commande en essayant gratuitement <span className="font-semibold">MboaPass</span>
           </span>
         </label>
@@ -251,7 +251,7 @@ function PanierPage() {
           <button
             type="button"
             onClick={() => navigate({ to: "/checkout" })}
-            className="flex w-full h-14 items-center justify-center rounded-2xl bg-black text-white text-[16px] font-semibold active:scale-[0.98] transition-transform"
+            className="flex w-full h-14 items-center justify-center rounded-2xl bg-black text-white text-[16px] font-semibold shadow-[0_8px_24px_-12px_rgba(0,0,0,0.4)] active:scale-[0.98] transition-transform"
           >
             Passer au paiement
           </button>
