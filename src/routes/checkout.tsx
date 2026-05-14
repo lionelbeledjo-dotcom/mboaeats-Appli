@@ -510,6 +510,28 @@ function Checkout() {
         <Summary cartItems={cartItems} subtotal={subtotal} delivery={delivery} taxes={taxes} total={total} hasPass={hasPass} addressLine={delivery_.address.line} promo={promo} setPromo={setPromo} paymentStatus={paymentStatus} method={method} reference={reference} />
       </main>
 
+      {activeWallet && (paymentStatus !== "idle" || pending) && step !== "success" && (
+        <WalletProcessingOverlay
+          wallet={activeWallet}
+          status={paymentStatus === "idle" ? "pending" : paymentStatus}
+          total={total}
+          reference={reference}
+          errorMessage={topError}
+          onClose={() => {
+            setActiveWallet(null);
+            if (paymentStatus === "failed") {
+              setPaymentStatus("idle");
+              setStep("choose");
+            }
+          }}
+          onRetry={() => {
+            setPaymentStatus("idle");
+            setTopError(null);
+            start();
+          }}
+        />
+      )}
+
       {showExtras && (
         <ExtrasModal
           onSkip={() => { setShowExtras(false); setExtrasSeen(true); start(); }}
