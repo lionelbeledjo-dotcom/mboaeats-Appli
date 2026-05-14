@@ -10,6 +10,9 @@ export type MboaSession = {
   // Numéro lié à l'OTP en cours (verrouille la vérification)
   pendingPhone?: string;
   pendingPhoneAt?: number;
+  // Marqueur 2FA SUPER_ADMIN validée pour la session courante
+  sa2faUserId?: string;
+  sa2faAt?: number;
 };
 
 export function getMboaSession() {
