@@ -125,7 +125,15 @@ function Checkout() {
   const dbItems = cartItems.filter((i) => i?.id?.startsWith("db__"));
   const isLiveOrder = dbItems.length > 0;
   const liveRestoId = dbItems[0]?.restoId ?? null;
-  const [hasPass, setHasPass] = useState(false);
+  const { user: sessionUser } = useSessionUser();
+  const { data: passData } = useQuery({
+    queryKey: ["mboa-pass", sessionUser?.id ?? "anon"],
+    queryFn: () => fetchPass({ data: { userId: sessionUser!.id } }),
+    enabled: !!sessionUser?.id,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
+  const hasPass = !!passData?.active;
   const [promo, setPromo] = useState<{ code: string; discount: number } | null>(null);
   const delivery = hasPass || subtotal === 0 ? 0 : 800;
   const taxes = Math.round((subtotal + delivery) * TAX_RATE);
