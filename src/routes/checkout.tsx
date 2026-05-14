@@ -557,7 +557,7 @@ function ChooseMethod({
         disabled={disabled}
         aria-disabled={disabled}
         title={disabled ? (disabledReason ?? "") : undefined}
-        className="flex w-full items-center justify-center gap-3 rounded-2xl bg-black py-5 text-[16px] font-semibold text-white transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-neutral-400 disabled:active:scale-100"
+        className="relative z-10 flex w-full items-center justify-center gap-3 rounded-2xl bg-black py-5 text-[16px] font-semibold text-white shadow-[0_10px_28px_-12px_rgba(0,0,0,0.55)] transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-neutral-400 disabled:shadow-none disabled:active:scale-100"
       >
         Commander et payer
         <span className="text-white/80 font-bold">· {total.toLocaleString("fr-FR")} FCFA</span>
