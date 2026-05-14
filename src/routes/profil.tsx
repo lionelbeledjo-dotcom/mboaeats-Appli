@@ -55,14 +55,18 @@ function ProfilPage() {
       setAuthedSb(true);
       if (u.email) setAuthEmail(u.email);
       try {
+        // STRICT : seul le rôle "superadmin" (plateforme) déverrouille l'entrée Espace Super Admin.
+        // Aucun autre rôle (client, restaurateur, livreur, admin entreprise) ne doit voir ce lien.
         const { data: role } = await supabase
           .from("user_roles")
           .select("role")
           .eq("user_id", u.id)
-          .eq("role", "admin")
+          .eq("role", "superadmin")
           .maybeSingle();
         setIsAdmin(!!role);
-      } catch {}
+      } catch {
+        setIsAdmin(false);
+      }
       try {
         const [p, l, a] = await Promise.all([getMyProfile(), getMyLoyalty(), listMyAddresses()]);
         setProfile(p.profile ?? null);
