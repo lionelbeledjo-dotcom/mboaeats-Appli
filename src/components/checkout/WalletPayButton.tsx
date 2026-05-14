@@ -37,7 +37,7 @@ export function WalletPayButton({
 }: {
   total: number;
   disabled?: boolean;
-  onPay: () => void;
+  onPay: (wallet: "apple" | "google") => void;
 }) {
   const [wallet, setWallet] = useState<Wallet>(null);
 
