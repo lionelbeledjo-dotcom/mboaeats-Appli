@@ -21,6 +21,7 @@ import {
   type DeliveryContactErrors,
 } from "@/components/checkout/DeliveryContactRows";
 import { WalletPayButton } from "@/components/checkout/WalletPayButton";
+import { WalletProcessingOverlay } from "@/components/checkout/WalletProcessingOverlay";
 
 export const Route = createFileRoute("/checkout")({
   component: CheckoutRoute,
