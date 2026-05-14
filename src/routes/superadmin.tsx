@@ -16,6 +16,11 @@ export const Route = createFileRoute("/superadmin")({
         .eq("role", "superadmin")
         .maybeSingle();
       if (!role) throw redirect({ to: "/superadmin/login" });
+      // Vérifie 2FA
+      const { get2faStatus } = await import("@/lib/superadmin-2fa.functions");
+      const status = await get2faStatus();
+      if (!status.enabled) throw redirect({ to: "/superadmin/setup-2fa" });
+      if (!status.sessionValid) throw redirect({ to: "/superadmin/login" });
     } catch (err) {
       if (isRedirect(err)) throw err;
       throw redirect({ to: "/superadmin/login" });
