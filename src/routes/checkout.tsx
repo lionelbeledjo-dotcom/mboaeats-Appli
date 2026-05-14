@@ -21,6 +21,7 @@ import {
   type DeliveryContactErrors,
 } from "@/components/checkout/DeliveryContactRows";
 import { WalletPayButton } from "@/components/checkout/WalletPayButton";
+import { WalletProcessingOverlay } from "@/components/checkout/WalletProcessingOverlay";
 
 export const Route = createFileRoute("/checkout")({
   component: CheckoutRoute,
@@ -147,6 +148,17 @@ function Checkout() {
   const [cardLink, setCardLink] = useState<string | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "pending" | "succeeded" | "failed">("idle");
   const [contactErrors, setContactErrors] = useState<DeliveryContactErrors>({});
+  const [activeWallet, setActiveWallet] = useState<"apple" | "google" | null>(null);
+
+  // Confirme automatiquement la commande quand le webhook signale un succès
+  // pendant un paiement Apple Pay / Google Pay (sinon CardScreen s'en charge).
+  useEffect(() => {
+    if (!activeWallet) return;
+    if (paymentStatus === "succeeded") {
+      const t = setTimeout(() => { void confirm(); }, 700);
+      return () => clearTimeout(t);
+    }
+  }, [activeWallet, paymentStatus]);
 
   // Contact de livraison (adresse / instructions / téléphone) — synchronisé avec delivery_
   const contact: DeliveryContact = {
@@ -454,6 +466,17 @@ function Checkout() {
                 phone={phone} setPhone={setPhone}
                 disabled={payDisabled}
                 disabledReason={payDisabledReason}
+                onWalletPay={(w) => {
+                  if (payDisabled) {
+                    setTopError(payDisabledReason);
+                    setContactErrors(liveContactErrors);
+                    return;
+                  }
+                  setActiveWallet(w);
+                  setMethod("card");
+                  setExtrasSeen(true);
+                  start();
+                }}
                 onPay={() => {
                   if (payDisabled) {
                     setTopError(payDisabledReason);
@@ -487,6 +510,28 @@ function Checkout() {
         <Summary cartItems={cartItems} subtotal={subtotal} delivery={delivery} taxes={taxes} total={total} hasPass={hasPass} addressLine={delivery_.address.line} promo={promo} setPromo={setPromo} paymentStatus={paymentStatus} method={method} reference={reference} />
       </main>
 
+      {activeWallet && (paymentStatus !== "idle" || pending) && step !== "success" && (
+        <WalletProcessingOverlay
+          wallet={activeWallet}
+          status={paymentStatus === "idle" ? "pending" : paymentStatus}
+          total={total}
+          reference={reference}
+          errorMessage={topError}
+          onClose={() => {
+            setActiveWallet(null);
+            if (paymentStatus === "failed") {
+              setPaymentStatus("idle");
+              setStep("choose");
+            }
+          }}
+          onRetry={() => {
+            setPaymentStatus("idle");
+            setTopError(null);
+            start();
+          }}
+        />
+      )}
+
       {showExtras && (
         <ExtrasModal
           onSkip={() => { setShowExtras(false); setExtrasSeen(true); start(); }}
@@ -498,11 +543,13 @@ function Checkout() {
 }
 
 function ChooseMethod({
-  method, setMethod, phone, setPhone, onPay, total, disabled = false, disabledReason = null,
+  method, setMethod, phone, setPhone, onPay, onWalletPay, total, disabled = false, disabledReason = null,
 }: {
   method: Method; setMethod: (m: Method) => void;
   phone: string; setPhone: (s: string) => void;
-  onPay: () => void; total: number;
+  onPay: () => void;
+  onWalletPay?: (wallet: "apple" | "google") => void;
+  total: number;
   disabled?: boolean; disabledReason?: string | null;
 }) {
   return (
@@ -515,9 +562,9 @@ function ChooseMethod({
           <WalletPayButton
             total={total}
             disabled={disabled}
-            onPay={() => {
-              setMethod("card");
-              onPay();
+            onPay={(w) => {
+              if (onWalletPay) onWalletPay(w);
+              else { setMethod("card"); onPay(); }
             }}
           />
         </div>
