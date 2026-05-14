@@ -118,16 +118,19 @@ function Decouvrir() {
                 preload="intent"
                 className="group relative block overflow-hidden rounded-2xl border border-border bg-card shadow-card transition-transform active:scale-[0.99]"
               >
-                <div className="relative aspect-[16/9] overflow-hidden">
+                <div
+                  className="relative w-full overflow-hidden"
+                  style={{ aspectRatio: "16 / 9", paddingTop: "56.25%", height: 0 }}
+                >
                   {r.image_url ? (
                     <img
                       src={r.image_url}
                       alt={r.name}
                       loading="lazy"
-                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                      className="absolute inset-0 h-full w-full object-cover object-center transition-transform group-hover:scale-105"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/20 to-accent/10">
+                    <div className="absolute inset-0 flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/20 to-accent/10">
                       <Flame className="h-10 w-10 text-primary" />
                     </div>
                   )}
