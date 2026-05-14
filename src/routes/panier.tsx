@@ -98,24 +98,27 @@ function PanierPage() {
 
   return (
     <main
-      className="fixed inset-x-0 top-0 z-10 flex flex-col bg-white text-black font-sans overflow-hidden touch-pan-y overscroll-none"
-      style={{ bottom: "calc(70px + env(safe-area-inset-bottom))" }}
+      className="fixed inset-x-0 top-0 z-40 flex flex-col bg-white text-black font-sans overflow-hidden touch-pan-y overscroll-none"
+      style={{ bottom: "calc(80px + env(safe-area-inset-bottom))" }}
     >
       {/* Header fixe */}
-      <header className="shrink-0 bg-white border-b border-gray-100">
-        <div className="flex items-center justify-between px-4 pt-4 pb-2">
-          <Link to="/" aria-label="Fermer" className="p-2 -ml-2 active:scale-95 transition-transform">
+      <header
+        className="shrink-0 bg-white/95 backdrop-blur-md border-b border-gray-100"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
+        <div className="flex items-center justify-between px-4 pt-3 pb-2">
+          <Link to="/" aria-label="Fermer" className="-ml-2 inline-flex h-10 w-10 items-center justify-center rounded-full active:bg-gray-100 transition-colors">
             <X className="h-6 w-6 text-black" strokeWidth={2.5} />
           </Link>
           <button
             type="button"
             aria-label="Ajouter une personne"
-            className="p-2 -mr-2 active:scale-95 transition-transform"
+            className="-mr-2 inline-flex h-10 w-10 items-center justify-center rounded-full active:bg-gray-100 transition-colors"
           >
             <UserPlus className="h-6 w-6 text-black" strokeWidth={2.25} />
           </button>
         </div>
-        <h1 className="px-4 pt-1 pb-3 text-3xl font-bold tracking-tight">{restoName}</h1>
+        <h1 className="px-4 pt-1 pb-3 text-[24px] font-bold tracking-tight leading-tight truncate">{restoName}</h1>
       </header>
 
       {/* Zone scrollable */}
@@ -126,20 +129,26 @@ function PanierPage() {
         {/* Liste articles */}
         <ul className="divide-y divide-gray-100">
           {items.map((it) => (
-            <li key={it.id} className="flex gap-3 px-4 py-5">
+            <li key={it.id} className="flex gap-4 px-4 py-5">
               {it.image ? (
-                <div className="h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-gray-100">
+                <div
+                  className="shrink-0 overflow-hidden rounded-2xl bg-gray-100"
+                  style={{ width: 96, height: 96, aspectRatio: "1 / 1", flex: "0 0 96px" }}
+                >
                   <SmartImage
                     src={it.image}
                     alt={it.name}
                     ratio="1 / 1"
                     width={96}
                     height={96}
-                    wrapperClassName="!h-full"
+                    wrapperClassName="!h-full !w-full"
                   />
                 </div>
               ) : (
-                <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-gray-100">
+                <div
+                  className="flex shrink-0 items-center justify-center rounded-2xl bg-gray-100"
+                  style={{ width: 96, height: 96, flex: "0 0 96px" }}
+                >
                   <ShoppingBag className="h-7 w-7 text-gray-400" />
                 </div>
               )}
@@ -232,9 +241,9 @@ function PanierPage() {
             type="checkbox"
             checked={promoChecked}
             onChange={(e) => setPromoChecked(e.target.checked)}
-            className="mt-0.5 h-5 w-5 rounded border-2 border-gray-300 accent-black"
+            className="mt-0.5 h-5 w-5 shrink-0 rounded border-2 border-gray-300 accent-black"
           />
-          <span className="text-[13px] leading-snug text-black">
+          <span className="min-w-0 text-[13px] leading-snug text-black">
             Économisez <span className="font-bold text-amber-600">500 FCFA</span> sur cette commande en essayant gratuitement <span className="font-semibold">MboaPass</span>
           </span>
         </label>
@@ -242,7 +251,7 @@ function PanierPage() {
           <button
             type="button"
             onClick={() => navigate({ to: "/checkout" })}
-            className="flex w-full h-14 items-center justify-center rounded-2xl bg-black text-white text-[16px] font-semibold active:scale-[0.98] transition-transform"
+            className="flex w-full h-14 items-center justify-center rounded-2xl bg-black text-white text-[16px] font-semibold shadow-[0_8px_24px_-12px_rgba(0,0,0,0.4)] active:scale-[0.98] transition-transform"
           >
             Passer au paiement
           </button>
