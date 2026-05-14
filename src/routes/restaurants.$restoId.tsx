@@ -186,6 +186,16 @@ function RestaurantPage() {
           </span>
         </div>
 
+        <Link
+          to="/restaurants/$restoId/menu"
+          params={{ restoId: restaurant.id }}
+          preload="intent"
+          className="mt-4 inline-flex w-full items-center justify-between rounded-xl bg-[#06C167]/10 px-3 py-2.5 text-xs font-bold uppercase tracking-wide text-[#06C167] transition hover:bg-[#06C167]/15 active:scale-[0.99]"
+        >
+          Voir tout le menu
+          <ChevronRight className="h-4 w-4" strokeWidth={2.5} />
+        </Link>
+
         <details className="group mt-4">
           <summary className="flex cursor-pointer items-center justify-between text-xs font-semibold text-foreground/80">
             <span>Horaires d'ouverture</span>

@@ -65,6 +65,7 @@ import { Route as AdminMenusRouteImport } from './routes/admin.menus'
 import { Route as AdminLivreursRouteImport } from './routes/admin.livreurs'
 import { Route as AdminLitigesRouteImport } from './routes/admin.litiges'
 import { Route as AdminCommissionsRouteImport } from './routes/admin.commissions'
+import { Route as RestaurantsRestoIdMenuRouteImport } from './routes/restaurants.$restoId.menu'
 import { Route as ApiPublicCampayWebhookRouteImport } from './routes/api/public/campay-webhook'
 import { Route as RestaurantsRestoIdPlatsPlatIdRouteImport } from './routes/restaurants.$restoId_.plats.$platId'
 import { Route as RSlugPlatsDishIdRouteImport } from './routes/r.$slug_.plats.$dishId'
@@ -352,6 +353,11 @@ const AdminCommissionsRoute = AdminCommissionsRouteImport.update({
   path: '/commissions',
   getParentRoute: () => AdminRoute,
 } as any)
+const RestaurantsRestoIdMenuRoute = RestaurantsRestoIdMenuRouteImport.update({
+  id: '/menu',
+  path: '/menu',
+  getParentRoute: () => RestaurantsRestoIdRoute,
+} as any)
 const ApiPublicCampayWebhookRoute = ApiPublicCampayWebhookRouteImport.update({
   id: '/api/public/campay-webhook',
   path: '/api/public/campay-webhook',
@@ -436,13 +442,14 @@ export interface FileRoutesByFullPath {
   '/compte/paiements': typeof ComptePaiementsRoute
   '/compte/securite': typeof CompteSecuriteRoute
   '/r/$slug': typeof RSlugRoute
-  '/restaurants/$restoId': typeof RestaurantsRestoIdRoute
+  '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
   '/superadmin/login': typeof SuperadminLoginRoute
   '/tablee/paiement': typeof TableePaiementRoute
   '/admin/': typeof AdminIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
   '/api/public/campay-webhook': typeof ApiPublicCampayWebhookRoute
+  '/restaurants/$restoId/menu': typeof RestaurantsRestoIdMenuRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -498,13 +505,14 @@ export interface FileRoutesByTo {
   '/compte/paiements': typeof ComptePaiementsRoute
   '/compte/securite': typeof CompteSecuriteRoute
   '/r/$slug': typeof RSlugRoute
-  '/restaurants/$restoId': typeof RestaurantsRestoIdRoute
+  '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
   '/superadmin/login': typeof SuperadminLoginRoute
   '/tablee/paiement': typeof TableePaiementRoute
   '/admin': typeof AdminIndexRoute
   '/superadmin': typeof SuperadminIndexRoute
   '/api/public/campay-webhook': typeof ApiPublicCampayWebhookRoute
+  '/restaurants/$restoId/menu': typeof RestaurantsRestoIdMenuRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -563,13 +571,14 @@ export interface FileRoutesById {
   '/compte/paiements': typeof ComptePaiementsRoute
   '/compte/securite': typeof CompteSecuriteRoute
   '/r/$slug': typeof RSlugRoute
-  '/restaurants/$restoId': typeof RestaurantsRestoIdRoute
+  '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
   '/superadmin_/login': typeof SuperadminLoginRoute
   '/tablee/paiement': typeof TableePaiementRoute
   '/admin/': typeof AdminIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
   '/api/public/campay-webhook': typeof ApiPublicCampayWebhookRoute
+  '/restaurants/$restoId/menu': typeof RestaurantsRestoIdMenuRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -636,6 +645,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/superadmin/'
     | '/api/public/campay-webhook'
+    | '/restaurants/$restoId/menu'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -698,6 +708,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/superadmin'
     | '/api/public/campay-webhook'
+    | '/restaurants/$restoId/menu'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -762,6 +773,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/superadmin/'
     | '/api/public/campay-webhook'
+    | '/restaurants/$restoId/menu'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -812,7 +824,7 @@ export interface RootRouteChildren {
   ComptePaiementsRoute: typeof ComptePaiementsRoute
   CompteSecuriteRoute: typeof CompteSecuriteRoute
   RSlugRoute: typeof RSlugRoute
-  RestaurantsRestoIdRoute: typeof RestaurantsRestoIdRoute
+  RestaurantsRestoIdRoute: typeof RestaurantsRestoIdRouteWithChildren
   SuperadminLoginRoute: typeof SuperadminLoginRoute
   ApiPublicCampayWebhookRoute: typeof ApiPublicCampayWebhookRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -1216,6 +1228,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCommissionsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/restaurants/$restoId/menu': {
+      id: '/restaurants/$restoId/menu'
+      path: '/menu'
+      fullPath: '/restaurants/$restoId/menu'
+      preLoaderRoute: typeof RestaurantsRestoIdMenuRouteImport
+      parentRoute: typeof RestaurantsRestoIdRoute
+    }
     '/api/public/campay-webhook': {
       id: '/api/public/campay-webhook'
       path: '/api/public/campay-webhook'
@@ -1328,6 +1347,17 @@ const TableeRouteChildren: TableeRouteChildren = {
 const TableeRouteWithChildren =
   TableeRoute._addFileChildren(TableeRouteChildren)
 
+interface RestaurantsRestoIdRouteChildren {
+  RestaurantsRestoIdMenuRoute: typeof RestaurantsRestoIdMenuRoute
+}
+
+const RestaurantsRestoIdRouteChildren: RestaurantsRestoIdRouteChildren = {
+  RestaurantsRestoIdMenuRoute: RestaurantsRestoIdMenuRoute,
+}
+
+const RestaurantsRestoIdRouteWithChildren =
+  RestaurantsRestoIdRoute._addFileChildren(RestaurantsRestoIdRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
@@ -1371,7 +1401,7 @@ const rootRouteChildren: RootRouteChildren = {
   ComptePaiementsRoute: ComptePaiementsRoute,
   CompteSecuriteRoute: CompteSecuriteRoute,
   RSlugRoute: RSlugRoute,
-  RestaurantsRestoIdRoute: RestaurantsRestoIdRoute,
+  RestaurantsRestoIdRoute: RestaurantsRestoIdRouteWithChildren,
   SuperadminLoginRoute: SuperadminLoginRoute,
   ApiPublicCampayWebhookRoute: ApiPublicCampayWebhookRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
@@ -1383,12 +1413,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
