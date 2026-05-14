@@ -160,6 +160,7 @@ function RootComponent() {
         <BottomDock />
         <Toaster position="top-right" richColors closeButton />
       </AuthGate>
+      <PendingPaymentWatcher />
       <OnboardingGate />
     </ThemeProvider>
   );
