@@ -18,23 +18,21 @@ export const Route = createFileRoute("/admin")({
     // re-execution after hydration will perform the real check.
     if (typeof window === "undefined") return;
     try {
-      // Client-side gate via Supabase (RLS protects user_roles, so this read
-      // is authoritative — a non-admin cannot fake a row here).
-      // Each /admin server function additionally re-asserts the admin role
-      // server-side before returning data, so no privileged data leaks even
-      // if this gate is somehow bypassed in the browser.
+      // STRICT : /admin/* est réservé au SUPER_ADMIN plateforme.
+      // RLS protège user_roles → un non-superadmin ne peut pas forger une ligne ici.
+      // Chaque server function /admin re-vérifie aussi le rôle côté serveur.
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw redirect({ to: "/admin/login" });
+      if (!user) throw redirect({ to: "/superadmin/login" });
       const { data: role } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
-        .eq("role", "admin")
+        .eq("role", "superadmin")
         .maybeSingle();
-      if (!role) throw redirect({ to: "/admin/login" });
+      if (!role) throw redirect({ to: "/superadmin/login" });
     } catch (err) {
       if (isRedirect(err)) throw err;
-      throw redirect({ to: "/admin/login" });
+      throw redirect({ to: "/superadmin/login" });
     }
   },
   component: AdminLayout,
@@ -106,7 +104,7 @@ function AdminLayout() {
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
-        .eq("role", "admin")
+        .eq("role", "superadmin")
         .maybeSingle();
       if (alive) setAdminInfo({ isAdmin: !!role, email: user.email ?? null });
     };
@@ -269,7 +267,7 @@ function AdminHeader({
           </div>
         ) : (
           <Link
-            to="/admin/login"
+            to="/superadmin/login"
             className="hidden items-center gap-1.5 rounded-full border border-destructive/40 bg-destructive/10 px-3 py-1.5 hover:bg-destructive/20 sm:inline-flex"
           >
             <ShieldAlert className="h-3.5 w-3.5 text-destructive" />
@@ -367,7 +365,7 @@ function AdminSidebar() {
 
   const handleLogout = async () => {
     try { await supabase.auth.signOut({ scope: "global" }); } catch {}
-    navigate({ to: "/admin/login", replace: true });
+    navigate({ to: "/superadmin/login", replace: true });
   };
 
   const isActive = (item: typeof navItems[number]) =>
