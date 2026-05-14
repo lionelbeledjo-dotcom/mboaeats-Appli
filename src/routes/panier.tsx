@@ -98,24 +98,27 @@ function PanierPage() {
 
   return (
     <main
-      className="fixed inset-x-0 top-0 z-10 flex flex-col bg-white text-black font-sans overflow-hidden touch-pan-y overscroll-none"
-      style={{ bottom: "calc(70px + env(safe-area-inset-bottom))" }}
+      className="fixed inset-x-0 top-0 z-40 flex flex-col bg-white text-black font-sans overflow-hidden touch-pan-y overscroll-none"
+      style={{ bottom: "calc(80px + env(safe-area-inset-bottom))" }}
     >
       {/* Header fixe */}
-      <header className="shrink-0 bg-white border-b border-gray-100">
-        <div className="flex items-center justify-between px-4 pt-4 pb-2">
-          <Link to="/" aria-label="Fermer" className="p-2 -ml-2 active:scale-95 transition-transform">
+      <header
+        className="shrink-0 bg-white/95 backdrop-blur-md border-b border-gray-100"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
+        <div className="flex items-center justify-between px-4 pt-3 pb-2">
+          <Link to="/" aria-label="Fermer" className="-ml-2 inline-flex h-10 w-10 items-center justify-center rounded-full active:bg-gray-100 transition-colors">
             <X className="h-6 w-6 text-black" strokeWidth={2.5} />
           </Link>
           <button
             type="button"
             aria-label="Ajouter une personne"
-            className="p-2 -mr-2 active:scale-95 transition-transform"
+            className="-mr-2 inline-flex h-10 w-10 items-center justify-center rounded-full active:bg-gray-100 transition-colors"
           >
             <UserPlus className="h-6 w-6 text-black" strokeWidth={2.25} />
           </button>
         </div>
-        <h1 className="px-4 pt-1 pb-3 text-3xl font-bold tracking-tight">{restoName}</h1>
+        <h1 className="px-4 pt-1 pb-3 text-[24px] font-bold tracking-tight leading-tight truncate">{restoName}</h1>
       </header>
 
       {/* Zone scrollable */}
