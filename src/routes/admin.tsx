@@ -267,7 +267,7 @@ function AdminHeader({
           </div>
         ) : (
           <Link
-            to="/admin/login"
+            to="/superadmin/login"
             className="hidden items-center gap-1.5 rounded-full border border-destructive/40 bg-destructive/10 px-3 py-1.5 hover:bg-destructive/20 sm:inline-flex"
           >
             <ShieldAlert className="h-3.5 w-3.5 text-destructive" />
