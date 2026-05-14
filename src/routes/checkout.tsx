@@ -22,6 +22,7 @@ import {
 } from "@/components/checkout/DeliveryContactRows";
 import { WalletPayButton } from "@/components/checkout/WalletPayButton";
 import { WalletProcessingOverlay } from "@/components/checkout/WalletProcessingOverlay";
+import { setPendingPayment, updatePendingPayment, clearPendingPayment } from "@/lib/pending-payment";
 
 export const Route = createFileRoute("/checkout")({
   component: CheckoutRoute,
@@ -224,6 +225,23 @@ function Checkout() {
       .subscribe();
     return () => { void supabase.removeChannel(channel); };
   }, [reference]);
+
+  // Persiste le paiement en cours pour permettre une redirection automatique
+  // vers /suivi/$orderId même si l'utilisateur quitte cette page.
+  useEffect(() => {
+    if (!reference) return;
+    setPendingPayment({ reference, orderId: liveOrderId, total });
+  }, [reference, total]);
+  useEffect(() => {
+    if (!reference || !liveOrderId) return;
+    updatePendingPayment({ orderId: liveOrderId });
+  }, [liveOrderId, reference]);
+  useEffect(() => {
+    if (paymentStatus === "succeeded" || paymentStatus === "failed") {
+      // Le succès déclenche confirm() qui redirige ; on libère le watcher global.
+      clearPendingPayment();
+    }
+  }, [paymentStatus]);
 
   const ensureLiveOrder = async (): Promise<string | null> => {
     if (!isLiveOrder || !liveRestoId) return null;
