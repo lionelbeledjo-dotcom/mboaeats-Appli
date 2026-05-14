@@ -359,9 +359,12 @@ function Checkout() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-30 glass">
+      <header
+        className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur-md"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 md:px-8">
-          <Link to="/profil" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+          <Link to="/profil" className="inline-flex items-center gap-2 text-sm text-muted-foreground active:text-foreground hover:text-foreground rounded-lg px-2 py-1 -ml-2 active:bg-muted/60">
             <ArrowLeft className="h-4 w-4" /> Mon compte
           </Link>
           <span className="font-display font-bold">Paiement</span>
@@ -369,7 +372,10 @@ function Checkout() {
         </div>
       </header>
 
-      <main className="mx-auto grid max-w-5xl gap-6 px-4 py-6 md:grid-cols-[1.4fr_1fr] md:px-8">
+      <main
+        className="relative z-10 mx-auto grid max-w-5xl gap-5 px-4 py-5 md:grid-cols-[1.4fr_1fr] md:gap-6 md:px-8 md:py-6"
+        style={{ paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}
+      >
         <section className="space-y-5">
           {topError && (
             <div
