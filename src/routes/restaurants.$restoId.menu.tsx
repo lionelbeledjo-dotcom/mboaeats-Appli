@@ -231,8 +231,8 @@ function MenuPage() {
                         </div>
 
                         <div
-                          className="relative shrink-0 self-start overflow-hidden rounded-xl bg-muted"
-                          style={{ width: 96, height: 96 }}
+                          className="relative shrink-0 self-start h-20 w-20 sm:h-24 sm:w-24 overflow-hidden rounded-xl bg-muted"
+                          style={{ contain: "layout paint" }}
                         >
                           <SmartImage
                             src={dish.image}
