@@ -166,29 +166,29 @@ function PanierPage() {
                   <span className="text-[15px] font-semibold text-black">
                     {(it.price * it.qty).toLocaleString("fr-FR")} FCFA
                   </span>
-                  <div className="flex items-center gap-1 rounded-full bg-gray-100 px-1 py-1">
+                  <div className="inline-flex h-11 items-center gap-1 rounded-2xl border border-gray-200 bg-white p-1 shadow-sm">
                     <button
                       type="button"
                       onClick={() => (it.qty <= 1 ? remove(it.id) : setQty(it.id, it.qty - 1))}
                       aria-label={it.qty <= 1 ? `Supprimer ${it.name}` : "Diminuer la quantité"}
-                      className="flex h-9 w-9 items-center justify-center rounded-full bg-white active:scale-95 transition-transform"
+                      className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#06C167]/10 text-[#06C167] transition-transform active:scale-90"
                     >
                       {it.qty <= 1 ? (
-                        <Trash2 className="h-4 w-4 text-black" />
+                        <Trash2 className="h-4 w-4" />
                       ) : (
-                        <Minus className="h-4 w-4 text-black" strokeWidth={2.5} />
+                        <Minus className="h-4 w-4" strokeWidth={2.8} />
                       )}
                     </button>
-                    <span className="min-w-[1.5rem] text-center text-[15px] font-semibold tabular-nums text-black">
+                    <span className="min-w-[2rem] px-1 text-center text-[15px] font-bold tabular-nums text-black">
                       {it.qty}
                     </span>
                     <button
                       type="button"
                       onClick={() => setQty(it.id, it.qty + 1)}
                       aria-label="Augmenter la quantité"
-                      className="flex h-9 w-9 items-center justify-center rounded-full bg-white active:scale-95 transition-transform"
+                      className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#06C167] text-white shadow-sm transition-transform active:scale-90"
                     >
-                      <Plus className="h-4 w-4 text-black" strokeWidth={2.5} />
+                      <Plus className="h-4 w-4" strokeWidth={2.8} />
                     </button>
                   </div>
                 </div>
