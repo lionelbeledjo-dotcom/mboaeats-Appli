@@ -179,30 +179,43 @@ function ProfilPage() {
           )}
 
           {editing && authed && (
-            <div className="mt-4 space-y-2 rounded-2xl border border-border bg-card p-3 animate-fade-in">
-              <input
-                placeholder="Nom complet"
-                value={form.full_name}
-                onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
-              />
-              <input
-                placeholder="+237 6XX XX XX XX"
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
-              />
-              <select
-                value={form.city}
-                onChange={(e) => setForm({ ...form, city: e.target.value })}
-                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
-              >
-                <option>Douala</option><option>Yaoundé</option><option>Bafoussam</option>
-              </select>
+            <div className="mt-4 space-y-4 rounded-2xl border border-border bg-card p-4 animate-fade-in">
+              <label className="block">
+                <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Nom complet</span>
+                <input
+                  placeholder="Ex. Jean Dupont"
+                  value={form.full_name}
+                  onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+                  maxLength={80}
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-[16px] outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Téléphone</span>
+                <input
+                  type="tel"
+                  inputMode="tel"
+                  placeholder="+237 6XX XX XX XX"
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  maxLength={20}
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-[16px] outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Ville</span>
+                <select
+                  value={form.city}
+                  onChange={(e) => setForm({ ...form, city: e.target.value })}
+                  className="w-full appearance-none rounded-xl border border-border bg-background px-4 py-3 text-[16px] outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
+                >
+                  <option>Douala</option><option>Yaoundé</option><option>Bafoussam</option>
+                </select>
+              </label>
               <button
                 onClick={save}
                 disabled={saving}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-primary py-2.5 text-sm font-semibold text-primary-foreground shadow-glow disabled:opacity-60"
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-primary text-[15px] font-bold text-primary-foreground shadow-glow active:scale-[0.99] transition-transform disabled:opacity-60"
               >
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Enregistrer"}
               </button>
