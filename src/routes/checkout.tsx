@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { initiatePayment, verifyPayment, getActiveMboaPass, initiateCardPayment, pollPaymentStatus } from "@/server/payments.functions";
@@ -23,6 +24,7 @@ import {
 import { WalletPayButton } from "@/components/checkout/WalletPayButton";
 import { WalletProcessingOverlay } from "@/components/checkout/WalletProcessingOverlay";
 import { setPendingPayment, updatePendingPayment, clearPendingPayment } from "@/lib/pending-payment";
+
 
 export const Route = createFileRoute("/checkout")({
   component: CheckoutRoute,
@@ -124,7 +126,21 @@ function Checkout() {
   const dbItems = cartItems.filter((i) => i?.id?.startsWith("db__"));
   const isLiveOrder = dbItems.length > 0;
   const liveRestoId = dbItems[0]?.restoId ?? null;
-  const [hasPass, setHasPass] = useState(false);
+  const { data: passData } = useQuery({
+    queryKey: ["mboa-pass"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { active: false };
+      try {
+        return await fetchPass({ data: { userId: user.id } });
+      } catch {
+        return { active: false };
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
+  const hasPass = !!passData?.active;
   const [promo, setPromo] = useState<{ code: string; discount: number } | null>(null);
   const delivery = hasPass || subtotal === 0 ? 0 : 800;
   const taxes = Math.round((subtotal + delivery) * TAX_RATE);
@@ -188,17 +204,7 @@ function Checkout() {
       ? (liveContactErrors.address ?? liveContactErrors.instructions ?? liveContactErrors.phone ?? "Complétez vos informations de livraison")
       : null;
 
-  // Détection MboaPass (livraison gratuite)
-  useEffect(() => {
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      try {
-        const r = await fetchPass({ data: { userId: user.id } });
-        setHasPass(!!r.active);
-      } catch { /* silencieux */ }
-    })();
-  }, [fetchPass]);
+  // (MboaPass détecté via useQuery ci-dessus avec cache 5 min)
 
   useEffect(() => {
     if (step !== "ussd" || !pending) return;
