@@ -1392,6 +1392,81 @@ export type Database = {
         }
         Relationships: []
       }
+      superadmin_2fa: {
+        Row: {
+          backup_codes_hashed: string[]
+          created_at: string
+          enabled: boolean
+          failed_attempts: number
+          last_used_at: string | null
+          locked_until: string | null
+          secret_ciphertext: string | null
+          secret_iv: string | null
+          secret_tag: string | null
+          updated_at: string
+          user_id: string
+          verified_at: string | null
+        }
+        Insert: {
+          backup_codes_hashed?: string[]
+          created_at?: string
+          enabled?: boolean
+          failed_attempts?: number
+          last_used_at?: string | null
+          locked_until?: string | null
+          secret_ciphertext?: string | null
+          secret_iv?: string | null
+          secret_tag?: string | null
+          updated_at?: string
+          user_id: string
+          verified_at?: string | null
+        }
+        Update: {
+          backup_codes_hashed?: string[]
+          created_at?: string
+          enabled?: boolean
+          failed_attempts?: number
+          last_used_at?: string | null
+          locked_until?: string | null
+          secret_ciphertext?: string | null
+          secret_iv?: string | null
+          secret_tag?: string | null
+          updated_at?: string
+          user_id?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
+      superadmin_2fa_attempts: {
+        Row: {
+          created_at: string
+          id: string
+          ip: string | null
+          kind: string
+          success: boolean
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip?: string | null
+          kind?: string
+          success: boolean
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip?: string | null
+          kind?: string
+          success?: boolean
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
