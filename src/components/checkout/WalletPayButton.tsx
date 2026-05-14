@@ -54,7 +54,7 @@ export function WalletPayButton({
   return (
     <button
       type="button"
-      onClick={onPay}
+      onClick={() => onPay(wallet)}
       disabled={disabled}
       aria-label={`Payer ${total.toLocaleString("fr-FR")} FCFA avec ${label}`}
       className={`relative flex h-14 w-full items-center justify-center gap-2.5 rounded-2xl font-semibold transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 ${
