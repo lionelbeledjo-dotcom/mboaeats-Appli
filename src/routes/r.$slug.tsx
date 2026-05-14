@@ -278,19 +278,19 @@ function DishCard({
         params={{ slug, dishId: dish.id }}
         preload="intent"
         aria-label={`Voir les détails de ${dish.name}`}
-        className="group relative z-10 flex items-stretch gap-3 rounded-[1.25rem] border border-neutral-200 bg-card p-3 transition-all cursor-pointer select-none hover:-translate-y-0.5 hover:border-[#06C167]/60 hover:shadow-[0_10px_28px_-12px_rgba(6,193,103,0.45)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:border-neutral-800"
-        style={{ boxShadow: "var(--shadow-soft)" }}
+        className="group relative z-10 flex items-stretch gap-3 overflow-hidden rounded-[1.25rem] border border-neutral-200 bg-card p-3 transition-all cursor-pointer select-none hover:-translate-y-0.5 hover:border-[#06C167]/60 hover:shadow-[0_10px_28px_-12px_rgba(6,193,103,0.45)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06C167] focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:border-neutral-800"
+        style={{ boxShadow: "var(--shadow-soft)", contain: "layout paint" }}
       >
-        <div className="pointer-events-none relative shrink-0">
+        <div className="pointer-events-none relative shrink-0 h-20 w-20 sm:h-24 sm:w-24">
           {dish.image_url ? (
             <img
               src={dish.image_url}
               alt={dish.name}
               loading="lazy"
-              className="pointer-events-none h-24 w-24 rounded-[1rem] object-cover transition-transform duration-500 group-hover:scale-105"
+              className="pointer-events-none h-full w-full rounded-[1rem] object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
-            <div className="flex h-24 w-24 items-center justify-center rounded-[1rem] bg-neutral-100 dark:bg-neutral-800">
+            <div className="flex h-full w-full items-center justify-center rounded-[1rem] bg-neutral-100 dark:bg-neutral-800">
               <Flame className="h-6 w-6 text-neutral-400" />
             </div>
           )}
