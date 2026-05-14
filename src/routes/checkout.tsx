@@ -126,11 +126,17 @@ function Checkout() {
   const dbItems = cartItems.filter((i) => i?.id?.startsWith("db__"));
   const isLiveOrder = dbItems.length > 0;
   const liveRestoId = dbItems[0]?.restoId ?? null;
-  const { user: sessionUser } = useSessionUser();
   const { data: passData } = useQuery({
-    queryKey: ["mboa-pass", sessionUser?.id ?? "anon"],
-    queryFn: () => fetchPass({ data: { userId: sessionUser!.id } }),
-    enabled: !!sessionUser?.id,
+    queryKey: ["mboa-pass"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { active: false };
+      try {
+        return await fetchPass({ data: { userId: user.id } });
+      } catch {
+        return { active: false };
+      }
+    },
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
