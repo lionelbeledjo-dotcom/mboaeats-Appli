@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { initiatePayment, verifyPayment, getActiveMboaPass, initiateCardPayment, pollPaymentStatus } from "@/server/payments.functions";
