@@ -466,6 +466,17 @@ function Checkout() {
                 phone={phone} setPhone={setPhone}
                 disabled={payDisabled}
                 disabledReason={payDisabledReason}
+                onWalletPay={(w) => {
+                  if (payDisabled) {
+                    setTopError(payDisabledReason);
+                    setContactErrors(liveContactErrors);
+                    return;
+                  }
+                  setActiveWallet(w);
+                  setMethod("card");
+                  setExtrasSeen(true);
+                  start();
+                }}
                 onPay={() => {
                   if (payDisabled) {
                     setTopError(payDisabledReason);
