@@ -15,6 +15,8 @@ export function SuperAdminLoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [twoFaCode, setTwoFaCode] = useState("");
+  const [useBackup, setUseBackup] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
