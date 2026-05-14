@@ -129,20 +129,26 @@ function PanierPage() {
         {/* Liste articles */}
         <ul className="divide-y divide-gray-100">
           {items.map((it) => (
-            <li key={it.id} className="flex gap-3 px-4 py-5">
+            <li key={it.id} className="flex gap-4 px-4 py-5">
               {it.image ? (
-                <div className="h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-gray-100">
+                <div
+                  className="shrink-0 overflow-hidden rounded-2xl bg-gray-100"
+                  style={{ width: 96, height: 96, aspectRatio: "1 / 1", flex: "0 0 96px" }}
+                >
                   <SmartImage
                     src={it.image}
                     alt={it.name}
                     ratio="1 / 1"
                     width={96}
                     height={96}
-                    wrapperClassName="!h-full"
+                    wrapperClassName="!h-full !w-full"
                   />
                 </div>
               ) : (
-                <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-gray-100">
+                <div
+                  className="flex shrink-0 items-center justify-center rounded-2xl bg-gray-100"
+                  style={{ width: 96, height: 96, flex: "0 0 96px" }}
+                >
                   <ShoppingBag className="h-7 w-7 text-gray-400" />
                 </div>
               )}
