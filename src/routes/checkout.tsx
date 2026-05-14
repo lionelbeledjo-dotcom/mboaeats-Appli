@@ -510,7 +510,25 @@ function ChooseMethod({
 
       <div className="rounded-3xl border border-border bg-surface/60 p-5">
         <h2 className="font-display text-lg font-bold">Méthode de paiement</h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+
+        <div className="mt-4">
+          <WalletPayButton
+            total={total}
+            disabled={disabled}
+            onPay={() => {
+              setMethod("card");
+              onPay();
+            }}
+          />
+        </div>
+
+        <div className="my-4 flex items-center gap-3 text-[11px] uppercase tracking-wider text-muted-foreground">
+          <span className="h-px flex-1 bg-border" />
+          ou
+          <span className="h-px flex-1 bg-border" />
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
           <PayOption id="momo" current={method} setCurrent={setMethod} title="MTN MoMo" subtitle="Confirmation auto via webhook" badge="Recommandé"
             icon={<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-yellow-400 font-display text-sm font-bold text-black">MTN</div>} />
           <PayOption id="orange" current={method} setCurrent={setMethod} title="Orange Money" subtitle="Paiement instantané"
