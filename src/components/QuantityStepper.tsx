@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Minus, Plus } from "lucide-react";
 
 type Props = {
@@ -8,34 +9,48 @@ type Props = {
   ariaLabel?: string;
 };
 
-export function QuantityStepper({ qty, onInc, onDec, size = "md", ariaLabel = "Quantité" }: Props) {
-  const dim = size === "sm" ? "h-8" : "h-10";
-  const btn = size === "sm" ? "h-8 w-8" : "h-10 w-10";
+function QuantityStepperImpl({ qty, onInc, onDec, size = "md", ariaLabel = "Quantité" }: Props) {
+  const isSm = size === "sm";
+  const wrap = isSm ? "h-10 gap-1.5 p-1" : "h-12 gap-2 p-1.5";
+  const btn = isSm ? "h-8 w-8" : "h-9 w-9";
+  const num = isSm ? "min-w-[1.75rem] text-sm" : "min-w-[2.25rem] text-base";
+
+  const handleDec = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onDec();
+  };
+  const handleInc = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onInc();
+  };
+
   return (
     <div
       role="group"
       aria-label={ariaLabel}
-      className={`inline-flex ${dim} select-none items-center overflow-hidden rounded-full border border-primary/30 bg-background shadow-sm`}
+      className={`inline-flex ${wrap} select-none items-center rounded-2xl border border-gray-200 bg-white shadow-sm`}
     >
       <button
         type="button"
-        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDec(); }}
+        onClick={handleDec}
         aria-label="Diminuer"
-        className={`${btn} flex items-center justify-center text-primary transition-colors hover:bg-primary/10 active:scale-95`}
+        className={`${btn} flex items-center justify-center rounded-xl bg-[#06C167]/10 text-[#06C167] transition-transform active:scale-90`}
       >
-        <Minus className="h-4 w-4" strokeWidth={2.6} />
+        <Minus className="h-4 w-4" strokeWidth={2.8} />
       </button>
       <span
         key={qty}
-        className="min-w-7 text-center font-display text-sm font-bold tabular-nums text-foreground animate-scale-in"
+        className={`${num} px-1 text-center font-display font-bold tabular-nums text-foreground animate-scale-in`}
       >
         {qty}
       </span>
       <button
         type="button"
-        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onInc(); }}
+        onClick={handleInc}
         aria-label="Augmenter"
-        className={`${btn} flex items-center justify-center bg-gradient-primary text-primary-foreground transition-transform hover:scale-105 active:scale-95`}
+        className={`${btn} flex items-center justify-center rounded-xl bg-[#06C167] text-white shadow-sm transition-transform active:scale-90`}
       >
         <Plus className="h-4 w-4" strokeWidth={2.8} />
       </button>
@@ -43,4 +58,5 @@ export function QuantityStepper({ qty, onInc, onDec, size = "md", ariaLabel = "Q
   );
 }
 
+export const QuantityStepper = memo(QuantityStepperImpl);
 export default QuantityStepper;
