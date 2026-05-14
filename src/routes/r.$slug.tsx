@@ -330,9 +330,9 @@ function DishCard({
                 e.stopPropagation();
                 onAdd();
               }}
-              className="relative z-20 flex h-9 w-9 items-center justify-center rounded-full bg-[#06C167] text-white shadow-[0_8px_20px_-6px_rgba(6,193,103,0.7)] ring-2 ring-background transition-all hover:scale-105 hover:bg-[#05a558] active:scale-95 disabled:opacity-40"
+              className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl bg-[#06C167] px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-[#05a558] hover:shadow-md active:scale-95 disabled:opacity-40"
             >
-              <Plus className="h-4 w-4" strokeWidth={2.5} />
+              Ajouter <Plus className="h-3.5 w-3.5" strokeWidth={2.8} />
             </button>
           </div>
         </div>
