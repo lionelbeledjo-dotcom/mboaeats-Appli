@@ -133,6 +133,36 @@ export function SuperAdminLoginForm() {
           </div>
         </div>
 
+        {mode === "twofa" ? (
+          <form onSubmit={handle2faSubmit} className="w-full rounded-3xl border border-border bg-card/80 p-6 shadow-card backdrop-blur-xl animate-fade-up">
+            <div className="mb-5 flex items-center gap-2 rounded-full border border-primary/40 bg-primary/5 px-3 py-2 text-xs">
+              <KeyRound className="h-4 w-4 text-primary" />
+              <span className="font-semibold text-primary">Vérification en 2 étapes</span>
+            </div>
+            <p className="mb-3 text-xs text-muted-foreground">
+              {useBackup ? "Entrez l'un de vos codes de secours." : "Ouvrez votre application d'authentification et entrez le code à 6 chiffres."}
+            </p>
+            <input
+              inputMode={useBackup ? "text" : "numeric"}
+              autoComplete="one-time-code"
+              maxLength={useBackup ? 9 : 6}
+              value={twoFaCode}
+              onChange={(e) => setTwoFaCode(useBackup ? e.target.value.toUpperCase() : e.target.value.replace(/\D/g, ""))}
+              placeholder={useBackup ? "XXXX-XXXX" : "123456"}
+              className="w-full rounded-xl border border-border bg-background px-4 py-3 text-center text-2xl font-bold tracking-[0.4em] outline-none focus:border-primary"
+              required
+              autoFocus
+            />
+            {error && <p className="mt-4 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</p>}
+            <button type="submit" disabled={loading} className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-gradient-primary text-sm font-semibold text-primary-foreground shadow-glow disabled:opacity-60">
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
+              Vérifier
+            </button>
+            <button type="button" onClick={() => { setUseBackup(!useBackup); setTwoFaCode(""); setError(null); }} className="mt-3 w-full text-center text-xs text-muted-foreground hover:text-foreground">
+              {useBackup ? "← Utiliser un code TOTP" : "Utiliser un code de secours"}
+            </button>
+          </form>
+        ) : (
         <form onSubmit={handleSubmit} className="w-full rounded-3xl border border-border bg-card/80 p-6 shadow-card backdrop-blur-xl animate-fade-up">
           <div className="mb-5 flex items-center gap-2 rounded-full border border-primary/40 bg-primary/5 px-3 py-2 text-xs">
             <ShieldCheck className="h-4 w-4 text-primary" />
@@ -177,6 +207,7 @@ export function SuperAdminLoginForm() {
             </p>
           )}
         </form>
+        )}
       </div>
     </div>
   );
