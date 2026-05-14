@@ -309,17 +309,22 @@ function RestaurantPage() {
                         </div>
                       </div>
 
-                      {/* Photo right with floating + button */}
-                      <div className="relative aspect-square w-28 shrink-0 overflow-hidden rounded-xl bg-muted">
-                        <SmartImage
-                          src={dish.image}
-                          alt={dish.name}
-                          ratio="1 / 1"
-                          width={112}
-                          height={112}
-                          wrapperClassName="!h-full"
-                          className="pointer-events-none"
-                        />
+                      {/* Photo right with floating + button (button lives OUTSIDE image clip) */}
+                      <div className="relative shrink-0" style={{ width: 112, paddingRight: 12, paddingBottom: 12 }}>
+                        <div
+                          className="relative overflow-hidden rounded-xl bg-muted"
+                          style={{ width: 112, height: 112, aspectRatio: "1 / 1" }}
+                        >
+                          <SmartImage
+                            src={dish.image}
+                            alt={dish.name}
+                            ratio="1 / 1"
+                            width={112}
+                            height={112}
+                            wrapperClassName="!h-full !w-full"
+                            className="pointer-events-none"
+                          />
+                        </div>
                         <button
                           aria-label={`Ajouter ${dish.name} au panier`}
                           onClick={(e) => {
@@ -342,12 +347,12 @@ function RestaurantPage() {
                               },
                             });
                           }}
-                          className={`absolute -bottom-2 -right-2 flex h-9 w-9 items-center justify-center rounded-full bg-[#06C167] text-white shadow-[0_8px_20px_-6px_rgba(6,193,103,0.7)] ring-2 ring-background transition-transform hover:scale-110 hover:bg-[#05a558] active:scale-95 ${qtyOf(dish.id) > 0 ? "hidden" : ""}`}
+                          className={`absolute bottom-0 right-0 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-[#06C167] text-white shadow-[0_8px_20px_-6px_rgba(6,193,103,0.7)] ring-2 ring-white transition-transform hover:scale-110 hover:bg-[#05a558] active:scale-95 ${qtyOf(dish.id) > 0 ? "hidden" : ""}`}
                         >
                           <Plus className="h-5 w-5" strokeWidth={2.6} />
                         </button>
                         {qtyOf(dish.id) > 0 && (
-                          <div className="absolute -bottom-3 -right-2">
+                          <div className="absolute bottom-0 right-0 z-10">
                             <QuantityStepper
                               size="sm"
                               qty={qtyOf(dish.id)}
