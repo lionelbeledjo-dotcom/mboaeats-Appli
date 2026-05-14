@@ -22,6 +22,7 @@ import {
 } from "@/components/checkout/DeliveryContactRows";
 import { WalletPayButton } from "@/components/checkout/WalletPayButton";
 import { WalletProcessingOverlay } from "@/components/checkout/WalletProcessingOverlay";
+import { setPendingPayment, updatePendingPayment, clearPendingPayment } from "@/lib/pending-payment";
 
 export const Route = createFileRoute("/checkout")({
   component: CheckoutRoute,
