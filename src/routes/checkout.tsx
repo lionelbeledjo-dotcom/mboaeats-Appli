@@ -148,6 +148,17 @@ function Checkout() {
   const [cardLink, setCardLink] = useState<string | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "pending" | "succeeded" | "failed">("idle");
   const [contactErrors, setContactErrors] = useState<DeliveryContactErrors>({});
+  const [activeWallet, setActiveWallet] = useState<"apple" | "google" | null>(null);
+
+  // Confirme automatiquement la commande quand le webhook signale un succès
+  // pendant un paiement Apple Pay / Google Pay (sinon CardScreen s'en charge).
+  useEffect(() => {
+    if (!activeWallet) return;
+    if (paymentStatus === "succeeded") {
+      const t = setTimeout(() => { void confirm(); }, 700);
+      return () => clearTimeout(t);
+    }
+  }, [activeWallet, paymentStatus]);
 
   // Contact de livraison (adresse / instructions / téléphone) — synchronisé avec delivery_
   const contact: DeliveryContact = {
