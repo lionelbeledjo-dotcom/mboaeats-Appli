@@ -657,3 +657,23 @@ img, video, canvas, svg { max-width: 100%; height: auto; }
 
 /* Réserve d'espace pour images sans dimensions explicites — réduit le CLS */
 img:not([width]):not([height]) { aspect-ratio: attr(data-aspect, auto, 16 / 9); }
+
+/* ============================================================
+   iOS keyboard stabilization — CRITICAL
+   Safari iOS auto-zooms (and décale toute la page) dès qu'un
+   input a font-size < 16px. On force 16px sur TOUS les champs
+   de saisie mobile pour empêcher ce zoom + le décalage au retour.
+   ============================================================ */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Image defaults — empêche tout débordement horizontal */
+img { max-width: 100%; display: block; }
+
+/* Tous les enfants flex : min-width 0 pour éviter les overflow horizontaux */
+.flex > *, [class*="flex-row"] > * { min-width: 0; }
