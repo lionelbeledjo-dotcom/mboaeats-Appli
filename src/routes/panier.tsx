@@ -73,6 +73,9 @@ function PanierPage() {
   const setQty = cart?.setQty ?? (() => {});
   const remove = cart?.remove ?? (() => {});
   const [promoChecked, setPromoChecked] = useState(false);
+  // Verrouille le scroll pendant toute la durée de la page panier — empêche
+  // tout saut de viewport à l'ouverture et restitue la position au retour.
+  useScrollLock(true);
 
   if (!items || items.length === 0) {
     return (
