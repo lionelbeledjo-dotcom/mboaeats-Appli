@@ -3,13 +3,14 @@ import { useEffect, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Package, CheckCircle2, ChevronRight, MapPin, LogIn, RotateCcw, Loader2, ArrowLeft } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getMyOrders, getOrder } from "@/server/marketplace.functions";
 import { addToCart } from "@/hooks/use-cart";
 import { RowSkeleton, EmptyState } from "@/components/ui/feedback";
 import { TabErrorBoundary, TabErrorFallback } from "@/components/TabErrorBoundary";
 import { useStableAuthSession } from "@/hooks/useStableAuthSession";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/commandes")({
   head: () => ({
