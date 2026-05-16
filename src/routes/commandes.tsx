@@ -3,13 +3,14 @@ import { useEffect, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Package, CheckCircle2, ChevronRight, MapPin, LogIn, RotateCcw, Loader2, ArrowLeft } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getMyOrders, getOrder } from "@/server/marketplace.functions";
 import { addToCart } from "@/hooks/use-cart";
 import { RowSkeleton, EmptyState } from "@/components/ui/feedback";
 import { TabErrorBoundary, TabErrorFallback } from "@/components/TabErrorBoundary";
 import { useStableAuthSession } from "@/hooks/useStableAuthSession";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/commandes")({
   head: () => ({
@@ -85,10 +86,42 @@ function CommandesPage() {
   const [tab, setTab] = useState<"all" | "active" | "delivered">("all");
   const [reordering, setReordering] = useState<string | null>(null);
   const [cachedOrders, setCachedOrders] = useState<Order[] | null>(null);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     setCachedOrders(readCachedOrders());
   }, []);
+
+  /**
+   * Realtime : abonnement aux changements sur `orders` filtrés sur l'utilisateur
+   * courant. Chaque INSERT/UPDATE/DELETE déclenche un refetch silencieux de la
+   * query — mise à jour live des statuts (paid → preparing → delivered) sans
+   * polling. RLS garantit qu'on ne reçoit QUE nos propres lignes.
+   */
+  useEffect(() => {
+    if (!authReady || !isAuthenticated) return;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      const uid = data.user?.id;
+      if (!uid || cancelled) return;
+      channel = supabase
+        .channel(`orders:user:${uid}`)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "orders", filter: `user_id=eq.${uid}` },
+          () => {
+            queryClient.invalidateQueries({ queryKey: ["my-orders"] });
+          },
+        )
+        .subscribe();
+    })();
+    return () => {
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [authReady, isAuthenticated, queryClient]);
 
   const reorder = async (orderId: string, restoSlug: string | undefined) => {
     setReordering(orderId);
