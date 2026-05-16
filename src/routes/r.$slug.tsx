@@ -63,7 +63,7 @@ function RestoLivePage() {
 
   const resto = (data?.resto ?? null) as Resto | null;
   const categories = useMemo(() => (data?.categories ?? []) as Cat[], [data]);
-  const dishes = useMemo(() => (data?.dishes ?? []) as unknown as Dish[]]) as Dish[], [data]);
+  const dishes = useMemo(() => (data?.dishes ?? []) as unknown as Dish[], [data]);
   const loading = isLoading && !data;
 
   const [activeCat, setActiveCat] = useState<string | null>(null);
