@@ -23,6 +23,8 @@
 
 import { createRouter, useRouter } from "@tanstack/react-router";
 import { QueryClient } from "@tanstack/react-query";
+import { persistQueryClient } from "@tanstack/react-query-persist-client";
+import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { useEffect } from "react";
 import { routeTree } from "./routeTree.gen";
 
