@@ -1,109 +1,121 @@
+# Refonte architecturale MBOAEAT — niveau Uber Eats
 
+Objectif : remplacer les patchs accumulés par une architecture où le shell (Header + Outlet + BottomDock) ne se démonte jamais, où chaque route a son propre Suspense + ErrorBoundary, et où la session, le scroll et le panier sont stables.
 
-## Vision
+## 1. AppShell persistante (`src/routes/__root.tsx`)
 
-Transformer l'auth actuelle (email + magic link partiel) en système production-ready multi-rôles, avec OTP SMS via Twilio, Google Sign-In managé, onboarding 3 écrans, profils riches et mode invité contrôlé.
+Refonte du `RootComponent` pour garantir qu'aucun changement de route ne démonte le layout :
 
-## Phase 1 — Base de données & rôles
+```text
+<QueryClientProvider>
+  <ThemeProvider>
+    <AuthProvider>                 ← attend getSession() avant de rendre les enfants
+      <SplashScreen />
+      <OfflineBanner />
+      <AppShell>                   ← nouveau composant stable
+        <SiteHeader />             ← monté une seule fois
+        <main id="app-scroll">
+          <RouteErrorBoundary>     ← boundary GLOBAL léger (jamais full-screen)
+            <Suspense fallback={<RouteSkeleton />}>
+              <Outlet />
+            </Suspense>
+          </RouteErrorBoundary>
+        </main>
+        <CartFab />
+        <BottomDock />             ← fixed, jamais démonté
+      </AppShell>
+      <Toaster />
+      <PendingPaymentWatcher />
+      <OnboardingGate />
+    </AuthProvider>
+  </ThemeProvider>
+</QueryClientProvider>
+```
 
-Migration Supabase :
+Règle : Header + BottomDock vivent en dehors de `<Outlet />`. Les pages n'ont plus le droit de rendre leur propre Header/Dock.
 
-- Enum `app_role` étendu avec `client`, `restaurateur`, `livreur` (admin/superadmin existent déjà).
-- Table `profiles` enrichie : `avatar_url`, `phone_verified` (bool), `phone_verified_at`, `default_role` (text), `onboarding_completed` (bool), `preferred_language` (text défaut `fr`).
-- Trigger `handle_new_user` mis à jour : crée le profil + assigne automatiquement le rôle `client` dans `user_roles` à l'inscription.
-- Bucket Storage `avatars` (public read, upload par utilisateur authentifié sur son dossier).
-- Table `payment_methods` (user_id, type `mtn|orange|card`, masked_number, is_default) pour la section "moyens de paiement" du profil.
+## 2. Session stabilisée (`src/auth/components/AuthProvider.tsx`)
 
-## Phase 2 — Google OAuth managé + refonte page connexion
+- Attend `supabase.auth.getSession()` avant de rendre les enfants.
+- Tant que `!sessionLoaded` → `<FullScreenLoader />` (pas de splash répétitif, pas de flash).
+- Le listener `onAuthStateChange` met à jour le state SANS provoquer de re-mount du shell.
+- Supprime les guards qui redirigent en cours de render (cause majeure des "Une erreur est survenue").
 
-- Activation `supabase--configure_social_auth` providers `["google"]` (managé Lovable, zéro config).
-- Génération du module `lovable.auth` via outil dédié.
-- `src/routes/connexion.tsx` : ajout bouton "Continuer avec Google" (utilise `lovable.auth.signInWithOAuth("google")`), conservation du formulaire email + lien mot de passe oublié + lien création compte (déjà en place).
-- `src/routes/inscription.tsx` : ajout choix de rôle à l'inscription (Client par défaut / Je suis restaurateur / Je suis livreur) — stocké dans `user_metadata.intended_role`, attribué après confirmation email.
+## 3. Routes Profil & Commandes — Suspense + ErrorBoundary locaux
 
-## Phase 3 — OTP SMS Twilio
+Pour `src/routes/profil.tsx` et `src/routes/commandes.tsx` :
 
-Server function `src/lib/sms-otp.functions.ts` :
+- `pendingComponent: SkeletonProfil` / `SkeletonOrders`
+- `errorComponent: LocalErrorFallback` (carte inline avec "Réessayer", JAMAIS plein écran)
+- Données via `useQuery` :
+  ```ts
+  useQuery({
+    queryKey: ['orders', userId],
+    queryFn: fetchOrders,
+    enabled: authReady && !!userId,
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    placeholderData: keepPreviousData,
+    retry: 1,
+  })
+  ```
+- Si non connecté → carte "Connexion requise" inline (déjà en place, on garde).
 
-- `sendPhoneOtp({ phone })` : génère un code 6 chiffres, hash SHA-256 stocké dans `otp_codes` (table existe déjà), envoie SMS via Twilio gateway (`POST /Messages.json` — `TWILIO_API_KEY` + `TWILIO_FROM_NUMBER` déjà configurés). TTL 5 min, max 5 tentatives, rate-limit 1 envoi/min/numéro.
-- `verifyPhoneOtp({ phone, code })` : vérifie hash, marque `consumed_at`, met à jour `profiles.phone` + `phone_verified=true`.
-- Composant `<PhoneVerificationDialog />` réutilisable (input téléphone E.164 Cameroun préfixé +237, étape 1 saisie / étape 2 code 6 chiffres avec resend après 60s).
-- Branchement dans `inscription.tsx` (étape post-email pour utilisateurs qui veulent vérifier leur numéro) et dans `compte.securite.tsx` (vérification à tout moment).
+## 4. Scroll stabilité totale
 
-## Phase 4 — Profils, dashboards par rôle, mode invité
+- `src/router.tsx` : `scrollRestoration: true`, `scrollToTopSelectors: ['#app-scroll']`.
+- `BottomDock` : tous les `<Link>` gardent `resetScroll={false}` pour les onglets latéraux (panier/profil/commandes), `true` uniquement pour Accueil.
+- CSS (`src/styles.css`) :
+  - `html, body { height: 100dvh; overflow: hidden; }`
+  - `#app-scroll { height: 100dvh; overflow-y: auto; padding-bottom: calc(var(--bottom-dock-h) + env(safe-area-inset-bottom)); overscroll-behavior: contain; }`
+  - Variable `--bottom-dock-h` définie en root.
+- Suppression du double overflow (body + main).
 
-**Profil client** (`src/routes/profil.tsx` enrichi) :
+## 5. Panier (`src/routes/panier.tsx`)
 
-- En-tête : avatar (upload Storage `avatars`), nom, badge téléphone vérifié.
-- Sections : adresses sauvegardées (table `addresses` existe), historique commandes (table `orders` existe — affichage 10 dernières), moyens de paiement (nouvelle table).
+- Le contenu du panier reste dans `<Outlet />` comme une route normale (plus d'overlay fixed qui se superpose au layout).
+- Bouton "Passer au paiement" en `position: sticky; bottom: calc(var(--bottom-dock-h) + safe-area)`.
+- Plus de `useScrollLock` sur cette route (le shell gère déjà l'overflow).
+- `CartProvider` (store Zustand existant) reste inchangé — il ne re-render pas l'AppShell.
 
-**Dashboards par rôle** (route guard via `_authenticated/`) :
+## 6. ErrorBoundaries
 
-- `src/routes/restaurant.tsx` (existe) → vérification rôle `restaurateur`, sinon CTA "Devenir restaurateur" → `/devenir-resto`.
-- `src/routes/livreur.tsx` (existe) → vérification rôle `livreur`, sinon CTA "Devenir livreur" → `/devenir-livreur`.
-- Hook `useUserRoles()` qui interroge `user_roles` via server fn dédié.
+- `RouteErrorBoundary` (nouveau, léger) autour de `<Outlet />` : log + fallback inline + bouton "Recharger cet écran" qui appelle `router.invalidate()` + reset.
+- `RootErrorBoundary` actuel : conservé UNIQUEMENT autour de Splash/Onboarding (catastrophes hors route).
+- Suppression du `DefaultErrorComponent` plein écran dans `router.tsx` au profit du même fallback inline.
 
-**Mode invité** :
+## 7. Performance
 
-- Suppression de tout `requireAuth` sur la home, la liste restaurants, la fiche resto, la recherche.
-- `src/routes/checkout.tsx` : si non-connecté → modal "Connectez-vous pour finaliser" avec 3 options (Email, Google, Téléphone OTP) + redirect-back vers `/checkout` après login (`?redirect=/checkout`).
-- Le panier Zustand reste persistant en localStorage et survit au login (déjà OK).
+- `defaultPreload: 'intent'` (déjà), `defaultPreloadStaleTime: 0` à vérifier dans `router.tsx`.
+- `usePrefetchOnIdle` étendu à `/checkout`.
+- Lazy images via `loading="lazy"` (audit rapide).
 
-## Phase 5 — Onboarding 3 écrans + récupération mot de passe
+## Fichiers touchés
 
-**Onboarding** :
-
-- 3 illustrations IA (premium quality) générées : "Découvrir les saveurs du Cameroun", "Commander en 2 clics", "Suivre ton livreur en direct".
-- Composant `<OnboardingCarousel />` plein écran, swipe + dots + boutons "Passer" / "Suivant" / "Commencer".
-- Affiché uniquement si `localStorage.mboa_onboarding_seen !== "1"` ET (utilisateur non connecté OU `profiles.onboarding_completed = false`).
-- Marqué vu à la fin → `localStorage` + update profil si connecté.
-- Monté dans `__root.tsx` au-dessus de `<Outlet />`.
-
-**Récupération mot de passe** :
-
-- Page `/mot-de-passe-oublie` (nouvelle) : champ email → `supabase.auth.resetPasswordForEmail` avec `redirectTo: window.location.origin + '/reset-password'`.
-- `/reset-password` (existe déjà) : vérifier qu'elle gère `type=recovery` + `updateUser({ password })`.
-- Option "Recevoir un code SMS" si l'utilisateur a un numéro vérifié → réutilise OTP de Phase 3 + écran de saisie nouveau mot de passe.
+- `src/routes/__root.tsx` — nouveau shell stable
+- `src/components/AppShell.tsx` (nouveau)
+- `src/components/RouteErrorBoundary.tsx` (nouveau, remplace TabErrorBoundary)
+- `src/components/RouteSkeleton.tsx` (nouveau)
+- `src/auth/components/AuthProvider.tsx` — attend getSession
+- `src/router.tsx` — scrollRestoration + selectors
+- `src/routes/profil.tsx` — pendingComponent + errorComponent + useQuery enabled
+- `src/routes/commandes.tsx` — idem
+- `src/routes/panier.tsx` — supprime overlay fixed + scrollLock, sticky CTA
+- `src/components/BottomDock.tsx` — confirme resetScroll par lien
+- `src/styles.css` — 100dvh, --bottom-dock-h, #app-scroll
+- `src/hooks/useScrollLock.ts` — déprécié (gardé pour modales seulement)
 
 ## Section technique
 
-**Sécurité** :
+- TanStack Router `scrollRestoration` gère la sauvegarde par clé d'historique sur `#app-scroll`. Pas besoin de logique manuelle.
+- `Suspense` au niveau root + `pendingComponent` par route = squelette instantané sans démontage du shell.
+- Session : `AuthProvider` expose `{ session, ready }` via React Query (`queryKey: ['session']`) — déjà partiellement en place avec `useSyncSupabaseAuthEvents`, on ajoute le `ready` flag bloquant.
+- Le panier en route normale (au lieu d'overlay) supprime définitivement les scroll jumps liés à `position: fixed` sur body.
 
-- Toutes les server fn OTP utilisent `supabaseAdmin` (bypass RLS) car elles écrivent dans `otp_codes` côté serveur. RLS reste active.
-- Validation Zod stricte sur tous les inputs (téléphone E.164 `+237\d{9}`, code `\d{6}`, password min 8 + 1 majuscule + 1 chiffre).
-- Rate-limit OTP en mémoire process (acceptable pour MVP, à migrer Redis plus tard).
-- HIBP activé via `configure_auth({ password_hibp_enabled: true })`.
+## Hors scope
 
-**Architecture fichiers nouveaux** :
+- Pas de changement de schéma DB.
+- Pas de modification du store Zustand panier.
+- Pas de modification des server functions existantes (`getMyOrders`, etc.).
 
-```
-src/lib/
-  sms-otp.functions.ts          # send/verify OTP via Twilio
-  user-roles.functions.ts        # getMyRoles, requestRole(restaurateur|livreur)
-  profile.functions.ts           # updateProfile, uploadAvatar
-src/components/
-  PhoneVerificationDialog.tsx
-  OnboardingCarousel.tsx
-  GoogleSignInButton.tsx
-  GuestCheckoutGate.tsx
-  RoleGuard.tsx                  # affiche CTA si rôle manquant
-src/hooks/
-  useUserRoles.ts
-  useOnboarding.ts
-src/routes/
-  mot-de-passe-oublie.tsx
-  _authenticated.tsx             # layout avec beforeLoad redirect /connexion
-src/assets/onboarding/
-  step-1.jpg, step-2.jpg, step-3.jpg   # IA premium
-```
-
-**Ce que je NE touche PAS** :
-
-- `connexion.tsx` (uniquement +bouton Google), `inscription.tsx` (uniquement +choix rôle), `reset-password.tsx`.
-- Logique panier / commande / paiement Campay.
-- Routes admin / superadmin.
-
-**Ordre d'exécution** : Phase 1 (DB) → Phase 2 (Google + UI auth) → Phase 3 (OTP) → Phase 4 (profils/rôles/invité) → Phase 5 (onboarding + reset). Chaque phase est livrable indépendamment.
-
-**Estimation** : ~25-30 fichiers créés/modifiés au total. Je livre phase par phase et te demande validation entre chaque (sinon trop risqué de tout casser d'un coup).
-
+Confirme et j'implémente l'ensemble en un seul passage.
