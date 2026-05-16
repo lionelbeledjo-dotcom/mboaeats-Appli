@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { isCartSoundEnabled, setCartSoundEnabled, CART_SOUND_EVT } from "@/lib/cart-sound";
 import { getMyProfile, upsertMyProfile, getMyLoyalty, listMyAddresses } from "@/server/account.functions";
 import { useSessionUser } from "@/hooks/useSessionUser";
+import { useSession } from "@/auth/hooks/useSession";
 import { useTheme } from "@/components/ThemeProvider";
 
 export const Route = createFileRoute("/profil")({
