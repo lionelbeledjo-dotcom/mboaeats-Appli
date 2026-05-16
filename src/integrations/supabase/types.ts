@@ -304,6 +304,7 @@ export type Database = {
           allergens: string[] | null
           category_id: string | null
           created_at: string
+          deleted_at: string | null
           description: string | null
           id: string
           image_url: string | null
@@ -319,6 +320,7 @@ export type Database = {
           allergens?: string[] | null
           category_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           id?: string
           image_url?: string | null
@@ -334,6 +336,7 @@ export type Database = {
           allergens?: string[] | null
           category_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           id?: string
           image_url?: string | null
@@ -819,6 +822,7 @@ export type Database = {
           address_id: string | null
           cancelled_at: string | null
           created_at: string
+          deleted_at: string | null
           delivered_at: string | null
           delivery_address: Json | null
           delivery_fee: number
@@ -846,6 +850,7 @@ export type Database = {
           address_id?: string | null
           cancelled_at?: string | null
           created_at?: string
+          deleted_at?: string | null
           delivered_at?: string | null
           delivery_address?: Json | null
           delivery_fee?: number
@@ -873,6 +878,7 @@ export type Database = {
           address_id?: string | null
           cancelled_at?: string | null
           created_at?: string
+          deleted_at?: string | null
           delivered_at?: string | null
           delivery_address?: Json | null
           delivery_fee?: number
@@ -1114,6 +1120,7 @@ export type Database = {
           expires_at: string | null
           id: string
           is_active: boolean | null
+          is_public: boolean
           max_uses: number | null
           min_order: number | null
           uses_count: number | null
@@ -1127,6 +1134,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_active?: boolean | null
+          is_public?: boolean
           max_uses?: number | null
           min_order?: number | null
           uses_count?: number | null
@@ -1140,6 +1148,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_active?: boolean | null
+          is_public?: boolean
           max_uses?: number | null
           min_order?: number | null
           uses_count?: number | null
@@ -1296,6 +1305,7 @@ export type Database = {
           cover_url: string | null
           created_at: string
           cuisine: string
+          deleted_at: string | null
           delivery_fee: number | null
           eta_max: number | null
           eta_min: number | null
@@ -1321,6 +1331,7 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           cuisine: string
+          deleted_at?: string | null
           delivery_fee?: number | null
           eta_max?: number | null
           eta_min?: number | null
@@ -1346,6 +1357,7 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           cuisine?: string
+          deleted_at?: string | null
           delivery_fee?: number | null
           eta_max?: number | null
           eta_min?: number | null
