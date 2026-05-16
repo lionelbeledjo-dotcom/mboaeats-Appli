@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Component, useEffect, useState, type ReactNode } from "react";
 import { Minus, Plus, Trash2, X, UserPlus, Gift, ChevronRight, ShoppingCart, ShoppingBag } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
+import { useScrollLock } from "@/hooks/useScrollLock";
 import { EmptyState } from "@/components/EmptyState";
 import { SmartImage } from "@/components/SmartImage";
 import { getRestaurant } from "@/data/restaurants";
