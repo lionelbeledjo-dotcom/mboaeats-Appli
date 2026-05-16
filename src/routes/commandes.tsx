@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Package, CheckCircle2, ChevronRight, MapPin, LogIn, RotateCcw, Loader2, ArrowLeft } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getMyOrders, getOrder } from "@/server/marketplace.functions";
 import { addToCart } from "@/hooks/use-cart";
@@ -174,7 +174,9 @@ function CommandesPage() {
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
     retry: 1,
-    // suspense:false (défaut explicite) : on gère isError / isFetching à la main
+    // keepPreviousData : on garde l'ancienne liste affichée pendant le refetch
+    // → zéro flicker, zéro skeleton lors d'un retour sur l'onglet.
+    placeholderData: keepPreviousData,
   });
 
   const authed = isResolving ? null : isAuthenticated;
@@ -342,7 +344,7 @@ function OrdersList({
   onReorder: (id: string, slug: string | undefined) => void;
 }) {
   const parentRef = useRef<HTMLDivElement>(null);
-  const virtualize = items.length > 15;
+  const virtualize = items.length > 20;
 
   const rowVirtualizer = useVirtualizer({
     count: virtualize ? items.length : 0,
