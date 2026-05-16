@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { isCartSoundEnabled, setCartSoundEnabled, CART_SOUND_EVT } from "@/lib/cart-sound";
 import { getMyProfile, upsertMyProfile, getMyLoyalty, listMyAddresses } from "@/server/account.functions";
 import { useSessionUser } from "@/hooks/useSessionUser";
+import { useSession } from "@/auth/hooks/useSession";
 import { useTheme } from "@/components/ThemeProvider";
 
 export const Route = createFileRoute("/profil")({
@@ -25,12 +26,11 @@ export const Route = createFileRoute("/profil")({
 function ProfilPage() {
   const navigate = useNavigate();
   const { user: sessionUser, refresh: refreshSession } = useSessionUser();
+  const { principal, isAuthenticated, isPlatformSuperadmin } = useSession();
   const { theme, toggle: toggleTheme } = useTheme();
   // AuthGate gère désormais la redirection; pas de re-check local.
   const [confirm, setConfirm] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
-  const [authEmail, setAuthEmail] = useState<string | null>(null);
-  const [authedSb, setAuthedSb] = useState(false);
   const [soundOn, setSoundOn] = useState(false);
   const [profile, setProfile] = useState<{ full_name: string | null; phone: string | null; city: string | null } | null>(null);
   const [loyalty, setLoyalty] = useState<{ points: number; currentTier: string } | null>(null);
@@ -38,40 +38,33 @@ function ProfilPage() {
   const [form, setForm] = useState({ full_name: "", phone: "", city: "Douala" });
   const [saving, setSaving] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [addresses, setAddresses] = useState<Array<{ id: string; label: string; city: string; neighborhood: string }>>([]);
 
-  const authed = authedSb || !!sessionUser?.identifier;
+  // Authed = on s'appuie sur le cache useSession (déjà chargé au root) plutôt
+  // que de relancer un supabase.auth.getUser() à chaque montage : la page
+  // s'ouvre immédiatement, sans état intermédiaire qui force un reload.
+  const authEmail = principal?.email ?? null;
+  const authed = isAuthenticated || !!sessionUser?.identifier;
+  const isAdmin = isPlatformSuperadmin;
 
   useEffect(() => {
     setSoundOn(isCartSoundEnabled());
     const sync = () => setSoundOn(isCartSoundEnabled());
     window.addEventListener(CART_SOUND_EVT, sync);
+    return () => window.removeEventListener(CART_SOUND_EVT, sync);
+  }, []);
 
-    supabase.auth.getUser().then(async ({ data }) => {
-      const u = data.user;
-      if (!u) return;
-      setAuthedSb(true);
-      if (u.email) setAuthEmail(u.email);
-      try {
-        // STRICT : seul le rôle "superadmin" (plateforme) déverrouille l'entrée Espace Super Admin.
-        // Aucun autre rôle (client, restaurateur, livreur, admin entreprise) ne doit voir ce lien.
-        const { data: role } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", u.id)
-          .eq("role", "superadmin")
-          .maybeSingle();
-        setIsAdmin(!!role);
-      } catch {
-        setIsAdmin(false);
-      }
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let alive = true;
+    (async () => {
       try {
         const [p, l, a] = await Promise.all([getMyProfile(), getMyLoyalty(), listMyAddresses()]);
+        if (!alive) return;
         setProfile(p.profile ?? null);
         setForm({
           full_name: p.profile?.full_name ?? "",
-          phone: p.profile?.phone ?? u.phone ?? "",
+          phone: p.profile?.phone ?? principal?.phone ?? "",
           city: p.profile?.city ?? "Douala",
         });
         setLoyalty({ points: l.points, currentTier: l.currentTier });
@@ -81,11 +74,10 @@ function ProfilPage() {
           city: x.city ?? "",
           neighborhood: x.neighborhood ?? "",
         })));
-      } catch {}
-    }).catch(() => {});
-
-    return () => window.removeEventListener(CART_SOUND_EVT, sync);
-  }, []);
+      } catch { /* ignore */ }
+    })();
+    return () => { alive = false; };
+  }, [isAuthenticated, principal?.phone]);
 
   const identifier = authEmail || profile?.phone || "Invité";
   const displayName = profile?.full_name || (authEmail ? authEmail.split("@")[0] : "Mon compte");
@@ -119,8 +111,6 @@ function ProfilPage() {
         .filter((k) => k.startsWith("sb-") || k.startsWith("supabase."))
         .forEach((k) => localStorage.removeItem(k));
     } catch {}
-    setAuthedSb(false);
-    setAuthEmail(null);
     setProfile(null);
     await refreshSession();
     navigate({ to: "/connexion", replace: true });
