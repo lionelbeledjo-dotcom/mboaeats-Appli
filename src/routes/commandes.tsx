@@ -218,7 +218,6 @@ function CommandesPage() {
         ) : (
           <OrdersList items={filtered} reordering={reordering} onReorder={reorder} />
         )}
-        )}
       </main>
     </div>
   );
