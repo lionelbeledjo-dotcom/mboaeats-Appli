@@ -242,3 +242,118 @@ function StatusBadge({ status }: { status: string }) {
     </span>
   );
 }
+
+function OrderRow({
+  o,
+  reordering,
+  onReorder,
+}: {
+  o: Order;
+  reordering: string | null;
+  onReorder: (id: string, slug: string | undefined) => void;
+}) {
+  const active = ACTIVE.has(o.status);
+  return (
+    <div className="rounded-2xl border border-border bg-surface/60 p-4">
+      <div className="flex items-center justify-between">
+        <div className="min-w-0">
+          <p className="text-xs text-muted-foreground">
+            {new Date(o.created_at).toLocaleString("fr-FR")} · #{o.reference}
+          </p>
+          <p className="mt-0.5 truncate font-semibold">{o.restaurant?.name ?? "Restaurant"}</p>
+        </div>
+        <StatusBadge status={o.status} />
+      </div>
+      <div className="mt-3 flex items-center justify-between">
+        <span className="price text-primary">
+          {o.total.toLocaleString("fr-FR")}<span className="price-currency">FCFA</span>
+        </span>
+        {active ? (
+          <Link
+            to="/suivi/$orderId"
+            params={{ orderId: o.id }}
+            className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary"
+          >
+            <MapPin className="h-3.5 w-3.5" /> Suivre
+            <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
+        ) : (
+          <button
+            onClick={() => onReorder(o.id, o.restaurant?.slug)}
+            disabled={reordering === o.id}
+            className="inline-flex items-center gap-1 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-surface disabled:opacity-60"
+          >
+            {reordering === o.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
+            Recommander
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Sous 15 lignes : DOM normal (overhead virtualisation > gain).
+ * Au-delà : virtualisation `@tanstack/react-virtual` — scroll fluide même
+ * avec 1000+ commandes, render uniquement les ~10 lignes visibles.
+ */
+function OrdersList({
+  items,
+  reordering,
+  onReorder,
+}: {
+  items: Order[];
+  reordering: string | null;
+  onReorder: (id: string, slug: string | undefined) => void;
+}) {
+  const parentRef = useRef<HTMLDivElement>(null);
+  const virtualize = items.length > 15;
+
+  const rowVirtualizer = useVirtualizer({
+    count: virtualize ? items.length : 0,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 124, // hauteur moyenne d'une carte (px)
+    overscan: 6,
+  });
+
+  if (!virtualize) {
+    return (
+      <ul className="space-y-3">
+        {items.map((o) => (
+          <li key={o.id}>
+            <OrderRow o={o} reordering={reordering} onReorder={onReorder} />
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
+  return (
+    <div
+      ref={parentRef}
+      className="overflow-y-auto"
+      style={{ height: "calc(100dvh - 180px - var(--bottom-dock-h))" }}
+    >
+      <div style={{ height: rowVirtualizer.getTotalSize(), position: "relative", width: "100%" }}>
+        {rowVirtualizer.getVirtualItems().map((vi) => {
+          const o = items[vi.index];
+          return (
+            <div
+              key={o.id}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                transform: `translateY(${vi.start}px)`,
+                paddingBottom: 12,
+              }}
+            >
+              <OrderRow o={o} reordering={reordering} onReorder={onReorder} />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
