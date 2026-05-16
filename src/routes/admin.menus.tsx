@@ -69,7 +69,7 @@ function MenusPage() {
   useEffect(() => {
     fetchRestos()
       .then((r) => {
-        const list = (r.restaurants ?? []) as unknown as Resto[]]) as Resto[];
+        const list = (r.restaurants ?? []) as unknown as Resto[];
         const safe = list.length > 0 ? list : MOCK_RESTOS;
         setRestos(safe);
         if (safe.length && !restoId) setRestoId(safe[0].id);
