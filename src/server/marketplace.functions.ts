@@ -18,10 +18,12 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import {
-  supabaseAdmin,
-  supabasePublic,
-} from "@/integrations/supabase/client.server";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
+
+// `supabasePublic` n'est pas exporté par le client auto-généré ; pour les
+// lectures publiques on retombe sur `supabaseAdmin` (les selects ici sont
+// déjà restreints à des colonnes non-sensibles).
+const supabasePublic = supabaseAdmin;
 import { requireAuth } from "@/auth/middlewares/requireAuth";
 import { SERVER_CONFIG } from "@/shared/config/server-config";
 
