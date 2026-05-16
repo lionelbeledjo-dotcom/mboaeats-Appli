@@ -7,6 +7,8 @@ import { EmptyState } from "@/components/EmptyState";
 import { SmartImage } from "@/components/SmartImage";
 import { getRestaurant } from "@/data/restaurants";
 
+const CART_SHELL_STYLE = { bottom: "calc(70px + env(safe-area-inset-bottom))" };
+
 export const Route = createFileRoute("/panier")({
   head: () => ({
     meta: [
@@ -29,9 +31,9 @@ class PanierErrorBoundary extends Component<{ children: ReactNode }, { hasError:
   render() {
     if (this.state.hasError) {
       return (
-        <main className="min-h-[calc(100vh-80px)] bg-white">
+        <main className="fixed inset-x-0 top-0 z-40 overflow-hidden bg-white" style={CART_SHELL_STYLE}>
           <header className="flex items-center justify-between px-4 pt-4 pb-2">
-            <Link to="/" aria-label="Fermer" className="p-2 -ml-2">
+            <Link to="/" resetScroll={false} aria-label="Fermer" className="p-2 -ml-2">
               <X className="h-6 w-6 text-black" strokeWidth={2.5} />
             </Link>
           </header>
@@ -55,7 +57,7 @@ function PanierRoute() {
   useEffect(() => setMounted(true), []);
   if (!mounted) {
     return (
-      <main className="min-h-[calc(100vh-80px)] bg-white" aria-busy="true" />
+      <main className="fixed inset-x-0 top-0 z-40 overflow-hidden bg-white" style={CART_SHELL_STYLE} aria-busy="true" />
     );
   }
   return (
@@ -79,9 +81,9 @@ function PanierPage() {
 
   if (!items || items.length === 0) {
     return (
-      <main className="min-h-[calc(100vh-80px)] bg-white">
+      <main className="fixed inset-x-0 top-0 z-40 overflow-hidden bg-white" style={CART_SHELL_STYLE}>
         <header className="flex items-center justify-between px-4 pt-4 pb-2">
-          <Link to="/" aria-label="Fermer" className="p-2 -ml-2">
+          <Link to="/" resetScroll={false} aria-label="Fermer" className="p-2 -ml-2">
             <X className="h-6 w-6 text-black" strokeWidth={2.5} />
           </Link>
         </header>
@@ -103,7 +105,7 @@ function PanierPage() {
   return (
     <main
       className="fixed inset-x-0 top-0 z-40 flex flex-col bg-white text-black font-sans overflow-hidden touch-pan-y overscroll-none"
-      style={{ bottom: "calc(70px + env(safe-area-inset-bottom))" }}
+      style={CART_SHELL_STYLE}
     >
       {/* Header fixe */}
       <header
@@ -111,7 +113,7 @@ function PanierPage() {
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
         <div className="flex items-center justify-between px-4 pt-3 pb-2">
-          <Link to="/" aria-label="Fermer" className="-ml-2 inline-flex h-10 w-10 items-center justify-center rounded-full active:bg-gray-100 transition-colors">
+          <Link to="/" resetScroll={false} aria-label="Fermer" className="-ml-2 inline-flex h-10 w-10 items-center justify-center rounded-full active:bg-gray-100 transition-colors">
             <X className="h-6 w-6 text-black" strokeWidth={2.5} />
           </Link>
           <button
