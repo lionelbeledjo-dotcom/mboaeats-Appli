@@ -1,4 +1,4 @@
-import { Link, useLocation, useRouter, useNavigate } from "@tanstack/react-router";
+import { Link, useLocation, useRouter } from "@tanstack/react-router";
 import { Home, Search, ShoppingCart, ClipboardList, User } from "lucide-react";
 import { useEffect } from "react";
 import { useCart } from "@/hooks/use-cart";
