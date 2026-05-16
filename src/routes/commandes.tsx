@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Package, CheckCircle2, ChevronRight, MapPin, LogIn, RotateCcw, Loader2, ArrowLeft } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useSession } from "@/auth/hooks/useSession";
 import { getMyOrders, getOrder } from "@/server/marketplace.functions";
@@ -49,13 +50,30 @@ function statusLabel(s: string) {
   } as Record<string, string>)[s] ?? s;
 }
 
+// Cache localStorage : restitue les commandes instantanément au tout premier
+// affichage après un reload complet, AVANT que TanStack Query n'ait fetché.
+const LS_KEY = "mboa_orders_cache_v1";
+function readCachedOrders(): Order[] | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { ts: number; orders: Order[] };
+    if (Date.now() - parsed.ts > 24 * 60 * 60 * 1000) return null;
+    return parsed.orders;
+  } catch { return null; }
+}
+function writeCachedOrders(orders: Order[]) {
+  if (typeof window === "undefined") return;
+  try { localStorage.setItem(LS_KEY, JSON.stringify({ ts: Date.now(), orders })); } catch {}
+}
+
 function CommandesPage() {
   const navigate = useNavigate();
   const getOrderFn = useServerFn(getOrder);
   const fetchOrders = useServerFn(getMyOrders);
   const { isAuthenticated, isLoading: sessionLoading } = useSession();
   const [tab, setTab] = useState<"all" | "active" | "delivered">("all");
-  const [orders, setOrders] = useState<Order[] | null>(null);
   const [reordering, setReordering] = useState<string | null>(null);
 
   const reorder = async (orderId: string, restoSlug: string | undefined) => {
@@ -86,20 +104,30 @@ function CommandesPage() {
     }
   };
 
-  useEffect(() => {
-    if (sessionLoading) return;
-    if (!isAuthenticated) { setOrders([]); return; }
-    let mounted = true;
-    (async () => {
-      try {
-        const r = await fetchOrders();
-        if (mounted) setOrders((r as unknown as { orders: Order[] }).orders);
-      } catch { if (mounted) setOrders([]); }
-    })();
-    return () => { mounted = false; };
-  }, [isAuthenticated, sessionLoading, fetchOrders]);
+  // useQuery : cache mémoire partagé entre montages + refetch silencieux.
+  // initialData hydrate depuis localStorage = affichage 0 ms après reload.
+  // staleTime 30s = navigation aller/retour sans refetch (instantané).
+  const ordersQuery = useQuery<{ orders: Order[] }>({
+    queryKey: ["my-orders"],
+    enabled: !sessionLoading && isAuthenticated,
+    queryFn: async () => {
+      const r = (await fetchOrders()) as unknown as { orders: Order[] };
+      writeCachedOrders(r.orders);
+      return r;
+    },
+    initialData: () => {
+      const cached = readCachedOrders();
+      return cached ? { orders: cached } : undefined;
+    },
+    staleTime: 30_000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
 
   const authed = sessionLoading ? null : isAuthenticated;
+  const orders: Order[] | null = authed === false
+    ? []
+    : (ordersQuery.data?.orders ?? (ordersQuery.isFetching ? null : []));
 
   const filtered = (orders ?? []).filter((o) =>
     tab === "all" ? true : tab === "active" ? ACTIVE.has(o.status) : o.status === "delivered"
