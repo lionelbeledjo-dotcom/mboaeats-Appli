@@ -103,6 +103,7 @@ function ProfilPage() {
   const initials = (displayName.match(/[a-zA-Z]/g) || ["U"]).slice(0, 2).join("").toUpperCase();
 
   const save = async () => {
+    if (!authed) return;
     setSaving(true);
     try {
       await upsertMyProfile({ data: form });
@@ -110,6 +111,9 @@ function ProfilPage() {
       setSavedFlash(true);
       setEditing(false);
       setTimeout(() => setSavedFlash(false), 1800);
+    } catch (error) {
+      console.error("[Profil] sauvegarde profil échouée", error);
+      setAccountError("Impossible d'enregistrer le profil pour le moment.");
     } finally {
       setSaving(false);
     }
@@ -245,6 +249,51 @@ function ProfilPage() {
       </header>
 
       <main className="mx-auto max-w-md px-4 py-5 pb-28 space-y-6">
+        {isResolving && (
+          <div className="rounded-2xl border border-border bg-surface/50 p-4" aria-busy="true">
+            <div className="h-4 w-32 animate-pulse rounded bg-primary/10" />
+            <div className="mt-3 h-12 w-full animate-pulse rounded-xl bg-primary/10" />
+          </div>
+        )}
+
+        {!isResolving && !authed && (
+          <div className="rounded-2xl border border-border bg-surface/70 p-5 text-center shadow-card">
+            <User className="mx-auto h-9 w-9 text-muted-foreground" />
+            <h2 className="mt-3 text-base font-bold text-foreground">Connexion requise</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Connectez-vous pour gérer vos adresses, commandes et préférences.
+            </p>
+            <Link
+              to="/connexion"
+              preload="intent"
+              className="mt-4 inline-flex h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground"
+            >
+              Se connecter
+            </Link>
+          </div>
+        )}
+
+        {accountError && (
+          <TabErrorFallback
+            title="Détails du profil indisponibles"
+            description={accountError}
+            onRetry={() => {
+              setAccountError(null);
+              void refreshSession();
+            }}
+          />
+        )}
+
+        {accountLoading && !accountError && (
+          <div className="rounded-2xl border border-border bg-surface/50 p-4" aria-busy="true">
+            <div className="h-4 w-24 animate-pulse rounded bg-primary/10" />
+            <div className="mt-3 space-y-2">
+              <div className="h-12 animate-pulse rounded-xl bg-primary/10" />
+              <div className="h-12 animate-pulse rounded-xl bg-primary/10" />
+            </div>
+          </div>
+        )}
+
         {/* Mes adresses (preview inline) */}
         <section>
           <div className="mb-2 flex items-center justify-between px-1">
