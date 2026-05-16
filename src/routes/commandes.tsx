@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Package, CheckCircle2, ChevronRight, MapPin, LogIn, RotateCcw, Loader2, ArrowLeft } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { useSession } from "@/auth/hooks/useSession";
 import { getMyOrders, getOrder } from "@/server/marketplace.functions";
 import { addToCart } from "@/hooks/use-cart";
 import { RowSkeleton, EmptyState } from "@/components/ui/feedback";
