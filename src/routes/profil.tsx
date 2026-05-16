@@ -111,8 +111,6 @@ function ProfilPage() {
         .filter((k) => k.startsWith("sb-") || k.startsWith("supabase."))
         .forEach((k) => localStorage.removeItem(k));
     } catch {}
-    setAuthedSb(false);
-    setAuthEmail(null);
     setProfile(null);
     await refreshSession();
     navigate({ to: "/connexion", replace: true });
