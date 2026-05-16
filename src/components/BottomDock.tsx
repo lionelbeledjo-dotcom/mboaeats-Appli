@@ -22,7 +22,6 @@ const items: Item[] = [
 export function BottomDock() {
   const location = useLocation();
   const router = useRouter();
-  const navigate = useNavigate();
   const path = location.pathname;
   const { count } = useCart();
 
@@ -67,12 +66,6 @@ export function BottomDock() {
                 aria-label={it.label}
                 aria-current={active ? "page" : undefined}
                 onPointerEnter={() => router.preloadRoute({ to: it.to }).catch(() => {})}
-                onPointerDown={(e) => {
-                  if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-                  if (path === it.to) return;
-                  e.preventDefault();
-                  navigate({ to: it.to });
-                }}
                 className="group relative flex min-w-[60px] flex-1 items-center justify-center py-1.5 touch-manipulation focus-visible:outline-none active:scale-95 transition-transform duration-150"
                 style={{ minHeight: 60 }}
               >
