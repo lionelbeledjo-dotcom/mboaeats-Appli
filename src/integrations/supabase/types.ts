@@ -1197,6 +1197,53 @@ export type Database = {
         }
         Relationships: []
       }
+      restaurant_members: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          invited_at: string | null
+          invited_by: string | null
+          joined_at: string
+          restaurant_id: string
+          role: Database["public"]["Enums"]["restaurant_role"]
+          status: Database["public"]["Enums"]["member_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          invited_at?: string | null
+          invited_by?: string | null
+          joined_at?: string
+          restaurant_id: string
+          role?: Database["public"]["Enums"]["restaurant_role"]
+          status?: Database["public"]["Enums"]["member_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          invited_at?: string | null
+          invited_by?: string | null
+          joined_at?: string
+          restaurant_id?: string
+          role?: Database["public"]["Enums"]["restaurant_role"]
+          status?: Database["public"]["Enums"]["member_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurant_members_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       restaurant_reviews: {
         Row: {
           comment: string | null
@@ -1583,6 +1630,10 @@ export type Database = {
       apply_referral_code: { Args: { _code: string }; Returns: string }
       claim_super_admin: { Args: never; Returns: boolean }
       claim_superadmin: { Args: never; Returns: boolean }
+      current_user_restaurant_ids: {
+        Args: { _min_role?: Database["public"]["Enums"]["restaurant_role"] }
+        Returns: string[]
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -1592,6 +1643,13 @@ export type Database = {
         Returns: number
       }
       gen_referral_code: { Args: { _uid: string }; Returns: string }
+      has_restaurant_membership: {
+        Args: {
+          _min_role?: Database["public"]["Enums"]["restaurant_role"]
+          _restaurant_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1599,6 +1657,8 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_platform_admin: { Args: never; Returns: boolean }
+      is_platform_superadmin: { Args: never; Returns: boolean }
       loyalty_tier: { Args: { _pts: number }; Returns: string }
       move_to_dlq: {
         Args: {
@@ -1624,6 +1684,10 @@ export type Database = {
           new_balance: number
           refunded_amount: number
         }[]
+      }
+      restaurant_role_weight: {
+        Args: { _role: Database["public"]["Enums"]["restaurant_role"] }
+        Returns: number
       }
       user_exists_by_email: { Args: { _email: string }; Returns: boolean }
       user_exists_by_phone: { Args: { _phone: string }; Returns: boolean }
@@ -1652,6 +1716,7 @@ export type Database = {
         | "restaurant"
         | "superadmin"
       delivery_offer_status: "proposed" | "accepted" | "declined" | "expired"
+      member_status: "active" | "invited" | "suspended"
       order_status:
         | "draft"
         | "pending_payment"
@@ -1664,6 +1729,7 @@ export type Database = {
         | "delivered"
         | "cancelled"
         | "refunded"
+      restaurant_role: "owner" | "manager" | "staff" | "kitchen"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1800,6 +1866,7 @@ export const Constants = {
         "superadmin",
       ],
       delivery_offer_status: ["proposed", "accepted", "declined", "expired"],
+      member_status: ["active", "invited", "suspended"],
       order_status: [
         "draft",
         "pending_payment",
@@ -1813,6 +1880,7 @@ export const Constants = {
         "cancelled",
         "refunded",
       ],
+      restaurant_role: ["owner", "manager", "staff", "kitchen"],
     },
   },
 } as const
