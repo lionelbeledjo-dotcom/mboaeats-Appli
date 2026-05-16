@@ -1234,6 +1234,30 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          bucket_key: string
+          id: number
+          ip: string | null
+          occurred_at: string
+          scope: string | null
+        }
+        Insert: {
+          bucket_key: string
+          id?: number
+          ip?: string | null
+          occurred_at?: string
+          scope?: string | null
+        }
+        Update: {
+          bucket_key?: string
+          id?: number
+          ip?: string | null
+          occurred_at?: string
+          scope?: string | null
+        }
+        Relationships: []
+      }
       referral_codes: {
         Row: {
           code: string
@@ -1860,6 +1884,7 @@ export type Database = {
         }
         Returns: number
       }
+      purge_old_rate_limits: { Args: never; Returns: number }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
