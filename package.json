@@ -48,7 +48,7 @@
     "@supabase/supabase-js": "^2.105.3",
     "@tailwindcss/vite": "^4.2.1",
     "@tanstack/query-sync-storage-persister": "^5.100.10",
-    "@tanstack/react-query": "^5.83.0",
+    "@tanstack/react-query": "^5.100",
     "@tanstack/react-query-persist-client": "^5.100.10",
     "@tanstack/react-router": "^1.168.0",
     "@tanstack/react-start": "^1.167.14",
