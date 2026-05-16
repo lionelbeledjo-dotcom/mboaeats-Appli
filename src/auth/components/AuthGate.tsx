@@ -13,9 +13,10 @@
  *     dédiée `/preview/r/$slug` qui lit seulement les colonnes publiques.
  */
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { useSession } from "@/auth/hooks/useSession";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Liste explicite des routes accessibles sans login.
@@ -67,23 +68,45 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const path = location.pathname;
   const publicRoute = isPublicPath(path);
 
+  // Lecture synchrone du cache Supabase (localStorage) au mount : évite la
+  // page blanche quand `useSession` est en cours de fetch mais qu'une session
+  // existe déjà en cache navigateur.
+  const [sbHasSession, setSbHasSession] = useState<boolean | null>(null);
   useEffect(() => {
-    if (isLoading) return;
-    if (!isAuthenticated && !publicRoute) {
-      // Préserve la cible pour redirection post-login
-      const target = path + location.search;
-      navigate({
-        to: "/connexion",
-        replace: true,
-        search: { redirect: target },
-      });
-    }
-  }, [isLoading, isAuthenticated, publicRoute, navigate, path, location.search]);
+    let alive = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (alive) setSbHasSession(!!data.session);
+    }).catch(() => alive && setSbHasSession(false));
+    return () => { alive = false; };
+  }, []);
 
-  // Routes publiques : render immédiat, pas d'attente
+  // Tant qu'on n'a pas la réponse Supabase + la query principal, on considère
+  // l'utilisateur potentiellement connecté → on rend l'enfant. Évite le flash
+  // blanc qui obligeait à recharger.
+  const settled = !isLoading && sbHasSession !== null;
+  const trulyUnauthed = settled && !isAuthenticated && !sbHasSession;
+
+  useEffect(() => {
+    if (!trulyUnauthed || publicRoute) return;
+    const target = path + location.search;
+    navigate({
+      to: "/connexion",
+      replace: true,
+      search: { redirect: target },
+    });
+  }, [trulyUnauthed, publicRoute, navigate, path, location.search]);
+
   if (publicRoute) return <>{children}</>;
-  // Routes protégées : on attend la résolution de l'auth
-  if (isLoading) return null;
-  if (!isAuthenticated) return null;
-  return <>{children}</>;
+  // Si Supabase a une session en cache, on rend l'enfant tout de suite
+  // (la page peut afficher son skeleton local pendant que le JWT arrive).
+  if (sbHasSession || isAuthenticated) return <>{children}</>;
+  // Premier check pas encore terminé → skeleton minimal au lieu de null
+  if (!settled) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center" aria-busy="true">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+  return null;
 }

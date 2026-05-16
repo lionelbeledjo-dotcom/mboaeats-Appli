@@ -99,7 +99,7 @@ function PanierPage() {
   return (
     <main
       className="fixed inset-x-0 top-0 z-40 flex flex-col bg-white text-black font-sans overflow-hidden touch-pan-y overscroll-none"
-      style={{ bottom: "calc(80px + env(safe-area-inset-bottom))" }}
+      style={{ bottom: "calc(70px + env(safe-area-inset-bottom))" }}
     >
       {/* Header fixe */}
       <header

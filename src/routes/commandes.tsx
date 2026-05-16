@@ -88,10 +88,13 @@ function CommandesPage() {
   useEffect(() => {
     let mounted = true;
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      // AuthGate gère la redirection si non connecté. Ici on lit juste l'état
+      // pour adapter l'UI (CTA "se connecter" si pas de session en cache).
+      const { data: { session } } = await supabase.auth.getSession();
       if (!mounted) return;
-      setAuthed(!!user);
-      if (!user) { setOrders([]); return; }
+      const hasSession = !!session?.user;
+      setAuthed(hasSession);
+      if (!hasSession) { setOrders([]); return; }
       try {
         const r = await getMyOrders();
         if (mounted) setOrders((r as unknown as { orders: Order[] }).orders);
