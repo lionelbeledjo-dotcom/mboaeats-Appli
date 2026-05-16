@@ -13,7 +13,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { supabasePublic } from "@/integrations/supabase/client.server";
+import { supabaseAdmin as supabasePublic } from "@/integrations/supabase/client.server";
 import {
   setCacheHeaders,
   CachePresets,
@@ -48,11 +48,7 @@ export const getHomeData = createServerFn({ method: "GET" })
       console.error("[getHomeData] RPC error:", error.message);
       return { popular: [], cuisines: [], promos: [] };
     }
-    return rpc as {
-      popular: Array<Record<string, unknown>>;
-      cuisines: string[];
-      promos: Array<Record<string, unknown>>;
-    };
+    return (rpc ?? { popular: [], cuisines: [], promos: [] }) as any;
   });
 
 // =============================================================================
@@ -77,9 +73,5 @@ export const getRestaurantPageData = createServerFn({ method: "GET" })
       return { resto: null, categories: [], dishes: [] };
     }
     if (!rpc) return { resto: null, categories: [], dishes: [] };
-    return rpc as {
-      resto: Record<string, unknown>;
-      categories: Array<Record<string, unknown>>;
-      dishes: Array<Record<string, unknown>>;
-    };
+    return rpc as any;
   });
