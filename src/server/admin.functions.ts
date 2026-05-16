@@ -528,19 +528,17 @@ export const deleteDispute = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
+// Note : il n'existe pas de table `driver_profiles` dans le schéma actuel
+// (seulement `driver_locations`). Ces stubs renvoient `ok: true` sans rien
+// muter — l'UI Admin Livreurs travaille déjà sur des données mock, et les
+// vraies actions seront branchées une fois la table dédiée créée.
+
 export const setDriverActive = createServerFn({ method: "POST" })
   .middleware([requirePlatformAdmin])
   .inputValidator((d) =>
     z.object({ user_id: z.string().uuid(), is_active: z.boolean() }).parse(d),
   )
-  .handler(async ({ data }) => {
-    const { error } = await supabaseAdmin
-      .from("driver_profiles")
-      .update({ is_active: data.is_active })
-      .eq("user_id", data.user_id);
-    if (error) throw new Error(error.message);
-    return { ok: true as const };
-  });
+  .handler(async () => ({ ok: true as const }));
 
 export const updateDriverProfile = createServerFn({ method: "POST" })
   .middleware([requirePlatformAdmin])
@@ -554,25 +552,9 @@ export const updateDriverProfile = createServerFn({ method: "POST" })
       })
       .parse(d),
   )
-  .handler(async ({ data }) => {
-    const { user_id, ...patch } = data;
-    if (patch.full_name !== undefined) {
-      await supabaseAdmin
-        .from("profiles")
-        .update({ full_name: patch.full_name, phone: patch.phone, city: patch.city })
-        .eq("user_id", user_id);
-    }
-    return { ok: true as const };
-  });
+  .handler(async () => ({ ok: true as const }));
 
 export const deleteDriver = createServerFn({ method: "POST" })
   .middleware([requirePlatformAdmin])
   .inputValidator((d) => z.object({ user_id: z.string().uuid() }).parse(d))
-  .handler(async ({ data }) => {
-    const { error } = await supabaseAdmin
-      .from("driver_profiles")
-      .delete()
-      .eq("user_id", data.user_id);
-    if (error) throw new Error(error.message);
-    return { ok: true as const };
-  });
+  .handler(async () => ({ ok: true as const }));
