@@ -14,6 +14,7 @@ import { OfflineBanner } from "@/components/OfflineBanner";
 import { PendingPaymentWatcher } from "@/components/PendingPaymentWatcher";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useKeyboardViewport } from "@/hooks/useKeyboardViewport";
+import { usePrefetchOnIdle } from "@/auth/hooks/usePrefetch";
 
 // Mode invité : pages de découverte accessibles sans compte. Le checkout reste protégé via une porte dédiée.
 const PUBLIC_ROUTES = [
@@ -116,6 +117,12 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   useKeyboardViewport();
+  usePrefetchOnIdle([
+    { to: "/panier" },
+    { to: "/commandes" },
+    { to: "/profil" },
+    { to: "/recherche" },
+  ]);
   const location = useLocation();
   const path = location.pathname;
   const isPreview =
