@@ -1,7 +1,9 @@
 import { Outlet, Link, createRootRouteWithContext, HeadContent, Scripts, useLocation } from "@tanstack/react-router";
+import { Suspense } from "react";
 import type { QueryClient } from "@tanstack/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { RootErrorBoundary } from "@/components/RootErrorBoundary";
+import { RouteSkeleton } from "@/components/RouteSkeleton";
 import { BottomDock } from "@/components/BottomDock";
 import { CartFab } from "@/components/CartFab";
 import { Toaster } from "@/components/ui/sonner";
@@ -142,8 +144,13 @@ function RootComponent() {
           <OfflineBanner />
           <AuthGate>
             {!hideDock && <SiteHeader />}
+            {/* Suspense global : permet à une route lazy de streamer sans
+                démonter Header / BottomDock. RootErrorBoundary capture les
+                crashs en localisant l'erreur sous l'Outlet uniquement. */}
             <RootErrorBoundary>
-              <Outlet />
+              <Suspense fallback={<RouteSkeleton />}>
+                <Outlet />
+              </Suspense>
             </RootErrorBoundary>
             {!hideDock && <CartFab />}
             <BottomDock />
