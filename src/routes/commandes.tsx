@@ -216,48 +216,8 @@ function CommandesPage() {
             action={{ label: "Découvrir les restos", to: "/decouvrir" }}
           />
         ) : (
-          <ul className="space-y-3">
-            {filtered.map((o) => {
-              const active = ACTIVE.has(o.status);
-              return (
-                <li key={o.id} className="rounded-2xl border border-border bg-surface/60 p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="min-w-0">
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(o.created_at).toLocaleString("fr-FR")} · #{o.reference}
-                      </p>
-                      <p className="mt-0.5 truncate font-semibold">{o.restaurant?.name ?? "Restaurant"}</p>
-                    </div>
-                    <StatusBadge status={o.status} />
-                  </div>
-                  <div className="mt-3 flex items-center justify-between">
-                    <span className="price text-primary">
-                      {o.total.toLocaleString("fr-FR")}<span className="price-currency">FCFA</span>
-                    </span>
-                    {active ? (
-                      <Link
-                        to="/suivi/$orderId"
-                        params={{ orderId: o.id }}
-                        className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary"
-                      >
-                        <MapPin className="h-3.5 w-3.5" /> Suivre
-                        <ChevronRight className="h-3.5 w-3.5" />
-                      </Link>
-                    ) : (
-                      <button
-                        onClick={() => reorder(o.id, o.restaurant?.slug)}
-                        disabled={reordering === o.id}
-                        className="inline-flex items-center gap-1 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-surface disabled:opacity-60"
-                      >
-                        {reordering === o.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
-                        Recommander
-                      </button>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+          <OrdersList items={filtered} reordering={reordering} onReorder={reorder} />
+        )}
         )}
       </main>
     </div>
