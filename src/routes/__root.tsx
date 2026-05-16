@@ -155,7 +155,8 @@ function RootComponent() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -4 }}
                     transition={{ duration: 0.15, ease: "easeOut" }}
-                    style={{ minHeight: "100dvh" }}
+                    /* Pas de minHeight forcé : évite l'espace blanc en bas
+                       (le BottomDock fournit déjà son propre spacer). */
                   >
                     <Outlet />
                   </motion.div>
