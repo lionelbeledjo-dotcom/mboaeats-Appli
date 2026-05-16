@@ -91,12 +91,13 @@ export const getRestaurantBySlug = createServerFn({ method: "GET" })
       .maybeSingle();
     if (error) throw new Error("Impossible de charger le restaurant");
     if (!resto) return { resto: null, categories: [], dishes: [] };
+    const restoAny = resto as any;
 
     const [{ data: categories }, { data: dishes }] = await Promise.all([
       supabasePublic
         .from("menu_categories")
         .select("id, name, sort_order")
-        .eq("restaurant_id", resto.id)
+        .eq("restaurant_id", restoAny.id)
         .order("sort_order"),
       supabasePublic
         .from("dishes")
@@ -104,11 +105,11 @@ export const getRestaurantBySlug = createServerFn({ method: "GET" })
           "id, category_id, name, description, price, image_url, " +
             "is_popular, is_available, allergens",
         )
-        .eq("restaurant_id", resto.id)
+        .eq("restaurant_id", restoAny.id)
         .order("sort_order"),
     ]);
 
-    return { resto, categories: categories ?? [], dishes: dishes ?? [] };
+    return { resto: restoAny, categories: categories ?? [], dishes: dishes ?? [] };
   });
 
 // =============================================================================
