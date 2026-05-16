@@ -52,9 +52,10 @@ function statusLabel(s: string) {
 function CommandesPage() {
   const navigate = useNavigate();
   const getOrderFn = useServerFn(getOrder);
+  const fetchOrders = useServerFn(getMyOrders);
+  const { isAuthenticated, isLoading: sessionLoading } = useSession();
   const [tab, setTab] = useState<"all" | "active" | "delivered">("all");
   const [orders, setOrders] = useState<Order[] | null>(null);
-  const [authed, setAuthed] = useState<boolean | null>(null);
   const [reordering, setReordering] = useState<string | null>(null);
 
   const reorder = async (orderId: string, restoSlug: string | undefined) => {
@@ -86,22 +87,19 @@ function CommandesPage() {
   };
 
   useEffect(() => {
+    if (sessionLoading) return;
+    if (!isAuthenticated) { setOrders([]); return; }
     let mounted = true;
     (async () => {
-      // AuthGate gère la redirection si non connecté. Ici on lit juste l'état
-      // pour adapter l'UI (CTA "se connecter" si pas de session en cache).
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!mounted) return;
-      const hasSession = !!session?.user;
-      setAuthed(hasSession);
-      if (!hasSession) { setOrders([]); return; }
       try {
-        const r = await getMyOrders();
+        const r = await fetchOrders();
         if (mounted) setOrders((r as unknown as { orders: Order[] }).orders);
       } catch { if (mounted) setOrders([]); }
     })();
     return () => { mounted = false; };
-  }, []);
+  }, [isAuthenticated, sessionLoading, fetchOrders]);
+
+  const authed = sessionLoading ? null : isAuthenticated;
 
   const filtered = (orders ?? []).filter((o) =>
     tab === "all" ? true : tab === "active" ? ACTIVE.has(o.status) : o.status === "delivered"
