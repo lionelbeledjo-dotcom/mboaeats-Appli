@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   User, Crown, MapPin, CreditCard, Bell, Shield, HelpCircle,
   LogOut, ChevronRight, Heart, Bike, Store, Sparkles, Volume2, VolumeX,
@@ -9,9 +10,10 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { isCartSoundEnabled, setCartSoundEnabled, CART_SOUND_EVT } from "@/lib/cart-sound";
 import { getMyProfile, upsertMyProfile, getMyLoyalty, listMyAddresses } from "@/server/account.functions";
-import { useSessionUser } from "@/hooks/useSessionUser";
-import { useSession } from "@/auth/hooks/useSession";
 import { useTheme } from "@/components/ThemeProvider";
+import { clearCart } from "@/hooks/use-cart";
+import { TabErrorBoundary, TabErrorFallback } from "@/components/TabErrorBoundary";
+import { useStableAuthSession } from "@/hooks/useStableAuthSession";
 
 export const Route = createFileRoute("/profil")({
   head: () => ({
@@ -20,13 +22,20 @@ export const Route = createFileRoute("/profil")({
       { name: "description", content: "Espace utilisateur, Mboa Points et paramètres." },
     ],
   }),
-  component: ProfilPage,
+  component: () => (
+    <TabErrorBoundary
+      title="Profil indisponible"
+      description="La page profil reste accessible : réessayez sans recharger toute l'application."
+    >
+      <ProfilPage />
+    </TabErrorBoundary>
+  ),
 });
 
 function ProfilPage() {
   const navigate = useNavigate();
-  const { user: sessionUser, refresh: refreshSession } = useSessionUser();
-  const { principal, isAuthenticated, isPlatformSuperadmin } = useSession();
+  const queryClient = useQueryClient();
+  const { principal, isAuthenticated, isResolving, isPlatformSuperadmin, refresh: refreshSession } = useStableAuthSession();
   const { theme, toggle: toggleTheme } = useTheme();
   // AuthGate gère désormais la redirection; pas de re-check local.
   const [confirm, setConfirm] = useState(false);
@@ -38,13 +47,15 @@ function ProfilPage() {
   const [form, setForm] = useState({ full_name: "", phone: "", city: "Douala" });
   const [saving, setSaving] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
+  const [accountLoading, setAccountLoading] = useState(false);
+  const [accountError, setAccountError] = useState<string | null>(null);
   const [addresses, setAddresses] = useState<Array<{ id: string; label: string; city: string; neighborhood: string }>>([]);
 
   // Authed = on s'appuie sur le cache useSession (déjà chargé au root) plutôt
   // que de relancer un supabase.auth.getUser() à chaque montage : la page
   // s'ouvre immédiatement, sans état intermédiaire qui force un reload.
   const authEmail = principal?.email ?? null;
-  const authed = isAuthenticated || !!sessionUser?.identifier;
+  const authed = isAuthenticated;
   const isAdmin = isPlatformSuperadmin;
 
   useEffect(() => {
@@ -58,7 +69,10 @@ function ProfilPage() {
     if (!isAuthenticated) return;
     let alive = true;
     (async () => {
+      setAccountLoading(true);
+      setAccountError(null);
       try {
+        console.info("[Profil] chargement données compte", { userId: principal?.userId ?? null });
         const [p, l, a] = await Promise.all([getMyProfile(), getMyLoyalty(), listMyAddresses()]);
         if (!alive) return;
         setProfile(p.profile ?? null);
@@ -74,10 +88,15 @@ function ProfilPage() {
           city: x.city ?? "",
           neighborhood: x.neighborhood ?? "",
         })));
-      } catch { /* ignore */ }
+      } catch (error) {
+        console.error("[Profil] chargement données compte échoué", error);
+        if (alive) setAccountError("Impossible de charger les détails du profil pour le moment.");
+      } finally {
+        if (alive) setAccountLoading(false);
+      }
     })();
     return () => { alive = false; };
-  }, [isAuthenticated, principal?.phone]);
+  }, [isAuthenticated, principal?.phone, principal?.userId]);
 
   const identifier = authEmail || profile?.phone || "Invité";
   const displayName = profile?.full_name || (authEmail ? authEmail.split("@")[0] : "Mon compte");
@@ -103,8 +122,8 @@ function ProfilPage() {
     // expirera naturellement côté serveur.
     try { await supabase.auth.signOut({ scope: "local" }); } catch {}
     try {
-      const { invalidateSessionCache } = await import("@/hooks/useSessionUser");
-      invalidateSessionCache();
+      clearCart();
+      localStorage.removeItem("mboa_orders_cache_v1");
       localStorage.removeItem("mboa_tastes");
       Object.keys(localStorage)
         .filter((k) => k.startsWith("sb-") || k.startsWith("supabase."))
@@ -113,11 +132,12 @@ function ProfilPage() {
     // Fire-and-forget : ne bloque pas la navigation si le serveur ne répond pas
     void (async () => {
       try {
-        const { logoutSession } = await import("@/lib/session.functions");
-        await logoutSession();
+        const { clearServerSession } = await import("@/auth/session.functions");
+        await clearServerSession();
       } catch {}
     })();
     setProfile(null);
+    queryClient.clear();
     void refreshSession();
     navigate({ to: "/connexion", replace: true });
   };
