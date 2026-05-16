@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Component, useEffect, useState, type ReactNode } from "react";
 import { Minus, Plus, Trash2, X, UserPlus, Gift, ChevronRight, ShoppingCart, ShoppingBag } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
+import { useScrollLock } from "@/hooks/useScrollLock";
 import { EmptyState } from "@/components/EmptyState";
 import { SmartImage } from "@/components/SmartImage";
 import { getRestaurant } from "@/data/restaurants";
@@ -72,6 +73,9 @@ function PanierPage() {
   const setQty = cart?.setQty ?? (() => {});
   const remove = cart?.remove ?? (() => {});
   const [promoChecked, setPromoChecked] = useState(false);
+  // Verrouille le scroll pendant toute la durée de la page panier — empêche
+  // tout saut de viewport à l'ouverture et restitue la position au retour.
+  useScrollLock(true);
 
   if (!items || items.length === 0) {
     return (
