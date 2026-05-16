@@ -39,7 +39,7 @@ export const getHomeData = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     setCacheHeaders(CachePresets.publicCatalog);
     const { data: rpc, error } = await supabasePublic.rpc("home_data", {
-      _city: data.city ?? null,
+      _city: data.city ?? undefined,
       _limit: data.limit ?? 12,
     });
     if (error) {
