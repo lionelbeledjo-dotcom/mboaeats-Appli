@@ -1,5 +1,5 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation } from "@tanstack/react-router";
+import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BottomDock } from "@/components/BottomDock";
 import { CartFab } from "@/components/CartFab";
