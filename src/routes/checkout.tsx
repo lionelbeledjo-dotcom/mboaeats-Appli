@@ -52,7 +52,7 @@ class CheckoutErrorBoundary extends Component<
   render() {
     if (this.state.hasError) {
       return (
-        <main className="min-h-[calc(100vh-80px)] bg-background px-6 py-10">
+        <main className="min-h-[calc(100dvh-80px)] bg-background px-6 py-10">
           <div className="mx-auto max-w-md rounded-2xl border border-border bg-card p-6 text-center shadow-sm">
             <AlertCircle className="mx-auto mb-3 h-10 w-10 text-destructive" />
             <h1 className="text-lg font-bold">Une erreur est survenue lors du paiement</h1>
@@ -86,7 +86,7 @@ function CheckoutRoute() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   if (!mounted) {
-    return <main className="min-h-[calc(100vh-80px)] bg-background" aria-busy="true" />;
+    return <main className="min-h-[calc(100dvh-80px)] bg-background" aria-busy="true" />;
   }
   return (
     <CheckoutErrorBoundary>
