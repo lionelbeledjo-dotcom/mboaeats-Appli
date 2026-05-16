@@ -307,7 +307,7 @@ export const createOrder = createServerFn({ method: "POST" })
     let promo_code: string | null = null;
     if (data.promo_code) {
       const code = data.promo_code.trim().toUpperCase();
-      const { data: promo } = await supabaseAdmin
+      const { data: promoRow } = await supabaseAdmin
         .from("promos")
         .select(
           "code, discount_type, discount_value, min_order, max_uses, " +
@@ -316,6 +316,7 @@ export const createOrder = createServerFn({ method: "POST" })
         .eq("code", code)
         .eq("is_active", true)
         .maybeSingle();
+      const promo = promoRow as any;
 
       if (
         promo &&
