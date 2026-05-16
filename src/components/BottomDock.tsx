@@ -61,6 +61,7 @@ export function BottomDock() {
               <Link
                 key={it.to}
                 to={it.to}
+                resetScroll={false}
                 preload="intent"
                 preloadDelay={0}
                 aria-label={it.label}
