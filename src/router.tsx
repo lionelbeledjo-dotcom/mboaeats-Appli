@@ -26,26 +26,84 @@ import { QueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { routeTree } from "./routeTree.gen";
 
+const CHUNK_RELOAD_KEY = "__mboa_router_chunk_reload_at";
+
+function isChunkLoadError(err: unknown): boolean {
+  if (!err) return false;
+  const msg = err instanceof Error ? err.message : String(err);
+  return (
+    /Failed to fetch dynamically imported module/i.test(msg) ||
+    /Importing a module script failed/i.test(msg) ||
+    /ChunkLoadError/i.test(msg) ||
+    /Loading chunk \d+ failed/i.test(msg) ||
+    /error loading dynamically imported module/i.test(msg) ||
+    /Unable to preload CSS/i.test(msg)
+  );
+}
+
+function tryAutoReload(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const last = Number(sessionStorage.getItem(CHUNK_RELOAD_KEY) ?? "0");
+    const now = Date.now();
+    if (now - last < 30_000) return false;
+    sessionStorage.setItem(CHUNK_RELOAD_KEY, String(now));
+    window.location.reload();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
+  const chunkErr = isChunkLoadError(error);
+
   useEffect(() => {
     console.error("[Router error boundary]", error);
-  }, [error]);
-
-  const goHome = () => {
+    if (chunkErr) {
+      tryAutoReload();
+      return;
+    }
+    // Auto-retry une seule fois par minute pour absorber les erreurs
+    // transitoires (réseau, race au montage). Anti-boucle via sessionStorage.
+    if (typeof window === "undefined") return;
     try {
+      const key = "__mboa_router_retry_at";
+      const last = Number(sessionStorage.getItem(key) ?? "0");
+      const now = Date.now();
+      if (now - last < 60_000) return;
+      sessionStorage.setItem(key, String(now));
+      const t = setTimeout(() => {
+        try {
+          router.invalidate();
+          reset();
+        } catch { /* ignore */ }
+      }, 50);
+      return () => clearTimeout(t);
+    } catch { /* ignore */ }
+  }, [error, chunkErr, router, reset]);
+
+  if (chunkErr) {
+    return (
+      <main className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center px-4 py-10 text-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <p className="mt-4 text-sm text-muted-foreground">Mise à jour de l'application…</p>
+      </main>
+    );
+  }
+
+  const retry = () => {
+    try {
+      router.invalidate();
       reset();
-    } catch {
-      /* ignore */
-    }
-    if (typeof window !== "undefined") {
-      window.location.href = "/";
-    }
+    } catch { /* ignore */ }
   };
 
-  const fullReload = () => {
+  const goHome = () => {
+    try { reset(); } catch { /* ignore */ }
     if (typeof window !== "undefined") {
-      window.location.reload();
+      window.location.href = "/";
     }
   };
 
@@ -60,16 +118,16 @@ function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => vo
         </p>
         <div className="mt-6 flex justify-center gap-3">
           <button
-            onClick={goHome}
+            onClick={retry}
             className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground"
           >
-            Accueil
+            Réessayer
           </button>
           <button
-            onClick={fullReload}
+            onClick={goHome}
             className="rounded-full border px-5 py-2 text-sm font-semibold"
           >
-            Recharger
+            Accueil
           </button>
         </div>
       </div>
