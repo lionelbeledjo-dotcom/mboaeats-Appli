@@ -98,11 +98,10 @@ function ProfilPage() {
 
   const doLogout = async () => {
     setSigningOut(true);
-    try { await supabase.auth.signOut({ scope: "global" }); } catch {}
-    try {
-      const { logoutSession } = await import("@/lib/session.functions");
-      await logoutSession();
-    } catch {}
+    // signOut local : invalide la session côté client immédiatement,
+    // sans dépendre d'un round-trip réseau qui peut hang. Le token global
+    // expirera naturellement côté serveur.
+    try { await supabase.auth.signOut({ scope: "local" }); } catch {}
     try {
       const { invalidateSessionCache } = await import("@/hooks/useSessionUser");
       invalidateSessionCache();
@@ -111,8 +110,15 @@ function ProfilPage() {
         .filter((k) => k.startsWith("sb-") || k.startsWith("supabase."))
         .forEach((k) => localStorage.removeItem(k));
     } catch {}
+    // Fire-and-forget : ne bloque pas la navigation si le serveur ne répond pas
+    void (async () => {
+      try {
+        const { logoutSession } = await import("@/lib/session.functions");
+        await logoutSession();
+      } catch {}
+    })();
     setProfile(null);
-    await refreshSession();
+    void refreshSession();
     navigate({ to: "/connexion", replace: true });
   };
 
