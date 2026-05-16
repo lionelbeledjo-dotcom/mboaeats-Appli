@@ -26,7 +26,7 @@ function ProfilPage() {
   const navigate = useNavigate();
   const { user: sessionUser, loading: sessionLoading, refresh: refreshSession } = useSessionUser();
   const { theme, toggle: toggleTheme } = useTheme();
-  const [authChecked, setAuthChecked] = useState(false);
+  // AuthGate gère désormais la redirection; pas de re-check local.
   const [confirm, setConfirm] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [authEmail, setAuthEmail] = useState<string | null>(null);
@@ -50,7 +50,6 @@ function ProfilPage() {
 
     supabase.auth.getUser().then(async ({ data }) => {
       const u = data.user;
-      setAuthChecked(true);
       if (!u) return;
       setAuthedSb(true);
       if (u.email) setAuthEmail(u.email);
@@ -83,30 +82,10 @@ function ProfilPage() {
           neighborhood: x.neighborhood ?? "",
         })));
       } catch {}
-    }).catch(() => { setAuthChecked(true); });
+    }).catch(() => {});
 
     return () => window.removeEventListener(CART_SOUND_EVT, sync);
   }, []);
-
-  // Route guard: redirect to /connexion if unauthenticated once auth checks settle
-  useEffect(() => {
-    if (!authChecked || sessionLoading) return;
-    if (!authedSb && !sessionUser?.identifier) {
-      navigate({ to: "/connexion", search: { redirect: "/profil" } as never, replace: true } as never);
-    }
-  }, [authChecked, sessionLoading, authedSb, sessionUser, navigate]);
-
-  if (!authChecked || sessionLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
-  if (!authedSb && !sessionUser?.identifier) {
-    return null;
-  }
 
   const identifier = authEmail || profile?.phone || "Invité";
   const displayName = profile?.full_name || (authEmail ? authEmail.split("@")[0] : "Mon compte");
