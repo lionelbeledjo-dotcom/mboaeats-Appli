@@ -2,9 +2,9 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { ShoppingBag } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 
-// Whitelist strict : le récap panier sticky n'apparaît QUE sur les pages liées à la commande.
-// Jamais sur /profil, /commandes, /favoris, /adresses, /moyens-de-paiement, etc.
-const ALLOWED = [/^\/explorer/, /^\/recherche/, /^\/cuisines/, /^\/proximite/, /^\/populaire/, /^\/r\//];
+// Whitelist stricte : le mini panier flottant n'apparaît QUE sur /explorer.
+// Jamais sur /profil, /commandes, /favoris, /adresses, /moyens-de-paiement, accueil, etc.
+const ALLOWED = [/^\/explorer(\/|$)/];
 
 export function CartFab() {
   const { count, subtotal } = useCart();
@@ -21,7 +21,7 @@ export function CartFab() {
       to="/checkout"
       aria-label={label}
       role="button"
-      className="fixed bottom-24 right-3 z-50 flex items-center gap-2 rounded-full bg-brand-cm-green px-3 py-2.5 text-brand-cm-green-fg shadow-[0_8px_24px_-8px_rgba(6,193,103,0.6)] transition-transform hover:scale-105 active:scale-95 sm:bottom-28 sm:right-4 sm:px-4 sm:py-3 md:bottom-6"
+      className="fixed bottom-24 right-3 z-50 flex items-center gap-2 rounded-full bg-brand-cm-green px-3 py-2.5 text-brand-cm-green-fg shadow-[0_8px_24px_-8px_rgba(6,193,103,0.6)] transition-transform hover:scale-105 active:scale-95 animate-fade-in sm:bottom-28 sm:right-4 sm:px-4 sm:py-3 md:bottom-6"
     >
       <div className="relative">
         <ShoppingBag className="h-5 w-5" aria-hidden="true" />
