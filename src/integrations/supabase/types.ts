@@ -53,6 +53,54 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_role: string | null
+          after_data: Json | null
+          before_data: Json | null
+          id: number
+          ip: unknown
+          metadata: Json | null
+          occurred_at: string
+          restaurant_id: string | null
+          target_id: string | null
+          target_table: string
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_role?: string | null
+          after_data?: Json | null
+          before_data?: Json | null
+          id?: number
+          ip?: unknown
+          metadata?: Json | null
+          occurred_at?: string
+          restaurant_id?: string | null
+          target_id?: string | null
+          target_table: string
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_role?: string | null
+          after_data?: Json | null
+          before_data?: Json | null
+          id?: number
+          ip?: unknown
+          metadata?: Json | null
+          occurred_at?: string
+          restaurant_id?: string | null
+          target_id?: string | null
+          target_table?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       auth_codes: {
         Row: {
           attempts: number
@@ -994,6 +1042,7 @@ export type Database = {
         Row: {
           amount_fcfa: number
           created_at: string
+          deleted_at: string | null
           id: string
           metadata: Json
           msisdn: string | null
@@ -1009,6 +1058,7 @@ export type Database = {
         Insert: {
           amount_fcfa: number
           created_at?: string
+          deleted_at?: string | null
           id?: string
           metadata?: Json
           msisdn?: string | null
@@ -1024,6 +1074,7 @@ export type Database = {
         Update: {
           amount_fcfa?: number
           created_at?: string
+          deleted_at?: string | null
           id?: string
           metadata?: Json
           msisdn?: string | null
@@ -1671,6 +1722,18 @@ export type Database = {
       }
       is_platform_admin: { Args: never; Returns: boolean }
       is_platform_superadmin: { Args: never; Returns: boolean }
+      log_audit: {
+        Args: {
+          _action: string
+          _after?: Json
+          _before?: Json
+          _metadata?: Json
+          _restaurant_id?: string
+          _target_id: string
+          _target_table: string
+        }
+        Returns: undefined
+      }
       loyalty_tier: { Args: { _pts: number }; Returns: string }
       move_to_dlq: {
         Args: {
@@ -1701,6 +1764,8 @@ export type Database = {
         Args: { _role: Database["public"]["Enums"]["restaurant_role"] }
         Returns: number
       }
+      restore_restaurant: { Args: { _id: string }; Returns: undefined }
+      soft_delete_restaurant: { Args: { _id: string }; Returns: undefined }
       user_exists_by_email: { Args: { _email: string }; Returns: boolean }
       user_exists_by_phone: { Args: { _phone: string }; Returns: boolean }
       wallet_apply: {
