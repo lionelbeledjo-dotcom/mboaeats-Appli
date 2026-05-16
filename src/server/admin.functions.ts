@@ -472,3 +472,107 @@ export const getCommissionsReport = createServerFn({ method: "GET" })
         : 0,
     };
   });
+
+// ============================================================================
+// COMPAT ASCENDANTE — alias & stubs pour admin UI (litiges, livreurs, restos)
+// ============================================================================
+
+export const deleteRestaurant = softDeleteRestaurant;
+export const listAllDisputes = listOpenDisputes;
+
+export const getDisputeDetails = createServerFn({ method: "GET" })
+  .middleware([requirePlatformAdmin])
+  .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data }) => {
+    const { data: dispute, error } = await supabaseAdmin
+      .from("disputes")
+      .select("*, orders(reference, total), restaurants(name)")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return { dispute: dispute ?? null };
+  });
+
+export const updateDispute = createServerFn({ method: "POST" })
+  .middleware([requirePlatformAdmin])
+  .inputValidator((d) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        reason: z.string().min(1).max(200).optional(),
+        description: z.string().max(2000).nullable().optional(),
+        priority: z.enum(["low", "medium", "high"]).optional(),
+        status: z.string().max(40).optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { id, ...patch } = data;
+    const { error } = await supabaseAdmin
+      .from("disputes")
+      .update(patch)
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
+
+export const deleteDispute = createServerFn({ method: "POST" })
+  .middleware([requirePlatformAdmin])
+  .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data }) => {
+    const { error } = await supabaseAdmin
+      .from("disputes")
+      .delete()
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
+
+export const setDriverActive = createServerFn({ method: "POST" })
+  .middleware([requirePlatformAdmin])
+  .inputValidator((d) =>
+    z.object({ user_id: z.string().uuid(), is_active: z.boolean() }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { error } = await supabaseAdmin
+      .from("driver_profiles")
+      .update({ is_active: data.is_active })
+      .eq("user_id", data.user_id);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
+
+export const updateDriverProfile = createServerFn({ method: "POST" })
+  .middleware([requirePlatformAdmin])
+  .inputValidator((d) =>
+    z
+      .object({
+        user_id: z.string().uuid(),
+        full_name: z.string().max(120).optional(),
+        phone: z.string().max(40).nullable().optional(),
+        city: z.string().max(80).nullable().optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { user_id, ...patch } = data;
+    if (patch.full_name !== undefined) {
+      await supabaseAdmin
+        .from("profiles")
+        .update({ full_name: patch.full_name, phone: patch.phone, city: patch.city })
+        .eq("user_id", user_id);
+    }
+    return { ok: true as const };
+  });
+
+export const deleteDriver = createServerFn({ method: "POST" })
+  .middleware([requirePlatformAdmin])
+  .inputValidator((d) => z.object({ user_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data }) => {
+    const { error } = await supabaseAdmin
+      .from("driver_profiles")
+      .delete()
+      .eq("user_id", data.user_id);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
