@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Package, CheckCircle2, ChevronRight, MapPin, LogIn, RotateCcw, Loader2, ArrowLeft } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -83,6 +83,11 @@ function CommandesPage() {
   const { isAuthenticated, isResolving, authReady } = useStableAuthSession();
   const [tab, setTab] = useState<"all" | "active" | "delivered">("all");
   const [reordering, setReordering] = useState<string | null>(null);
+  const [cachedOrders, setCachedOrders] = useState<Order[] | null>(null);
+
+  useEffect(() => {
+    setCachedOrders(readCachedOrders());
+  }, []);
 
   const reorder = async (orderId: string, restoSlug: string | undefined) => {
     setReordering(orderId);
@@ -124,15 +129,12 @@ function CommandesPage() {
         const r = (await fetchOrders()) as unknown as { orders?: Order[] | null };
         const orders = Array.isArray(r.orders) ? r.orders : [];
         writeCachedOrders(orders);
+        setCachedOrders(orders);
         return { orders };
       } catch (error) {
         console.error("[Commandes] fetch orders failed", error);
         throw error;
       }
-    },
-    initialData: () => {
-      const cached = readCachedOrders();
-      return cached ? { orders: cached } : undefined;
     },
     staleTime: 30_000,
     gcTime: 10 * 60 * 1000,
@@ -142,7 +144,7 @@ function CommandesPage() {
   const authed = isResolving ? null : isAuthenticated;
   const orders: Order[] | null = authed === false
     ? []
-    : (ordersQuery.data?.orders ?? (ordersQuery.isFetching ? null : []));
+    : (ordersQuery.data?.orders ?? cachedOrders ?? (ordersQuery.isFetching || isResolving ? null : []));
 
   const filtered = (orders ?? []).filter((o) =>
     tab === "all" ? true : tab === "active" ? ACTIVE.has(o.status) : o.status === "delivered"
