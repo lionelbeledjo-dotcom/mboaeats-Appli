@@ -643,6 +643,7 @@ export type Database = {
           created_at: string
           ends_at: string
           id: string
+          payment_reference: string | null
           plan: string
           starts_at: string
           status: string
@@ -654,6 +655,7 @@ export type Database = {
           created_at?: string
           ends_at: string
           id?: string
+          payment_reference?: string | null
           plan: string
           starts_at?: string
           status?: string
@@ -665,6 +667,7 @@ export type Database = {
           created_at?: string
           ends_at?: string
           id?: string
+          payment_reference?: string | null
           plan?: string
           starts_at?: string
           status?: string
@@ -1063,6 +1066,42 @@ export type Database = {
           type?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      payment_webhook_events: {
+        Row: {
+          applied: boolean
+          applied_at: string | null
+          external_ref: string
+          id: number
+          payload: Json | null
+          provider: string
+          provider_tx_id: string | null
+          received_at: string
+          status: string
+        }
+        Insert: {
+          applied?: boolean
+          applied_at?: string | null
+          external_ref: string
+          id?: number
+          payload?: Json | null
+          provider: string
+          provider_tx_id?: string | null
+          received_at?: string
+          status: string
+        }
+        Update: {
+          applied?: boolean
+          applied_at?: string | null
+          external_ref?: string
+          id?: number
+          payload?: Json | null
+          provider?: string
+          provider_tx_id?: string | null
+          received_at?: string
+          status?: string
         }
         Relationships: []
       }
