@@ -1921,6 +1921,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      home_data: { Args: { _city?: string; _limit?: number }; Returns: Json }
       is_platform_admin: { Args: never; Returns: boolean }
       is_platform_superadmin: { Args: never; Returns: boolean }
       log_audit: {
@@ -1962,11 +1963,14 @@ export type Database = {
           refunded_amount: number
         }[]
       }
+      restaurant_page: { Args: { _slug: string }; Returns: Json }
       restaurant_role_weight: {
         Args: { _role: Database["public"]["Enums"]["restaurant_role"] }
         Returns: number
       }
       restore_restaurant: { Args: { _id: string }; Returns: undefined }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       soft_delete_restaurant: { Args: { _id: string }; Returns: undefined }
       user_exists_by_email: { Args: { _email: string }; Returns: boolean }
       user_exists_by_phone: { Args: { _phone: string }; Returns: boolean }

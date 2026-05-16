@@ -4,7 +4,7 @@ import { ArrowLeft, Star, Clock, MapPin, Plus, Flame, Loader2 } from "lucide-rea
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { getRestaurantBySlug } from "@/server/marketplace.functions";
+import { getRestaurantPageData as getRestaurantBySlug } from "@/server/catalog.fast.functions";
 import { addToCart, useCart } from "@/hooks/use-cart";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { AddToCartFab } from "@/components/AddToCartFab";
@@ -63,7 +63,7 @@ function RestoLivePage() {
 
   const resto = (data?.resto ?? null) as Resto | null;
   const categories = useMemo(() => (data?.categories ?? []) as Cat[], [data]);
-  const dishes = useMemo(() => (data?.dishes ?? []) as unknown as Dish[]]) as Dish[], [data]);
+  const dishes = useMemo(() => (data?.dishes ?? []) as unknown as Dish[], [data]);
   const loading = isLoading && !data;
 
   const [activeCat, setActiveCat] = useState<string | null>(null);
