@@ -63,8 +63,17 @@ function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => vo
     console.error("[Router error boundary]", error);
     if (chunkErr) {
       tryAutoReload();
-    } else {
-      // Tente une ré-exécution silencieuse une fois (loader transient)
+      return;
+    }
+    // Auto-retry une seule fois par minute pour absorber les erreurs
+    // transitoires (réseau, race au montage). Anti-boucle via sessionStorage.
+    if (typeof window === "undefined") return;
+    try {
+      const key = "__mboa_router_retry_at";
+      const last = Number(sessionStorage.getItem(key) ?? "0");
+      const now = Date.now();
+      if (now - last < 60_000) return;
+      sessionStorage.setItem(key, String(now));
       const t = setTimeout(() => {
         try {
           router.invalidate();
@@ -72,7 +81,7 @@ function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => vo
         } catch { /* ignore */ }
       }, 50);
       return () => clearTimeout(t);
-    }
+    } catch { /* ignore */ }
   }, [error, chunkErr, router, reset]);
 
   if (chunkErr) {
