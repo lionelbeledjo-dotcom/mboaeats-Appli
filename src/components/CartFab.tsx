@@ -2,14 +2,15 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { ShoppingBag } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 
-const HIDDEN = ["/connexion", "/admin/login", "/checkout"];
+// Le récap panier ne doit apparaître QUE sur les pages liées à la commande.
+const ALLOWED = /^\/(panier|explorer|recherche|cuisines|proximite|populaire|r\/|$)/;
 
 export function CartFab() {
   const { count, subtotal } = useCart();
   const { pathname } = useLocation();
 
   if (count === 0) return null;
-  if (HIDDEN.includes(pathname) || pathname.startsWith("/admin")) return null;
+  if (!ALLOWED.test(pathname === "/" ? "/" : pathname)) return null;
 
   const displayCount = count > 99 ? "99+" : String(count);
   const label = `Voir le panier, ${count} article${count > 1 ? "s" : ""}, total ${subtotal.toLocaleString("fr-FR")} francs CFA`;
