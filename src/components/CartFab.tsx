@@ -2,9 +2,9 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { ShoppingBag } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 
-// Whitelist strict : le récap panier sticky n'apparaît QUE sur les pages liées à la commande.
-// Jamais sur /profil, /commandes, /favoris, /adresses, /moyens-de-paiement, etc.
-const ALLOWED = [/^\/explorer/, /^\/recherche/, /^\/cuisines/, /^\/proximite/, /^\/populaire/, /^\/r\//];
+// Whitelist stricte : le mini panier flottant n'apparaît QUE sur /explorer.
+// Jamais sur /profil, /commandes, /favoris, /adresses, /moyens-de-paiement, accueil, etc.
+const ALLOWED = [/^\/explorer(\/|$)/];
 
 export function CartFab() {
   const { count, subtotal } = useCart();
