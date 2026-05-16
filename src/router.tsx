@@ -23,6 +23,8 @@
 
 import { createRouter, useRouter } from "@tanstack/react-router";
 import { QueryClient } from "@tanstack/react-query";
+import { persistQueryClient } from "@tanstack/react-query-persist-client";
+import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { useEffect } from "react";
 import { routeTree } from "./routeTree.gen";
 
@@ -142,20 +144,41 @@ function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => vo
  * 100-300ms sur la première vue de chaque page.
  */
 function makeQueryClient() {
-  return new QueryClient({
+  const qc = new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 60 * 1000, // 1min — équilibre fraîcheur / vitesse
-        gcTime: 10 * 60 * 1000, // 10 min en cache mémoire
+        staleTime: 60 * 1000,
+        gcTime: 24 * 60 * 60 * 1000, // 24h — supporte persistance offline
         refetchOnWindowFocus: false,
         refetchOnReconnect: "always",
         retry: 1,
-        // CRITIQUE : permet à un écran de s'afficher avec des données
-        // périmées pendant qu'on refetch en arrière-plan = render instantané
-        // au lieu d'un loader. Activer au cas par cas via le hook.
       },
     },
   });
+
+  // Offline-first : restaure le cache depuis localStorage à l'initialisation.
+  // Affichage IMMÉDIAT des données précédentes, refetch silencieux en BG.
+  if (typeof window !== "undefined") {
+    try {
+      const persister = createSyncStoragePersister({
+        storage: window.localStorage,
+        key: "mboa_rq_cache_v1",
+        throttleTime: 1000,
+      });
+      persistQueryClient({
+        queryClient: qc,
+        persister,
+        maxAge: 24 * 60 * 60 * 1000,
+        // Ne persiste pas les mutations / queries en erreur
+        dehydrateOptions: {
+          shouldDehydrateQuery: (q) =>
+            q.state.status === "success" && q.state.data !== undefined,
+        },
+      });
+    } catch { /* ignore */ }
+  }
+
+  return qc;
 }
 
 export const getRouter = () => {
@@ -163,7 +186,9 @@ export const getRouter = () => {
   const router = createRouter({
     routeTree,
     context: { queryClient },
-    scrollRestoration: true,
+    // Le scroll restoration auto remontait le panier après navigation —
+    // on gère le scroll manuellement (top sur entrée, conserve sur back).
+    scrollRestoration: false,
 
     // PERF — preload au survol/focus (déjà actif, on confirme)
     defaultPreload: "intent",

@@ -612,6 +612,12 @@ html, body, #root {
   overflow-x: hidden;
   overscroll-behavior: none;
 }
+html, body { min-height: 100dvh; }
+:root {
+  /* Hauteur réelle du BottomDock (incl. safe-area iOS) — réutilisable via
+     padding-bottom: var(--bottom-dock-h) sur tout conteneur sticky. */
+  --bottom-dock-h: calc(70px + env(safe-area-inset-bottom));
+}
 body {
   /* Smooth vertical scroll, prevent rubber-band horizontal */
   touch-action: pan-y;

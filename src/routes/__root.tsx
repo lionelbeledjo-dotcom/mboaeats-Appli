@@ -1,5 +1,6 @@
 import { Outlet, Link, createRootRouteWithContext, HeadContent, Scripts, useLocation } from "@tanstack/react-router";
 import { Suspense } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import type { QueryClient } from "@tanstack/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { RootErrorBoundary } from "@/components/RootErrorBoundary";
@@ -149,7 +150,18 @@ function RootComponent() {
                 crashs en localisant l'erreur sous l'Outlet uniquement. */}
             <RootErrorBoundary>
               <Suspense fallback={<RouteSkeleton />}>
-                <Outlet />
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={path}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    style={{ minHeight: "100dvh" }}
+                  >
+                    <Outlet />
+                  </motion.div>
+                </AnimatePresence>
               </Suspense>
             </RootErrorBoundary>
             {!hideDock && <CartFab />}
