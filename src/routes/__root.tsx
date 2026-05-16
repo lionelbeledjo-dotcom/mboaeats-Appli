@@ -1,6 +1,7 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation } from "@tanstack/react-router";
-import { useState } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Outlet, Link, createRootRouteWithContext, HeadContent, Scripts, useLocation } from "@tanstack/react-router";
+import type { QueryClient } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { RootErrorBoundary } from "@/components/RootErrorBoundary";
 import { BottomDock } from "@/components/BottomDock";
 import { CartFab } from "@/components/CartFab";
 import { Toaster } from "@/components/ui/sonner";
@@ -63,7 +64,7 @@ function NotFoundComponent() {
   );
 }
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -123,6 +124,7 @@ function RootComponent() {
     { to: "/profil" },
     { to: "/recherche" },
   ]);
+  const { queryClient } = Route.useRouteContext();
   const location = useLocation();
   const path = location.pathname;
   const isPreview =
@@ -132,20 +134,6 @@ function RootComponent() {
     isPreview ||
     PUBLIC_ROUTES.includes(path) ||
     PUBLIC_PREFIXES.some((p) => path.startsWith(p));
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: 5 * 60 * 1000, // 5 min — données panier/checkout fraîches
-            gcTime: 30 * 60 * 1000, // 30 min en mémoire
-            refetchOnWindowFocus: false,
-            refetchOnReconnect: false,
-            retry: 1,
-          },
-        },
-      }),
-  );
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light">
@@ -154,7 +142,9 @@ function RootComponent() {
           <OfflineBanner />
           <AuthGate>
             {!hideDock && <SiteHeader />}
-            <Outlet />
+            <RootErrorBoundary>
+              <Outlet />
+            </RootErrorBoundary>
             {!hideDock && <CartFab />}
             <BottomDock />
             <Toaster position="top-right" richColors closeButton />
