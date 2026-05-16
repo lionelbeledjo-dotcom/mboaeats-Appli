@@ -173,6 +173,8 @@ function CommandesPage() {
     staleTime: 30_000,
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
+    retry: 1,
+    // suspense:false (défaut explicite) : on gère isError / isFetching à la main
   });
 
   const authed = isResolving ? null : isAuthenticated;
