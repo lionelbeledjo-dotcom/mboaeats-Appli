@@ -130,13 +130,11 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const location = useLocation();
   const path = location.pathname;
-  const isPreview =
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).get("preview") === "1";
-  const hideDock =
-    isPreview ||
-    PUBLIC_ROUTES.includes(path) ||
-    PUBLIC_PREFIXES.some((p) => path.startsWith(p));
+  // Note: on n'utilise plus `?preview=1` (audit C6). On laisse le dock visible
+  // sur les routes publiques car le mode invité est désormais supporté.
+  const hideDock = false;
+  void PUBLIC_ROUTES;
+  void PUBLIC_PREFIXES;
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light">
