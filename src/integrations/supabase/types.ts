@@ -643,6 +643,7 @@ export type Database = {
           created_at: string
           ends_at: string
           id: string
+          payment_reference: string | null
           plan: string
           starts_at: string
           status: string
@@ -654,6 +655,7 @@ export type Database = {
           created_at?: string
           ends_at: string
           id?: string
+          payment_reference?: string | null
           plan: string
           starts_at?: string
           status?: string
@@ -665,6 +667,7 @@ export type Database = {
           created_at?: string
           ends_at?: string
           id?: string
+          payment_reference?: string | null
           plan?: string
           starts_at?: string
           status?: string
@@ -1066,6 +1069,42 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_webhook_events: {
+        Row: {
+          applied: boolean
+          applied_at: string | null
+          external_ref: string
+          id: number
+          payload: Json | null
+          provider: string
+          provider_tx_id: string | null
+          received_at: string
+          status: string
+        }
+        Insert: {
+          applied?: boolean
+          applied_at?: string | null
+          external_ref: string
+          id?: number
+          payload?: Json | null
+          provider: string
+          provider_tx_id?: string | null
+          received_at?: string
+          status: string
+        }
+        Update: {
+          applied?: boolean
+          applied_at?: string | null
+          external_ref?: string
+          id?: number
+          payload?: Json | null
+          provider?: string
+          provider_tx_id?: string | null
+          received_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount_fcfa: number
@@ -1114,6 +1153,27 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      phone_users: {
+        Row: {
+          created_at: string
+          phone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          phone: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          phone?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -1231,6 +1291,30 @@ export type Database = {
           max_uses?: number | null
           min_order?: number | null
           uses_count?: number | null
+        }
+        Relationships: []
+      }
+      rate_limits: {
+        Row: {
+          bucket_key: string
+          id: number
+          ip: string | null
+          occurred_at: string
+          scope: string | null
+        }
+        Insert: {
+          bucket_key: string
+          id?: number
+          ip?: string | null
+          occurred_at?: string
+          scope?: string | null
+        }
+        Update: {
+          bucket_key?: string
+          id?: number
+          ip?: string | null
+          occurred_at?: string
+          scope?: string | null
         }
         Relationships: []
       }
@@ -1806,6 +1890,7 @@ export type Database = {
       }
     }
     Functions: {
+      admin_find_user_id_by_email: { Args: { _email: string }; Returns: string }
       apply_referral_code: { Args: { _code: string }; Returns: string }
       claim_super_admin: { Args: never; Returns: boolean }
       claim_superadmin: { Args: never; Returns: boolean }
@@ -1860,6 +1945,7 @@ export type Database = {
         }
         Returns: number
       }
+      purge_old_rate_limits: { Args: never; Returns: number }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {

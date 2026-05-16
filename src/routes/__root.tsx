@@ -1,10 +1,11 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation } from "@tanstack/react-router";
+import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BottomDock } from "@/components/BottomDock";
 import { CartFab } from "@/components/CartFab";
 import { Toaster } from "@/components/ui/sonner";
-import { useSessionUser } from "@/hooks/useSessionUser";
+import { AuthProvider } from "@/auth/components/AuthProvider";
+import { AuthGate } from "@/auth/components/AuthGate";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { SplashScreen } from "@/components/SplashScreen";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -33,35 +34,9 @@ function OnboardingGate() {
   return <OnboardingCarousel onDone={markSeen} />;
 }
 
-function AuthGate({ children }: { children: React.ReactNode }) {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { user, loading } = useSessionUser();
+// AuthGate est maintenant importé depuis @/auth/components/AuthGate (refonte sécurité).
+// Le mode `?preview=1` (bypass auth) a été supprimé — corrige audit C6.
 
-  const path = location.pathname;
-  // Mode aperçu public : ?preview=1 sur n'importe quelle URL contourne l'auth (lecture seule)
-  const isPreview =
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).get("preview") === "1";
-  const isPublic =
-    isPreview ||
-    PUBLIC_ROUTES.includes(path) ||
-    PUBLIC_PREFIXES.some((p) => path.startsWith(p));
-
-  useEffect(() => {
-    if (loading) return;
-    if (!user && !isPublic) {
-      navigate({ to: "/connexion", replace: true });
-    }
-  }, [loading, user, isPublic, navigate]);
-
-  // Public routes render immediately — no blank flash on mobile while session resolves.
-  if (isPublic) return <>{children}</>;
-  // Protected routes: hold render until we know auth state, then gate.
-  if (loading) return null;
-  if (!user) return null;
-  return <>{children}</>;
-}
 
 import appCss from "../styles.css?url";
 
@@ -167,17 +142,19 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light">
-        <SplashScreen />
-        <OfflineBanner />
-        <AuthGate>
-          {!hideDock && <SiteHeader />}
-          <Outlet />
-          {!hideDock && <CartFab />}
-          <BottomDock />
-          <Toaster position="top-right" richColors closeButton />
-        </AuthGate>
-        <PendingPaymentWatcher />
-        <OnboardingGate />
+        <AuthProvider>
+          <SplashScreen />
+          <OfflineBanner />
+          <AuthGate>
+            {!hideDock && <SiteHeader />}
+            <Outlet />
+            {!hideDock && <CartFab />}
+            <BottomDock />
+            <Toaster position="top-right" richColors closeButton />
+          </AuthGate>
+          <PendingPaymentWatcher />
+          <OnboardingGate />
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
