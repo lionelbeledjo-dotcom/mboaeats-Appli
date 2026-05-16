@@ -613,6 +613,9 @@ html, body, #root {
   overscroll-behavior: none;
 }
 html, body { min-height: 100dvh; }
+/* Override Tailwind min-h-screen (100vh) → 100dvh : empêche le contenu
+   d'être masqué par la barre URL iOS et stabilise le BottomDock. */
+.min-h-screen { min-height: 100dvh !important; }
 :root {
   /* Hauteur réelle du BottomDock (incl. safe-area iOS) — réutilisable via
      padding-bottom: var(--bottom-dock-h) sur tout conteneur sticky. */
