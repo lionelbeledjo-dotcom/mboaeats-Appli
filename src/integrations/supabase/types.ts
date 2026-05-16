@@ -1156,6 +1156,27 @@ export type Database = {
         }
         Relationships: []
       }
+      phone_users: {
+        Row: {
+          created_at: string
+          phone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          phone: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          phone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       platform_settings: {
         Row: {
           description: string | null
@@ -1869,6 +1890,7 @@ export type Database = {
       }
     }
     Functions: {
+      admin_find_user_id_by_email: { Args: { _email: string }; Returns: string }
       apply_referral_code: { Args: { _code: string }; Returns: string }
       claim_super_admin: { Args: never; Returns: boolean }
       claim_superadmin: { Args: never; Returns: boolean }
