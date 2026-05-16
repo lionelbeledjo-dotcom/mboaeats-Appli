@@ -2,15 +2,16 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { ShoppingBag } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 
-// Le récap panier ne doit apparaître QUE sur les pages liées à la commande.
-const ALLOWED = /^\/(panier|explorer|recherche|cuisines|proximite|populaire|r\/|$)/;
+// Whitelist strict : le récap panier sticky n'apparaît QUE sur les pages liées à la commande.
+// Jamais sur /profil, /commandes, /favoris, /adresses, /moyens-de-paiement, etc.
+const ALLOWED = [/^\/explorer/, /^\/recherche/, /^\/cuisines/, /^\/proximite/, /^\/populaire/, /^\/r\//];
 
 export function CartFab() {
   const { count, subtotal } = useCart();
   const { pathname } = useLocation();
 
   if (count === 0) return null;
-  if (!ALLOWED.test(pathname === "/" ? "/" : pathname)) return null;
+  if (!ALLOWED.some((rx) => rx.test(pathname))) return null;
 
   const displayCount = count > 99 ? "99+" : String(count);
   const label = `Voir le panier, ${count} article${count > 1 ? "s" : ""}, total ${subtotal.toLocaleString("fr-FR")} francs CFA`;
