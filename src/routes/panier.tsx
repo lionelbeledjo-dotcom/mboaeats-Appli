@@ -32,9 +32,9 @@ export const Route = createFileRoute("/panier")({
   component: PanierRoute,
 });
 
-// Hauteur réservée au BottomDock + safe area iOS — utilisée pour les
-// éléments sticky/bottom afin qu'ils ne soient JAMAIS recouverts par le dock.
-const STICKY_BOTTOM_OFFSET = "calc(70px + env(safe-area-inset-bottom))";
+// Offset réservé au BottomDock (var partagée définie dans styles.css).
+// Centralisé : si la hauteur du dock change, un seul endroit à toucher.
+const STICKY_BOTTOM_OFFSET = "var(--bottom-dock-h)";
 
 class PanierErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
   state = { hasError: false };
