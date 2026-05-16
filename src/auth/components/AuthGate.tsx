@@ -34,6 +34,8 @@ const PUBLIC_ROUTES: ReadonlyArray<string> = [
   "/recherche",
   "/explorer",
   "/panier",
+  "/commandes",
+  "/profil",
   "/cuisines",
   "/proximite",
   "/populaire",
