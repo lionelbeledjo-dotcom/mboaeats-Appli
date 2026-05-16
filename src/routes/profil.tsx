@@ -24,7 +24,7 @@ export const Route = createFileRoute("/profil")({
 
 function ProfilPage() {
   const navigate = useNavigate();
-  const { user: sessionUser, loading: sessionLoading, refresh: refreshSession } = useSessionUser();
+  const { user: sessionUser, refresh: refreshSession } = useSessionUser();
   const { theme, toggle: toggleTheme } = useTheme();
   // AuthGate gère désormais la redirection; pas de re-check local.
   const [confirm, setConfirm] = useState(false);
