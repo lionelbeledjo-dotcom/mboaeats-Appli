@@ -458,7 +458,7 @@ export const applyPromo = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data }) => {
-    const { data: row } = await supabaseAdmin
+    const { data: rowRaw } = await supabaseAdmin
       .from("promos")
       .select(
         "code, description, discount_type, discount_value, " +
@@ -467,6 +467,7 @@ export const applyPromo = createServerFn({ method: "POST" })
       .eq("code", data.code.trim().toUpperCase())
       .eq("is_active", true)
       .maybeSingle();
+    const row = rowRaw as any;
     if (!row) return { ok: false, error: "Code promo invalide" };
     if (row.expires_at && new Date(row.expires_at) < new Date()) {
       return { ok: false, error: "Code expiré" };
@@ -493,10 +494,65 @@ export const applyPromo = createServerFn({ method: "POST" })
   });
 
 // =============================================================================
-// markOrderPaid — SUPPRIMÉ DÉLIBÉRÉMENT
+// markOrderPaid — COMPAT (no-op côté serveur)
 // =============================================================================
-// L'ancien `markOrderPaid` permettait au client de marquer sa propre
-// commande comme payée sans aucune vérification de paiement (audit C2 —
-// repas gratuits). Le passage à `paid` se fait MAINTENANT exclusivement
-// depuis le webhook Campay (cf. src/routes/api/public/campay-webhook.ts).
+// L'ancien comportement (le client marque sa commande payée) a été supprimé
+// pour fermer la faille C2. Le passage à `paid` se fait UNIQUEMENT depuis le
+// webhook Campay. On garde cependant un export `markOrderPaid` pour que les
+// composants client (Checkout / PendingPaymentWatcher) compilent : la fn
+// vérifie simplement que la commande appartient bien à l'utilisateur et
+// renvoie l'état courant ; elle n'écrit rien.
+export const markOrderPaid = createServerFn({ method: "POST" })
+  .middleware([requireAuth])
+  .inputValidator((d) =>
+    z
+      .object({
+        order_id: z.string().uuid(),
+        payment_reference: z.string().min(1).max(120).optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: row } = await supabaseAdmin
+      .from("orders")
+      .select("id, user_id, status")
+      .eq("id", data.order_id)
+      .maybeSingle();
+    if (!row || row.user_id !== context.userId) {
+      return { ok: false as const, error: "Commande introuvable" };
+    }
+    return { ok: true as const, status: row.status };
+  });
+
+// =============================================================================
+// getDishBySlugAndId — détail d'un plat dans un restaurant
+// =============================================================================
+export const getDishBySlugAndId = createServerFn({ method: "GET" })
+  .inputValidator((d) =>
+    z
+      .object({ slug: z.string().min(1).max(80), dishId: z.string().uuid() })
+      .parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { data: restoRaw } = await supabasePublic
+      .from("restaurants")
+      .select(
+        "id, slug, name, cuisine, city, neighborhood, image_url, " +
+          "cover_url, rating, is_open",
+      )
+      .eq("slug", data.slug)
+      .maybeSingle();
+    const resto = restoRaw as any;
+    if (!resto) return { resto: null, dish: null };
+    const { data: dishRaw } = await supabasePublic
+      .from("dishes")
+      .select(
+        "id, restaurant_id, name, description, price, image_url, " +
+          "allergens, is_popular, is_available",
+      )
+      .eq("id", data.dishId)
+      .eq("restaurant_id", resto.id)
+      .maybeSingle();
+    return { resto, dish: (dishRaw as any) ?? null };
+  });
 // Le client appelle `pollPaymentStatus` pour suivre l'état.
