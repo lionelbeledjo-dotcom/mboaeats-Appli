@@ -345,6 +345,13 @@ export type Database = {
             referencedRelation: "restaurants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "dish_reviews_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_health"
+            referencedColumns: ["restaurant_id"]
+          },
         ]
       }
       dishes: {
@@ -410,6 +417,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "restaurants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dishes_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_health"
+            referencedColumns: ["restaurant_id"]
           },
         ]
       }
@@ -689,6 +703,13 @@ export type Database = {
             referencedRelation: "restaurants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "menu_categories_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_health"
+            referencedColumns: ["restaurant_id"]
+          },
         ]
       }
       notification_preferences: {
@@ -963,6 +984,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "restaurants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_health"
+            referencedColumns: ["restaurant_id"]
           },
         ]
       }
@@ -1302,6 +1330,13 @@ export type Database = {
             referencedRelation: "restaurants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "restaurant_members_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_health"
+            referencedColumns: ["restaurant_id"]
+          },
         ]
       }
       restaurant_reviews: {
@@ -1346,6 +1381,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "restaurants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restaurant_reviews_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_health"
+            referencedColumns: ["restaurant_id"]
           },
         ]
       }
@@ -1687,7 +1729,81 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      restaurant_owners: {
+        Row: {
+          joined_at: string | null
+          owner_id: string | null
+          restaurant_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          joined_at?: string | null
+          owner_id?: string | null
+          restaurant_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          joined_at?: string | null
+          owner_id?: string | null
+          restaurant_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurant_members_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restaurant_members_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_health"
+            referencedColumns: ["restaurant_id"]
+          },
+        ]
+      }
+      tenant_health: {
+        Row: {
+          deleted_at: string | null
+          dishes_count: number | null
+          is_active: boolean | null
+          is_open: boolean | null
+          members_active: number | null
+          name: string | null
+          orders_7d: number | null
+          owners_active: number | null
+          restaurant_id: string | null
+          slug: string | null
+        }
+        Insert: {
+          deleted_at?: string | null
+          dishes_count?: never
+          is_active?: boolean | null
+          is_open?: boolean | null
+          members_active?: never
+          name?: string | null
+          orders_7d?: never
+          owners_active?: never
+          restaurant_id?: string | null
+          slug?: string | null
+        }
+        Update: {
+          deleted_at?: string | null
+          dishes_count?: never
+          is_active?: boolean | null
+          is_open?: boolean | null
+          members_active?: never
+          name?: string | null
+          orders_7d?: never
+          owners_active?: never
+          restaurant_id?: string | null
+          slug?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       apply_referral_code: { Args: { _code: string }; Returns: string }
