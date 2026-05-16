@@ -142,17 +142,19 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light">
-        <SplashScreen />
-        <OfflineBanner />
-        <AuthGate>
-          {!hideDock && <SiteHeader />}
-          <Outlet />
-          {!hideDock && <CartFab />}
-          <BottomDock />
-          <Toaster position="top-right" richColors closeButton />
-        </AuthGate>
-        <PendingPaymentWatcher />
-        <OnboardingGate />
+        <AuthProvider>
+          <SplashScreen />
+          <OfflineBanner />
+          <AuthGate>
+            {!hideDock && <SiteHeader />}
+            <Outlet />
+            {!hideDock && <CartFab />}
+            <BottomDock />
+            <Toaster position="top-right" richColors closeButton />
+          </AuthGate>
+          <PendingPaymentWatcher />
+          <OnboardingGate />
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
