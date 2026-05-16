@@ -507,7 +507,7 @@ export const getMyRestaurant = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
-    return { restaurant: (row as unknown as Record<string, unknown>) ?? null };
+    return { restaurant: (row as unknown as Record<string, any>) ?? null };
   });
 
 export const updateMyRestaurant = createServerFn({ method: "POST" })
