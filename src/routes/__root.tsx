@@ -1,5 +1,6 @@
 import { Outlet, Link, createRootRouteWithContext, HeadContent, Scripts, useLocation } from "@tanstack/react-router";
 import { Suspense } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import type { QueryClient } from "@tanstack/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { RootErrorBoundary } from "@/components/RootErrorBoundary";
