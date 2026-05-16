@@ -45,7 +45,7 @@ function Decouvrir() {
   useEffect(() => {
     setLoading(true);
     list({ data: { city: city || undefined, search: search || undefined, limit: 30 } })
-      .then((r) => setRestos(r.restaurants as Resto[]))
+      .then((r) => setRestos(r.restaurants as unknown as Resto[]))
       .finally(() => setLoading(false));
   }, [list, city, search]);
 

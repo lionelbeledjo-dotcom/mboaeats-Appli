@@ -80,7 +80,7 @@ function Restaurants() {
     }
     try {
       const d = await fetchDetails({ data: { id } });
-      setDetails(d as Details);
+      setDetails(d as unknown as Details);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erreur");
       setOpenId(null);

@@ -438,6 +438,9 @@ export const activateMboaPass = createServerFn({ method: "POST" })
 // -----------------------------------------------------------------------------
 export const getActiveMboaPass = createServerFn({ method: "GET" })
   .middleware([requireAuth])
+  .inputValidator((d) =>
+    z.object({ userId: z.string().optional() }).optional().parse(d ?? {}),
+  )
   .handler(async ({ context }) => {
     const { data: row } = await supabaseAdmin
       .from("mboapass_subscriptions")
@@ -449,4 +452,55 @@ export const getActiveMboaPass = createServerFn({ method: "GET" })
       .limit(1)
       .maybeSingle();
     return { active: !!row, sub: row ?? null };
+  });
+
+// -----------------------------------------------------------------------------
+// verifyPayment — alias compat ascendante (poll status, ignore otp côté serveur)
+// -----------------------------------------------------------------------------
+export const verifyPayment = createServerFn({ method: "POST" })
+  .middleware([requireAuth])
+  .inputValidator((d) =>
+    z
+      .object({ reference: z.string().min(1), otp: z.string().optional() })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: row } = await supabaseAdmin
+      .from("payments")
+      .select("user_id, status")
+      .eq("reference", data.reference)
+      .maybeSingle();
+    if (!row) return { ok: false as const, error: "Paiement introuvable" };
+    if (row.user_id !== context.userId) {
+      return { ok: false as const, error: "Accès refusé" };
+    }
+    if (row.status === "succeeded") return { ok: true as const, status: "succeeded" as const };
+    if (row.status === "failed") return { ok: false as const, error: "Paiement refusé" };
+    // Live re-check via Campay
+    try {
+      const token = await campayToken();
+      const r = await fetch(`${CAMPAY_BASE}/transaction/${data.reference}/`, {
+        headers: { Authorization: `Token ${token}` },
+      });
+      if (r.ok) {
+        const j = (await r.json()) as { status?: string; reference?: string };
+        if (j.status === "SUCCESSFUL") {
+          await supabaseAdmin
+            .from("payments")
+            .update({ status: "succeeded", provider_tx_id: j.reference ?? data.reference })
+            .eq("reference", data.reference);
+          return { ok: true as const, status: "succeeded" as const };
+        }
+        if (j.status === "FAILED") {
+          await supabaseAdmin
+            .from("payments")
+            .update({ status: "failed" })
+            .eq("reference", data.reference);
+          return { ok: false as const, error: "Paiement refusé" };
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+    return { ok: false as const, error: "Paiement en attente" };
   });

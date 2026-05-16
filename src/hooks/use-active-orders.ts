@@ -33,7 +33,7 @@ export function useActiveOrdersCount() {
           }
           return;
         }
-        const r = (await getMyOrders()) as { orders: Array<{ status: string }> };
+        const r = (await getMyOrders()) as unknown as { orders: Array<{ status: string }> };
         if (!alive) return;
         setCount((r.orders ?? []).filter((o) => ACTIVE.has(o.status)).length);
       } catch {

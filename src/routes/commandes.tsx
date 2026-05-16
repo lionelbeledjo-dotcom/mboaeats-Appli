@@ -94,7 +94,7 @@ function CommandesPage() {
       if (!user) { setOrders([]); return; }
       try {
         const r = await getMyOrders();
-        if (mounted) setOrders((r as { orders: Order[] }).orders);
+        if (mounted) setOrders((r as unknown as { orders: Order[] }).orders);
       } catch { if (mounted) setOrders([]); }
     })();
     return () => { mounted = false; };
