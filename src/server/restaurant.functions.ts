@@ -485,3 +485,57 @@ export const listRestaurantMembers = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     return { members: rows ?? [] };
   });
+
+// ============================================================================
+// COMPAT ASCENDANTE — getMyRestaurant / updateMyRestaurant
+// ============================================================================
+// Ces alias conservent la signature historique utilisée par /restaurant.tsx :
+// `getMyRestaurant()` sans args et `updateMyRestaurant({ data: { id, ... } })`.
+
+export const getMyRestaurant = createServerFn({ method: "GET" })
+  .middleware([requireAuth])
+  .handler(async ({ context }) => {
+    const { data: row } = await supabaseAdmin
+      .from("restaurants")
+      .select(
+        "id, name, cuisine, city, neighborhood, is_open, delivery_fee, eta_min, eta_max, " +
+          "members:restaurant_members!inner(user_id, status, role)",
+      )
+      .eq("members.user_id", context.userId)
+      .eq("members.status", "active")
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return { restaurant: (row as unknown as Record<string, unknown>) ?? null };
+  });
+
+export const updateMyRestaurant = createServerFn({ method: "POST" })
+  .middleware([requireAuth])
+  .inputValidator((d) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        is_open: z.boolean().optional(),
+        name: z.string().min(2).max(120).optional(),
+        cuisine: z.string().min(2).max(80).optional(),
+        neighborhood: z.string().max(80).nullable().optional(),
+        eta_min: z.number().int().min(5).max(120).optional(),
+        eta_max: z.number().int().min(5).max(180).optional(),
+        delivery_fee: z.number().int().min(0).max(50000).optional(),
+        min_order: z.number().int().min(0).max(100000).optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertMembership(context, data.id, "manager");
+    const { id, ...patch } = data;
+    const { data: row, error } = await supabaseAdmin
+      .from("restaurants")
+      .update(patch)
+      .eq("id", id)
+      .select()
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return { restaurant: row };
+  });

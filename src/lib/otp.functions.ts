@@ -447,3 +447,6 @@ export const verifyOtp = createServerFn({ method: "POST" })
       },
     };
   });
+
+// Compat ascendante : ancien nom `sendOtp` → désormais `requestOtp`.
+export const sendOtp = requestOtp;
