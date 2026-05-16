@@ -130,13 +130,11 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const location = useLocation();
   const path = location.pathname;
-  const isPreview =
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).get("preview") === "1";
-  const hideDock =
-    isPreview ||
-    PUBLIC_ROUTES.includes(path) ||
-    PUBLIC_PREFIXES.some((p) => path.startsWith(p));
+  // Note: on n'utilise plus `?preview=1` (audit C6). On laisse le dock visible
+  // sur les routes publiques car le mode invité est désormais supporté.
+  const hideDock = false;
+  void PUBLIC_ROUTES;
+  void PUBLIC_PREFIXES;
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light">
@@ -157,7 +155,8 @@ function RootComponent() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -4 }}
                     transition={{ duration: 0.15, ease: "easeOut" }}
-                    style={{ minHeight: "100dvh" }}
+                    /* Pas de minHeight forcé : évite l'espace blanc en bas
+                       (le BottomDock fournit déjà son propre spacer). */
                   >
                     <Outlet />
                   </motion.div>
