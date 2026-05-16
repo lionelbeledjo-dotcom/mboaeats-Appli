@@ -4,10 +4,11 @@ import { Package, CheckCircle2, ChevronRight, MapPin, LogIn, RotateCcw, Loader2,
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useSession } from "@/auth/hooks/useSession";
 import { getMyOrders, getOrder } from "@/server/marketplace.functions";
 import { addToCart } from "@/hooks/use-cart";
 import { RowSkeleton, EmptyState } from "@/components/ui/feedback";
+import { TabErrorBoundary, TabErrorFallback } from "@/components/TabErrorBoundary";
+import { useStableAuthSession } from "@/hooks/useStableAuthSession";
 
 export const Route = createFileRoute("/commandes")({
   head: () => ({
@@ -16,7 +17,14 @@ export const Route = createFileRoute("/commandes")({
       { name: "description", content: "Historique et suivi de vos commandes." },
     ],
   }),
-  component: CommandesPage,
+  component: () => (
+    <TabErrorBoundary
+      title="Commandes indisponibles"
+      description="L'historique reste protégé : réessayez sans quitter l'application."
+    >
+      <CommandesPage />
+    </TabErrorBoundary>
+  ),
 });
 
 type Order = {
@@ -72,7 +80,7 @@ function CommandesPage() {
   const navigate = useNavigate();
   const getOrderFn = useServerFn(getOrder);
   const fetchOrders = useServerFn(getMyOrders);
-  const { isAuthenticated, isLoading: sessionLoading } = useSession();
+  const { isAuthenticated, isResolving, authReady } = useStableAuthSession();
   const [tab, setTab] = useState<"all" | "active" | "delivered">("all");
   const [reordering, setReordering] = useState<string | null>(null);
 
@@ -109,11 +117,18 @@ function CommandesPage() {
   // staleTime 30s = navigation aller/retour sans refetch (instantané).
   const ordersQuery = useQuery<{ orders: Order[] }>({
     queryKey: ["my-orders"],
-    enabled: !sessionLoading && isAuthenticated,
+    enabled: authReady && isAuthenticated,
     queryFn: async () => {
-      const r = (await fetchOrders()) as unknown as { orders: Order[] };
-      writeCachedOrders(r.orders);
-      return r;
+      console.info("[Commandes] fetch orders", { isAuthenticated });
+      try {
+        const r = (await fetchOrders()) as unknown as { orders?: Order[] | null };
+        const orders = Array.isArray(r.orders) ? r.orders : [];
+        writeCachedOrders(orders);
+        return { orders };
+      } catch (error) {
+        console.error("[Commandes] fetch orders failed", error);
+        throw error;
+      }
     },
     initialData: () => {
       const cached = readCachedOrders();
@@ -124,7 +139,7 @@ function CommandesPage() {
     refetchOnWindowFocus: false,
   });
 
-  const authed = sessionLoading ? null : isAuthenticated;
+  const authed = isResolving ? null : isAuthenticated;
   const orders: Order[] | null = authed === false
     ? []
     : (ordersQuery.data?.orders ?? (ordersQuery.isFetching ? null : []));
@@ -164,7 +179,13 @@ function CommandesPage() {
       </header>
 
       <main className="mx-auto max-w-md px-4 py-4">
-        {authed === false ? (
+        {ordersQuery.isError ? (
+          <TabErrorFallback
+            title="Impossible de charger vos commandes"
+            description="Votre connexion ou vos permissions ont peut-être expiré."
+            onRetry={() => ordersQuery.refetch()}
+          />
+        ) : authed === false ? (
           <div className="rounded-2xl border border-border bg-surface/40 p-10 text-center">
             <LogIn className="mx-auto h-10 w-10 text-muted-foreground" />
             <p className="mt-3 text-sm text-muted-foreground">Connectez-vous pour voir vos commandes.</p>
