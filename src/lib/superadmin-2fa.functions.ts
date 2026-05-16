@@ -1,10 +1,23 @@
+/**
+ * MboaEats — 2FA Superadmin (refondu)
+ *
+ * Changements vs ancien fichier :
+ *   - `requireSupabaseAuth` + check rôle inline → `requireAuth` + helper
+ *     `assertIsSuperadmin` (puisque AVANT activation 2FA, on ne peut pas
+ *     utiliser `requirePlatformSuperadmin` qui exige déjà la 2FA validée).
+ *   - Session transitoire = `getTransientSession` (du nouveau auth/).
+ *   - SERVER_CONFIG.superadmin2fa pour les constantes.
+ *   - Reste du flow inchangé (TOTP secret chiffré, backup codes hashés,
+ *     lockout après MAX_FAILED_ATTEMPTS).
+ */
+
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getRequest } from "@tanstack/react-start/server";
 import QRCode from "qrcode";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAuth } from "@/auth/middlewares/requireAuth";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { getMboaSession } from "./session.server";
+import { getTransientSession } from "@/auth/session.server";
 import {
   encryptSecret,
   decryptSecret,
@@ -14,12 +27,11 @@ import {
   generateBackupCodes,
   consumeBackupCode,
 } from "./totp.server";
+import { SERVER_CONFIG } from "@/shared/config/server-config";
 
-const MAX_FAILED_ATTEMPTS = 5;
-const LOCK_MINUTES = 15;
-const SESSION_TTL_HOURS = 12;
+const { maxAttempts, lockMinutes, sessionTtlHours } = SERVER_CONFIG.superadmin2fa;
 
-async function assertSuperadmin(userId: string) {
+async function assertIsSuperadmin(userId: string) {
   const { data, error } = await supabaseAdmin
     .from("user_roles")
     .select("role")
@@ -30,7 +42,11 @@ async function assertSuperadmin(userId: string) {
   if (!data) throw new Error("Accès refusé");
 }
 
-async function logAttempt(userId: string, success: boolean, kind: "totp" | "backup" | "setup" | "disable") {
+async function logAttempt(
+  userId: string,
+  success: boolean,
+  kind: "totp" | "backup" | "setup" | "disable",
+) {
   try {
     const req = getRequest();
     const ua = req?.headers.get("user-agent") ?? null;
@@ -46,7 +62,7 @@ async function logAttempt(userId: string, success: boolean, kind: "totp" | "back
       user_agent: ua,
     });
   } catch {
-    // noop
+    /* noop */
   }
 }
 
@@ -60,18 +76,21 @@ async function getRow(userId: string) {
   return data;
 }
 
+// -----------------------------------------------------------------------------
+// Status
+// -----------------------------------------------------------------------------
 export const get2faStatus = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAuth])
   .handler(async ({ context }) => {
     const userId = context.userId;
-    await assertSuperadmin(userId);
+    await assertIsSuperadmin(userId);
     const row = await getRow(userId);
-    const session = await getMboaSession();
+    const session = await getTransientSession();
     const sd = session.data;
     const sessionValid =
       !!sd?.sa2faAt &&
       sd?.sa2faUserId === userId &&
-      Date.now() - (sd?.sa2faAt ?? 0) < SESSION_TTL_HOURS * 3_600_000;
+      Date.now() - (sd?.sa2faAt ?? 0) < sessionTtlHours * 3_600_000;
     const lockedUntil =
       row?.locked_until && new Date(row.locked_until).getTime() > Date.now()
         ? row.locked_until
@@ -87,23 +106,29 @@ export const get2faStatus = createServerFn({ method: "GET" })
     };
   });
 
+// -----------------------------------------------------------------------------
+// Begin / Confirm setup
+// -----------------------------------------------------------------------------
 export const beginSetup2fa = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAuth])
   .handler(async ({ context }) => {
     const userId = context.userId;
-    await assertSuperadmin(userId);
+    await assertIsSuperadmin(userId);
     const row = await getRow(userId);
     if (row?.enabled) throw new Error("La 2FA est déjà activée");
 
-    const email = (context.claims as any)?.email ?? "superadmin";
+    const email = context.user?.email ?? "superadmin";
     const secret = generateTotpSecret();
     const otpauthUrl = buildOtpAuthUrl(`MboaEats (${email})`, secret);
-    const qrDataUrl = await QRCode.toDataURL(otpauthUrl, { margin: 1, width: 280 });
+    const qrDataUrl = await QRCode.toDataURL(otpauthUrl, {
+      margin: 1,
+      width: 280,
+    });
     return { secret, otpauthUrl, qrDataUrl };
   });
 
 export const confirmSetup2fa = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAuth])
   .inputValidator((d) =>
     z
       .object({
@@ -114,7 +139,7 @@ export const confirmSetup2fa = createServerFn({ method: "POST" })
   )
   .handler(async ({ context, data }) => {
     const userId = context.userId;
-    await assertSuperadmin(userId);
+    await assertIsSuperadmin(userId);
     const existing = await getRow(userId);
     if (existing?.enabled) throw new Error("La 2FA est déjà activée");
 
@@ -126,27 +151,24 @@ export const confirmSetup2fa = createServerFn({ method: "POST" })
     const enc = encryptSecret(data.secret);
     const codes = generateBackupCodes(10);
 
-    const { error } = await supabaseAdmin
-      .from("superadmin_2fa")
-      .upsert(
-        {
-          user_id: userId,
-          enabled: true,
-          secret_ciphertext: enc.ciphertext,
-          secret_iv: enc.iv,
-          secret_tag: enc.tag,
-          verified_at: new Date().toISOString(),
-          backup_codes_hashed: codes.hashed,
-          failed_attempts: 0,
-          locked_until: null,
-          last_used_at: new Date().toISOString(),
-        },
-        { onConflict: "user_id" },
-      );
+    const { error } = await supabaseAdmin.from("superadmin_2fa").upsert(
+      {
+        user_id: userId,
+        enabled: true,
+        secret_ciphertext: enc.ciphertext,
+        secret_iv: enc.iv,
+        secret_tag: enc.tag,
+        verified_at: new Date().toISOString(),
+        backup_codes_hashed: codes.hashed,
+        failed_attempts: 0,
+        locked_until: null,
+        last_used_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" },
+    );
     if (error) throw new Error(error.message);
 
-    // Marque la session comme 2FA validée
-    const session = await getMboaSession();
+    const session = await getTransientSession();
     await session.update({
       ...session.data,
       sa2faUserId: userId,
@@ -157,8 +179,11 @@ export const confirmSetup2fa = createServerFn({ method: "POST" })
     return { ok: true, backupCodes: codes.plain };
   });
 
+// -----------------------------------------------------------------------------
+// Verify login 2FA
+// -----------------------------------------------------------------------------
 export const verifyLogin2fa = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAuth])
   .inputValidator((d) =>
     z
       .object({
@@ -169,13 +194,20 @@ export const verifyLogin2fa = createServerFn({ method: "POST" })
   )
   .handler(async ({ context, data }) => {
     const userId = context.userId;
-    await assertSuperadmin(userId);
+    await assertIsSuperadmin(userId);
     const row = await getRow(userId);
-    if (!row?.enabled || !row.secret_ciphertext || !row.secret_iv || !row.secret_tag) {
+    if (
+      !row?.enabled ||
+      !row.secret_ciphertext ||
+      !row.secret_iv ||
+      !row.secret_tag
+    ) {
       throw new Error("La 2FA n'est pas configurée");
     }
     if (row.locked_until && new Date(row.locked_until).getTime() > Date.now()) {
-      throw new Error(`Compte verrouillé jusqu'à ${new Date(row.locked_until).toLocaleTimeString("fr-FR")}`);
+      throw new Error(
+        `Compte verrouillé jusqu'à ${new Date(row.locked_until).toLocaleTimeString("fr-FR")}`,
+      );
     }
 
     let success = false;
@@ -186,25 +218,31 @@ export const verifyLogin2fa = createServerFn({ method: "POST" })
       success = r.ok;
       if (success) newBackup = r.remaining;
     } else {
-      const secret = decryptSecret(row.secret_ciphertext, row.secret_iv, row.secret_tag);
+      const secret = decryptSecret(
+        row.secret_ciphertext,
+        row.secret_iv,
+        row.secret_tag,
+      );
       success = verifyTotpCode(secret, data.code);
     }
 
     if (!success) {
       const attempts = (row.failed_attempts ?? 0) + 1;
-      const lock = attempts >= MAX_FAILED_ATTEMPTS;
+      const lock = attempts >= maxAttempts;
       await supabaseAdmin
         .from("superadmin_2fa")
         .update({
           failed_attempts: lock ? 0 : attempts,
-          locked_until: lock ? new Date(Date.now() + LOCK_MINUTES * 60_000).toISOString() : null,
+          locked_until: lock
+            ? new Date(Date.now() + lockMinutes * 60_000).toISOString()
+            : null,
         })
         .eq("user_id", userId);
       await logAttempt(userId, false, data.useBackup ? "backup" : "totp");
       throw new Error(
         lock
-          ? `Trop de tentatives. Compte verrouillé ${LOCK_MINUTES} min.`
-          : `Code invalide (${MAX_FAILED_ATTEMPTS - attempts} essais restants)`,
+          ? `Trop de tentatives. Compte verrouillé ${lockMinutes} min.`
+          : `Code invalide (${maxAttempts - attempts} essais restants)`,
       );
     }
 
@@ -218,27 +256,38 @@ export const verifyLogin2fa = createServerFn({ method: "POST" })
       })
       .eq("user_id", userId);
 
-    const session = await getMboaSession();
+    const session = await getTransientSession();
     await session.update({
       ...session.data,
       sa2faUserId: userId,
       sa2faAt: Date.now(),
     });
     await logAttempt(userId, true, data.useBackup ? "backup" : "totp");
-    return { ok: true, backupCodesRemaining: newBackup?.length ?? row.backup_codes_hashed?.length ?? 0 };
+    return {
+      ok: true,
+      backupCodesRemaining:
+        newBackup?.length ?? row.backup_codes_hashed?.length ?? 0,
+    };
   });
 
+// -----------------------------------------------------------------------------
+// Disable / regenerate
+// -----------------------------------------------------------------------------
 export const disable2fa = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAuth])
   .inputValidator((d) =>
     z.object({ code: z.string().min(6).max(20) }).parse(d),
   )
   .handler(async ({ context, data }) => {
     const userId = context.userId;
-    await assertSuperadmin(userId);
+    await assertIsSuperadmin(userId);
     const row = await getRow(userId);
     if (!row?.enabled) throw new Error("2FA inactive");
-    const secret = decryptSecret(row.secret_ciphertext!, row.secret_iv!, row.secret_tag!);
+    const secret = decryptSecret(
+      row.secret_ciphertext!,
+      row.secret_iv!,
+      row.secret_tag!,
+    );
     if (!verifyTotpCode(secret, data.code)) {
       await logAttempt(userId, false, "disable");
       throw new Error("Code invalide");
@@ -254,32 +303,48 @@ export const disable2fa = createServerFn({ method: "POST" })
         verified_at: null,
       })
       .eq("user_id", userId);
-    const session = await getMboaSession();
-    await session.update({ ...session.data, sa2faUserId: undefined, sa2faAt: undefined });
+    const session = await getTransientSession();
+    await session.update({
+      ...session.data,
+      sa2faUserId: undefined,
+      sa2faAt: undefined,
+    });
     await logAttempt(userId, true, "disable");
-    return { ok: true };
+    return { ok: true as const };
   });
 
 export const regenerateBackupCodes = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ code: z.string().min(6).max(20) }).parse(d))
+  .middleware([requireAuth])
+  .inputValidator((d) =>
+    z.object({ code: z.string().min(6).max(20) }).parse(d),
+  )
   .handler(async ({ context, data }) => {
     const userId = context.userId;
-    await assertSuperadmin(userId);
+    await assertIsSuperadmin(userId);
     const row = await getRow(userId);
     if (!row?.enabled) throw new Error("2FA inactive");
-    const secret = decryptSecret(row.secret_ciphertext!, row.secret_iv!, row.secret_tag!);
+    const secret = decryptSecret(
+      row.secret_ciphertext!,
+      row.secret_iv!,
+      row.secret_tag!,
+    );
     if (!verifyTotpCode(secret, data.code)) throw new Error("Code invalide");
     const codes = generateBackupCodes(10);
     await supabaseAdmin
       .from("superadmin_2fa")
       .update({ backup_codes_hashed: codes.hashed })
       .eq("user_id", userId);
-    return { ok: true, backupCodes: codes.plain };
+    return { ok: true as const, backupCodes: codes.plain };
   });
 
-export const clearSa2faSession = createServerFn({ method: "POST" }).handler(async () => {
-  const session = await getMboaSession();
-  await session.update({ ...session.data, sa2faUserId: undefined, sa2faAt: undefined });
-  return { ok: true };
-});
+export const clearSa2faSession = createServerFn({ method: "POST" }).handler(
+  async () => {
+    const session = await getTransientSession();
+    await session.update({
+      ...session.data,
+      sa2faUserId: undefined,
+      sa2faAt: undefined,
+    });
+    return { ok: true as const };
+  },
+);
