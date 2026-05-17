@@ -69,6 +69,7 @@ import { Route as AdminZonesRouteImport } from './routes/admin.zones'
 import { Route as AdminRestaurantsRouteImport } from './routes/admin.restaurants'
 import { Route as AdminParametresRouteImport } from './routes/admin.parametres'
 import { Route as AdminMenusRouteImport } from './routes/admin.menus'
+import { Route as AdminLogsRouteImport } from './routes/admin.logs'
 import { Route as AdminLivreursRouteImport } from './routes/admin.livreurs'
 import { Route as AdminLitigesRouteImport } from './routes/admin.litiges'
 import { Route as AdminCommissionsRouteImport } from './routes/admin.commissions'
@@ -382,6 +383,11 @@ const AdminMenusRoute = AdminMenusRouteImport.update({
   path: '/menus',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminLogsRoute = AdminLogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminLivreursRoute = AdminLivreursRouteImport.update({
   id: '/livreurs',
   path: '/livreurs',
@@ -487,6 +493,7 @@ export interface FileRoutesByFullPath {
   '/admin/commissions': typeof AdminCommissionsRoute
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
+  '/admin/logs': typeof AdminLogsRoute
   '/admin/menus': typeof AdminMenusRoute
   '/admin/parametres': typeof AdminParametresRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
@@ -558,6 +565,7 @@ export interface FileRoutesByTo {
   '/admin/commissions': typeof AdminCommissionsRoute
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
+  '/admin/logs': typeof AdminLogsRoute
   '/admin/menus': typeof AdminMenusRoute
   '/admin/parametres': typeof AdminParametresRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
@@ -633,6 +641,7 @@ export interface FileRoutesById {
   '/admin/commissions': typeof AdminCommissionsRoute
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
+  '/admin/logs': typeof AdminLogsRoute
   '/admin/menus': typeof AdminMenusRoute
   '/admin/parametres': typeof AdminParametresRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
@@ -709,6 +718,7 @@ export interface FileRouteTypes {
     | '/admin/commissions'
     | '/admin/litiges'
     | '/admin/livreurs'
+    | '/admin/logs'
     | '/admin/menus'
     | '/admin/parametres'
     | '/admin/restaurants'
@@ -780,6 +790,7 @@ export interface FileRouteTypes {
     | '/admin/commissions'
     | '/admin/litiges'
     | '/admin/livreurs'
+    | '/admin/logs'
     | '/admin/menus'
     | '/admin/parametres'
     | '/admin/restaurants'
@@ -854,6 +865,7 @@ export interface FileRouteTypes {
     | '/admin/commissions'
     | '/admin/litiges'
     | '/admin/livreurs'
+    | '/admin/logs'
     | '/admin/menus'
     | '/admin/parametres'
     | '/admin/restaurants'
@@ -1364,6 +1376,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMenusRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/logs': {
+      id: '/admin/logs'
+      path: '/logs'
+      fullPath: '/admin/logs'
+      preLoaderRoute: typeof AdminLogsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/livreurs': {
       id: '/admin/livreurs'
       path: '/livreurs'
@@ -1457,6 +1476,7 @@ interface AdminRouteChildren {
   AdminCommissionsRoute: typeof AdminCommissionsRoute
   AdminLitigesRoute: typeof AdminLitigesRoute
   AdminLivreursRoute: typeof AdminLivreursRoute
+  AdminLogsRoute: typeof AdminLogsRoute
   AdminMenusRoute: typeof AdminMenusRoute
   AdminParametresRoute: typeof AdminParametresRoute
   AdminRestaurantsRoute: typeof AdminRestaurantsRoute
@@ -1470,6 +1490,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminCommissionsRoute: AdminCommissionsRoute,
   AdminLitigesRoute: AdminLitigesRoute,
   AdminLivreursRoute: AdminLivreursRoute,
+  AdminLogsRoute: AdminLogsRoute,
   AdminMenusRoute: AdminMenusRoute,
   AdminParametresRoute: AdminParametresRoute,
   AdminRestaurantsRoute: AdminRestaurantsRoute,
