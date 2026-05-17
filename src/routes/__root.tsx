@@ -123,7 +123,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   useKeyboardViewport();
-  const hostMode = useHostGuard();
+  const hostMode = getHostMode();
   usePrefetchOnIdle(
     hostMode === "admin"
       ? []
