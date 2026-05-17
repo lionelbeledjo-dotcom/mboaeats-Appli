@@ -69,9 +69,12 @@ import { Route as AdminZonesRouteImport } from './routes/admin.zones'
 import { Route as AdminRestaurantsRouteImport } from './routes/admin.restaurants'
 import { Route as AdminParametresRouteImport } from './routes/admin.parametres'
 import { Route as AdminMenusRouteImport } from './routes/admin.menus'
+import { Route as AdminLogsRouteImport } from './routes/admin.logs'
 import { Route as AdminLivreursRouteImport } from './routes/admin.livreurs'
 import { Route as AdminLitigesRouteImport } from './routes/admin.litiges'
 import { Route as AdminCommissionsRouteImport } from './routes/admin.commissions'
+import { Route as AdminCommandesRouteImport } from './routes/admin.commandes'
+import { Route as AdminClientsRouteImport } from './routes/admin.clients'
 import { Route as RestaurantsRestoIdMenuRouteImport } from './routes/restaurants.$restoId.menu'
 import { Route as ApiPublicCampayWebhookRouteImport } from './routes/api/public/campay-webhook'
 import { Route as RestaurantsRestoIdPlatsPlatIdRouteImport } from './routes/restaurants.$restoId_.plats.$platId'
@@ -380,6 +383,11 @@ const AdminMenusRoute = AdminMenusRouteImport.update({
   path: '/menus',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminLogsRoute = AdminLogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminLivreursRoute = AdminLivreursRouteImport.update({
   id: '/livreurs',
   path: '/livreurs',
@@ -393,6 +401,16 @@ const AdminLitigesRoute = AdminLitigesRouteImport.update({
 const AdminCommissionsRoute = AdminCommissionsRouteImport.update({
   id: '/commissions',
   path: '/commissions',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCommandesRoute = AdminCommandesRouteImport.update({
+  id: '/commandes',
+  path: '/commandes',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminClientsRoute = AdminClientsRouteImport.update({
+  id: '/clients',
+  path: '/clients',
   getParentRoute: () => AdminRoute,
 } as any)
 const RestaurantsRestoIdMenuRoute = RestaurantsRestoIdMenuRouteImport.update({
@@ -470,9 +488,12 @@ export interface FileRoutesByFullPath {
   '/suivi': typeof SuiviRouteWithChildren
   '/superadmin': typeof SuperadminRouteWithChildren
   '/tablee': typeof TableeRouteWithChildren
+  '/admin/clients': typeof AdminClientsRoute
+  '/admin/commandes': typeof AdminCommandesRoute
   '/admin/commissions': typeof AdminCommissionsRoute
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
+  '/admin/logs': typeof AdminLogsRoute
   '/admin/menus': typeof AdminMenusRoute
   '/admin/parametres': typeof AdminParametresRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
@@ -539,9 +560,12 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suivi': typeof SuiviRouteWithChildren
   '/tablee': typeof TableeRouteWithChildren
+  '/admin/clients': typeof AdminClientsRoute
+  '/admin/commandes': typeof AdminCommandesRoute
   '/admin/commissions': typeof AdminCommissionsRoute
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
+  '/admin/logs': typeof AdminLogsRoute
   '/admin/menus': typeof AdminMenusRoute
   '/admin/parametres': typeof AdminParametresRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
@@ -612,9 +636,12 @@ export interface FileRoutesById {
   '/suivi': typeof SuiviRouteWithChildren
   '/superadmin': typeof SuperadminRouteWithChildren
   '/tablee': typeof TableeRouteWithChildren
+  '/admin/clients': typeof AdminClientsRoute
+  '/admin/commandes': typeof AdminCommandesRoute
   '/admin/commissions': typeof AdminCommissionsRoute
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
+  '/admin/logs': typeof AdminLogsRoute
   '/admin/menus': typeof AdminMenusRoute
   '/admin/parametres': typeof AdminParametresRoute
   '/admin/restaurants': typeof AdminRestaurantsRoute
@@ -686,9 +713,12 @@ export interface FileRouteTypes {
     | '/suivi'
     | '/superadmin'
     | '/tablee'
+    | '/admin/clients'
+    | '/admin/commandes'
     | '/admin/commissions'
     | '/admin/litiges'
     | '/admin/livreurs'
+    | '/admin/logs'
     | '/admin/menus'
     | '/admin/parametres'
     | '/admin/restaurants'
@@ -755,9 +785,12 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/suivi'
     | '/tablee'
+    | '/admin/clients'
+    | '/admin/commandes'
     | '/admin/commissions'
     | '/admin/litiges'
     | '/admin/livreurs'
+    | '/admin/logs'
     | '/admin/menus'
     | '/admin/parametres'
     | '/admin/restaurants'
@@ -827,9 +860,12 @@ export interface FileRouteTypes {
     | '/suivi'
     | '/superadmin'
     | '/tablee'
+    | '/admin/clients'
+    | '/admin/commandes'
     | '/admin/commissions'
     | '/admin/litiges'
     | '/admin/livreurs'
+    | '/admin/logs'
     | '/admin/menus'
     | '/admin/parametres'
     | '/admin/restaurants'
@@ -1340,6 +1376,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMenusRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/logs': {
+      id: '/admin/logs'
+      path: '/logs'
+      fullPath: '/admin/logs'
+      preLoaderRoute: typeof AdminLogsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/livreurs': {
       id: '/admin/livreurs'
       path: '/livreurs'
@@ -1359,6 +1402,20 @@ declare module '@tanstack/react-router' {
       path: '/commissions'
       fullPath: '/admin/commissions'
       preLoaderRoute: typeof AdminCommissionsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/commandes': {
+      id: '/admin/commandes'
+      path: '/commandes'
+      fullPath: '/admin/commandes'
+      preLoaderRoute: typeof AdminCommandesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/clients': {
+      id: '/admin/clients'
+      path: '/clients'
+      fullPath: '/admin/clients'
+      preLoaderRoute: typeof AdminClientsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/restaurants/$restoId/menu': {
@@ -1414,9 +1471,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminClientsRoute: typeof AdminClientsRoute
+  AdminCommandesRoute: typeof AdminCommandesRoute
   AdminCommissionsRoute: typeof AdminCommissionsRoute
   AdminLitigesRoute: typeof AdminLitigesRoute
   AdminLivreursRoute: typeof AdminLivreursRoute
+  AdminLogsRoute: typeof AdminLogsRoute
   AdminMenusRoute: typeof AdminMenusRoute
   AdminParametresRoute: typeof AdminParametresRoute
   AdminRestaurantsRoute: typeof AdminRestaurantsRoute
@@ -1425,9 +1485,12 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminClientsRoute: AdminClientsRoute,
+  AdminCommandesRoute: AdminCommandesRoute,
   AdminCommissionsRoute: AdminCommissionsRoute,
   AdminLitigesRoute: AdminLitigesRoute,
   AdminLivreursRoute: AdminLivreursRoute,
+  AdminLogsRoute: AdminLogsRoute,
   AdminMenusRoute: AdminMenusRoute,
   AdminParametresRoute: AdminParametresRoute,
   AdminRestaurantsRoute: AdminRestaurantsRoute,

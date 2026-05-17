@@ -558,3 +558,177 @@ export const deleteDriver = createServerFn({ method: "POST" })
   .middleware([requirePlatformAdmin])
   .inputValidator((d) => z.object({ user_id: z.string().uuid() }).parse(d))
   .handler(async () => ({ ok: true as const }));
+
+// -----------------------------------------------------------------------------
+// Commandes plateforme (Admin)
+// -----------------------------------------------------------------------------
+export const listAllOrders = createServerFn({ method: "GET" })
+  .middleware([requirePlatformAdmin])
+  .inputValidator((d) =>
+    z
+      .object({
+        status: z.string().optional(),
+        search: z.string().max(80).optional(),
+        limit: z.number().min(1).max(200).default(100),
+      })
+      .parse(d ?? {}),
+  )
+  .handler(async ({ data }) => {
+    let q = supabaseAdmin
+      .from("orders")
+      .select(
+        "id, reference, status, total, subtotal, delivery_fee, created_at, paid_at, delivered_at, cancelled_at, user_id, restaurant_id, driver_id, payment_method",
+      )
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(data.limit);
+    if (data.status && data.status !== "all") {
+      q = q.eq("status", data.status as never);
+    }
+    if (data.search) {
+      q = q.ilike("reference", `%${data.search}%`);
+    }
+    const { data: orders, error } = await q;
+    if (error) throw new Error(error.message);
+    const restoIds = Array.from(new Set((orders ?? []).map((o) => o.restaurant_id).filter(Boolean)));
+    const userIds = Array.from(new Set((orders ?? []).map((o) => o.user_id).filter(Boolean)));
+    const [{ data: restos }, { data: profiles }] = await Promise.all([
+      restoIds.length
+        ? supabaseAdmin.from("restaurants").select("id, name, city").in("id", restoIds)
+        : Promise.resolve({ data: [] as { id: string; name: string; city: string | null }[] }),
+      userIds.length
+        ? supabaseAdmin.from("profiles").select("user_id, full_name, phone").in("user_id", userIds)
+        : Promise.resolve({ data: [] as { user_id: string; full_name: string | null; phone: string | null }[] }),
+    ]);
+    const rMap = new Map((restos ?? []).map((r) => [r.id, r]));
+    const pMap = new Map((profiles ?? []).map((p) => [p.user_id, p]));
+    return (orders ?? []).map((o) => ({
+      ...o,
+      restaurant: rMap.get(o.restaurant_id) ?? null,
+      client: pMap.get(o.user_id) ?? null,
+    }));
+  });
+
+export const cancelOrderAsAdmin = createServerFn({ method: "POST" })
+  .middleware([requirePlatformAdmin])
+  .inputValidator((d) =>
+    z.object({ order_id: z.string().uuid(), reason: z.string().max(500).optional() }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { error } = await supabaseAdmin
+      .from("orders")
+      .update({ status: "cancelled", cancelled_at: new Date().toISOString() })
+      .eq("id", data.order_id);
+    if (error) throw new Error(error.message);
+    await supabaseAdmin.from("order_events").insert({
+      order_id: data.order_id,
+      event_type: "admin_cancelled",
+      payload: { reason: data.reason ?? null },
+    });
+    return { ok: true as const };
+  });
+
+// -----------------------------------------------------------------------------
+// Clients (Admin)
+// -----------------------------------------------------------------------------
+export const listAllClients = createServerFn({ method: "GET" })
+  .middleware([requirePlatformAdmin])
+  .inputValidator((d) =>
+    z
+      .object({
+        search: z.string().max(80).optional(),
+        limit: z.number().min(1).max(500).default(200),
+      })
+      .parse(d ?? {}),
+  )
+  .handler(async ({ data }) => {
+    let q = supabaseAdmin
+      .from("profiles")
+      .select("user_id, full_name, phone, city, created_at, phone_verified, is_suspended, suspended_at, suspended_reason")
+      .order("created_at", { ascending: false })
+      .limit(data.limit);
+    if (data.search) {
+      q = q.or(`full_name.ilike.%${data.search}%,phone.ilike.%${data.search}%`);
+    }
+    const { data: profiles, error } = await q;
+    if (error) throw new Error(error.message);
+    const ids = (profiles ?? []).map((p) => p.user_id);
+    const { data: orderStats } = ids.length
+      ? await supabaseAdmin
+          .from("orders")
+          .select("user_id, total")
+          .in("user_id", ids)
+          .is("deleted_at", null)
+      : { data: [] as { user_id: string; total: number | null }[] };
+    const stats = new Map<string, { count: number; gmv: number }>();
+    for (const o of orderStats ?? []) {
+      const s = stats.get(o.user_id) ?? { count: 0, gmv: 0 };
+      s.count += 1;
+      s.gmv += o.total ?? 0;
+      stats.set(o.user_id, s);
+    }
+    return (profiles ?? []).map((p) => ({
+      ...p,
+      suspended: !!p.is_suspended,
+      orders_count: stats.get(p.user_id)?.count ?? 0,
+      gmv: stats.get(p.user_id)?.gmv ?? 0,
+    }));
+  });
+
+export const setClientSuspended = createServerFn({ method: "POST" })
+  .middleware([requirePlatformAdmin])
+  .inputValidator((d) =>
+    z
+      .object({
+        user_id: z.string().uuid(),
+        suspended: z.boolean(),
+        reason: z.string().max(500).optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { error } = await supabaseAdmin
+      .from("profiles")
+      .update({
+        is_suspended: data.suspended,
+        suspended_at: data.suspended ? new Date().toISOString() : null,
+        suspended_reason: data.suspended ? data.reason ?? null : null,
+      })
+      .eq("user_id", data.user_id);
+    if (error) throw new Error(error.message);
+    return { ok: true as const, suspended: data.suspended };
+  });
+
+// -----------------------------------------------------------------------------
+// Audit logs
+// -----------------------------------------------------------------------------
+export const listAuditLogs = createServerFn({ method: "GET" })
+  .middleware([requirePlatformAdmin])
+  .inputValidator((d) =>
+    z
+      .object({
+        action: z.string().max(80).optional(),
+        table: z.string().max(80).optional(),
+        limit: z.number().min(1).max(500).default(150),
+      })
+      .parse(d ?? {}),
+  )
+  .handler(async ({ data }) => {
+    let q = supabaseAdmin
+      .from("audit_logs")
+      .select("id, action, target_table, target_id, actor_id, actor_role, occurred_at, metadata, restaurant_id")
+      .order("occurred_at", { ascending: false })
+      .limit(data.limit);
+    if (data.action) q = q.ilike("action", `%${data.action}%`);
+    if (data.table) q = q.eq("target_table", data.table);
+    const { data: logs, error } = await q;
+    if (error) throw new Error(error.message);
+    const actorIds = Array.from(
+      new Set((logs ?? []).map((l) => l.actor_id).filter((v): v is string => Boolean(v))),
+    );
+    const { data: profiles } = actorIds.length
+      ? await supabaseAdmin.from("profiles").select("user_id, full_name").in("user_id", actorIds)
+      : { data: [] as { user_id: string; full_name: string | null }[] };
+    const pMap = new Map((profiles ?? []).map((p) => [p.user_id, p]));
+    return (logs ?? []).map((l) => ({ ...l, actor_name: l.actor_id ? pMap.get(l.actor_id)?.full_name ?? null : null }));
+  });

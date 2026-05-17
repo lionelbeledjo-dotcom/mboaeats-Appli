@@ -1263,11 +1263,14 @@ export type Database = {
           default_role: string
           full_name: string | null
           id: string
+          is_suspended: boolean
           onboarding_completed: boolean
           phone: string | null
           phone_verified: boolean
           phone_verified_at: string | null
           preferred_language: string
+          suspended_at: string | null
+          suspended_reason: string | null
           updated_at: string
           user_id: string
         }
@@ -1278,11 +1281,14 @@ export type Database = {
           default_role?: string
           full_name?: string | null
           id?: string
+          is_suspended?: boolean
           onboarding_completed?: boolean
           phone?: string | null
           phone_verified?: boolean
           phone_verified_at?: string | null
           preferred_language?: string
+          suspended_at?: string | null
+          suspended_reason?: string | null
           updated_at?: string
           user_id: string
         }
@@ -1293,11 +1299,14 @@ export type Database = {
           default_role?: string
           full_name?: string | null
           id?: string
+          is_suspended?: boolean
           onboarding_completed?: boolean
           phone?: string | null
           phone_verified?: boolean
           phone_verified_at?: string | null
           preferred_language?: string
+          suspended_at?: string | null
+          suspended_reason?: string | null
           updated_at?: string
           user_id?: string
         }
