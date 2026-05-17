@@ -122,9 +122,6 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  if (typeof window !== "undefined") {
-    void runAdminBootstrapRedirect();
-  }
   useKeyboardViewport();
   const hostMode = useHostGuard();
   usePrefetchOnIdle(
