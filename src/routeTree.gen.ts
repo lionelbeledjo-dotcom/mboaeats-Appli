@@ -64,6 +64,7 @@ import { Route as CompteLivraisonRouteImport } from './routes/compte.livraison'
 import { Route as CompteCommandesRouteImport } from './routes/compte.commandes'
 import { Route as CategorieSlugRouteImport } from './routes/categorie.$slug'
 import { Route as AideCategoryRouteImport } from './routes/aide.$category'
+import { Route as AdminUnauthorizedRouteImport } from './routes/admin_.unauthorized'
 import { Route as AdminLoginRouteImport } from './routes/admin_.login'
 import { Route as AdminZonesRouteImport } from './routes/admin.zones'
 import { Route as AdminRestaurantsRouteImport } from './routes/admin.restaurants'
@@ -358,6 +359,11 @@ const AideCategoryRoute = AideCategoryRouteImport.update({
   path: '/$category',
   getParentRoute: () => AideRoute,
 } as any)
+const AdminUnauthorizedRoute = AdminUnauthorizedRouteImport.update({
+  id: '/admin_/unauthorized',
+  path: '/admin/unauthorized',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/admin_/login',
   path: '/admin/login',
@@ -499,6 +505,7 @@ export interface FileRoutesByFullPath {
   '/admin/restaurants': typeof AdminRestaurantsRoute
   '/admin/zones': typeof AdminZonesRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/unauthorized': typeof AdminUnauthorizedRoute
   '/aide/$category': typeof AideCategoryRoute
   '/categorie/$slug': typeof CategorieSlugRoute
   '/compte/commandes': typeof CompteCommandesRoute
@@ -571,6 +578,7 @@ export interface FileRoutesByTo {
   '/admin/restaurants': typeof AdminRestaurantsRoute
   '/admin/zones': typeof AdminZonesRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/unauthorized': typeof AdminUnauthorizedRoute
   '/aide/$category': typeof AideCategoryRoute
   '/categorie/$slug': typeof CategorieSlugRoute
   '/compte/commandes': typeof CompteCommandesRoute
@@ -647,6 +655,7 @@ export interface FileRoutesById {
   '/admin/restaurants': typeof AdminRestaurantsRoute
   '/admin/zones': typeof AdminZonesRoute
   '/admin_/login': typeof AdminLoginRoute
+  '/admin_/unauthorized': typeof AdminUnauthorizedRoute
   '/aide/$category': typeof AideCategoryRoute
   '/categorie/$slug': typeof CategorieSlugRoute
   '/compte/commandes': typeof CompteCommandesRoute
@@ -724,6 +733,7 @@ export interface FileRouteTypes {
     | '/admin/restaurants'
     | '/admin/zones'
     | '/admin/login'
+    | '/admin/unauthorized'
     | '/aide/$category'
     | '/categorie/$slug'
     | '/compte/commandes'
@@ -796,6 +806,7 @@ export interface FileRouteTypes {
     | '/admin/restaurants'
     | '/admin/zones'
     | '/admin/login'
+    | '/admin/unauthorized'
     | '/aide/$category'
     | '/categorie/$slug'
     | '/compte/commandes'
@@ -871,6 +882,7 @@ export interface FileRouteTypes {
     | '/admin/restaurants'
     | '/admin/zones'
     | '/admin_/login'
+    | '/admin_/unauthorized'
     | '/aide/$category'
     | '/categorie/$slug'
     | '/compte/commandes'
@@ -937,6 +949,7 @@ export interface RootRouteChildren {
   SuperadminRoute: typeof SuperadminRouteWithChildren
   TableeRoute: typeof TableeRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
+  AdminUnauthorizedRoute: typeof AdminUnauthorizedRoute
   CategorieSlugRoute: typeof CategorieSlugRoute
   CompteCommandesRoute: typeof CompteCommandesRoute
   CompteLivraisonRoute: typeof CompteLivraisonRoute
@@ -1341,6 +1354,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AideCategoryRouteImport
       parentRoute: typeof AideRoute
     }
+    '/admin_/unauthorized': {
+      id: '/admin_/unauthorized'
+      path: '/admin/unauthorized'
+      fullPath: '/admin/unauthorized'
+      preLoaderRoute: typeof AdminUnauthorizedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin_/login': {
       id: '/admin_/login'
       path: '/admin/login'
@@ -1612,6 +1632,7 @@ const rootRouteChildren: RootRouteChildren = {
   SuperadminRoute: SuperadminRouteWithChildren,
   TableeRoute: TableeRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
+  AdminUnauthorizedRoute: AdminUnauthorizedRoute,
   CategorieSlugRoute: CategorieSlugRoute,
   CompteCommandesRoute: CompteCommandesRoute,
   CompteLivraisonRoute: CompteLivraisonRoute,

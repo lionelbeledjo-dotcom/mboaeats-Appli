@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ShieldAlert, LogOut, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/admin/unauthorized")({
+export const Route = createFileRoute("/admin_/unauthorized")({
   component: UnauthorizedPage,
   head: () => ({
     meta: [
