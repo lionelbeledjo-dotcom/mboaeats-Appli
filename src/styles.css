@@ -612,6 +612,14 @@ html, body, #root {
   overflow-x: hidden;
   overscroll-behavior: none;
 }
+html:has([data-admin-shell]),
+body:has([data-admin-shell]) {
+  height: 100%;
+  overflow-y: hidden;
+}
+body:has([data-admin-shell]) {
+  touch-action: auto;
+}
 html, body { min-height: 100%; }
 /* Override Tailwind min-h-screen (100vh) → 100dvh : empêche le contenu
    d'être masqué par la barre URL iOS et stabilise le BottomDock. */
