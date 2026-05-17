@@ -72,13 +72,17 @@ function Overview() {
       )}
 
       <div className="grid gap-3 sm:gap-5 lg:grid-cols-4">
-        {(isLoading ? Array.from({ length: 4 }) : kpis).map((k, i) => (
-          <div
-            key={i}
-            className="group flex items-center gap-3 rounded-3xl border border-border/60 bg-surface p-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-14px_rgba(0,0,0,0.35)] sm:block sm:p-5"
-          >
-            {k ? (
-              <>
+        {isLoading
+          ? Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-3xl border border-border/60 bg-surface p-5">
+                <div className="h-24 w-full animate-pulse rounded-2xl bg-muted/40" />
+              </div>
+            ))
+          : kpis.map((k) => (
+              <div
+                key={k.label}
+                className="group flex items-center gap-3 rounded-3xl border border-border/60 bg-surface p-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-14px_rgba(0,0,0,0.35)] sm:block sm:p-5"
+              >
                 <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-background shadow-inner sm:h-11 sm:w-11">
                   <k.icon className={`h-6 w-6 ${k.accent === "gold" ? "text-gold" : "text-primary"}`} strokeWidth={2.2} />
                 </span>
@@ -92,12 +96,8 @@ function Overview() {
                   </p>
                   <p className="mt-1 truncate text-[11px] text-muted-foreground sm:mt-1.5 sm:text-xs">{k.hint}</p>
                 </div>
-              </>
-            ) : (
-              <div className="h-24 w-full animate-pulse rounded-2xl bg-muted/40" />
-            )}
-          </div>
-        ))}
+              </div>
+            ))}
       </div>
 
       <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
