@@ -96,9 +96,85 @@ export const getAdminOverview = createServerFn({ method: "GET" })
 
     const onlineDrivers = (drivers ?? []).filter((d) => d.status !== "offline").length;
 
+    // Revenus jour par jour (7 derniers jours)
+    const dayLabels = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+    const weekRevenue: { day: string; revenu: number }[] = [];
+    const today = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      d.setHours(0, 0, 0, 0);
+      const next = new Date(d);
+      next.setDate(d.getDate() + 1);
+      const revenu = ordersArr
+        .filter((o) => {
+          const t = new Date(o.created_at).getTime();
+          return t >= d.getTime() && t < next.getTime();
+        })
+        .reduce((s, o) => s + (o.total ?? 0), 0);
+      weekRevenue.push({ day: dayLabels[d.getDay()], revenu });
+    }
+
+    // Commandes d'aujourd'hui
+    const startToday = new Date();
+    startToday.setHours(0, 0, 0, 0);
+    const ordersToday = ordersArr.filter(
+      (o) => new Date(o.created_at).getTime() >= startToday.getTime(),
+    );
+
+    // 5 dernières commandes (avec infos client)
+    const recentOrdersRaw = [...ordersArr]
+      .sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      )
+      .slice(0, 5);
+    const clientIds = Array.from(
+      new Set(
+        (
+          await supabaseAdmin
+            .from("orders")
+            .select("id, customer_id")
+            .in(
+              "id",
+              recentOrdersRaw.map((o) => o.id),
+            )
+        ).data?.map((r) => r.customer_id) ?? [],
+      ),
+    );
+    const { data: customers } = clientIds.length
+      ? await supabaseAdmin
+          .from("profiles")
+          .select("id, full_name, phone")
+          .in("id", clientIds)
+      : { data: [] as { id: string; full_name: string | null; phone: string | null }[] };
+    const { data: ordersDetail } = await supabaseAdmin
+      .from("orders")
+      .select("id, customer_id")
+      .in(
+        "id",
+        recentOrdersRaw.map((o) => o.id),
+      );
+    const custMap = new Map((customers ?? []).map((c) => [c.id, c]));
+    const ordCustMap = new Map((ordersDetail ?? []).map((o) => [o.id, o.customer_id]));
+    const recentOrders = recentOrdersRaw.map((o) => {
+      const customerId = ordCustMap.get(o.id);
+      const c = customerId ? custMap.get(customerId) : undefined;
+      return {
+        id: o.id,
+        total: o.total ?? 0,
+        status: o.status as string,
+        created_at: o.created_at,
+        restaurant: restoMap.get(o.restaurant_id)?.name ?? "—",
+        client: c?.full_name ?? "Client",
+        phone: c?.phone ?? "",
+      };
+    });
+
     return {
       gmv,
       ordersCount: ordersArr.length,
+      ordersToday: ordersToday.length,
       ordersPending,
       delivered,
       restosTotal: (restos ?? []).length,
@@ -111,6 +187,8 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       zonesTotal: (zones ?? []).length,
       cityGmv,
       topRestos,
+      weekRevenue,
+      recentOrders,
     };
   });
 
