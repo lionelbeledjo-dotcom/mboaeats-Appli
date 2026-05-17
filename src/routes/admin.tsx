@@ -99,13 +99,12 @@ function AdminLayout() {
         if (alive) setAdminInfo({ isAdmin: false, email: null });
         return;
       }
-      const { data: role } = await supabase
+      const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
-        .eq("role", "superadmin")
-        .maybeSingle();
-      if (alive) setAdminInfo({ isAdmin: !!role, email: user.email ?? null });
+        .in("role", ["admin", "superadmin"]);
+      if (alive) setAdminInfo({ isAdmin: !!(roles && roles.length > 0), email: user.email ?? null });
     };
 
     refresh();
