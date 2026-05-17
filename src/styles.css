@@ -612,7 +612,7 @@ html, body, #root {
   overflow-x: hidden;
   overscroll-behavior: none;
 }
-html, body { min-height: 100dvh; }
+html, body { min-height: 100%; }
 /* Override Tailwind min-h-screen (100vh) → 100dvh : empêche le contenu
    d'être masqué par la barre URL iOS et stabilise le BottomDock. */
 .min-h-screen { min-height: 100dvh !important; }
@@ -623,6 +623,7 @@ html, body { min-height: 100dvh; }
 }
 body {
   /* Smooth vertical scroll, prevent rubber-band horizontal */
+  overflow-y: auto;
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
 }
@@ -641,8 +642,8 @@ body {
 
 /* Keyboard inset (mobile) — alimenté par useKeyboardViewport */
 :root { --kb-inset: 0px; }
-/* Empêche les sticky/fixed de sauter quand le clavier ouvre */
-body.kb-open { overflow: hidden; }
+/* Clavier mobile : ne jamais bloquer le scroll document, y compris sur l'admin. */
+body.kb-open { overscroll-behavior: contain; }
 .kb-safe-bottom { padding-bottom: calc(var(--kb-inset) + env(safe-area-inset-bottom)); }
 
 /* Garde-fous anti-débordement (Explorer & cartes) */
