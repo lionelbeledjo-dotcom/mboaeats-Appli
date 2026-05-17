@@ -231,7 +231,19 @@ export function SuperAdminLoginForm() {
             <input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className="flex-1 bg-transparent text-sm outline-none" placeholder="superadmin@mboaeats.com" required />
           </div>
 
-          <label className="mt-4 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Mot de passe</label>
+          <div className="mt-4 flex items-center justify-between gap-2">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Mot de passe</label>
+            {mode === "signin" && (
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                disabled={loading}
+                className="text-[11px] font-medium text-primary hover:underline disabled:opacity-60"
+              >
+                Mot de passe oublié ?
+              </button>
+            )}
+          </div>
           <div className="mt-1.5 flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2.5 focus-within:border-primary">
             <Lock className="h-4 w-4 text-muted-foreground" />
             <input type="password" autoComplete={mode === "bootstrap" ? "new-password" : "current-password"} value={password} onChange={(e) => setPassword(e.target.value)} className="flex-1 bg-transparent text-sm outline-none" placeholder="••••••••" required minLength={8} />
