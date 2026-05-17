@@ -223,7 +223,7 @@ export function SuperAdminLoginForm() {
           {error && <p className="mt-4 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</p>}
           {info && <p className="mt-4 rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 text-xs text-primary">{info}</p>}
 
-          <button type="submit" disabled={loading} className="mt-6 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-gradient-primary text-sm font-semibold text-primary-foreground shadow-glow transition active:scale-[0.98] disabled:opacity-60">
+          <button type="submit" disabled={loading} className="mt-6 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-gradient-primary text-sm font-semibold text-primary-foreground shadow-glow transition-colors duration-200 hover:opacity-95 disabled:opacity-60">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
             {mode === "bootstrap" ? "Initialiser le SUPER_ADMIN" : "Se connecter"}
           </button>
