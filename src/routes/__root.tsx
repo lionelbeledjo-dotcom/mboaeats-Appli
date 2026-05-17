@@ -20,7 +20,7 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { useKeyboardViewport } from "@/hooks/useKeyboardViewport";
 import { usePrefetchOnIdle } from "@/auth/hooks/usePrefetch";
 import { useHostGuard } from "@/hooks/useHostGuard";
-import { runAdminBootstrapRedirect, waitForAdminBootstrapRedirect } from "@/lib/admin-bootstrap-redirect";
+
 
 // Mode invité : pages de découverte accessibles sans compte. Le checkout reste protégé via une porte dédiée.
 const PUBLIC_ROUTES = [
