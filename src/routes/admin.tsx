@@ -268,7 +268,7 @@ function AdminHeader({
           </div>
         ) : (
           <Link
-            to="/superadmin/login"
+            to="/admin/login"
             className="hidden items-center gap-1.5 rounded-full border border-destructive/40 bg-destructive/10 px-3 py-1.5 hover:bg-destructive/20 sm:inline-flex"
           >
             <ShieldAlert className="h-3.5 w-3.5 text-destructive" />
@@ -366,7 +366,7 @@ function AdminSidebar() {
 
   const handleLogout = async () => {
     try { await supabase.auth.signOut({ scope: "global" }); } catch {}
-    navigate({ to: "/superadmin/login", replace: true });
+    navigate({ to: "/admin/login", replace: true });
   };
 
   const isActive = (item: typeof navItems[number]) =>
