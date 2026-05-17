@@ -152,6 +152,24 @@ export function SuperAdminLoginForm() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    setError(null);
+    setInfo(null);
+    if (!email) return setError("Saisissez votre email pour recevoir le lien de réinitialisation.");
+    setLoading(true);
+    try {
+      const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (resetErr) throw resetErr;
+      setInfo("Email envoyé. Vérifiez votre boîte de réception pour réinitialiser votre mot de passe.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Impossible d'envoyer l'email de réinitialisation");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
       <div className="pointer-events-none absolute inset-0">
