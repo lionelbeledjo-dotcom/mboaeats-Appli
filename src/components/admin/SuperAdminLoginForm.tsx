@@ -85,7 +85,9 @@ export function SuperAdminLoginForm() {
 
       if (!role) {
         await supabase.auth.signOut();
-        throw new Error("Accès refusé : ce compte n'est pas SUPER_ADMIN.");
+        throw new Error(
+          `Accès refusé — ce compte (${email}) n'a pas le rôle SUPER_ADMIN. Connectez-vous avec un compte propriétaire de la plateforme, ou demandez à un superadmin existant de vous attribuer le rôle.`,
+        );
       }
 
       // Étape 2 : 2FA
