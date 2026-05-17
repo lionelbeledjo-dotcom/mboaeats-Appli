@@ -90,7 +90,7 @@ export function AdminLoginForm() {
         const { error: signUpErr } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/admin` },
+          options: { emailRedirectTo: adminRedirectTarget() },
         });
         if (signUpErr && !/registered/i.test(signUpErr.message)) throw signUpErr;
 
