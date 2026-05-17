@@ -1,83 +1,57 @@
-## Dashboard Restaurant Web (partenaire)
+# Plan — Test E2E console admin
 
-### Périmètre
-Créer une **interface web dédiée** aux restaurateurs, complètement isolée de l'app client (mobile-first). L'app client (`/`, `/explorer`, `/panier`, etc.) n'est **pas touchée**. Le `/restaurant` actuel (UI tabbed mobile) reste en place pour compatibilité, mais la nouvelle expérience web vit sous `/partenaire/*`.
+## Objectif
+Garantir, via un test automatisé, deux invariants UX de la console `/admin` :
+1. La molette de souris fait défiler le contenu sur **toutes** les pages `/admin/*`.
+2. Cliquer sur les items de la sidebar ne provoque **aucun rebond visuel** (pas de transform `scale`, pas de saut de layout).
 
-> Note : `restaurant.mboaeats.com` est un sous-domaine — il faut le pointer DNS vers le même projet et router selon l'hôte, OU exposer le dashboard à `/partenaire`. Je propose **`/partenaire`** comme base (simple, immédiat). Le sous-domaine pourra rediriger via Cloudflare Worker ou middleware plus tard si tu veux.
+## Stack proposée
+- **Playwright** (`@playwright/test`) — déjà éprouvé pour ce type de vérifications, supporte `mouse.wheel`, comparaison de bounding boxes, et tourne en CI.
+- Config minimale ciblant le dev server local (`bun run dev` sur `http://localhost:8080` — ou le port Vite utilisé).
+- Dossier `e2e/` à la racine + `playwright.config.ts`.
+- Scripts npm : `test:e2e` (run), `test:e2e:ui` (debug).
 
-### Architecture
+## Authentification admin dans les tests
+Les routes `/admin/*` exigent un compte admin. Trois options :
+- **A.** Utiliser des identifiants admin de test via variables d'env `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD` + un `globalSetup` qui se logge une fois et stocke `storageState.json` réutilisé par tous les tests.
+- **B.** Créer un compte admin de test seedé en base (migration ou script).
+- **C.** Mocker la session via injection localStorage Supabase.
 
-```
-src/routes/
-  partenaire.tsx                  → Layout sidebar + garde rôle/statut
-  partenaire.index.tsx            → Redirige vers /partenaire/commandes
-  partenaire.commandes.tsx        → Temps réel + actions (accepter, refuser, en prépa, prête)
-  partenaire.menu.tsx             → CRUD plats + activer/désactiver
-  partenaire.revenus.tsx          → Total commandes, commissions, net
-  partenaire.parametres.tsx       → Infos resto, horaires, ouvert/fermé
+Je recommande **A** — simple, réaliste, pas d'intrusion code prod. À confirmer avec toi avant d'écrire le test.
 
-src/components/partenaire/
-  PartenaireSidebar.tsx           → Nav latérale (logo, items, sélecteur resto, déconnexion)
-  PendingApprovalScreen.tsx       → Écran "en attente de validation"
-  RestaurantSwitcher.tsx          → Si le user gère plusieurs restos
-```
+## Couverture du test
 
-### Sécurité (garde unique)
-Le layout `partenaire.tsx` :
-1. `beforeLoad` : vérifie session via `supabase.auth.getUser()` → sinon redirige `/connexion?redirect=/partenaire`
-2. Appelle `listMyRestaurants()` (déjà existant) :
-   - **Aucun resto** → écran "Devenir restaurateur" (lien `/devenir-resto`)
-   - **Resto(s) trouvé(s)** mais `is_active=false` + pas `deleted_at` → écran *"Compte en attente de validation"* (texte demandé)
-   - **Resto validé** (`is_active=true`) → accès dashboard
-3. Stocke le `restaurant_id` actif dans `localStorage` (`mboa.partenaire.activeResto`) ; sélecteur dans la sidebar si plusieurs.
+### Test 1 — Scroll molette sur chaque page admin
+Pour chaque route ∈ `[index, commissions, zones, restaurants, menus, livreurs, litiges, clients, commandes, parametres, logs]` :
+- Naviguer vers la page.
+- Forcer un contenu plus haut que le viewport si nécessaire (viewport 1280×600).
+- Lire `window.scrollY` (ou scrollTop du conteneur scrollable).
+- Émettre `page.mouse.wheel(0, 800)`.
+- Asserter que la position de scroll a augmenté de >0 après wheel.
+- Asserter qu'aucun élément ancêtre du `<main>` n'a `overflow: hidden` sur l'axe Y (via `getComputedStyle`).
 
-Toutes les server functions appelées (`listRestaurantOrders`, `updateOrderStatus`, `getRestaurantMenu`, `upsertDish`, `deleteDish`, `getRestaurantStats`, etc.) **existent déjà** dans `src/server/restaurant.functions.ts` et passent par `assertMembership(restaurant_id, minRole)` — la sécurité multi-tenant est donc garantie côté serveur, RLS en backstop.
+### Test 2 — Pas de rebond visuel au clic sidebar
+- Aller sur `/admin`.
+- Capturer la `boundingBox()` du conteneur `<main>` et d'un bouton sidebar avant clic.
+- Cliquer sur chaque item sidebar successivement ; à chaque clic, ré-mesurer immédiatement (frame +1) la bbox du bouton cliqué et du `<main>`.
+- Asserter : largeur/hauteur du bouton inchangées (pas de `scale`), position X de `<main>` inchangée (pas de shift dû à scrollbar qui apparaît/disparaît).
+- Vérifier en plus via JS qu'aucun élément `[data-sidebar-item]` n'a de classe `scale-*` ou de `transform: matrix(...)` non-identité au moment du clic / hover.
 
-### UI (sidebar fixe + main scrollable)
+## Détails techniques
+- `playwright.config.ts` : `webServer: { command: 'bun run dev', port: 8080, reuseExistingServer: true }`.
+- `globalSetup.ts` : login via UI `/admin/login` puis `storageState: 'e2e/.auth/admin.json'`.
+- Marqueurs DOM utiles à ajouter (petit ajout non-visuel) : `data-testid="admin-main"` sur `<main>` et `data-testid="sidebar-item"` sur chaque NavLink — facultatif si on peut cibler par rôle/aria-label.
+- Le test 2 utilise `requestAnimationFrame` côté page pour mesurer juste après le clic, évitant les faux négatifs.
 
-```
-┌──────────────┬──────────────────────────────────────┐
-│  MboaEats    │  En-tête : nom resto + toggle Ouvert │
-│  Partenaire  ├──────────────────────────────────────┤
-│              │                                       │
-│  ▸ Commandes │            <Outlet />                 │
-│  ▸ Menu      │                                       │
-│  ▸ Revenus   │                                       │
-│  ▸ Paramètres│                                       │
-│              │                                       │
-│  [Resto ▾]   │                                       │
-│  Déconnexion │                                       │
-└──────────────┴──────────────────────────────────────┘
-```
+## Livrables
+- `playwright.config.ts`
+- `e2e/globalSetup.ts`
+- `e2e/admin-scroll.spec.ts`
+- `e2e/admin-sidebar-no-bounce.spec.ts`
+- Mise à jour `package.json` (scripts + devDeps `@playwright/test`)
+- Court `e2e/README.md` expliquant variables d'env et `npx playwright install`
 
-- Sidebar fixe `w-64` desktop, drawer mobile (`<768px`) avec bouton hamburger.
-- Cohérent avec le design system existant (`bg-background`, `border-border`, tokens `--primary` etc.).
-- Responsive : sur mobile/tablette < 768px, sidebar devient un drawer (`Sheet`).
-
-### Fonctionnalités par page
-
-**Commandes** (`partenaire.commandes.tsx`)
-- Realtime Supabase sur `orders` filtré `restaurant_id`.
-- 3 colonnes Kanban : *Nouvelles* (`paid`) · *En préparation* (`accepted`/`preparing`) · *Prêtes* (`ready`).
-- Boutons : Accepter, Refuser, En préparation, Prête → `updateOrderStatus()`.
-- Toast + son optionnel sur nouvelle commande.
-
-**Menu** (`partenaire.menu.tsx`)
-- Liste catégories + plats. Boutons : ajouter, modifier, supprimer, switch `is_available`.
-- Upload image via `uploadDishImage` existant.
-
-**Revenus** (`partenaire.revenus.tsx`)
-- `getRestaurantStats()` → cartes : total commandes (7j/30j), commissions, net.
-- Filtres période (7j / 30j / mois).
-
-**Paramètres** (`partenaire.parametres.tsx`)
-- Édite : nom, cuisine, ville, quartier, `delivery_fee`, `eta_min/max`, horaires.
-- Toggle global Ouvert/Fermé.
-
-### Non-objectifs (cette itération)
-- Pas de configuration DNS du sous-domaine `restaurant.mboaeats.com` (à faire séparément dans Project Settings → Domains une fois la base validée).
-- Pas de modif de `/restaurant` existant ni de l'app client.
-- Pas de nouvelle table — tout le backend nécessaire existe.
-
-### Livraison
-~9 fichiers créés, ~0 fichier modifié côté client app. Build incrémental, testable page par page.
+## Questions avant build
+1. OK pour Playwright (vs Cypress/Vitest browser) ?
+2. Stratégie auth : option A (creds via env) confirmée ?
+3. Tu fournis un compte admin de test (email/password) ou je documente juste les variables à remplir ?
