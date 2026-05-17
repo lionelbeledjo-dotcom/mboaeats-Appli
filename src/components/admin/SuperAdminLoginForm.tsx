@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { ShieldCheck, Loader2, Lock, Mail, Crown, KeyRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { get2faStatus, verifyLogin2fa } from "@/lib/superadmin-2fa.functions";
 
 type Mode = "signin" | "bootstrap" | "twofa";
