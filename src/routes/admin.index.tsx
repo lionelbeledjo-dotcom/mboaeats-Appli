@@ -81,7 +81,7 @@ function Overview() {
           : kpis.map((k) => (
               <div
                 key={k.label}
-                className="group flex items-center gap-3 rounded-3xl border border-border/60 bg-surface p-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-14px_rgba(0,0,0,0.35)] sm:block sm:p-5"
+                className="group flex items-center gap-3 rounded-3xl border border-border/60 bg-surface p-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.25)] transition-colors duration-200 hover:shadow-[0_18px_40px_-14px_rgba(0,0,0,0.35)] sm:block sm:p-5"
               >
                 <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-background shadow-inner sm:h-11 sm:w-11">
                   <k.icon className={`h-6 w-6 ${k.accent === "gold" ? "text-gold" : "text-primary"}`} strokeWidth={2.2} />
@@ -238,7 +238,7 @@ function OrderDetailsPanel({ order, onClose }: { order: RecentOrder; onClose: ()
             <button
               type="button"
               onClick={() => exportInvoicePdf(order)}
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-glow transition-all duration-200 hover:scale-[1.03] hover:opacity-95 active:scale-95"
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-glow transition-colors duration-200 hover:opacity-95"
             >
               <Download className="h-4 w-4" /> Exporter PDF
             </button>

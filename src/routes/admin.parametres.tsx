@@ -99,9 +99,9 @@ function AdminSettings() {
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
+              className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-colors duration-200 ${
                 active
-                  ? "bg-gradient-primary text-primary-foreground shadow-glow scale-[1.02]"
+                  ? "bg-gradient-primary text-primary-foreground shadow-glow"
                   : "text-muted-foreground hover:bg-background/50 hover:text-foreground"
               }`}
             >

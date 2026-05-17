@@ -253,7 +253,7 @@ export function AdminLoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="relative mt-6 inline-flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-orange-600 text-sm font-bold uppercase tracking-wider text-white shadow-[0_10px_30px_-10px_rgba(249,115,22,0.7)] transition active:scale-[0.98] disabled:opacity-60"
+            className="relative mt-6 inline-flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-orange-600 text-sm font-bold uppercase tracking-wider text-white shadow-[0_10px_30px_-10px_rgba(249,115,22,0.7)] transition-colors duration-200 hover:opacity-95 disabled:opacity-60"
           >
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
             {mode === "bootstrap" ? "Initialiser le compte" : "Se connecter"}
