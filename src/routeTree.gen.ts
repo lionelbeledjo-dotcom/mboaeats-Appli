@@ -54,6 +54,8 @@ import { Route as SuperadminLoginRouteImport } from './routes/superadmin_.login'
 import { Route as SuiviOrderIdRouteImport } from './routes/suivi.$orderId'
 import { Route as RestaurantsRestoIdRouteImport } from './routes/restaurants.$restoId'
 import { Route as RSlugRouteImport } from './routes/r.$slug'
+import { Route as PartenaireRevenusRouteImport } from './routes/partenaire.revenus'
+import { Route as PartenaireParametresRouteImport } from './routes/partenaire.parametres'
 import { Route as PartenaireMenuRouteImport } from './routes/partenaire.menu'
 import { Route as PartenaireCommandesRouteImport } from './routes/partenaire.commandes'
 import { Route as CompteSecuriteRouteImport } from './routes/compte.securite'
@@ -303,6 +305,16 @@ const RSlugRoute = RSlugRouteImport.update({
   path: '/r/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PartenaireRevenusRoute = PartenaireRevenusRouteImport.update({
+  id: '/revenus',
+  path: '/revenus',
+  getParentRoute: () => PartenaireRoute,
+} as any)
+const PartenaireParametresRoute = PartenaireParametresRouteImport.update({
+  id: '/parametres',
+  path: '/parametres',
+  getParentRoute: () => PartenaireRoute,
+} as any)
 const PartenaireMenuRoute = PartenaireMenuRouteImport.update({
   id: '/menu',
   path: '/menu',
@@ -474,6 +486,8 @@ export interface FileRoutesByFullPath {
   '/compte/securite': typeof CompteSecuriteRoute
   '/partenaire/commandes': typeof PartenaireCommandesRoute
   '/partenaire/menu': typeof PartenaireMenuRoute
+  '/partenaire/parametres': typeof PartenaireParametresRoute
+  '/partenaire/revenus': typeof PartenaireRevenusRoute
   '/r/$slug': typeof RSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
@@ -541,6 +555,8 @@ export interface FileRoutesByTo {
   '/compte/securite': typeof CompteSecuriteRoute
   '/partenaire/commandes': typeof PartenaireCommandesRoute
   '/partenaire/menu': typeof PartenaireMenuRoute
+  '/partenaire/parametres': typeof PartenaireParametresRoute
+  '/partenaire/revenus': typeof PartenaireRevenusRoute
   '/r/$slug': typeof RSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
@@ -612,6 +628,8 @@ export interface FileRoutesById {
   '/compte/securite': typeof CompteSecuriteRoute
   '/partenaire/commandes': typeof PartenaireCommandesRoute
   '/partenaire/menu': typeof PartenaireMenuRoute
+  '/partenaire/parametres': typeof PartenaireParametresRoute
+  '/partenaire/revenus': typeof PartenaireRevenusRoute
   '/r/$slug': typeof RSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
@@ -684,6 +702,8 @@ export interface FileRouteTypes {
     | '/compte/securite'
     | '/partenaire/commandes'
     | '/partenaire/menu'
+    | '/partenaire/parametres'
+    | '/partenaire/revenus'
     | '/r/$slug'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
@@ -751,6 +771,8 @@ export interface FileRouteTypes {
     | '/compte/securite'
     | '/partenaire/commandes'
     | '/partenaire/menu'
+    | '/partenaire/parametres'
+    | '/partenaire/revenus'
     | '/r/$slug'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
@@ -821,6 +843,8 @@ export interface FileRouteTypes {
     | '/compte/securite'
     | '/partenaire/commandes'
     | '/partenaire/menu'
+    | '/partenaire/parametres'
+    | '/partenaire/revenus'
     | '/r/$slug'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
@@ -1211,6 +1235,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/partenaire/revenus': {
+      id: '/partenaire/revenus'
+      path: '/revenus'
+      fullPath: '/partenaire/revenus'
+      preLoaderRoute: typeof PartenaireRevenusRouteImport
+      parentRoute: typeof PartenaireRoute
+    }
+    '/partenaire/parametres': {
+      id: '/partenaire/parametres'
+      path: '/parametres'
+      fullPath: '/partenaire/parametres'
+      preLoaderRoute: typeof PartenaireParametresRouteImport
+      parentRoute: typeof PartenaireRoute
+    }
     '/partenaire/menu': {
       id: '/partenaire/menu'
       path: '/menu'
@@ -1412,12 +1450,16 @@ const AideRouteWithChildren = AideRoute._addFileChildren(AideRouteChildren)
 interface PartenaireRouteChildren {
   PartenaireCommandesRoute: typeof PartenaireCommandesRoute
   PartenaireMenuRoute: typeof PartenaireMenuRoute
+  PartenaireParametresRoute: typeof PartenaireParametresRoute
+  PartenaireRevenusRoute: typeof PartenaireRevenusRoute
   PartenaireIndexRoute: typeof PartenaireIndexRoute
 }
 
 const PartenaireRouteChildren: PartenaireRouteChildren = {
   PartenaireCommandesRoute: PartenaireCommandesRoute,
   PartenaireMenuRoute: PartenaireMenuRoute,
+  PartenaireParametresRoute: PartenaireParametresRoute,
+  PartenaireRevenusRoute: PartenaireRevenusRoute,
   PartenaireIndexRoute: PartenaireIndexRoute,
 }
 
@@ -1526,3 +1568,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
