@@ -85,7 +85,9 @@ export function SuperAdminLoginForm() {
 
       if (!role) {
         await supabase.auth.signOut();
-        throw new Error("Accès refusé : ce compte n'est pas SUPER_ADMIN.");
+        throw new Error(
+          `Accès refusé — ce compte (${email}) n'a pas le rôle SUPER_ADMIN. Connectez-vous avec un compte propriétaire de la plateforme, ou demandez à un superadmin existant de vous attribuer le rôle.`,
+        );
       }
 
       // Étape 2 : 2FA
@@ -223,6 +225,15 @@ export function SuperAdminLoginForm() {
             <span className="font-semibold text-primary">
               {mode === "bootstrap" ? "Première configuration" : "Authentification SUPER_ADMIN"}
             </span>
+          </div>
+
+          <div className="mb-5 rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 text-[11px] leading-relaxed text-muted-foreground">
+            <p className="mb-1 font-semibold uppercase tracking-wider text-foreground/80">Quel mode utiliser ?</p>
+            <ul className="space-y-0.5">
+              <li><span className="font-medium text-foreground">Connexion</span> — vous avez déjà un compte SUPER_ADMIN.</li>
+              <li><span className="font-medium text-foreground">2FA</span> — étape automatique après une connexion réussie.</li>
+              <li><span className="font-medium text-foreground">Première configuration</span> — uniquement si aucun SUPER_ADMIN n'existe encore.</li>
+            </ul>
           </div>
 
           <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Email maître</label>
