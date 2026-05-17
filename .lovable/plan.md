@@ -1,121 +1,83 @@
-# Refonte architecturale MBOAEAT — niveau Uber Eats
+## Dashboard Restaurant Web (partenaire)
 
-Objectif : remplacer les patchs accumulés par une architecture où le shell (Header + Outlet + BottomDock) ne se démonte jamais, où chaque route a son propre Suspense + ErrorBoundary, et où la session, le scroll et le panier sont stables.
+### Périmètre
+Créer une **interface web dédiée** aux restaurateurs, complètement isolée de l'app client (mobile-first). L'app client (`/`, `/explorer`, `/panier`, etc.) n'est **pas touchée**. Le `/restaurant` actuel (UI tabbed mobile) reste en place pour compatibilité, mais la nouvelle expérience web vit sous `/partenaire/*`.
 
-## 1. AppShell persistante (`src/routes/__root.tsx`)
+> Note : `restaurant.mboaeats.com` est un sous-domaine — il faut le pointer DNS vers le même projet et router selon l'hôte, OU exposer le dashboard à `/partenaire`. Je propose **`/partenaire`** comme base (simple, immédiat). Le sous-domaine pourra rediriger via Cloudflare Worker ou middleware plus tard si tu veux.
 
-Refonte du `RootComponent` pour garantir qu'aucun changement de route ne démonte le layout :
+### Architecture
 
-```text
-<QueryClientProvider>
-  <ThemeProvider>
-    <AuthProvider>                 ← attend getSession() avant de rendre les enfants
-      <SplashScreen />
-      <OfflineBanner />
-      <AppShell>                   ← nouveau composant stable
-        <SiteHeader />             ← monté une seule fois
-        <main id="app-scroll">
-          <RouteErrorBoundary>     ← boundary GLOBAL léger (jamais full-screen)
-            <Suspense fallback={<RouteSkeleton />}>
-              <Outlet />
-            </Suspense>
-          </RouteErrorBoundary>
-        </main>
-        <CartFab />
-        <BottomDock />             ← fixed, jamais démonté
-      </AppShell>
-      <Toaster />
-      <PendingPaymentWatcher />
-      <OnboardingGate />
-    </AuthProvider>
-  </ThemeProvider>
-</QueryClientProvider>
+```
+src/routes/
+  partenaire.tsx                  → Layout sidebar + garde rôle/statut
+  partenaire.index.tsx            → Redirige vers /partenaire/commandes
+  partenaire.commandes.tsx        → Temps réel + actions (accepter, refuser, en prépa, prête)
+  partenaire.menu.tsx             → CRUD plats + activer/désactiver
+  partenaire.revenus.tsx          → Total commandes, commissions, net
+  partenaire.parametres.tsx       → Infos resto, horaires, ouvert/fermé
+
+src/components/partenaire/
+  PartenaireSidebar.tsx           → Nav latérale (logo, items, sélecteur resto, déconnexion)
+  PendingApprovalScreen.tsx       → Écran "en attente de validation"
+  RestaurantSwitcher.tsx          → Si le user gère plusieurs restos
 ```
 
-Règle : Header + BottomDock vivent en dehors de `<Outlet />`. Les pages n'ont plus le droit de rendre leur propre Header/Dock.
+### Sécurité (garde unique)
+Le layout `partenaire.tsx` :
+1. `beforeLoad` : vérifie session via `supabase.auth.getUser()` → sinon redirige `/connexion?redirect=/partenaire`
+2. Appelle `listMyRestaurants()` (déjà existant) :
+   - **Aucun resto** → écran "Devenir restaurateur" (lien `/devenir-resto`)
+   - **Resto(s) trouvé(s)** mais `is_active=false` + pas `deleted_at` → écran *"Compte en attente de validation"* (texte demandé)
+   - **Resto validé** (`is_active=true`) → accès dashboard
+3. Stocke le `restaurant_id` actif dans `localStorage` (`mboa.partenaire.activeResto`) ; sélecteur dans la sidebar si plusieurs.
 
-## 2. Session stabilisée (`src/auth/components/AuthProvider.tsx`)
+Toutes les server functions appelées (`listRestaurantOrders`, `updateOrderStatus`, `getRestaurantMenu`, `upsertDish`, `deleteDish`, `getRestaurantStats`, etc.) **existent déjà** dans `src/server/restaurant.functions.ts` et passent par `assertMembership(restaurant_id, minRole)` — la sécurité multi-tenant est donc garantie côté serveur, RLS en backstop.
 
-- Attend `supabase.auth.getSession()` avant de rendre les enfants.
-- Tant que `!sessionLoaded` → `<FullScreenLoader />` (pas de splash répétitif, pas de flash).
-- Le listener `onAuthStateChange` met à jour le state SANS provoquer de re-mount du shell.
-- Supprime les guards qui redirigent en cours de render (cause majeure des "Une erreur est survenue").
+### UI (sidebar fixe + main scrollable)
 
-## 3. Routes Profil & Commandes — Suspense + ErrorBoundary locaux
+```
+┌──────────────┬──────────────────────────────────────┐
+│  MboaEats    │  En-tête : nom resto + toggle Ouvert │
+│  Partenaire  ├──────────────────────────────────────┤
+│              │                                       │
+│  ▸ Commandes │            <Outlet />                 │
+│  ▸ Menu      │                                       │
+│  ▸ Revenus   │                                       │
+│  ▸ Paramètres│                                       │
+│              │                                       │
+│  [Resto ▾]   │                                       │
+│  Déconnexion │                                       │
+└──────────────┴──────────────────────────────────────┘
+```
 
-Pour `src/routes/profil.tsx` et `src/routes/commandes.tsx` :
+- Sidebar fixe `w-64` desktop, drawer mobile (`<768px`) avec bouton hamburger.
+- Cohérent avec le design system existant (`bg-background`, `border-border`, tokens `--primary` etc.).
+- Responsive : sur mobile/tablette < 768px, sidebar devient un drawer (`Sheet`).
 
-- `pendingComponent: SkeletonProfil` / `SkeletonOrders`
-- `errorComponent: LocalErrorFallback` (carte inline avec "Réessayer", JAMAIS plein écran)
-- Données via `useQuery` :
-  ```ts
-  useQuery({
-    queryKey: ['orders', userId],
-    queryFn: fetchOrders,
-    enabled: authReady && !!userId,
-    staleTime: 30_000,
-    gcTime: 5 * 60_000,
-    placeholderData: keepPreviousData,
-    retry: 1,
-  })
-  ```
-- Si non connecté → carte "Connexion requise" inline (déjà en place, on garde).
+### Fonctionnalités par page
 
-## 4. Scroll stabilité totale
+**Commandes** (`partenaire.commandes.tsx`)
+- Realtime Supabase sur `orders` filtré `restaurant_id`.
+- 3 colonnes Kanban : *Nouvelles* (`paid`) · *En préparation* (`accepted`/`preparing`) · *Prêtes* (`ready`).
+- Boutons : Accepter, Refuser, En préparation, Prête → `updateOrderStatus()`.
+- Toast + son optionnel sur nouvelle commande.
 
-- `src/router.tsx` : `scrollRestoration: true`, `scrollToTopSelectors: ['#app-scroll']`.
-- `BottomDock` : tous les `<Link>` gardent `resetScroll={false}` pour les onglets latéraux (panier/profil/commandes), `true` uniquement pour Accueil.
-- CSS (`src/styles.css`) :
-  - `html, body { height: 100dvh; overflow: hidden; }`
-  - `#app-scroll { height: 100dvh; overflow-y: auto; padding-bottom: calc(var(--bottom-dock-h) + env(safe-area-inset-bottom)); overscroll-behavior: contain; }`
-  - Variable `--bottom-dock-h` définie en root.
-- Suppression du double overflow (body + main).
+**Menu** (`partenaire.menu.tsx`)
+- Liste catégories + plats. Boutons : ajouter, modifier, supprimer, switch `is_available`.
+- Upload image via `uploadDishImage` existant.
 
-## 5. Panier (`src/routes/panier.tsx`)
+**Revenus** (`partenaire.revenus.tsx`)
+- `getRestaurantStats()` → cartes : total commandes (7j/30j), commissions, net.
+- Filtres période (7j / 30j / mois).
 
-- Le contenu du panier reste dans `<Outlet />` comme une route normale (plus d'overlay fixed qui se superpose au layout).
-- Bouton "Passer au paiement" en `position: sticky; bottom: calc(var(--bottom-dock-h) + safe-area)`.
-- Plus de `useScrollLock` sur cette route (le shell gère déjà l'overflow).
-- `CartProvider` (store Zustand existant) reste inchangé — il ne re-render pas l'AppShell.
+**Paramètres** (`partenaire.parametres.tsx`)
+- Édite : nom, cuisine, ville, quartier, `delivery_fee`, `eta_min/max`, horaires.
+- Toggle global Ouvert/Fermé.
 
-## 6. ErrorBoundaries
+### Non-objectifs (cette itération)
+- Pas de configuration DNS du sous-domaine `restaurant.mboaeats.com` (à faire séparément dans Project Settings → Domains une fois la base validée).
+- Pas de modif de `/restaurant` existant ni de l'app client.
+- Pas de nouvelle table — tout le backend nécessaire existe.
 
-- `RouteErrorBoundary` (nouveau, léger) autour de `<Outlet />` : log + fallback inline + bouton "Recharger cet écran" qui appelle `router.invalidate()` + reset.
-- `RootErrorBoundary` actuel : conservé UNIQUEMENT autour de Splash/Onboarding (catastrophes hors route).
-- Suppression du `DefaultErrorComponent` plein écran dans `router.tsx` au profit du même fallback inline.
-
-## 7. Performance
-
-- `defaultPreload: 'intent'` (déjà), `defaultPreloadStaleTime: 0` à vérifier dans `router.tsx`.
-- `usePrefetchOnIdle` étendu à `/checkout`.
-- Lazy images via `loading="lazy"` (audit rapide).
-
-## Fichiers touchés
-
-- `src/routes/__root.tsx` — nouveau shell stable
-- `src/components/AppShell.tsx` (nouveau)
-- `src/components/RouteErrorBoundary.tsx` (nouveau, remplace TabErrorBoundary)
-- `src/components/RouteSkeleton.tsx` (nouveau)
-- `src/auth/components/AuthProvider.tsx` — attend getSession
-- `src/router.tsx` — scrollRestoration + selectors
-- `src/routes/profil.tsx` — pendingComponent + errorComponent + useQuery enabled
-- `src/routes/commandes.tsx` — idem
-- `src/routes/panier.tsx` — supprime overlay fixed + scrollLock, sticky CTA
-- `src/components/BottomDock.tsx` — confirme resetScroll par lien
-- `src/styles.css` — 100dvh, --bottom-dock-h, #app-scroll
-- `src/hooks/useScrollLock.ts` — déprécié (gardé pour modales seulement)
-
-## Section technique
-
-- TanStack Router `scrollRestoration` gère la sauvegarde par clé d'historique sur `#app-scroll`. Pas besoin de logique manuelle.
-- `Suspense` au niveau root + `pendingComponent` par route = squelette instantané sans démontage du shell.
-- Session : `AuthProvider` expose `{ session, ready }` via React Query (`queryKey: ['session']`) — déjà partiellement en place avec `useSyncSupabaseAuthEvents`, on ajoute le `ready` flag bloquant.
-- Le panier en route normale (au lieu d'overlay) supprime définitivement les scroll jumps liés à `position: fixed` sur body.
-
-## Hors scope
-
-- Pas de changement de schéma DB.
-- Pas de modification du store Zustand panier.
-- Pas de modification des server functions existantes (`getMyOrders`, etc.).
-
-Confirme et j'implémente l'ensemble en un seul passage.
+### Livraison
+~9 fichiers créés, ~0 fichier modifié côté client app. Build incrémental, testable page par page.
