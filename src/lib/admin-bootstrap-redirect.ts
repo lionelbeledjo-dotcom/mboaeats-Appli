@@ -5,6 +5,10 @@ const ADMIN_TARGET = "https://admin.mboaeat.site/admin";
 const ADMIN_ROLES = ["admin", "superadmin"] as const;
 const LOG = "[admin-bootstrap-redirect]";
 
+if (typeof window !== "undefined") {
+  console.log(`${LOG} [module] evaluated on client, href=`, window.location.href, "hash=", window.location.hash);
+}
+
 type BootstrapRedirectResult = "done" | "redirecting";
 
 let bootstrapRedirectPromise: Promise<BootstrapRedirectResult> | null = null;
