@@ -644,7 +644,7 @@ export const listAllClients = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     let q = supabaseAdmin
       .from("profiles")
-      .select("user_id, full_name, phone, city, created_at, phone_verified")
+      .select("user_id, full_name, phone, city, created_at, phone_verified, is_suspended, suspended_at, suspended_reason")
       .order("created_at", { ascending: false })
       .limit(data.limit);
     if (data.search) {
@@ -653,19 +653,13 @@ export const listAllClients = createServerFn({ method: "GET" })
     const { data: profiles, error } = await q;
     if (error) throw new Error(error.message);
     const ids = (profiles ?? []).map((p) => p.user_id);
-    const [{ data: bans }, { data: orderStats }] = await Promise.all([
-      ids.length
-        ? supabaseAdmin.from("user_roles").select("user_id, role").in("user_id", ids).eq("role", "suspended")
-        : Promise.resolve({ data: [] as { user_id: string; role: string }[] }),
-      ids.length
-        ? supabaseAdmin
-            .from("orders")
-            .select("user_id, total")
-            .in("user_id", ids)
-            .is("deleted_at", null)
-        : Promise.resolve({ data: [] as { user_id: string; total: number | null }[] }),
-    ]);
-    const suspended = new Set((bans ?? []).map((b) => b.user_id));
+    const { data: orderStats } = ids.length
+      ? await supabaseAdmin
+          .from("orders")
+          .select("user_id, total")
+          .in("user_id", ids)
+          .is("deleted_at", null)
+      : { data: [] as { user_id: string; total: number | null }[] };
     const stats = new Map<string, { count: number; gmv: number }>();
     for (const o of orderStats ?? []) {
       const s = stats.get(o.user_id) ?? { count: 0, gmv: 0 };
@@ -675,7 +669,7 @@ export const listAllClients = createServerFn({ method: "GET" })
     }
     return (profiles ?? []).map((p) => ({
       ...p,
-      suspended: suspended.has(p.user_id),
+      suspended: !!p.is_suspended,
       orders_count: stats.get(p.user_id)?.count ?? 0,
       gmv: stats.get(p.user_id)?.gmv ?? 0,
     }));
@@ -684,20 +678,24 @@ export const listAllClients = createServerFn({ method: "GET" })
 export const setClientSuspended = createServerFn({ method: "POST" })
   .middleware([requirePlatformAdmin])
   .inputValidator((d) =>
-    z.object({ user_id: z.string().uuid(), suspended: z.boolean() }).parse(d),
+    z
+      .object({
+        user_id: z.string().uuid(),
+        suspended: z.boolean(),
+        reason: z.string().max(500).optional(),
+      })
+      .parse(d),
   )
   .handler(async ({ data }) => {
-    if (data.suspended) {
-      await supabaseAdmin
-        .from("user_roles")
-        .upsert({ user_id: data.user_id, role: "suspended" as never }, { onConflict: "user_id,role" });
-    } else {
-      await supabaseAdmin
-        .from("user_roles")
-        .delete()
-        .eq("user_id", data.user_id)
-        .eq("role", "suspended" as never);
-    }
+    const { error } = await supabaseAdmin
+      .from("profiles")
+      .update({
+        is_suspended: data.suspended,
+        suspended_at: data.suspended ? new Date().toISOString() : null,
+        suspended_reason: data.suspended ? data.reason ?? null : null,
+      })
+      .eq("user_id", data.user_id);
+    if (error) throw new Error(error.message);
     return { ok: true as const, suspended: data.suspended };
   });
 
