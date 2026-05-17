@@ -137,11 +137,11 @@ function AdminLayout() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background text-foreground">
+      <div className="flex w-full min-h-dvh bg-background text-foreground">
         <AdminSidebar />
         <div className="flex-1 flex flex-col min-w-0">
           <AdminHeader adminInfo={adminInfo} loading={loading} isAdmin={isAdmin} />
-          <main className="flex-1 overflow-x-hidden overflow-y-visible">
+          <main className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto">
             <Outlet />
           </main>
         </div>
@@ -521,10 +521,14 @@ function AdminSidebar() {
                 // Rendu desktop (sombre, premium) — pas de scale, dimensions identiques actif/inactif
                 return (
                   <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton asChild isActive={active}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={active}
+                      className="h-10 w-full rounded-xl px-3 py-2 text-sm font-semibold tracking-normal transition-colors duration-200 data-[active=true]:font-semibold"
+                    >
                       <Link
                         to={item.url}
-                        className={`relative flex items-center gap-2 rounded-xl font-semibold tracking-normal transition-colors duration-200 ${
+                        className={`relative flex h-10 w-full items-center gap-2 rounded-xl px-3 py-2 font-semibold tracking-normal transition-colors duration-200 ${
                           active
                             ? `${tone.bg} ${tone.text} ${tone.glow} ring-1 ${tone.ring}`
                             : "hover:bg-muted/40"
@@ -532,7 +536,7 @@ function AdminSidebar() {
                       >
                         {active && (
                           <span
-                            className={`absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full ${tone.bar}`}
+                            className={`absolute left-0 top-[calc(50%-0.75rem)] h-6 w-1 rounded-r-full ${tone.bar}`}
                             aria-hidden
                           />
                         )}

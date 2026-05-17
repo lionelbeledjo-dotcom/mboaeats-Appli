@@ -33,7 +33,7 @@ const PUBLIC_ROUTES: ReadonlyArray<string> = [
   "/healthcheck",
 ];
 
-const PUBLIC_PREFIXES: ReadonlyArray<string> = [];
+const PUBLIC_PREFIXES: ReadonlyArray<string> = ["/admin", "/superadmin"];
 
 function isPublicPath(path: string): boolean {
   if (PUBLIC_ROUTES.includes(path)) return true;
@@ -67,7 +67,11 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!trulyUnauthed || publicRoute) return;
-    const target = path + location.search;
+    const search =
+      typeof location.search === "string"
+        ? location.search
+        : new URLSearchParams(location.search as Record<string, string>).toString();
+    const target = search ? `${path}?${search}` : path;
     navigate({
       to: "/connexion",
       replace: true,
