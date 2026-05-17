@@ -19,6 +19,7 @@ import { PendingPaymentWatcher } from "@/components/PendingPaymentWatcher";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useKeyboardViewport } from "@/hooks/useKeyboardViewport";
 import { usePrefetchOnIdle } from "@/auth/hooks/usePrefetch";
+import { useHostGuard } from "@/hooks/useHostGuard";
 
 // Mode invité : pages de découverte accessibles sans compte. Le checkout reste protégé via une porte dédiée.
 const PUBLIC_ROUTES = [
@@ -121,18 +122,18 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   useKeyboardViewport();
-  usePrefetchOnIdle([
-    { to: "/panier" },
-    { to: "/commandes" },
-    { to: "/profil" },
-    { to: "/recherche" },
-  ]);
+  const hostMode = useHostGuard();
+  usePrefetchOnIdle(
+    hostMode === "admin"
+      ? []
+      : [{ to: "/panier" }, { to: "/commandes" }, { to: "/profil" }, { to: "/recherche" }],
+  );
   const { queryClient } = Route.useRouteContext();
   const location = useLocation();
   const path = location.pathname;
-  // Note: on n'utilise plus `?preview=1` (audit C6). On laisse le dock visible
-  // sur les routes publiques car le mode invité est désormais supporté.
-  const hideDock = false;
+  // Sur le sous-domaine admin, on masque tout le chrome client (header, dock, cart, onboarding).
+  const isAdminHost = hostMode === "admin";
+  const hideDock = isAdminHost;
   void PUBLIC_ROUTES;
   void PUBLIC_PREFIXES;
   return (
@@ -164,11 +165,11 @@ function RootComponent() {
               </Suspense>
             </RootErrorBoundary>
             {!hideDock && <CartFab />}
-            <BottomDock />
+            {!isAdminHost && <BottomDock />}
             <Toaster position="top-right" richColors closeButton />
           </AuthGate>
           <PendingPaymentWatcher />
-          <OnboardingGate />
+          {!isAdminHost && <OnboardingGate />}
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
