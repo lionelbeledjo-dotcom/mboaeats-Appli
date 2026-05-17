@@ -1,4 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
 import { useState, useMemo } from "react";
 import { Search, Zap, Sparkles, TrendingUp, ChevronRight } from "lucide-react";
 import { AppTopBar } from "@/components/AppTopBar";
@@ -32,6 +33,14 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Commandez les meilleurs plats du terroir camerounais, livrés rapidement à Douala et Yaoundé." },
     ],
   }),
+  beforeLoad: async () => {
+    // Garde côté client uniquement : on n'accède pas au storage en SSR.
+    if (typeof window === "undefined") return;
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) {
+      throw redirect({ to: "/connexion" });
+    }
+  },
   component: Index,
 });
 
