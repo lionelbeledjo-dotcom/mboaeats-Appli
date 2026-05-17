@@ -2,7 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const CLIENT_HOSTS = new Set(["mboaeat.site", "www.mboaeat.site"]);
 const ADMIN_TARGET = "https://admin.mboaeat.site/admin";
-const ADMIN_ROLES = ["admin", "superadmin"];
+const ADMIN_ROLES = ["admin", "superadmin"] as const;
 
 type BootstrapRedirectResult = "done" | "redirecting";
 
