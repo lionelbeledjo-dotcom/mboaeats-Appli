@@ -122,7 +122,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       (o) => new Date(o.created_at).getTime() >= startToday.getTime(),
     );
 
-    // 5 dernières commandes (avec infos client)
+    // 5 dernières commandes
     const recentOrdersRaw = [...ordersArr]
       .sort(
         (a, b) =>
@@ -130,17 +130,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       )
       .slice(0, 5);
     const clientIds = Array.from(
-      new Set(
-        (
-          await supabaseAdmin
-            .from("orders")
-            .select("id, customer_id")
-            .in(
-              "id",
-              recentOrdersRaw.map((o) => o.id),
-            )
-        ).data?.map((r) => r.customer_id) ?? [],
-      ),
+      new Set(recentOrdersRaw.map((o) => o.user_id).filter(Boolean)),
     );
     const { data: customers } = clientIds.length
       ? await supabaseAdmin
@@ -148,20 +138,12 @@ export const getAdminOverview = createServerFn({ method: "GET" })
           .select("id, full_name, phone")
           .in("id", clientIds)
       : { data: [] as { id: string; full_name: string | null; phone: string | null }[] };
-    const { data: ordersDetail } = await supabaseAdmin
-      .from("orders")
-      .select("id, customer_id")
-      .in(
-        "id",
-        recentOrdersRaw.map((o) => o.id),
-      );
     const custMap = new Map((customers ?? []).map((c) => [c.id, c]));
-    const ordCustMap = new Map((ordersDetail ?? []).map((o) => [o.id, o.customer_id]));
     const recentOrders = recentOrdersRaw.map((o) => {
-      const customerId = ordCustMap.get(o.id);
-      const c = customerId ? custMap.get(customerId) : undefined;
+      const c = custMap.get(o.user_id);
       return {
         id: o.id,
+        reference: o.reference,
         total: o.total ?? 0,
         status: o.status as string,
         created_at: o.created_at,
