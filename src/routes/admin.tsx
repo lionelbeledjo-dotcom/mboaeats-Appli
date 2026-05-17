@@ -79,12 +79,15 @@ const TONES: Record<string, NavTone> = {
 
 const navItems = [
   { title: "Vue d'ensemble", url: "/admin", icon: LayoutDashboard, exact: true, tone: "blue" as const },
+  { title: "Commandes", url: "/admin/commandes", icon: ShoppingBag, tone: "green" as const },
+  { title: "Clients", url: "/admin/clients", icon: Users, tone: "yellow" as const },
   { title: "Commissions", url: "/admin/commissions", icon: Coins, tone: "green" as const },
   { title: "Zones livraison", url: "/admin/zones", icon: MapPin, tone: "yellow" as const },
   { title: "Restaurants", url: "/admin/restaurants", icon: Store, tone: "purple" as const },
   { title: "Menus & Catégories", url: "/admin/menus", icon: Utensils, tone: "orange" as const },
   { title: "Livreurs", url: "/admin/livreurs", icon: Bike, tone: "indigo" as const },
   { title: "Litiges", url: "/admin/litiges", icon: AlertTriangle, badge: 4, tone: "red" as const },
+  { title: "Logs activité", url: "/admin/logs", icon: ShieldCheck, tone: "indigo" as const },
 ];
 
 function AdminLayout() {
