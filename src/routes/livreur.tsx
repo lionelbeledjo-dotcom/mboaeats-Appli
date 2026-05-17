@@ -976,7 +976,55 @@ function IncomingMissionAlert({ mission, onAccept, onDecline }: { mission: Missi
 }
 
 import { RoleGuard } from "@/components/RoleGuard";
+import { getMyDriverProfile } from "@/lib/driver-onboarding.functions";
+import { Clock as ClockIcon } from "lucide-react";
+
 function LivreurGuarded() {
+  const fetchProfile = useServerFn(getMyDriverProfile);
+  const [checked, setChecked] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchProfile()
+      .then(({ profile }) => setStatus(profile?.status ?? null))
+      .catch(() => setStatus(null))
+      .finally(() => setChecked(true));
+  }, [fetchProfile]);
+
+  if (!checked) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (status === "en_attente") {
+    return (
+      <div className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center px-5 text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+          <ClockIcon className="h-7 w-7 text-primary" strokeWidth={2.25} />
+        </div>
+        <h1 className="mt-5 text-2xl font-bold">Compte en attente</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Votre compte est en attente de validation par l'administration.
+          Vous serez notifié dès qu'il sera activé.
+        </p>
+        <Link to="/" className="mt-6 text-sm text-primary underline">Retour à l'accueil</Link>
+      </div>
+    );
+  }
+
+  if (status === "rejete") {
+    return (
+      <div className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center px-5 text-center">
+        <h1 className="text-2xl font-bold">Candidature refusée</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Contactez le support ou soumettez une nouvelle candidature.</p>
+        <Link to="/devenir-livreur" className="mt-6 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground">Nouvelle candidature</Link>
+      </div>
+    );
+  }
+
   return (
     <RoleGuard
       role="livreur"
