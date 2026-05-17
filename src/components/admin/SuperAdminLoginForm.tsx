@@ -48,6 +48,7 @@ export function SuperAdminLoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return; // garde-fou anti double-submit
     setError(null);
     setInfo(null);
 
@@ -58,6 +59,8 @@ export function SuperAdminLoginForm() {
     setLoading(true);
     try {
       if (mode === "bootstrap") {
+        // eslint-disable-next-line no-console
+        console.log("[login] bootstrap: creating superadmin account...");
         const { error: signUpErr } = await supabase.auth.signUp({
           email,
           password,
@@ -76,12 +79,19 @@ export function SuperAdminLoginForm() {
         if (claimErr) throw claimErr;
         if (!claimed) throw new Error("Impossible de revendiquer le rôle superadmin");
 
+        // eslint-disable-next-line no-console
+        console.log("[login] bootstrap done, redirecting to /superadmin");
         navigate({ to: "/superadmin" });
         return;
       }
 
+      // eslint-disable-next-line no-console
+      console.log("[login] signing in...");
       const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
       if (signInErr) throw signInErr;
+
+      // eslint-disable-next-line no-console
+      console.log("[login] signed in, checking 2FA status...");
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Session introuvable");
@@ -101,11 +111,17 @@ export function SuperAdminLoginForm() {
       // Étape 2 : 2FA
       const status = await get2fa();
       if (!status.enabled) {
+        // eslint-disable-next-line no-console
+        console.log("[login] redirecting to /superadmin/setup-2fa");
         navigate({ to: "/superadmin/setup-2fa" });
         return;
       }
+      // eslint-disable-next-line no-console
+      console.log("[login] 2FA enabled, prompting for code");
       setMode("twofa");
     } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("[login] error:", err);
       setError(err instanceof Error ? err.message : "Erreur inconnue");
     } finally {
       setLoading(false);
