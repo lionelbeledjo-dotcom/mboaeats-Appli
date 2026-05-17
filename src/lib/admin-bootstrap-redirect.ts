@@ -7,6 +7,11 @@ const ADMIN_ROLES = ["admin", "superadmin"] as const;
 type BootstrapRedirectResult = "done" | "redirecting";
 
 let bootstrapRedirectPromise: Promise<BootstrapRedirectResult> | null = null;
+let bootstrapRedirectResult: BootstrapRedirectResult | "pending" = "pending";
+
+function neverRenderDuringRedirect(): Promise<never> {
+  return new Promise(() => undefined);
+}
 
 function hasOAuthAccessTokenFragment() {
   return typeof window !== "undefined" && window.location.hash.includes("access_token=");
@@ -58,7 +63,19 @@ export function runAdminBootstrapRedirect(): Promise<BootstrapRedirectResult> {
       console.warn("[admin-bootstrap-redirect] skipped", error);
       return "done";
     }
-  })();
+  })().then((result) => {
+    bootstrapRedirectResult = result;
+    return result;
+  });
 
   return bootstrapRedirectPromise;
+}
+
+export async function waitForAdminBootstrapRedirect(): Promise<void> {
+  const result = await runAdminBootstrapRedirect();
+  if (result === "redirecting") await neverRenderDuringRedirect();
+}
+
+export function getAdminBootstrapRedirectResult() {
+  return bootstrapRedirectResult;
 }
