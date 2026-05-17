@@ -19,14 +19,19 @@
  *
  *   defaultGcTime : 5min
  *     Conserve les données en mémoire 5min pour la navigation back/forward.
+ *
+ *   SUPPRESSION admin-bootstrap-redirect : ce script provoquait un rebond
+ *     visuel et bloquait le scroll molette sur /admin. La logique de
+ *     détection "aucun superadmin" est désormais gérée uniquement par la
+ *     RPC has_any_superadmin dans SuperAdminLoginForm.tsx.
  */
-
 import { createRouter, useRouter } from "@tanstack/react-router";
 import { QueryClient } from "@tanstack/react-query";
 import { persistQueryClient } from "@tanstack/react-query-persist-client";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { useEffect } from "react";
 import { routeTree } from "./routeTree.gen";
+
 const CHUNK_RELOAD_KEY = "__mboa_router_chunk_reload_at";
 
 function isChunkLoadError(err: unknown): boolean {
@@ -59,15 +64,12 @@ function tryAutoReload(): boolean {
 function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
   const chunkErr = isChunkLoadError(error);
-
   useEffect(() => {
     console.error("[Router error boundary]", error);
     if (chunkErr) {
       tryAutoReload();
       return;
     }
-    // Auto-retry une seule fois par minute pour absorber les erreurs
-    // transitoires (réseau, race au montage). Anti-boucle via sessionStorage.
     if (typeof window === "undefined") return;
     try {
       const key = "__mboa_router_retry_at";
@@ -84,7 +86,6 @@ function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => vo
       return () => clearTimeout(t);
     } catch { /* ignore */ }
   }, [error, chunkErr, router, reset]);
-
   if (chunkErr) {
     return (
       <main className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center px-4 py-10 text-center">
@@ -93,21 +94,18 @@ function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => vo
       </main>
     );
   }
-
   const retry = () => {
     try {
       router.invalidate();
       reset();
     } catch { /* ignore */ }
   };
-
   const goHome = () => {
     try { reset(); } catch { /* ignore */ }
     if (typeof window !== "undefined") {
       window.location.href = "/";
     }
   };
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
@@ -136,27 +134,18 @@ function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => vo
   );
 }
 
-/**
- * Le QueryClient est créé ici plutôt que dans __root.tsx pour pouvoir le
- * passer au router context. Cela permet aux loaders de route d'invoquer
- * `queryClient.prefetchQuery()` AVANT le render des composants — gain de
- * 100-300ms sur la première vue de chaque page.
- */
 function makeQueryClient() {
   const qc = new QueryClient({
     defaultOptions: {
       queries: {
         staleTime: 60 * 1000,
-        gcTime: 24 * 60 * 60 * 1000, // 24h — supporte persistance offline
+        gcTime: 24 * 60 * 60 * 1000,
         refetchOnWindowFocus: false,
         refetchOnReconnect: "always",
         retry: 1,
       },
     },
   });
-
-  // Offline-first : restaure le cache depuis localStorage à l'initialisation.
-  // Affichage IMMÉDIAT des données précédentes, refetch silencieux en BG.
   if (typeof window !== "undefined") {
     try {
       const persister = createSyncStoragePersister({
@@ -168,7 +157,6 @@ function makeQueryClient() {
         queryClient: qc,
         persister,
         maxAge: 24 * 60 * 60 * 1000,
-        // Ne persiste pas les mutations / queries en erreur
         dehydrateOptions: {
           shouldDehydrateQuery: (q) =>
             q.state.status === "success" && q.state.data !== undefined,
@@ -176,7 +164,6 @@ function makeQueryClient() {
       });
     } catch { /* ignore */ }
   }
-
   return qc;
 }
 
@@ -185,25 +172,15 @@ export const getRouter = () => {
   const router = createRouter({
     routeTree,
     context: { queryClient },
-    // Le scroll restoration auto remontait le panier après navigation —
-    // on gère le scroll manuellement (top sur entrée, conserve sur back).
     scrollRestoration: false,
-
-    // PERF — preload au survol/focus (déjà actif, on confirme)
     defaultPreload: "intent",
     defaultPreloadDelay: 0,
     defaultPreloadStaleTime: 30_000,
-
-    // PERF — feedback rapide sur clic (AVANT: 2000ms, ressenti freeze)
     defaultPendingMs: 200,
     defaultPendingMinMs: 500,
-
-    // Réutilise le cache pour les routes navigation back/forward
     defaultStaleTime: 30_000,
-
     defaultErrorComponent: DefaultErrorComponent,
   });
-
   return router;
 };
 
