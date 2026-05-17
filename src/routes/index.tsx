@@ -33,15 +33,12 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Commandez les meilleurs plats du terroir camerounais, livrés rapidement à Douala et Yaoundé." },
     ],
   }),
-  beforeLoad: async ({ location }) => {
+  beforeLoad: async () => {
     // Garde côté client uniquement : on n'accède pas au storage en SSR.
     if (typeof window === "undefined") return;
     const { data } = await supabase.auth.getSession();
     if (!data.session) {
-      throw redirect({
-        to: "/connexion",
-        search: { redirect: location.href },
-      });
+      throw redirect({ to: "/connexion" });
     }
   },
   component: Index,
