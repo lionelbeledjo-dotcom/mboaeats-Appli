@@ -173,11 +173,11 @@ function RootComponent() {
               </Suspense>
             </RootErrorBoundary>
             {!hideDock && <CartFab />}
-            {!isAdminHost && <BottomDock />}
+            {!hideDock && <BottomDock />}
             <Toaster position="top-right" richColors closeButton />
           </AuthGate>
           <PendingPaymentWatcher />
-          {!isAdminHost && <OnboardingGate />}
+          {!isAdminHost && !isAuthRoute && <OnboardingGate />}
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
