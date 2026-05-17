@@ -27,13 +27,7 @@ import { persistQueryClient } from "@tanstack/react-query-persist-client";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { useEffect } from "react";
 import { routeTree } from "./routeTree.gen";
-import { runAdminBootstrapRedirect } from "@/lib/admin-bootstrap-redirect";
-
 const CHUNK_RELOAD_KEY = "__mboa_router_chunk_reload_at";
-
-if (typeof window !== "undefined") {
-  void runAdminBootstrapRedirect();
-}
 
 function isChunkLoadError(err: unknown): boolean {
   if (!err) return false;
