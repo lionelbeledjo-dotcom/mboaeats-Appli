@@ -64,14 +64,15 @@ function AdminErrorBoundary({ error, reset }: { error: Error; reset: () => void 
 type NavTone = {
   bar: string; bg: string; text: string; icon: string; ring: string; glow: string;
 };
+// Fonds saturés + texte blanc : lisibles sur fond crème (clair) ET sur panneau sombre.
 const TONES: Record<string, NavTone> = {
-  blue:   { bar: "bg-blue-500",    bg: "bg-blue-500/10",    text: "text-blue-300",    icon: "text-blue-400",    ring: "ring-blue-500/40",    glow: "shadow-[0_0_18px_-4px_rgba(59,130,246,0.55)]" },
-  green:  { bar: "bg-emerald-500", bg: "bg-emerald-500/10", text: "text-emerald-300", icon: "text-emerald-400", ring: "ring-emerald-500/40", glow: "shadow-[0_0_18px_-4px_rgba(16,185,129,0.55)]" },
-  yellow: { bar: "bg-amber-400",   bg: "bg-amber-400/10",   text: "text-amber-200",   icon: "text-amber-300",   ring: "ring-amber-400/40",   glow: "shadow-[0_0_18px_-4px_rgba(251,191,36,0.55)]" },
-  purple: { bar: "bg-violet-500",  bg: "bg-violet-500/10",  text: "text-violet-300",  icon: "text-violet-400",  ring: "ring-violet-500/40",  glow: "shadow-[0_0_18px_-4px_rgba(139,92,246,0.55)]" },
-  orange: { bar: "bg-orange-500",  bg: "bg-orange-500/10",  text: "text-orange-300",  icon: "text-orange-400",  ring: "ring-orange-500/40",  glow: "shadow-[0_0_18px_-4px_rgba(249,115,22,0.55)]" },
-  indigo: { bar: "bg-indigo-500",  bg: "bg-indigo-500/10",  text: "text-indigo-300",  icon: "text-indigo-400",  ring: "ring-indigo-500/40",  glow: "shadow-[0_0_18px_-4px_rgba(99,102,241,0.55)]" },
-  red:    { bar: "bg-red-500",     bg: "bg-red-500/10",     text: "text-red-300",     icon: "text-red-400",     ring: "ring-red-500/40",     glow: "shadow-[0_0_18px_-4px_rgba(239,68,68,0.55)]" },
+  blue:   { bar: "bg-blue-600",    bg: "bg-blue-600",    text: "text-white", icon: "text-white", ring: "ring-blue-700",    glow: "shadow-[0_0_18px_-4px_rgba(59,130,246,0.55)]" },
+  green:  { bar: "bg-emerald-600", bg: "bg-emerald-600", text: "text-white", icon: "text-white", ring: "ring-emerald-700", glow: "shadow-[0_0_18px_-4px_rgba(16,185,129,0.55)]" },
+  yellow: { bar: "bg-amber-500",   bg: "bg-amber-500",   text: "text-white", icon: "text-white", ring: "ring-amber-600",   glow: "shadow-[0_0_18px_-4px_rgba(251,191,36,0.55)]" },
+  purple: { bar: "bg-violet-600",  bg: "bg-violet-600",  text: "text-white", icon: "text-white", ring: "ring-violet-700",  glow: "shadow-[0_0_18px_-4px_rgba(139,92,246,0.55)]" },
+  orange: { bar: "bg-orange-600",  bg: "bg-orange-600",  text: "text-white", icon: "text-white", ring: "ring-orange-700",  glow: "shadow-[0_0_18px_-4px_rgba(249,115,22,0.55)]" },
+  indigo: { bar: "bg-indigo-600",  bg: "bg-indigo-600",  text: "text-white", icon: "text-white", ring: "ring-indigo-700",  glow: "shadow-[0_0_18px_-4px_rgba(99,102,241,0.55)]" },
+  red:    { bar: "bg-red-600",     bg: "bg-red-600",     text: "text-white", icon: "text-white", ring: "ring-red-700",     glow: "shadow-[0_0_18px_-4px_rgba(239,68,68,0.55)]" },
 };
 
 const navItems = [
@@ -517,30 +518,30 @@ function AdminSidebar() {
                   );
                 }
 
-                // Rendu desktop (sombre, premium)
+                // Rendu desktop (sombre, premium) — pas de scale, dimensions identiques actif/inactif
                 return (
                   <SidebarMenuItem key={item.url}>
                     <SidebarMenuButton asChild isActive={active}>
                       <Link
                         to={item.url}
-                        className={`relative flex items-center gap-2 rounded-xl transition-all duration-300 ease-out ${
+                        className={`relative flex items-center gap-2 rounded-xl font-semibold tracking-normal transition-colors duration-200 ${
                           active
-                            ? `${tone.bg} ${tone.text} ${tone.glow} ring-1 ${tone.ring} scale-[1.04]`
+                            ? `${tone.bg} ${tone.text} ${tone.glow} ring-1 ${tone.ring}`
                             : "hover:bg-muted/40"
                         }`}
                       >
                         {active && (
                           <span
-                            className={`absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full ${tone.bar} animate-fade-in`}
+                            className={`absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full ${tone.bar}`}
                             aria-hidden
                           />
                         )}
-                        <item.icon className={`h-4 w-4 transition-colors ${active ? `${tone.icon} drop-shadow-[0_0_6px_currentColor]` : ""}`} />
+                        <item.icon className={`h-4 w-4 transition-colors ${active ? tone.icon : ""}`} strokeWidth={2.2} />
                         {!collapsed && (
                           <>
-                            <span className={`flex-1 ${active ? "font-bold tracking-wide" : ""}`}>{item.title}</span>
+                            <span className="flex-1">{item.title}</span>
                             {item.badge && (
-                              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${active ? `${tone.bar} text-white` : "bg-primary/15 text-primary"}`}>
+                              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${active ? "bg-white/20 text-white" : "bg-primary/15 text-primary"}`}>
                                 {item.badge}
                               </span>
                             )}
