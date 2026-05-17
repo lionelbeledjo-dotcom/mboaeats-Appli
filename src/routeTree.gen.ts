@@ -54,6 +54,7 @@ import { Route as SuperadminLoginRouteImport } from './routes/superadmin_.login'
 import { Route as SuiviOrderIdRouteImport } from './routes/suivi.$orderId'
 import { Route as RestaurantsRestoIdRouteImport } from './routes/restaurants.$restoId'
 import { Route as RSlugRouteImport } from './routes/r.$slug'
+import { Route as PartenaireCommandesRouteImport } from './routes/partenaire.commandes'
 import { Route as CompteSecuriteRouteImport } from './routes/compte.securite'
 import { Route as ComptePaiementsRouteImport } from './routes/compte.paiements'
 import { Route as CompteLivraisonRouteImport } from './routes/compte.livraison'
@@ -301,6 +302,11 @@ const RSlugRoute = RSlugRouteImport.update({
   path: '/r/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PartenaireCommandesRoute = PartenaireCommandesRouteImport.update({
+  id: '/commandes',
+  path: '/commandes',
+  getParentRoute: () => PartenaireRoute,
+} as any)
 const CompteSecuriteRoute = CompteSecuriteRouteImport.update({
   id: '/compte/securite',
   path: '/compte/securite',
@@ -460,6 +466,7 @@ export interface FileRoutesByFullPath {
   '/compte/livraison': typeof CompteLivraisonRoute
   '/compte/paiements': typeof ComptePaiementsRoute
   '/compte/securite': typeof CompteSecuriteRoute
+  '/partenaire/commandes': typeof PartenaireCommandesRoute
   '/r/$slug': typeof RSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
@@ -525,6 +532,7 @@ export interface FileRoutesByTo {
   '/compte/livraison': typeof CompteLivraisonRoute
   '/compte/paiements': typeof ComptePaiementsRoute
   '/compte/securite': typeof CompteSecuriteRoute
+  '/partenaire/commandes': typeof PartenaireCommandesRoute
   '/r/$slug': typeof RSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
@@ -594,6 +602,7 @@ export interface FileRoutesById {
   '/compte/livraison': typeof CompteLivraisonRoute
   '/compte/paiements': typeof ComptePaiementsRoute
   '/compte/securite': typeof CompteSecuriteRoute
+  '/partenaire/commandes': typeof PartenaireCommandesRoute
   '/r/$slug': typeof RSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
@@ -664,6 +673,7 @@ export interface FileRouteTypes {
     | '/compte/livraison'
     | '/compte/paiements'
     | '/compte/securite'
+    | '/partenaire/commandes'
     | '/r/$slug'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
@@ -729,6 +739,7 @@ export interface FileRouteTypes {
     | '/compte/livraison'
     | '/compte/paiements'
     | '/compte/securite'
+    | '/partenaire/commandes'
     | '/r/$slug'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
@@ -797,6 +808,7 @@ export interface FileRouteTypes {
     | '/compte/livraison'
     | '/compte/paiements'
     | '/compte/securite'
+    | '/partenaire/commandes'
     | '/r/$slug'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
@@ -1187,6 +1199,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/partenaire/commandes': {
+      id: '/partenaire/commandes'
+      path: '/commandes'
+      fullPath: '/partenaire/commandes'
+      preLoaderRoute: typeof PartenaireCommandesRouteImport
+      parentRoute: typeof PartenaireRoute
+    }
     '/compte/securite': {
       id: '/compte/securite'
       path: '/compte/securite'
@@ -1372,10 +1391,12 @@ const AideRouteChildren: AideRouteChildren = {
 const AideRouteWithChildren = AideRoute._addFileChildren(AideRouteChildren)
 
 interface PartenaireRouteChildren {
+  PartenaireCommandesRoute: typeof PartenaireCommandesRoute
   PartenaireIndexRoute: typeof PartenaireIndexRoute
 }
 
 const PartenaireRouteChildren: PartenaireRouteChildren = {
+  PartenaireCommandesRoute: PartenaireCommandesRoute,
   PartenaireIndexRoute: PartenaireIndexRoute,
 }
 
