@@ -19,44 +19,21 @@ import { useSession } from "@/auth/hooks/useSession";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Liste explicite des routes accessibles sans login.
- * On préfère la liste explicite à un wildcard `/admin` → impossible d'oublier
- * une route admin protégée.
+ * Mode APP FERMÉE : aucune page publique.
+ * Seules les routes d'authentification (et les portes admin/superadmin) sont
+ * accessibles sans session. Tout le reste redirige vers /connexion.
  */
 const PUBLIC_ROUTES: ReadonlyArray<string> = [
-  "/",
   "/connexion",
   "/inscription",
   "/reset-password",
-  "/cgu",
-  "/confidentialite",
-  "/healthcheck",
-  "/recherche",
-  "/explorer",
-  "/panier",
-  "/commandes",
-  "/profil",
-  "/cuisines",
-  "/proximite",
-  "/populaire",
-  "/decouvrir",
-  "/aide",
-  "/contact",
-  "/devenir-livreur",
-  "/devenir-resto",
-  "/mboapass",
-  "/parrainage",
-  "/favoris",
   "/admin/login",
+  "/admin/unauthorized",
   "/superadmin/login",
+  "/healthcheck",
 ];
 
-const PUBLIC_PREFIXES: ReadonlyArray<string> = [
-  "/r/",            // restaurant public
-  "/restaurants/",  // ancienne URL resto
-  "/categorie/",
-  "/aide/",
-];
+const PUBLIC_PREFIXES: ReadonlyArray<string> = [];
 
 function isPublicPath(path: string): boolean {
   if (PUBLIC_ROUTES.includes(path)) return true;
