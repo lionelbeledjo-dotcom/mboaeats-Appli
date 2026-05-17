@@ -1,4 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
 import { useState, useMemo } from "react";
 import { Search, Zap, Sparkles, TrendingUp, ChevronRight } from "lucide-react";
 import { AppTopBar } from "@/components/AppTopBar";
