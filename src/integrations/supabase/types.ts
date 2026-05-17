@@ -508,6 +508,60 @@ export type Database = {
         }
         Relationships: []
       }
+      driver_profiles: {
+        Row: {
+          city: string | null
+          cni_url: string | null
+          created_at: string
+          full_name: string
+          permis_url: string | null
+          phone: string
+          photo_url: string | null
+          plate_number: string | null
+          rejection_reason: string | null
+          status: Database["public"]["Enums"]["driver_application_status"]
+          updated_at: string
+          user_id: string
+          validated_at: string | null
+          validated_by: string | null
+          vehicle_type: string | null
+        }
+        Insert: {
+          city?: string | null
+          cni_url?: string | null
+          created_at?: string
+          full_name: string
+          permis_url?: string | null
+          phone: string
+          photo_url?: string | null
+          plate_number?: string | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["driver_application_status"]
+          updated_at?: string
+          user_id: string
+          validated_at?: string | null
+          validated_by?: string | null
+          vehicle_type?: string | null
+        }
+        Update: {
+          city?: string | null
+          cni_url?: string | null
+          created_at?: string
+          full_name?: string
+          permis_url?: string | null
+          phone?: string
+          photo_url?: string | null
+          plate_number?: string | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["driver_application_status"]
+          updated_at?: string
+          user_id?: string
+          validated_at?: string | null
+          validated_by?: string | null
+          vehicle_type?: string | null
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -1999,6 +2053,7 @@ export type Database = {
         | "restaurant"
         | "superadmin"
       delivery_offer_status: "proposed" | "accepted" | "declined" | "expired"
+      driver_application_status: "en_attente" | "valide" | "rejete"
       member_status: "active" | "invited" | "suspended"
       order_status:
         | "draft"
@@ -2149,6 +2204,7 @@ export const Constants = {
         "superadmin",
       ],
       delivery_offer_status: ["proposed", "accepted", "declined", "expired"],
+      driver_application_status: ["en_attente", "valide", "rejete"],
       member_status: ["active", "invited", "suspended"],
       order_status: [
         "draft",
