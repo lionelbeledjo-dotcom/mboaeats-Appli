@@ -137,11 +137,11 @@ function AdminLayout() {
 
   return (
     <SidebarProvider>
-      <div data-admin-shell className="flex min-h-dvh w-full bg-background text-foreground">
+      <div className="h-screen flex w-full bg-background text-foreground overflow-hidden">
         <AdminSidebar />
         <div className="flex-1 flex flex-col min-w-0">
           <AdminHeader adminInfo={adminInfo} loading={loading} isAdmin={isAdmin} />
-          <main data-admin-scroll-container className="flex-1 min-w-0 overflow-x-hidden">
+          <main className="flex-1 overflow-y-auto overflow-x-hidden">
             <Outlet />
           </main>
         </div>
