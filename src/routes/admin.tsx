@@ -518,30 +518,30 @@ function AdminSidebar() {
                   );
                 }
 
-                // Rendu desktop (sombre, premium)
+                // Rendu desktop (sombre, premium) — pas de scale, dimensions identiques actif/inactif
                 return (
                   <SidebarMenuItem key={item.url}>
                     <SidebarMenuButton asChild isActive={active}>
                       <Link
                         to={item.url}
-                        className={`relative flex items-center gap-2 rounded-xl transition-all duration-300 ease-out ${
+                        className={`relative flex items-center gap-2 rounded-xl font-semibold tracking-normal transition-colors duration-200 ${
                           active
-                            ? `${tone.bg} ${tone.text} ${tone.glow} ring-1 ${tone.ring} scale-[1.04]`
+                            ? `${tone.bg} ${tone.text} ${tone.glow} ring-1 ${tone.ring}`
                             : "hover:bg-muted/40"
                         }`}
                       >
                         {active && (
                           <span
-                            className={`absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full ${tone.bar} animate-fade-in`}
+                            className={`absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full ${tone.bar}`}
                             aria-hidden
                           />
                         )}
-                        <item.icon className={`h-4 w-4 transition-colors ${active ? `${tone.icon} drop-shadow-[0_0_6px_currentColor]` : ""}`} />
+                        <item.icon className={`h-4 w-4 transition-colors ${active ? tone.icon : ""}`} strokeWidth={2.2} />
                         {!collapsed && (
                           <>
-                            <span className={`flex-1 ${active ? "font-bold tracking-wide" : ""}`}>{item.title}</span>
+                            <span className="flex-1">{item.title}</span>
                             {item.badge && (
-                              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${active ? `${tone.bar} text-white` : "bg-primary/15 text-primary"}`}>
+                              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${active ? "bg-white/20 text-white" : "bg-primary/15 text-primary"}`}>
                                 {item.badge}
                               </span>
                             )}
