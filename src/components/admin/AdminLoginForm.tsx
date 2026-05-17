@@ -259,6 +259,14 @@ export function AdminLoginForm() {
             {mode === "bootstrap" ? "Initialiser le compte" : "Se connecter"}
           </button>
 
+          <div className="relative my-2 flex items-center gap-3">
+            <span className="h-px flex-1 bg-white/10" />
+            <span className="text-[10px] uppercase tracking-widest text-white/40">ou</span>
+            <span className="h-px flex-1 bg-white/10" />
+          </div>
+
+          <GoogleSignInButton redirectTo={adminRedirectTarget()} />
+
           <div className="mt-6 flex flex-col items-center gap-2 text-center">
             <button type="button" className="text-sm text-white/70 hover:text-amber-300 transition">
               Vérifier le code ?
