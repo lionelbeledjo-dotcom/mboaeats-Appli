@@ -52,6 +52,11 @@ export function useHostGuard() {
     if (mode === "any") return;
     const path = location.pathname;
     const isAdminPath = path === "/admin" || path.startsWith("/admin/");
+    const isSuperAdminPath = path === "/superadmin" || path.startsWith("/superadmin/");
+
+    // Le flux /superadmin/* est accessible depuis n'importe quel host
+    // (mboaeat.site comme admin.mboaeat.site). On ne le touche jamais.
+    if (isSuperAdminPath) return;
 
     if (mode === "admin" && !isAdminPath) {
       navigate({ to: "/admin", replace: true });
@@ -67,11 +72,15 @@ export function useHostGuard() {
   // - any fresh SIGNED_IN event on a client host.
   useEffect(() => {
     if (mode !== "client" || typeof window === "undefined") return;
+    // Ne pas interférer avec le flux superadmin : l'utilisateur reste sur
+    // l'host courant et navigue lui-même vers /superadmin/setup-2fa ou /superadmin.
+    if (location.pathname.startsWith("/superadmin")) return;
 
     const adminOrigin = "https://admin.mboaeat.site";
     let cancelled = false;
 
     async function rescue() {
+      if (window.location.pathname.startsWith("/superadmin")) return;
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || cancelled) return;
       const { data: roles } = await supabase
