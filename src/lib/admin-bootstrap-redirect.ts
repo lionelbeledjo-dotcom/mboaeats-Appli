@@ -93,7 +93,7 @@ export function runAdminBootstrapRedirect(): Promise<BootstrapRedirectResult> {
         return "done";
       }
 
-      console.log(`${LOG} [DECISION] admin role detected (`, roles[0]?.role, ") — REDIRECTING to`, ADMIN_TARGET);
+      console.log(`${LOG} [DECISION] admin role detected — role=`, roles[0]?.role, "REDIRECTING to", ADMIN_TARGET);
       window.location.replace(ADMIN_TARGET);
       return "redirecting";
     } catch (error) {
