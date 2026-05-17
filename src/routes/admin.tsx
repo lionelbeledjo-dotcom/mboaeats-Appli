@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, redirect, useRouter, useRouterState, use
 import { useEffect, useRef, useState } from "react";
 import {
   LayoutDashboard, Store, Bike, AlertTriangle, Coins, Settings, ArrowLeft,
-  TrendingUp, Users, ShieldCheck, ShieldAlert, Search, Star, Check, X, MoreHorizontal, MapPin, LogOut, Utensils, Menu, ShoppingBag,
+  TrendingUp, Users, ShieldCheck, ShieldAlert, Search, Star, Check, X, MoreHorizontal, MapPin, LogOut, Utensils, Menu,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -18,20 +18,17 @@ export const Route = createFileRoute("/admin")({
     // re-execution after hydration will perform the real check.
     if (typeof window === "undefined") return;
     try {
-      // STRICT : /admin/* est réservé au SUPER_ADMIN plateforme.
-      // RLS protège user_roles → un non-superadmin ne peut pas forger une ligne ici.
-      // Chaque server function /admin re-vérifie aussi le rôle côté serveur.
+      // STRICT : /admin/* nécessite une session active.
+      // Le check du rôle superadmin se fait DANS le component (AdminLayout) :
+      // un user connecté sans superadmin voit une page "Accès refusé" claire
+      // au lieu d'un redirect silencieux qui le laisse perdu.
+      // Chaque server function /admin re-vérifie aussi le rôle côté serveur,
+      // donc même si on laisse passer ici, aucune donnée admin ne fuit.
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw redirect({ to: "/admin/login" });
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .in("role", ["admin", "superadmin"]);
-      if (!roles || roles.length === 0) throw redirect({ to: "/admin/unauthorized" });
+      if (!user) throw redirect({ to: "/superadmin/login" });
     } catch (err) {
       if (isRedirect(err)) throw err;
-      throw redirect({ to: "/admin/login" });
+      throw redirect({ to: "/superadmin/login" });
     }
   },
   component: AdminLayout,
@@ -79,15 +76,12 @@ const TONES: Record<string, NavTone> = {
 
 const navItems = [
   { title: "Vue d'ensemble", url: "/admin", icon: LayoutDashboard, exact: true, tone: "blue" as const },
-  { title: "Commandes", url: "/admin/commandes", icon: ShoppingBag, tone: "green" as const },
-  { title: "Clients", url: "/admin/clients", icon: Users, tone: "yellow" as const },
   { title: "Commissions", url: "/admin/commissions", icon: Coins, tone: "green" as const },
   { title: "Zones livraison", url: "/admin/zones", icon: MapPin, tone: "yellow" as const },
   { title: "Restaurants", url: "/admin/restaurants", icon: Store, tone: "purple" as const },
   { title: "Menus & Catégories", url: "/admin/menus", icon: Utensils, tone: "orange" as const },
   { title: "Livreurs", url: "/admin/livreurs", icon: Bike, tone: "indigo" as const },
   { title: "Litiges", url: "/admin/litiges", icon: AlertTriangle, badge: 4, tone: "red" as const },
-  { title: "Logs activité", url: "/admin/logs", icon: ShieldCheck, tone: "indigo" as const },
 ];
 
 function AdminLayout() {
@@ -102,12 +96,13 @@ function AdminLayout() {
         if (alive) setAdminInfo({ isAdmin: false, email: null });
         return;
       }
-      const { data: roles } = await supabase
+      const { data: role } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
-        .in("role", ["admin", "superadmin"]);
-      if (alive) setAdminInfo({ isAdmin: !!(roles && roles.length > 0), email: user.email ?? null });
+        .eq("role", "superadmin")
+        .maybeSingle();
+      if (alive) setAdminInfo({ isAdmin: !!role, email: user.email ?? null });
     };
 
     refresh();
@@ -133,6 +128,12 @@ function AdminLayout() {
   const isAdmin = adminInfo?.isAdmin ?? false;
   const loading = adminInfo === null;
 
+  // ÉCRAN "ACCÈS REFUSÉ" — affiché si user connecté mais sans rôle superadmin.
+  // Beaucoup plus clair qu'un redirect silencieux vers /superadmin/login.
+  if (!loading && !isAdmin) {
+    return <AdminAccessDenied email={adminInfo?.email ?? null} />;
+  }
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background text-foreground">
@@ -145,6 +146,86 @@ function AdminLayout() {
         </div>
       </div>
     </SidebarProvider>
+  );
+}
+
+/**
+ * Écran d'accès refusé pour /admin.
+ *
+ * Affiché quand un utilisateur est connecté mais n'a pas le rôle `superadmin`
+ * dans la table `user_roles`. Lui propose deux actions claires :
+ *
+ *   1. Se déconnecter et utiliser un autre compte (le superadmin légitime)
+ *   2. Retourner sur l'app cliente (la page d'accueil publique)
+ *
+ * NB : la vraie sécurité ne dépend PAS de cet écran (qui n'est qu'une
+ * commodité UI). Chaque server function `/admin/*` re-vérifie le rôle côté
+ * serveur, donc aucune donnée admin ne peut être lue ou modifiée par un
+ * non-superadmin, même s'il bricolait le DOM.
+ */
+function AdminAccessDenied({ email }: { email: string | null }) {
+  const navigate = useNavigate();
+  const [signingOut, setSigningOut] = useState(false);
+
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    try {
+      await supabase.auth.signOut({ scope: "global" });
+    } catch {
+      /* ignore */
+    }
+    navigate({ to: "/superadmin/login", replace: true });
+  };
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="w-full max-w-lg rounded-2xl border border-border bg-surface p-8 shadow-glow text-center">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/15">
+          <ShieldAlert className="h-8 w-8 text-amber-500" strokeWidth={2.25} />
+        </div>
+        <h1 className="mt-6 font-display text-2xl font-bold tracking-tight text-foreground">
+          Accès administrateur refusé
+        </h1>
+        <p className="mt-3 text-sm text-muted-foreground">
+          Cette console est réservée au super-administrateur de la plateforme MboaEats.
+        </p>
+        {email && (
+          <div className="mt-4 rounded-lg bg-muted/50 px-4 py-2 text-xs">
+            <span className="text-muted-foreground">Compte connecté :</span>{" "}
+            <span className="font-medium text-foreground">{email}</span>
+          </div>
+        )}
+        <div className="mt-6 space-y-3 text-left">
+          <p className="text-xs text-muted-foreground">
+            Si vous êtes le propriétaire de la plateforme, déconnectez-vous puis
+            reconnectez-vous avec le compte super-admin. Sinon, retournez sur
+            l'application cliente.
+          </p>
+        </div>
+        <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
+          <button
+            type="button"
+            onClick={handleSignOut}
+            disabled={signingOut}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-gradient-primary px-5 text-sm font-bold text-primary-foreground shadow-glow transition-transform hover:scale-[1.02] disabled:opacity-60"
+          >
+            <LogOut className="h-4 w-4" />
+            {signingOut ? "Déconnexion…" : "Se déconnecter et changer de compte"}
+          </button>
+          <Link
+            to="/"
+            className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground hover:bg-muted/40"
+          >
+            Retour à l'app cliente
+          </Link>
+        </div>
+        <p className="mt-6 text-[11px] text-muted-foreground">
+          Si vous pensez que c'est une erreur, vérifiez que votre compte a bien
+          le rôle <code className="rounded bg-muted px-1 py-0.5 text-[10px]">superadmin</code>{" "}
+          dans la table <code className="rounded bg-muted px-1 py-0.5 text-[10px]">user_roles</code>.
+        </p>
+      </div>
+    </div>
   );
 }
 
@@ -268,7 +349,7 @@ function AdminHeader({
           </div>
         ) : (
           <Link
-            to="/admin/login"
+            to="/superadmin/login"
             className="hidden items-center gap-1.5 rounded-full border border-destructive/40 bg-destructive/10 px-3 py-1.5 hover:bg-destructive/20 sm:inline-flex"
           >
             <ShieldAlert className="h-3.5 w-3.5 text-destructive" />
@@ -366,7 +447,7 @@ function AdminSidebar() {
 
   const handleLogout = async () => {
     try { await supabase.auth.signOut({ scope: "global" }); } catch {}
-    navigate({ to: "/admin/login", replace: true });
+    navigate({ to: "/superadmin/login", replace: true });
   };
 
   const isActive = (item: typeof navItems[number]) =>
