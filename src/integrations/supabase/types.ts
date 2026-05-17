@@ -1970,6 +1970,7 @@ export type Database = {
         Returns: number
       }
       gen_referral_code: { Args: { _uid: string }; Returns: string }
+      has_any_superadmin: { Args: never; Returns: boolean }
       has_restaurant_membership: {
         Args: {
           _min_role?: Database["public"]["Enums"]["restaurant_role"]
