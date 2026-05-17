@@ -36,6 +36,9 @@ describe("SuperAdminLoginForm — bootstrap mode gating", () => {
   beforeEach(() => {
     rpcMock.mockReset();
   });
+  afterEach(() => {
+    cleanup();
+  });
 
   it("affiche 'Première configuration' quand has_any_superadmin retourne false", async () => {
     rpcMock.mockResolvedValueOnce({ data: false, error: null });
