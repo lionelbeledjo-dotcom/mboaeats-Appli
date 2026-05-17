@@ -28,7 +28,7 @@ export const Route = createFileRoute("/admin")({
         .select("role")
         .eq("user_id", user.id)
         .in("role", ["admin", "superadmin"]);
-      if (!roles || roles.length === 0) throw redirect({ to: "/admin/login" });
+      if (!roles || roles.length === 0) throw redirect({ to: "/admin/unauthorized" });
     } catch (err) {
       if (isRedirect(err)) throw err;
       throw redirect({ to: "/admin/login" });
