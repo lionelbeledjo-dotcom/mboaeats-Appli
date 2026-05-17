@@ -131,9 +131,17 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const location = useLocation();
   const path = location.pathname;
-  // Sur le sous-domaine admin, on masque tout le chrome client (header, dock, cart, onboarding).
+  // Sur le sous-domaine admin OU les routes d'authentification, on masque tout
+  // le chrome client (header, dock, cart, onboarding) → écran login centré et stable.
   const isAdminHost = hostMode === "admin";
-  const hideDock = isAdminHost;
+  const isAuthRoute =
+    path === "/connexion" ||
+    path === "/inscription" ||
+    path === "/reset-password" ||
+    path.startsWith("/admin/login") ||
+    path.startsWith("/admin/unauthorized") ||
+    path.startsWith("/superadmin/login");
+  const hideDock = isAdminHost || isAuthRoute;
   void PUBLIC_ROUTES;
   void PUBLIC_PREFIXES;
   return (
@@ -165,11 +173,11 @@ function RootComponent() {
               </Suspense>
             </RootErrorBoundary>
             {!hideDock && <CartFab />}
-            {!isAdminHost && <BottomDock />}
+            {!hideDock && <BottomDock />}
             <Toaster position="top-right" richColors closeButton />
           </AuthGate>
           <PendingPaymentWatcher />
-          {!isAdminHost && <OnboardingGate />}
+          {!isAdminHost && !isAuthRoute && <OnboardingGate />}
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>

@@ -19,44 +19,21 @@ import { useSession } from "@/auth/hooks/useSession";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Liste explicite des routes accessibles sans login.
- * On préfère la liste explicite à un wildcard `/admin` → impossible d'oublier
- * une route admin protégée.
+ * Mode APP FERMÉE : aucune page publique.
+ * Seules les routes d'authentification (et les portes admin/superadmin) sont
+ * accessibles sans session. Tout le reste redirige vers /connexion.
  */
 const PUBLIC_ROUTES: ReadonlyArray<string> = [
-  "/",
   "/connexion",
   "/inscription",
   "/reset-password",
-  "/cgu",
-  "/confidentialite",
-  "/healthcheck",
-  "/recherche",
-  "/explorer",
-  "/panier",
-  "/commandes",
-  "/profil",
-  "/cuisines",
-  "/proximite",
-  "/populaire",
-  "/decouvrir",
-  "/aide",
-  "/contact",
-  "/devenir-livreur",
-  "/devenir-resto",
-  "/mboapass",
-  "/parrainage",
-  "/favoris",
   "/admin/login",
+  "/admin/unauthorized",
   "/superadmin/login",
+  "/healthcheck",
 ];
 
-const PUBLIC_PREFIXES: ReadonlyArray<string> = [
-  "/r/",            // restaurant public
-  "/restaurants/",  // ancienne URL resto
-  "/categorie/",
-  "/aide/",
-];
+const PUBLIC_PREFIXES: ReadonlyArray<string> = [];
 
 function isPublicPath(path: string): boolean {
   if (PUBLIC_ROUTES.includes(path)) return true;
@@ -99,16 +76,20 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   }, [trulyUnauthed, publicRoute, navigate, path, location.search]);
 
   if (publicRoute) return <>{children}</>;
-  // Si Supabase a une session en cache, on rend l'enfant tout de suite
-  // (la page peut afficher son skeleton local pendant que le JWT arrive).
+  // Session présente en cache → on rend immédiatement (pas de flash).
   if (sbHasSession || isAuthenticated) return <>{children}</>;
-  // Premier check pas encore terminé → skeleton minimal au lieu de null
+  // Vérification en cours → FullScreenLoader, jamais le contenu protégé.
   if (!settled) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center" aria-busy="true">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      <div
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-background"
+        aria-busy="true"
+        aria-live="polite"
+      >
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     );
   }
+  // Settled & non authentifié → la redirection est en cours, on n'affiche rien.
   return null;
 }

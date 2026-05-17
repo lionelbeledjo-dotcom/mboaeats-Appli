@@ -20,7 +20,7 @@ interface Props {
   children?: React.ReactNode;
 }
 
-export function SignOutButton({ className, redirectTo = "/", children }: Props) {
+export function SignOutButton({ className, redirectTo = "/connexion", children }: Props) {
   const signOut = useSignOut();
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
