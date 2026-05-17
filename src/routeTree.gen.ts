@@ -46,6 +46,7 @@ import { Route as AdressesRouteImport } from './routes/adresses'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SuperadminIndexRouteImport } from './routes/superadmin.index'
+import { Route as PartenaireIndexRouteImport } from './routes/partenaire.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TableePaiementRouteImport } from './routes/tablee.paiement'
 import { Route as SuperadminSetup2faRouteImport } from './routes/superadmin_.setup-2fa'
@@ -260,6 +261,11 @@ const SuperadminIndexRoute = SuperadminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => SuperadminRoute,
 } as any)
+const PartenaireIndexRoute = PartenaireIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PartenaireRoute,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -428,7 +434,7 @@ export interface FileRoutesByFullPath {
   '/mboapass': typeof MboapassRoute
   '/panier': typeof PanierRoute
   '/parrainage': typeof ParrainageRoute
-  '/partenaire': typeof PartenaireRoute
+  '/partenaire': typeof PartenaireRouteWithChildren
   '/populaire': typeof PopulaireRoute
   '/preferences': typeof PreferencesRoute
   '/profil': typeof ProfilRoute
@@ -461,6 +467,7 @@ export interface FileRoutesByFullPath {
   '/superadmin/setup-2fa': typeof SuperadminSetup2faRoute
   '/tablee/paiement': typeof TableePaiementRoute
   '/admin/': typeof AdminIndexRoute
+  '/partenaire/': typeof PartenaireIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
   '/api/public/campay-webhook': typeof ApiPublicCampayWebhookRoute
   '/restaurants/$restoId/menu': typeof RestaurantsRestoIdMenuRoute
@@ -494,7 +501,6 @@ export interface FileRoutesByTo {
   '/mboapass': typeof MboapassRoute
   '/panier': typeof PanierRoute
   '/parrainage': typeof ParrainageRoute
-  '/partenaire': typeof PartenaireRoute
   '/populaire': typeof PopulaireRoute
   '/preferences': typeof PreferencesRoute
   '/profil': typeof ProfilRoute
@@ -526,6 +532,7 @@ export interface FileRoutesByTo {
   '/superadmin/setup-2fa': typeof SuperadminSetup2faRoute
   '/tablee/paiement': typeof TableePaiementRoute
   '/admin': typeof AdminIndexRoute
+  '/partenaire': typeof PartenaireIndexRoute
   '/superadmin': typeof SuperadminIndexRoute
   '/api/public/campay-webhook': typeof ApiPublicCampayWebhookRoute
   '/restaurants/$restoId/menu': typeof RestaurantsRestoIdMenuRoute
@@ -561,7 +568,7 @@ export interface FileRoutesById {
   '/mboapass': typeof MboapassRoute
   '/panier': typeof PanierRoute
   '/parrainage': typeof ParrainageRoute
-  '/partenaire': typeof PartenaireRoute
+  '/partenaire': typeof PartenaireRouteWithChildren
   '/populaire': typeof PopulaireRoute
   '/preferences': typeof PreferencesRoute
   '/profil': typeof ProfilRoute
@@ -594,6 +601,7 @@ export interface FileRoutesById {
   '/superadmin_/setup-2fa': typeof SuperadminSetup2faRoute
   '/tablee/paiement': typeof TableePaiementRoute
   '/admin/': typeof AdminIndexRoute
+  '/partenaire/': typeof PartenaireIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
   '/api/public/campay-webhook': typeof ApiPublicCampayWebhookRoute
   '/restaurants/$restoId/menu': typeof RestaurantsRestoIdMenuRoute
@@ -663,6 +671,7 @@ export interface FileRouteTypes {
     | '/superadmin/setup-2fa'
     | '/tablee/paiement'
     | '/admin/'
+    | '/partenaire/'
     | '/superadmin/'
     | '/api/public/campay-webhook'
     | '/restaurants/$restoId/menu'
@@ -696,7 +705,6 @@ export interface FileRouteTypes {
     | '/mboapass'
     | '/panier'
     | '/parrainage'
-    | '/partenaire'
     | '/populaire'
     | '/preferences'
     | '/profil'
@@ -728,6 +736,7 @@ export interface FileRouteTypes {
     | '/superadmin/setup-2fa'
     | '/tablee/paiement'
     | '/admin'
+    | '/partenaire'
     | '/superadmin'
     | '/api/public/campay-webhook'
     | '/restaurants/$restoId/menu'
@@ -795,6 +804,7 @@ export interface FileRouteTypes {
     | '/superadmin_/setup-2fa'
     | '/tablee/paiement'
     | '/admin/'
+    | '/partenaire/'
     | '/superadmin/'
     | '/api/public/campay-webhook'
     | '/restaurants/$restoId/menu'
@@ -830,7 +840,7 @@ export interface RootRouteChildren {
   MboapassRoute: typeof MboapassRoute
   PanierRoute: typeof PanierRoute
   ParrainageRoute: typeof ParrainageRoute
-  PartenaireRoute: typeof PartenaireRoute
+  PartenaireRoute: typeof PartenaireRouteWithChildren
   PopulaireRoute: typeof PopulaireRoute
   PreferencesRoute: typeof PreferencesRoute
   ProfilRoute: typeof ProfilRoute
@@ -1121,6 +1131,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuperadminIndexRouteImport
       parentRoute: typeof SuperadminRoute
     }
+    '/partenaire/': {
+      id: '/partenaire/'
+      path: '/'
+      fullPath: '/partenaire/'
+      preLoaderRoute: typeof PartenaireIndexRouteImport
+      parentRoute: typeof PartenaireRoute
+    }
     '/admin/': {
       id: '/admin/'
       path: '/'
@@ -1354,6 +1371,18 @@ const AideRouteChildren: AideRouteChildren = {
 
 const AideRouteWithChildren = AideRoute._addFileChildren(AideRouteChildren)
 
+interface PartenaireRouteChildren {
+  PartenaireIndexRoute: typeof PartenaireIndexRoute
+}
+
+const PartenaireRouteChildren: PartenaireRouteChildren = {
+  PartenaireIndexRoute: PartenaireIndexRoute,
+}
+
+const PartenaireRouteWithChildren = PartenaireRoute._addFileChildren(
+  PartenaireRouteChildren,
+)
+
 interface SuiviRouteChildren {
   SuiviOrderIdRoute: typeof SuiviOrderIdRoute
 }
@@ -1423,7 +1452,7 @@ const rootRouteChildren: RootRouteChildren = {
   MboapassRoute: MboapassRoute,
   PanierRoute: PanierRoute,
   ParrainageRoute: ParrainageRoute,
-  PartenaireRoute: PartenaireRoute,
+  PartenaireRoute: PartenaireRouteWithChildren,
   PopulaireRoute: PopulaireRoute,
   PreferencesRoute: PreferencesRoute,
   ProfilRoute: ProfilRoute,
