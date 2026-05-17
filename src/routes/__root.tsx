@@ -154,8 +154,8 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light">
         <AuthProvider>
-          <SplashScreen />
-          <OfflineBanner />
+          {!hideClientChrome && <SplashScreen />}
+          {!hideClientChrome && <OfflineBanner />}
           <AuthGate>
             {!hideClientChrome && <SiteHeader />}
             {/* Suspense global : permet à une route lazy de streamer sans
@@ -186,7 +186,7 @@ function RootComponent() {
             {!hideClientChrome && <BottomDock />}
             <Toaster position="top-right" richColors closeButton />
           </AuthGate>
-          <PendingPaymentWatcher />
+          {!hideClientChrome && <PendingPaymentWatcher />}
           {!hideClientChrome && <OnboardingGate />}
         </AuthProvider>
       </ThemeProvider>
