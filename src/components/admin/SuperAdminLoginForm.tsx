@@ -139,14 +139,13 @@ export function SuperAdminLoginForm() {
     setInfo(null);
     setLoading(true);
     try {
-      const { error: oauthErr } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/superadmin`,
-        },
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: `${window.location.origin}/superadmin`,
       });
-      if (oauthErr) throw oauthErr;
-      // Pas de navigate ici : le browser est redirigé par Supabase vers Google.
+      if (result.error) throw result.error;
+      if (result.redirected) return;
+      // Tokens reçus directement — session déjà posée
+      navigate({ to: "/superadmin" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur Google OAuth");
       setLoading(false);
