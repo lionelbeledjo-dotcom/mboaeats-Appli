@@ -98,6 +98,10 @@ test.describe("Admin pages — mouse wheel scrolling", () => {
       const blocker = await page.evaluate(() => {
         const main = document.querySelector("main");
         if (!main) return null;
+        const htmlOverflowY = getComputedStyle(document.documentElement).overflowY;
+        const bodyOverflowY = getComputedStyle(document.body).overflowY;
+        if (htmlOverflowY === "hidden") return "HTML.overflow-y-hidden";
+        if (bodyOverflowY === "hidden") return "BODY.overflow-y-hidden";
         let el: HTMLElement | null = main.parentElement;
         while (el && el !== document.documentElement) {
           const oy = getComputedStyle(el).overflowY;
