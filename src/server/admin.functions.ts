@@ -44,7 +44,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       supabaseAdmin
         .from("orders")
         .select(
-          "id, total, status, restaurant_id, created_at, delivered_at, delivery_address",
+          "id, reference, user_id, total, status, restaurant_id, created_at, delivered_at, delivery_address",
         )
         .gte("created_at", since)
         .is("deleted_at", null),
