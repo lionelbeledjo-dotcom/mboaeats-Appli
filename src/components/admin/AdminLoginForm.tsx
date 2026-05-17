@@ -2,8 +2,22 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Flame, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 
 type Mode = "signin" | "bootstrap";
+
+const ADMIN_HOSTS = new Set(["admin.mboaeat.site", "admin.mboaeats.com"]);
+
+function adminRedirectTarget(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+  const host = window.location.hostname.toLowerCase();
+  // Force the OAuth callback back to the admin subdomain when we initiate
+  // from it, so Supabase doesn't fall back to the main Site URL.
+  if (ADMIN_HOSTS.has(host)) {
+    return `${window.location.protocol}//${window.location.host}/admin`;
+  }
+  return `${window.location.origin}/admin`;
+}
 
 export function AdminLoginForm() {
   const navigate = useNavigate();
@@ -28,6 +42,38 @@ export function AdminLoginForm() {
       }
     })();
   }, []);
+
+  // Post-auth redirect: if a session exists (e.g. after Google OAuth callback)
+  // and the user has the admin role, send them to the admin dashboard
+  // instead of staying on /admin/login.
+  useEffect(() => {
+    let cancelled = false;
+    async function checkAndRedirect() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || cancelled) return;
+      const { data: role } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .in("role", ["admin", "superadmin"])
+        .limit(1)
+        .maybeSingle();
+      if (cancelled) return;
+      if (role) {
+        navigate({ to: "/admin", replace: true });
+      }
+    }
+    checkAndRedirect();
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        checkAndRedirect();
+      }
+    });
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
