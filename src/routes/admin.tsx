@@ -22,17 +22,16 @@ export const Route = createFileRoute("/admin")({
       // RLS protège user_roles → un non-superadmin ne peut pas forger une ligne ici.
       // Chaque server function /admin re-vérifie aussi le rôle côté serveur.
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw redirect({ to: "/superadmin/login" });
-      const { data: role } = await supabase
+      if (!user) throw redirect({ to: "/admin/login" });
+      const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
-        .eq("role", "superadmin")
-        .maybeSingle();
-      if (!role) throw redirect({ to: "/superadmin/login" });
+        .in("role", ["admin", "superadmin"]);
+      if (!roles || roles.length === 0) throw redirect({ to: "/admin/login" });
     } catch (err) {
       if (isRedirect(err)) throw err;
-      throw redirect({ to: "/superadmin/login" });
+      throw redirect({ to: "/admin/login" });
     }
   },
   component: AdminLayout,
