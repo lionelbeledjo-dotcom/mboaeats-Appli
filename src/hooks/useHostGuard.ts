@@ -60,6 +60,46 @@ export function useHostGuard() {
     }
   }, [mode, location.pathname, navigate]);
 
+  // Cross-domain admin rescue: if an admin/superadmin lands on the main
+  // domain (typically because the OAuth broker fell back to Site URL after
+  // Google sign-in), bounce them to the admin subdomain. Triggers on
+  // - URL fragment containing access_token (implicit-flow callback), OR
+  // - any fresh SIGNED_IN event on a client host.
+  useEffect(() => {
+    if (mode !== "client" || typeof window === "undefined") return;
+
+    const adminOrigin = "https://admin.mboaeat.site";
+    let cancelled = false;
+
+    async function rescue() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || cancelled) return;
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .in("role", ["admin", "superadmin"])
+        .limit(1);
+      if (cancelled || !roles || roles.length === 0) return;
+      window.location.replace(`${adminOrigin}/admin`);
+    }
+
+    // Trigger on OAuth implicit-flow fragment
+    if (window.location.hash.includes("access_token=")) {
+      // Give supabase-js a tick to consume the fragment and set the session
+      setTimeout(rescue, 250);
+    }
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN") rescue();
+    });
+
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
+  }, [mode]);
+
   // 15-minute idle timeout on admin subdomain
   useEffect(() => {
     if (mode !== "admin" || typeof window === "undefined") return;
