@@ -330,7 +330,7 @@ function Restaurants() {
                   <button
                     onClick={() => updateStatus(r, true)}
                     disabled={busy}
-                    className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-gradient-primary text-xs font-semibold text-primary-foreground shadow-glow transition active:scale-[0.98] disabled:opacity-60"
+                    className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-gradient-primary text-xs font-semibold text-primary-foreground shadow-glow transition-colors duration-200 hover:opacity-95 disabled:opacity-60"
                   >
                     {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />}
                     Approuver et publier

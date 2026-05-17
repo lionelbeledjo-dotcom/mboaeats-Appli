@@ -141,7 +141,7 @@ function AdminLayout() {
         <AdminSidebar />
         <div className="flex-1 flex flex-col min-w-0">
           <AdminHeader adminInfo={adminInfo} loading={loading} isAdmin={isAdmin} />
-          <main className="flex-1 overflow-x-hidden">
+          <main className="flex-1 overflow-x-hidden overflow-y-visible">
             <Outlet />
           </main>
         </div>
@@ -208,7 +208,7 @@ function AdminAccessDenied({ email }: { email: string | null }) {
             type="button"
             onClick={handleSignOut}
             disabled={signingOut}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-gradient-primary px-5 text-sm font-bold text-primary-foreground shadow-glow transition-transform hover:scale-[1.02] disabled:opacity-60"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-gradient-primary px-5 text-sm font-bold text-primary-foreground shadow-glow transition-colors duration-200 hover:opacity-95 disabled:opacity-60"
           >
             <LogOut className="h-4 w-4" />
             {signingOut ? "Déconnexion…" : "Se déconnecter et changer de compte"}
@@ -277,7 +277,7 @@ function AdminHeader({
           type="button"
           onClick={toggleSidebar}
           aria-label="Ouvrir le menu de navigation"
-          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-foreground transition-colors hover:bg-muted/50 active:scale-95"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-foreground transition-colors duration-200 hover:bg-muted/50"
         >
           <Menu className="h-6 w-6" strokeWidth={2.4} />
         </button>
@@ -288,9 +288,9 @@ function AdminHeader({
           onClick={handleBack}
           aria-label={isAdminHome ? "Quitter l'espace admin" : "Retour"}
           title={isAdminHome ? "Quitter l'espace admin" : "Retour"}
-          className="group inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border bg-background text-foreground transition-all hover:bg-muted/50 active:scale-95"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border bg-background text-foreground transition-colors duration-200 hover:bg-muted/50"
         >
-          <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-0.5" strokeWidth={2.4} />
+          <ArrowLeft className="h-5 w-5" strokeWidth={2.4} />
         </button>
 
         {/* Titre */}
@@ -304,7 +304,7 @@ function AdminHeader({
         <button
           type="button"
           onClick={() => setSearchOpen(true)}
-          className="hidden h-11 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 text-sm text-white/60 transition-all hover:border-brand-cm-green/50 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cm-green/60 md:inline-flex"
+          className="hidden h-11 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 text-sm text-white/60 transition-colors duration-200 hover:border-brand-cm-green/50 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cm-green/60 md:inline-flex"
         >
           <Search className="h-4 w-4" strokeWidth={2.25} />
           <span>Rechercher commande, resto, livreur…</span>
@@ -318,7 +318,7 @@ function AdminHeader({
           type="button"
           onClick={() => setSearchOpen(true)}
           aria-label="Ouvrir la recherche"
-          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-all hover:bg-white/10 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cm-green/60 md:hidden"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-colors duration-200 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cm-green/60 md:hidden"
         >
           <Search className="h-5 w-5" strokeWidth={2.25} />
         </button>
