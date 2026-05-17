@@ -614,8 +614,8 @@ html, body, #root {
 }
 html:has([data-admin-shell]),
 body:has([data-admin-shell]) {
-  height: 100%;
-  overflow-y: hidden;
+  min-height: 100%;
+  overflow-y: auto;
 }
 body:has([data-admin-shell]) {
   touch-action: auto;
