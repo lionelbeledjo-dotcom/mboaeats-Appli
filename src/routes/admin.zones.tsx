@@ -211,8 +211,8 @@ function ZonesPage() {
         </div>
 
         {/* Zones table */}
-        <div className="mt-5 overflow-hidden rounded-2xl border border-border">
-          <table className="w-full text-sm">
+        <div className="mt-5 overflow-x-auto rounded-2xl border border-border">
+          <table className="w-full min-w-[640px] text-sm">
             <thead className="bg-background/40 text-xs uppercase tracking-wider text-muted-foreground">
               <tr>
                 <th className="p-3 text-left">Ville</th>
