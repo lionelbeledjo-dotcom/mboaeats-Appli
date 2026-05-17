@@ -76,16 +76,20 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   }, [trulyUnauthed, publicRoute, navigate, path, location.search]);
 
   if (publicRoute) return <>{children}</>;
-  // Si Supabase a une session en cache, on rend l'enfant tout de suite
-  // (la page peut afficher son skeleton local pendant que le JWT arrive).
+  // Session présente en cache → on rend immédiatement (pas de flash).
   if (sbHasSession || isAuthenticated) return <>{children}</>;
-  // Premier check pas encore terminé → skeleton minimal au lieu de null
+  // Vérification en cours → FullScreenLoader, jamais le contenu protégé.
   if (!settled) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center" aria-busy="true">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      <div
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-background"
+        aria-busy="true"
+        aria-live="polite"
+      >
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     );
   }
+  // Settled & non authentifié → la redirection est en cours, on n'affiche rien.
   return null;
 }
