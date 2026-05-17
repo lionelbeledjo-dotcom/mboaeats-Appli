@@ -132,9 +132,14 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const location = useLocation();
   const path = location.pathname;
-  // Sur le sous-domaine admin OU les routes d'authentification, on masque tout
-  // le chrome client (header, dock, cart, onboarding) → écran login centré et stable.
+  // Sur le sous-domaine admin OU les routes /admin|/superadmin, on masque tout
+  // le chrome client (header, dock, cart, onboarding) : l'admin a son propre layout.
   const isAdminHost = hostMode === "admin";
+  const isAdminRoute =
+    path === "/admin" ||
+    path.startsWith("/admin/") ||
+    path === "/superadmin" ||
+    path.startsWith("/superadmin/");
   const isAuthRoute =
     path === "/connexion" ||
     path === "/inscription" ||
@@ -142,7 +147,7 @@ function RootComponent() {
     path.startsWith("/admin/login") ||
     path.startsWith("/admin/unauthorized") ||
     path.startsWith("/superadmin/login");
-  const hideDock = isAdminHost || isAuthRoute;
+  const hideClientChrome = isAdminHost || isAdminRoute || isAuthRoute;
   void PUBLIC_ROUTES;
   void PUBLIC_PREFIXES;
   return (
@@ -152,33 +157,37 @@ function RootComponent() {
           <SplashScreen />
           <OfflineBanner />
           <AuthGate>
-            {!hideDock && <SiteHeader />}
+            {!hideClientChrome && <SiteHeader />}
             {/* Suspense global : permet à une route lazy de streamer sans
                 démonter Header / BottomDock. RootErrorBoundary capture les
                 crashs en localisant l'erreur sous l'Outlet uniquement. */}
             <RootErrorBoundary>
               <Suspense fallback={<RouteSkeleton />}>
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={path}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    transition={{ duration: 0.15, ease: "easeOut" }}
-                    /* Pas de minHeight forcé : évite l'espace blanc en bas
-                       (le BottomDock fournit déjà son propre spacer). */
-                  >
-                    <Outlet />
-                  </motion.div>
-                </AnimatePresence>
+                {isAdminRoute ? (
+                  <Outlet />
+                ) : (
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                      key={path}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      transition={{ duration: 0.15, ease: "easeOut" }}
+                      /* Pas de minHeight forcé : évite l'espace blanc en bas
+                         (le BottomDock fournit déjà son propre spacer). */
+                    >
+                      <Outlet />
+                    </motion.div>
+                  </AnimatePresence>
+                )}
               </Suspense>
             </RootErrorBoundary>
-            {!hideDock && <CartFab />}
-            {!hideDock && <BottomDock />}
+            {!hideClientChrome && <CartFab />}
+            {!hideClientChrome && <BottomDock />}
             <Toaster position="top-right" richColors closeButton />
           </AuthGate>
           <PendingPaymentWatcher />
-          {!isAdminHost && !isAuthRoute && <OnboardingGate />}
+          {!hideClientChrome && <OnboardingGate />}
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
