@@ -249,7 +249,7 @@ function Connexion() {
       await supabase.auth.signInWithPassword({ email: trimmed, password });
       invalidateSessionCache();
       toast.success("Connexion réussie 🎉");
-      navigate({ to: "/", replace: true });
+      navigate({ to: postLoginTarget(), replace: true });
     } catch (err: any) {
       setError(err?.message ?? "Erreur de connexion");
     } finally {
@@ -352,7 +352,7 @@ function Connexion() {
       }
       invalidateSessionCache();
       toast.success("Connexion réussie 🎉");
-      navigate({ to: "/", replace: true });
+      navigate({ to: postLoginTarget(), replace: true });
     } catch (err: any) {
       setError(err?.message ?? "Code invalide");
       setOtpCode("");
