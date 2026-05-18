@@ -22,6 +22,7 @@ export function getHostMode(hostname?: string): HostMode {
   }
   const h = hostname.toLowerCase();
   if (ADMIN_HOSTS.has(h)) return "admin";
+  if (RESTAURANT_HOSTS.has(h)) return "restaurant";
   if (CLIENT_HOSTS.has(h)) return "client";
   return "any";
 }
