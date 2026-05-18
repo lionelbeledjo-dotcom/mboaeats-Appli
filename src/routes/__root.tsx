@@ -1,4 +1,4 @@
-import { Outlet, Link, createRootRouteWithContext, HeadContent, Scripts, useLocation, useNavigate } from "@tanstack/react-router";
+import { Outlet, Link, createRootRouteWithContext, HeadContent, Scripts, useLocation } from "@tanstack/react-router";
 import { Suspense, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { QueryClient } from "@tanstack/react-query";
