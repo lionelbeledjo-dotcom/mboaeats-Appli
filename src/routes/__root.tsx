@@ -1,5 +1,5 @@
 import { Outlet, Link, createRootRouteWithContext, HeadContent, Scripts, useLocation } from "@tanstack/react-router";
-import { Suspense, useEffect } from "react";
+import { Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { QueryClient } from "@tanstack/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -20,7 +20,6 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { useKeyboardViewport } from "@/hooks/useKeyboardViewport";
 import { usePrefetchOnIdle } from "@/auth/hooks/usePrefetch";
 import { getHostMode } from "@/hooks/useHostMode";
-import { useSession } from "@/auth/hooks/useSession";
 
 
 // Mode invité : pages de découverte accessibles sans compte. Le checkout reste protégé via une porte dédiée.
@@ -40,54 +39,6 @@ function OnboardingGate() {
     ["/connexion", "/inscription", "/reset-password"].includes(location.pathname);
   if (!hydrated || seen || blocked) return null;
   return <OnboardingCarousel onDone={markSeen} />;
-}
-
-/**
- * Guard strict pour le sous-domaine restaurant.* :
- * - en cours de chargement → skeleton
- * - non authentifié        → laisse passer (la page /restaurant montre l'écran "Se connecter")
- * - authentifié sans rôle  restaurateur / admin / superadmin → Accès refusé
- */
-function RestaurantHostGuard({ children }: { children: React.ReactNode }) {
-  const {
-    isLoading,
-    isAuthenticated,
-    principal,
-    isPlatformAdmin,
-    isPlatformSuperadmin,
-  } = useSession();
-
-  if (isLoading) return <RouteSkeleton />;
-  if (!isAuthenticated) return <>{children}</>;
-
-  const hasRestoMembership =
-    !!principal &&
-    principal.memberships.some(
-      (m) => m.status === "active" && m.role !== "kitchen",
-    );
-  const allowed = hasRestoMembership || isPlatformAdmin || isPlatformSuperadmin;
-
-  if (!allowed) {
-    console.warn("[hostMode] accès refusé sur restaurant.* — rôle insuffisant");
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-6">
-        <div className="max-w-md rounded-3xl border border-border bg-surface/60 p-6 text-center">
-          <h1 className="font-display text-2xl font-bold">Accès refusé</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Ce sous-domaine est réservé aux restaurateurs et aux administrateurs.
-          </p>
-          <Link
-            to="/connexion"
-            className="mt-5 inline-flex rounded-full bg-gradient-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-glow"
-          >
-            Se reconnecter avec un autre compte
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  return <>{children}</>;
 }
 
 // AuthGate est maintenant importé depuis @/auth/components/AuthGate (refonte sécurité).
@@ -173,26 +124,22 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   useKeyboardViewport();
   const hostMode = getHostMode();
-
+  usePrefetchOnIdle(
+    hostMode === "admin"
+      ? []
+      : [{ to: "/panier" }, { to: "/commandes" }, { to: "/profil" }, { to: "/recherche" }],
+  );
   const { queryClient } = Route.useRouteContext();
   const location = useLocation();
   const path = location.pathname;
-
-  // Log unique au mount : router monté pour ce host.
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    console.log("[hostMode] router monté — host=", window.location.hostname,
-                "mode=", hostMode, "path=", path);
-  }, [hostMode, path]);
-
+  // Sur le sous-domaine admin OU les routes /admin|/superadmin, on masque tout
+  // le chrome client (header, dock, cart, onboarding) : l'admin a son propre layout.
   const isAdminHost = hostMode === "admin";
-  const isRestaurantHost = hostMode === "restaurant";
-
   const isAdminRoute =
-    path === "/admin" || path.startsWith("/admin/") ||
-    path === "/superadmin" || path.startsWith("/superadmin/");
-  const isRestaurantRoute =
-    path === "/restaurant" || path.startsWith("/restaurant/");
+    path === "/admin" ||
+    path.startsWith("/admin/") ||
+    path === "/superadmin" ||
+    path.startsWith("/superadmin/");
   const isAuthRoute =
     path === "/connexion" ||
     path === "/inscription" ||
@@ -200,71 +147,9 @@ function RootComponent() {
     path.startsWith("/admin/login") ||
     path.startsWith("/admin/unauthorized") ||
     path.startsWith("/superadmin/login");
-
-  // Prefetch client uniquement sur le domaine client.
-  usePrefetchOnIdle(
-    isAdminHost || isRestaurantHost
-      ? []
-      : [{ to: "/panier" }, { to: "/commandes" }, { to: "/profil" }, { to: "/recherche" }],
-  );
-
+  const hideClientChrome = isAdminHost || isAdminRoute || isAuthRoute;
   void PUBLIC_ROUTES;
   void PUBLIC_PREFIXES;
-
-  // ============================================================
-  // MONTAGE STRUCTUREL — un seul sous-arbre par host.
-  // ============================================================
-
-  // ----- ADMIN SUBDOMAIN -----
-  if (isAdminHost) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider defaultTheme="light">
-          <AuthProvider>
-            <AuthGate>
-              <RootErrorBoundary>
-                <Suspense fallback={<RouteSkeleton />}>
-                  <Outlet />
-                </Suspense>
-              </RootErrorBoundary>
-              <Toaster position="top-right" richColors closeButton />
-            </AuthGate>
-          </AuthProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    );
-  }
-
-  // ----- RESTAURANT SUBDOMAIN -----
-  if (isRestaurantHost) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider defaultTheme="light">
-          <AuthProvider>
-            <AuthGate>
-              <RootErrorBoundary>
-                <Suspense fallback={<RouteSkeleton />}>
-                  {isRestaurantRoute ? (
-                    <RestaurantHostGuard>
-                      <Outlet />
-                    </RestaurantHostGuard>
-                  ) : (
-                    // Pages auth communes (/connexion etc.) — pas de guard,
-                    // pas de chrome client.
-                    <Outlet />
-                  )}
-                </Suspense>
-              </RootErrorBoundary>
-              <Toaster position="top-right" richColors closeButton />
-            </AuthGate>
-          </AuthProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    );
-  }
-
-  // ----- CLIENT (domaine principal) -----
-  const hideClientChrome = isAdminRoute || isAuthRoute;
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light">
@@ -273,6 +158,9 @@ function RootComponent() {
           {!hideClientChrome && <OfflineBanner />}
           <AuthGate>
             {!hideClientChrome && <SiteHeader />}
+            {/* Suspense global : permet à une route lazy de streamer sans
+                démonter Header / BottomDock. RootErrorBoundary capture les
+                crashs en localisant l'erreur sous l'Outlet uniquement. */}
             <RootErrorBoundary>
               <Suspense fallback={<RouteSkeleton />}>
                 {isAdminRoute ? (
@@ -285,6 +173,8 @@ function RootComponent() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -4 }}
                       transition={{ duration: 0.15, ease: "easeOut" }}
+                      /* Pas de minHeight forcé : évite l'espace blanc en bas
+                         (le BottomDock fournit déjà son propre spacer). */
                     >
                       <Outlet />
                     </motion.div>
