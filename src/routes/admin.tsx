@@ -266,7 +266,13 @@ function AdminHeader({
   }, []);
 
   const handleBack = () => {
-    // Sortie de l'espace admin → toujours rediriger vers le Profil utilisateur
+    // Sur le sous-domaine admin, "Accueil/Retour" reste dans l'espace admin
+    // (jamais de redirection vers l'app cliente). Sur les autres hosts, on
+    // ramène l'utilisateur sur son profil client.
+    if (getHostMode() === "admin") {
+      router.navigate({ to: "/admin" });
+      return;
+    }
     router.navigate({ to: "/profil" });
   };
 
