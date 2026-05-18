@@ -476,8 +476,14 @@ function AdminSidebar() {
     navigate({ to: "/superadmin/login", replace: true });
   };
 
-  const isActive = (item: typeof navItems[number]) =>
-    item.exact ? path === item.url : path.startsWith(item.url);
+  const isActive = (item: typeof navItems[number]) => {
+    // "Vue d'ensemble" pointe vers /admin/dashboard (alias) mais reste actif
+    // également sur la racine /admin (la racine EST le dashboard).
+    if (item.url === "/admin/dashboard") {
+      return path === "/admin" || path === "/admin/" || path.startsWith("/admin/dashboard");
+    }
+    return item.exact ? path === item.url : path.startsWith(item.url);
+  };
 
   // Sur mobile (sheet blanc) : fond blanc / texte noir / icônes colorées dans des chips.
   // Sur desktop (panneau sombre) : on conserve le rendu "premium" actuel.
