@@ -1564,6 +1564,10 @@ export type Database = {
           reviews_count: number | null
           slug: string
           updated_at: string
+          validated_at: string | null
+          validated_by: string | null
+          validation_note: string | null
+          validation_status: string
         }
         Insert: {
           address?: string | null
@@ -1590,6 +1594,10 @@ export type Database = {
           reviews_count?: number | null
           slug: string
           updated_at?: string
+          validated_at?: string | null
+          validated_by?: string | null
+          validation_note?: string | null
+          validation_status?: string
         }
         Update: {
           address?: string | null
@@ -1616,6 +1624,10 @@ export type Database = {
           reviews_count?: number | null
           slug?: string
           updated_at?: string
+          validated_at?: string | null
+          validated_by?: string | null
+          validation_note?: string | null
+          validation_status?: string
         }
         Relationships: []
       }
@@ -2001,6 +2013,10 @@ export type Database = {
         Returns: undefined
       }
       loyalty_tier: { Args: { _pts: number }; Returns: string }
+      moderate_restaurant: {
+        Args: { p_decision: string; p_note?: string; p_restaurant_id: string }
+        Returns: Json
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
