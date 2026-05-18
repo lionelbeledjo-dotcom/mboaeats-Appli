@@ -173,49 +173,26 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   useKeyboardViewport();
   const hostMode = getHostMode();
-  
+
   const { queryClient } = Route.useRouteContext();
   const location = useLocation();
   const path = location.pathname;
 
-  // Isolation sous-domaine restaurant.* : seul l'espace /restaurant est rendu.
-  const isRestaurantHost = hostMode === "restaurant";
-  const isRestaurantRoute =
-    path === "/restaurant" || path.startsWith("/restaurant/");
-  const isAllowedOnRestaurantHost =
-    isRestaurantRoute ||
-    path === "/connexion" ||
-    path === "/inscription" ||
-    path === "/reset-password" ||
-    path === "/healthcheck";
-
+  // Log unique au mount : router monté pour ce host.
   useEffect(() => {
     if (typeof window === "undefined") return;
-    console.log("[hostMode] hostname=", window.location.hostname, "mode=", hostMode, "path=", path);
-    if (isRestaurantHost) {
-      console.log("[hostMode] routage restaurant activé — bootstrap client désactivé");
-    }
-    if (isRestaurantHost && !isAllowedOnRestaurantHost) {
-      console.log("[hostMode] blocage du bootstrap client → redirection /restaurant");
-      // Replace synchrone : évite que la home cliente ne se monte une frame.
-      window.location.replace("/restaurant");
-    }
-  }, [hostMode, isRestaurantHost, isAllowedOnRestaurantHost, path]);
+    console.log("[hostMode] router monté — host=", window.location.hostname,
+                "mode=", hostMode, "path=", path);
+  }, [hostMode, path]);
 
-  usePrefetchOnIdle(
-    hostMode === "admin" || hostMode === "restaurant"
-      ? []
-      : [{ to: "/panier" }, { to: "/commandes" }, { to: "/profil" }, { to: "/recherche" }],
-  );
-
-  // Sur le sous-domaine admin OU les routes /admin|/superadmin, on masque tout
-  // le chrome client (header, dock, cart, onboarding) : l'admin a son propre layout.
   const isAdminHost = hostMode === "admin";
+  const isRestaurantHost = hostMode === "restaurant";
+
   const isAdminRoute =
-    path === "/admin" ||
-    path.startsWith("/admin/") ||
-    path === "/superadmin" ||
-    path.startsWith("/superadmin/");
+    path === "/admin" || path.startsWith("/admin/") ||
+    path === "/superadmin" || path.startsWith("/superadmin/");
+  const isRestaurantRoute =
+    path === "/restaurant" || path.startsWith("/restaurant/");
   const isAuthRoute =
     path === "/connexion" ||
     path === "/inscription" ||
@@ -223,9 +200,71 @@ function RootComponent() {
     path.startsWith("/admin/login") ||
     path.startsWith("/admin/unauthorized") ||
     path.startsWith("/superadmin/login");
-  const hideClientChrome = isAdminHost || isRestaurantHost || isAdminRoute || isAuthRoute;
+
+  // Prefetch client uniquement sur le domaine client.
+  usePrefetchOnIdle(
+    isAdminHost || isRestaurantHost
+      ? []
+      : [{ to: "/panier" }, { to: "/commandes" }, { to: "/profil" }, { to: "/recherche" }],
+  );
+
   void PUBLIC_ROUTES;
   void PUBLIC_PREFIXES;
+
+  // ============================================================
+  // MONTAGE STRUCTUREL — un seul sous-arbre par host.
+  // ============================================================
+
+  // ----- ADMIN SUBDOMAIN -----
+  if (isAdminHost) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="light">
+          <AuthProvider>
+            <AuthGate>
+              <RootErrorBoundary>
+                <Suspense fallback={<RouteSkeleton />}>
+                  <Outlet />
+                </Suspense>
+              </RootErrorBoundary>
+              <Toaster position="top-right" richColors closeButton />
+            </AuthGate>
+          </AuthProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    );
+  }
+
+  // ----- RESTAURANT SUBDOMAIN -----
+  if (isRestaurantHost) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="light">
+          <AuthProvider>
+            <AuthGate>
+              <RootErrorBoundary>
+                <Suspense fallback={<RouteSkeleton />}>
+                  {isRestaurantRoute ? (
+                    <RestaurantHostGuard>
+                      <Outlet />
+                    </RestaurantHostGuard>
+                  ) : (
+                    // Pages auth communes (/connexion etc.) — pas de guard,
+                    // pas de chrome client.
+                    <Outlet />
+                  )}
+                </Suspense>
+              </RootErrorBoundary>
+              <Toaster position="top-right" richColors closeButton />
+            </AuthGate>
+          </AuthProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    );
+  }
+
+  // ----- CLIENT (domaine principal) -----
+  const hideClientChrome = isAdminRoute || isAuthRoute;
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light">
@@ -234,18 +273,9 @@ function RootComponent() {
           {!hideClientChrome && <OfflineBanner />}
           <AuthGate>
             {!hideClientChrome && <SiteHeader />}
-            {/* Suspense global : permet à une route lazy de streamer sans
-                démonter Header / BottomDock. RootErrorBoundary capture les
-                crashs en localisant l'erreur sous l'Outlet uniquement. */}
             <RootErrorBoundary>
               <Suspense fallback={<RouteSkeleton />}>
-                {isRestaurantHost && !isAllowedOnRestaurantHost ? (
-                  <RouteSkeleton />
-                ) : isRestaurantHost && isRestaurantRoute ? (
-                  <RestaurantHostGuard>
-                    <Outlet />
-                  </RestaurantHostGuard>
-                ) : isAdminRoute || isRestaurantHost ? (
+                {isAdminRoute ? (
                   <Outlet />
                 ) : (
                   <AnimatePresence mode="wait" initial={false}>
@@ -255,8 +285,6 @@ function RootComponent() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -4 }}
                       transition={{ duration: 0.15, ease: "easeOut" }}
-                      /* Pas de minHeight forcé : évite l'espace blanc en bas
-                         (le BottomDock fournit déjà son propre spacer). */
                     >
                       <Outlet />
                     </motion.div>

@@ -31,6 +31,61 @@ import { persistQueryClient } from "@tanstack/react-query-persist-client";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { useEffect } from "react";
 import { routeTree } from "./routeTree.gen";
+import { getHostMode } from "@/hooks/useHostMode";
+
+/**
+ * Isolation structurelle par sous-domaine.
+ *
+ * Exécutée SYNCHRONIQUEMENT avant createRouter() côté client : si l'URL
+ * courante n'appartient pas au sous-arbre du host détecté, on réécrit
+ * l'historique (replaceState) AVANT que le router ne lise `location`.
+ *
+ * → Aucun useEffect, aucune redirection après render, aucun flash de
+ *   l'interface client sur admin.* ou restaurant.*.
+ */
+function bootstrapHostIsolation(): void {
+  if (typeof window === "undefined") return;
+  const host = window.location.hostname;
+  const mode = getHostMode(host);
+  const path = window.location.pathname;
+  // Routes auth communes : autorisées sur tous les sous-domaines
+  const isAuthPath =
+    path === "/connexion" ||
+    path === "/inscription" ||
+    path === "/reset-password" ||
+    path === "/healthcheck" ||
+    path.startsWith("/admin/login") ||
+    path.startsWith("/superadmin/login") ||
+    path.startsWith("/admin/unauthorized");
+
+  let target: string | null = null;
+  if (mode === "admin") {
+    const ok = path === "/admin" || path.startsWith("/admin/") ||
+               path === "/superadmin" || path.startsWith("/superadmin/") ||
+               isAuthPath;
+    if (!ok) target = "/admin";
+  } else if (mode === "restaurant") {
+    const ok = path === "/restaurant" || path.startsWith("/restaurant/") || isAuthPath;
+    if (!ok) target = "/restaurant";
+  } else if (mode === "client") {
+    // Sur le domaine client, on ne laisse PAS s'afficher /admin ou /restaurant
+    // (ces espaces ne doivent vivre que sur leur sous-domaine).
+    if (path === "/admin" || path.startsWith("/admin/") ||
+        path === "/superadmin" || path.startsWith("/superadmin/") ||
+        path === "/restaurant" || path.startsWith("/restaurant/")) {
+      target = "/";
+    }
+  }
+
+  console.log("[hostMode] hostname=", host, "mode=", mode, "path=", path,
+              target ? `→ réécriture URL=${target}` : "→ OK");
+
+  if (target) {
+    window.history.replaceState(null, "", target);
+  }
+}
+
+bootstrapHostIsolation();
 
 const CHUNK_RELOAD_KEY = "__mboa_router_chunk_reload_at";
 
