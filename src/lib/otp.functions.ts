@@ -17,11 +17,13 @@
  */
 
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { createHash, randomInt } from "crypto";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { getTransientSession } from "@/auth/session.server";
 import { SERVER_CONFIG } from "@/shared/config/server-config";
+import { enforceRateLimit } from "@/shared/server/rate-limit";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/twilio";
 const { ttlSeconds, maxAttempts, cooldownSeconds } = SERVER_CONFIG.otp;
@@ -214,6 +216,24 @@ export const requestOtp = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const phone = normalizePhone(data.phone, data.countryCode);
+    // RATE LIMIT ANTI-ABUS SMS : 5 OTP par heure par numéro de téléphone.
+    // Twilio facture chaque SMS — un attaquant qui scriperait cette
+    // fonction pourrait coûter cher à la plateforme. Le cooldown 30s
+    // existant ci-dessous est trop laxiste (140 SMS/h max possible).
+    // On combine les deux : 30s minimum entre 2 OTP + 5 max par heure.
+    await enforceRateLimit(
+      "otp_request_phone",
+      getRequest(),
+      { limit: 5, windowSeconds: 3600 },
+      phone,
+    );
+    // RATE LIMIT IP : 30 OTP par heure par IP — limite l'abus depuis une
+    // seule machine qui tournerait sur plusieurs numéros volés.
+    await enforceRateLimit("otp_request_ip", getRequest(), {
+      limit: 30,
+      windowSeconds: 3600,
+    });
+
     const channel: OtpChannel = isTwilioTrialMode()
       ? "whatsapp"
       : (data.channel ?? "sms");
@@ -332,6 +352,21 @@ export const verifyOtp = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const phone = normalizePhone(data.phone);
+    // RATE LIMIT BRUTE-FORCE : 20 essais de vérification par IP toutes les
+    // 15 min. Le code OTP étant à 6 chiffres (1 chance sur 1M), on veut
+    // empêcher un attaquant de tester 1000 combinaisons.
+    await enforceRateLimit("otp_verify_ip", getRequest(), {
+      limit: 20,
+      windowSeconds: 900,
+    });
+    // RATE LIMIT PHONE : 10 essais par numéro toutes les 15 min — empêche
+    // un attaquant qui aurait l'IP changeante de cibler un numéro précis.
+    await enforceRateLimit(
+      "otp_verify_phone",
+      getRequest(),
+      { limit: 10, windowSeconds: 900 },
+      phone,
+    );
 
     const session = await getTransientSession();
     const pending = session.data.pendingPhone;

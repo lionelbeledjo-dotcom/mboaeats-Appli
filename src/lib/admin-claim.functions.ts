@@ -16,10 +16,43 @@
  */
 
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireAuth } from "@/auth/middlewares/requireAuth";
 import { requirePlatformSuperadmin } from "@/auth/middlewares/requirePlatformAdmin";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { enforceRateLimit } from "@/shared/server/rate-limit";
+
+/**
+ * Logue un événement de privilège (montée/baisse de rôle) dans audit_logs.
+ * Vient en complément du trigger trg_audit_user_roles : permet de logger
+ * l'INTENTION (qui a tenté quoi, avec quelle IP) même si la mutation échoue.
+ */
+async function logPrivilegeEvent(
+  action: string,
+  actorId: string | null,
+  metadata: Record<string, unknown> = {},
+) {
+  try {
+    const req = getRequest();
+    const ip =
+      req?.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      req?.headers.get("cf-connecting-ip") ??
+      null;
+    const ua = req?.headers.get("user-agent") ?? null;
+    await supabaseAdmin.from("audit_logs").insert({
+      action,
+      target_table: "user_roles",
+      target_id: null,
+      actor_id: actorId,
+      actor_role: "platform",
+      metadata: { ...metadata, ip, user_agent: ua },
+    });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn("[audit] logPrivilegeEvent failed:", err);
+  }
+}
 
 // -----------------------------------------------------------------------------
 // claimSuperAdmin — bootstrap unique sur DB vierge
@@ -37,9 +70,31 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 export const claimSuperAdminBootstrap = createServerFn({ method: "POST" })
   .middleware([requireAuth])
   .handler(async ({ context }) => {
+    // RATE LIMIT CRITIQUE : 3 tentatives par heure par IP.
+    // Cette fonction permet une élévation de privilège vers superadmin.
+    // Même si la fonction SQL claim_super_admin() refuse quand un superadmin
+    // existe déjà, on rate-limite l'appel pour éviter le scan/timing d'un
+    // attaquant qui essaierait de profiter d'une fenêtre de réinitialisation.
+    await enforceRateLimit("claim_super_admin", getRequest(), {
+      limit: 3,
+      windowSeconds: 3600,
+    });
+
     const { supabase } = context;
     const { data, error } = await supabase.rpc("claim_super_admin");
-    if (error) throw new Error(error.message);
+    if (error) {
+      await logPrivilegeEvent("superadmin.claim.failed", context.userId, {
+        reason: error.message,
+      });
+      throw new Error(error.message);
+    }
+    // AUDIT — bootstrap initial du superadmin. Une seule fois dans la vie
+    // d'une base : événement à tracer obligatoirement.
+    await logPrivilegeEvent(
+      data === true ? "superadmin.claim.success" : "superadmin.claim.rejected",
+      context.userId,
+      { result: data === true ? "promoted" : "window_closed" },
+    );
     return { ok: data === true };
   });
 
@@ -56,12 +111,18 @@ export const promoteToPlatformAdmin = createServerFn({ method: "POST" })
       })
       .parse(d),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const { error } = await supabaseAdmin.from("user_roles").upsert(
       { user_id: data.user_id, role: data.role },
       { onConflict: "user_id,role" },
     );
     if (error) throw new Error(error.message);
+    // AUDIT — montée en privilège vers admin ou livreur. Triggers couvrent
+    // la mutation, mais on logue ici l'intention + l'acteur authentifié.
+    await logPrivilegeEvent("platform_role.granted", context.userId, {
+      granted_to: data.user_id,
+      role: data.role,
+    });
     return { ok: true as const };
   });
 
@@ -90,6 +151,12 @@ export const revokePlatformRole = createServerFn({ method: "POST" })
       .eq("user_id", data.user_id)
       .eq("role", data.role);
     if (error) throw new Error(error.message);
+    // AUDIT — révocation de privilège. Tracer pour réviser les accès à
+    // froid en cas d'incident.
+    await logPrivilegeEvent("platform_role.revoked", context.userId, {
+      revoked_from: data.user_id,
+      role: data.role,
+    });
     return { ok: true as const };
   });
 
