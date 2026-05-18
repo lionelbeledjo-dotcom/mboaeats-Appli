@@ -43,6 +43,15 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminErrorBoundary({ error, reset }: { error: Error; reset: () => void }) {
+  // Log explicite pour identifier l'erreur exacte du dashboard admin.
+  // Visible dans la console navigateur — n'affecte ni client ni restaurant.
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.error("[ADMIN-BOUNDARY] erreur dashboard admin :", error);
+    // eslint-disable-next-line no-console
+    console.error("[ADMIN-BOUNDARY] stack :", error?.stack);
+  }, [error]);
+
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 p-8 text-center">
       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10">
@@ -54,8 +63,8 @@ function AdminErrorBoundary({ error, reset }: { error: Error; reset: () => void 
         <button onClick={() => reset()} className="rounded-xl border border-border bg-surface px-4 py-2 text-sm font-semibold hover:bg-background">
           Réessayer
         </button>
-        <Link to="/admin" className="rounded-xl bg-gradient-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-glow">
-          Retour à l'accueil
+        <Link to="/admin/dashboard" className="rounded-xl bg-gradient-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-glow">
+          Retour au tableau de bord
         </Link>
       </div>
     </div>
