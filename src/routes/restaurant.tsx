@@ -43,9 +43,15 @@ type Resto = {
   city: string;
   neighborhood: string | null;
   is_open: boolean | null;
+  is_active: boolean | null;
   delivery_fee: number | null;
   eta_min: number | null;
   eta_max: number | null;
+  // Modération : voir migration `resto_moderation`.
+  validation_status: "pending" | "approved" | "rejected";
+  validation_note: string | null;
+  validated_at: string | null;
+  created_at: string;
 };
 
 type Tab = "commandes" | "menu" | "stats" | "profil";
@@ -128,13 +134,26 @@ function RestaurantSpace() {
       <Onboarding
         onCreated={async (data) => {
           await createResto({ data });
-          toast.success("Restaurant créé !");
+          toast.success("Votre demande a été envoyée à notre équipe.");
           await reload();
         }}
       />
     );
   }
 
+  // ÉCRAN "EN ATTENTE DE VALIDATION" — pour un resto qui vient d'être créé
+  // et n'a pas encore été validé par l'admin MboaEats.
+  if (resto.validation_status === "pending") {
+    return <RestaurantPendingScreen resto={resto} />;
+  }
+
+  // ÉCRAN "REFUSÉ" — pour un resto dont l'inscription a été refusée par
+  // l'admin. La raison du refus (validation_note) est affichée.
+  if (resto.validation_status === "rejected") {
+    return <RestaurantRejectedScreen resto={resto} />;
+  }
+
+  // À ce stade : validation_status === 'approved' → dashboard normal.
   return (
     <div className="min-h-screen bg-background pb-20">
       <header className="sticky top-0 z-40 glass border-b border-border/40">
@@ -980,6 +999,186 @@ function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void })
           {saving && <Loader2 className="h-4 w-4 animate-spin" />}
           Enregistrer
         </button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// ÉCRANS DE MODÉRATION — affichés selon validation_status
+// ============================================================================
+
+/**
+ * Écran "En attente de validation" — affiché tant que l'admin n'a pas validé
+ * le restaurant. Le restaurateur ne peut pas accéder au dashboard ni recevoir
+ * des commandes — son resto est invisible côté client.
+ *
+ * Affiche :
+ *   - Confirmation visuelle que la demande a bien été reçue
+ *   - Récap des infos du resto (nom, ville, cuisine) — rassure
+ *   - Date de la demande
+ *   - Délai estimé (24-48h)
+ *   - Possibilité de se déconnecter ou contacter le support
+ */
+function RestaurantPendingScreen({ resto }: { resto: Resto }) {
+  const createdDate = new Date(resto.created_at).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut({ scope: "global" });
+    } catch {
+      /* ignore */
+    }
+    window.location.href = "/";
+  };
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
+      <div className="w-full max-w-xl rounded-3xl border border-border bg-surface p-8 shadow-glow text-center">
+        {/* Icône d'attente */}
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-amber-500/15">
+          <Clock className="h-10 w-10 text-amber-500" strokeWidth={2.25} />
+        </div>
+
+        {/* Titre + intro */}
+        <h1 className="mt-6 font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          Demande en cours de validation
+        </h1>
+        <p className="mt-3 text-sm text-muted-foreground">
+          Votre inscription est bien arrivée. Notre équipe vérifie votre dossier
+          avant de vous donner accès à votre tableau de bord.
+        </p>
+
+        {/* Récap des infos du resto */}
+        <div className="mt-6 rounded-2xl border border-border bg-background p-5 text-left">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            Restaurant soumis
+          </p>
+          <p className="mt-1.5 font-display text-lg font-bold text-foreground">
+            {resto.name}
+          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1">
+              <Store className="h-3.5 w-3.5" /> {resto.cuisine}
+            </span>
+            <span>·</span>
+            <span>{resto.neighborhood ?? resto.city}</span>
+            <span>·</span>
+            <span>Demande du {createdDate}</span>
+          </div>
+        </div>
+
+        {/* Délai */}
+        <div className="mt-5 rounded-xl bg-primary/5 px-4 py-3 text-left">
+          <p className="text-xs text-foreground">
+            <span className="font-bold">Délai habituel : 24 à 48 heures ouvrées.</span>
+            <br />
+            <span className="text-muted-foreground">
+              Vous recevrez un email à la décision. En cas de validation, votre
+              tableau de bord sera immédiatement actif.
+            </span>
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
+          <Link
+            to="/"
+            className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground hover:bg-muted/40"
+          >
+            Retour à l'accueil
+          </Link>
+          <button
+            type="button"
+            onClick={handleSignOut}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-muted px-5 text-sm font-semibold text-foreground hover:bg-muted/70"
+          >
+            Se déconnecter
+          </button>
+        </div>
+
+        <p className="mt-6 text-[11px] text-muted-foreground">
+          Une question ?{" "}
+          <a
+            href="mailto:partenaires@mboaeat.site"
+            className="font-semibold text-primary hover:underline"
+          >
+            partenaires@mboaeat.site
+          </a>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Écran "Demande refusée" — affiché si l'admin a refusé le dossier.
+ * La raison du refus (validation_note) est affichée pour permettre au
+ * restaurateur de corriger ou comprendre.
+ */
+function RestaurantRejectedScreen({ resto }: { resto: Resto }) {
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut({ scope: "global" });
+    } catch {
+      /* ignore */
+    }
+    window.location.href = "/";
+  };
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
+      <div className="w-full max-w-xl rounded-3xl border border-border bg-surface p-8 shadow-glow text-center">
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-destructive/15">
+          <X className="h-10 w-10 text-destructive" strokeWidth={2.25} />
+        </div>
+
+        <h1 className="mt-6 font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          Demande non retenue
+        </h1>
+        <p className="mt-3 text-sm text-muted-foreground">
+          Après examen, notre équipe n'a pas pu valider votre inscription en
+          l'état.
+        </p>
+
+        {/* Raison du refus */}
+        {resto.validation_note && (
+          <div className="mt-6 rounded-2xl border border-destructive/30 bg-destructive/5 p-5 text-left">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-destructive">
+              Motif communiqué par notre équipe
+            </p>
+            <p className="mt-2 text-sm text-foreground">
+              {resto.validation_note}
+            </p>
+          </div>
+        )}
+
+        <div className="mt-6 rounded-xl bg-muted/40 px-4 py-3 text-left">
+          <p className="text-xs text-muted-foreground">
+            Vous pouvez nous contacter pour comprendre le motif ou soumettre une
+            nouvelle demande avec les éléments demandés.
+          </p>
+        </div>
+
+        <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
+          <a
+            href="mailto:partenaires@mboaeat.site"
+            className="inline-flex h-11 items-center justify-center rounded-xl bg-gradient-primary px-5 text-sm font-bold text-primary-foreground shadow-glow"
+          >
+            Contacter le support
+          </a>
+          <button
+            type="button"
+            onClick={handleSignOut}
+            className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground hover:bg-muted/40"
+          >
+            Se déconnecter
+          </button>
+        </div>
       </div>
     </div>
   );
