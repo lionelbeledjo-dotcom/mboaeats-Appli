@@ -169,7 +169,7 @@ function RootComponent() {
                 crashs en localisant l'erreur sous l'Outlet uniquement. */}
             <RootErrorBoundary>
               <Suspense fallback={<RouteSkeleton />}>
-                {isAdminRoute ? (
+                {isMetierRoute ? (
                   <Outlet />
                 ) : (
                   <AnimatePresence mode="wait" initial={false}>
