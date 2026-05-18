@@ -124,7 +124,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   useKeyboardViewport();
   const hostMode = getHostMode();
-  const navigate = useNavigate();
+  
   const { queryClient } = Route.useRouteContext();
   const location = useLocation();
   const path = location.pathname;
