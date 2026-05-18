@@ -143,11 +143,15 @@ function RootComponent() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     console.log("[hostMode] hostname=", window.location.hostname, "mode=", hostMode, "path=", path);
-    if (isRestaurantHost && !isAllowedOnRestaurantHost) {
-      console.log("[hostMode] redirection forcée vers /restaurant (sous-domaine restaurant.*)");
-      navigate({ to: "/restaurant", replace: true });
+    if (isRestaurantHost) {
+      console.log("[hostMode] routage restaurant activé — bootstrap client désactivé");
     }
-  }, [hostMode, isRestaurantHost, isAllowedOnRestaurantHost, navigate, path]);
+    if (isRestaurantHost && !isAllowedOnRestaurantHost) {
+      console.log("[hostMode] blocage du bootstrap client → redirection /restaurant");
+      // Replace synchrone : évite que la home cliente ne se monte une frame.
+      window.location.replace("/restaurant");
+    }
+  }, [hostMode, isRestaurantHost, isAllowedOnRestaurantHost, path]);
 
   usePrefetchOnIdle(
     hostMode === "admin" || hostMode === "restaurant"
