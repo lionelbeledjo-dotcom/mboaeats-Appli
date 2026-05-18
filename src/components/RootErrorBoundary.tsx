@@ -1,5 +1,4 @@
 import { Component, type ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
 import { AlertTriangle } from "lucide-react";
 
 /**
@@ -103,6 +102,21 @@ export class RootErrorBoundary extends Component<
       );
     }
 
+    // Détermine la cible "Accueil" en fonction du contexte (superadmin / admin / client)
+    let homeHref = "/";
+    let homeLabel = "Accueil";
+    if (typeof window !== "undefined") {
+      const path = window.location.pathname;
+      const host = window.location.hostname.toLowerCase();
+      if (path.startsWith("/superadmin")) {
+        homeHref = "/superadmin";
+        homeLabel = "Retour au tableau de bord";
+      } else if (path.startsWith("/admin") || host.startsWith("admin.")) {
+        homeHref = "/admin";
+        homeLabel = "Retour au tableau de bord";
+      }
+    }
+
     return (
       <main className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center px-4 py-10 text-center">
         <span className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-50 text-amber-600">
@@ -119,13 +133,13 @@ export class RootErrorBoundary extends Component<
           >
             Réessayer
           </button>
-          <Link
-            to="/"
+          <a
+            href={homeHref}
             onClick={this.reset}
             className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold"
           >
-            Accueil
-          </Link>
+            {homeLabel}
+          </a>
         </div>
       </main>
     );
