@@ -60,8 +60,8 @@ function SuperAdminLayout() {
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Console propriétaire</p>
           </div>
         </div>
-        <Link to="/superadmin/dashboard" className="ml-3 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-3.5 w-3.5" /> Accueil
+        <Link to="/" className="ml-3 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="h-3.5 w-3.5" /> Site
         </Link>
         <div className="ml-auto flex items-center gap-2">
           <div className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5" title={email ?? "SUPER_ADMIN connecté"}>

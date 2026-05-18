@@ -140,22 +140,6 @@ function RootComponent() {
     path.startsWith("/admin/") ||
     path === "/superadmin" ||
     path.startsWith("/superadmin/");
-
-  // [HOST-GUARD] Sur le sous-domaine admin, toute URL hors /admin|/superadmin
-  // est rebasée vers /admin. Sans ça, "/" tombait dans AuthGate qui renvoyait
-  // sur /connexion (UI client) — d'où l'impression que l'admin a disparu.
-  if (typeof window !== "undefined") {
-    const hostname = window.location.hostname;
-    // eslint-disable-next-line no-console
-    console.log("[HOST-GUARD] hostname détecté =", hostname);
-    // eslint-disable-next-line no-console
-    console.log("[HOST-GUARD] mode =", hostMode);
-    // eslint-disable-next-line no-console
-    console.log("[HOST-GUARD] router admin chargé =", isAdminHost);
-    if (isAdminHost && !isAdminRoute) {
-      window.location.replace("/admin");
-    }
-  }
   const isAuthRoute =
     path === "/connexion" ||
     path === "/inscription" ||
