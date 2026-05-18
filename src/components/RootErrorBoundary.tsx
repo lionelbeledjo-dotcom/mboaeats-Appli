@@ -1,5 +1,4 @@
 import { Component, type ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
 import { AlertTriangle } from "lucide-react";
 
 /**
