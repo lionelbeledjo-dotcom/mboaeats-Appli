@@ -432,6 +432,37 @@ export const createMyRestaurant = createServerFn({ method: "POST" })
       .select()
       .single();
     if (error) throw new Error(error.message);
+
+    // ATTRIBUTION DU RÔLE 'restaurateur' À L'UTILISATEUR.
+    //
+    // Sans ça, le RoleGuard sur /restaurant continuerait de voir le user
+    // comme un simple 'client' (rôle par défaut à l'inscription) et lui
+    // afficherait l'écran "Espace réservé aux restaurateurs partenaires"
+    // au lieu de l'écran "En attente de validation".
+    //
+    // Note : on attribue le rôle MÊME SI le resto est en validation_status
+    // 'pending'. C'est délibéré : le rôle dit "tu as un projet de resto",
+    // le validation_status dit "ton resto est-il visible publiquement".
+    // Les deux sont indépendants — un partenaire dont le resto est encore
+    // en attente doit pouvoir VOIR l'écran "En attente", pas l'écran
+    // public générique.
+    //
+    // upsert (ON CONFLICT) protège contre les doublons si l'utilisateur
+    // avait déjà ce rôle (cas re-inscription après suppression de resto).
+    const { error: roleErr } = await supabaseAdmin
+      .from("user_roles")
+      .upsert(
+        { user_id: context.userId, role: "restaurateur" },
+        { onConflict: "user_id,role" },
+      );
+    if (roleErr) {
+      // On NE LÈVE PAS d'exception ici. Le resto est déjà créé en base, ce
+      // serait une régression UX que l'inscription échoue après ce point.
+      // On logue juste pour qu'un admin puisse corriger manuellement.
+      // eslint-disable-next-line no-console
+      console.warn("[createMyRestaurant] role grant failed:", roleErr.message);
+    }
+
     return { restaurant: row };
   });
 
