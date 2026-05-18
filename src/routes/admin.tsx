@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { isRedirect } from "@tanstack/react-router";
+import { getHostMode } from "@/hooks/useHostMode";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: async () => {
