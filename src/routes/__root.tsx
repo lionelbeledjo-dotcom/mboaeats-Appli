@@ -1,4 +1,4 @@
-import { Outlet, Link, createRootRouteWithContext, HeadContent, Scripts, useLocation, useNavigate } from "@tanstack/react-router";
+import { Outlet, Link, createRootRouteWithContext, HeadContent, Scripts, useLocation } from "@tanstack/react-router";
 import { Suspense, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { QueryClient } from "@tanstack/react-query";
@@ -20,6 +20,7 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { useKeyboardViewport } from "@/hooks/useKeyboardViewport";
 import { usePrefetchOnIdle } from "@/auth/hooks/usePrefetch";
 import { getHostMode } from "@/hooks/useHostMode";
+import { useSession } from "@/auth/hooks/useSession";
 
 
 // Mode invité : pages de découverte accessibles sans compte. Le checkout reste protégé via une porte dédiée.
@@ -39,6 +40,54 @@ function OnboardingGate() {
     ["/connexion", "/inscription", "/reset-password"].includes(location.pathname);
   if (!hydrated || seen || blocked) return null;
   return <OnboardingCarousel onDone={markSeen} />;
+}
+
+/**
+ * Guard strict pour le sous-domaine restaurant.* :
+ * - en cours de chargement → skeleton
+ * - non authentifié        → laisse passer (la page /restaurant montre l'écran "Se connecter")
+ * - authentifié sans rôle  restaurateur / admin / superadmin → Accès refusé
+ */
+function RestaurantHostGuard({ children }: { children: React.ReactNode }) {
+  const {
+    isLoading,
+    isAuthenticated,
+    principal,
+    isPlatformAdmin,
+    isPlatformSuperadmin,
+  } = useSession();
+
+  if (isLoading) return <RouteSkeleton />;
+  if (!isAuthenticated) return <>{children}</>;
+
+  const hasRestoMembership =
+    !!principal &&
+    principal.memberships.some(
+      (m) => m.status === "active" && m.role !== "kitchen",
+    );
+  const allowed = hasRestoMembership || isPlatformAdmin || isPlatformSuperadmin;
+
+  if (!allowed) {
+    console.warn("[hostMode] accès refusé sur restaurant.* — rôle insuffisant");
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background p-6">
+        <div className="max-w-md rounded-3xl border border-border bg-surface/60 p-6 text-center">
+          <h1 className="font-display text-2xl font-bold">Accès refusé</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Ce sous-domaine est réservé aux restaurateurs et aux administrateurs.
+          </p>
+          <Link
+            to="/connexion"
+            className="mt-5 inline-flex rounded-full bg-gradient-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-glow"
+          >
+            Se reconnecter avec un autre compte
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
 }
 
 // AuthGate est maintenant importé depuis @/auth/components/AuthGate (refonte sécurité).
@@ -124,7 +173,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   useKeyboardViewport();
   const hostMode = getHostMode();
-  const navigate = useNavigate();
+  
   const { queryClient } = Route.useRouteContext();
   const location = useLocation();
   const path = location.pathname;
@@ -143,11 +192,15 @@ function RootComponent() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     console.log("[hostMode] hostname=", window.location.hostname, "mode=", hostMode, "path=", path);
-    if (isRestaurantHost && !isAllowedOnRestaurantHost) {
-      console.log("[hostMode] redirection forcée vers /restaurant (sous-domaine restaurant.*)");
-      navigate({ to: "/restaurant", replace: true });
+    if (isRestaurantHost) {
+      console.log("[hostMode] routage restaurant activé — bootstrap client désactivé");
     }
-  }, [hostMode, isRestaurantHost, isAllowedOnRestaurantHost, navigate, path]);
+    if (isRestaurantHost && !isAllowedOnRestaurantHost) {
+      console.log("[hostMode] blocage du bootstrap client → redirection /restaurant");
+      // Replace synchrone : évite que la home cliente ne se monte une frame.
+      window.location.replace("/restaurant");
+    }
+  }, [hostMode, isRestaurantHost, isAllowedOnRestaurantHost, path]);
 
   usePrefetchOnIdle(
     hostMode === "admin" || hostMode === "restaurant"
@@ -188,6 +241,10 @@ function RootComponent() {
               <Suspense fallback={<RouteSkeleton />}>
                 {isRestaurantHost && !isAllowedOnRestaurantHost ? (
                   <RouteSkeleton />
+                ) : isRestaurantHost && isRestaurantRoute ? (
+                  <RestaurantHostGuard>
+                    <Outlet />
+                  </RestaurantHostGuard>
                 ) : isAdminRoute || isRestaurantHost ? (
                   <Outlet />
                 ) : (
