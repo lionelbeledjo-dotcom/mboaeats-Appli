@@ -124,14 +124,37 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   useKeyboardViewport();
   const hostMode = getHostMode();
-  usePrefetchOnIdle(
-    hostMode === "admin"
-      ? []
-      : [{ to: "/panier" }, { to: "/commandes" }, { to: "/profil" }, { to: "/recherche" }],
-  );
+  const navigate = useNavigate();
   const { queryClient } = Route.useRouteContext();
   const location = useLocation();
   const path = location.pathname;
+
+  // Isolation sous-domaine restaurant.* : seul l'espace /restaurant est rendu.
+  const isRestaurantHost = hostMode === "restaurant";
+  const isRestaurantRoute =
+    path === "/restaurant" || path.startsWith("/restaurant/");
+  const isAllowedOnRestaurantHost =
+    isRestaurantRoute ||
+    path === "/connexion" ||
+    path === "/inscription" ||
+    path === "/reset-password" ||
+    path === "/healthcheck";
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    console.log("[hostMode] hostname=", window.location.hostname, "mode=", hostMode, "path=", path);
+    if (isRestaurantHost && !isAllowedOnRestaurantHost) {
+      console.log("[hostMode] redirection forcée vers /restaurant (sous-domaine restaurant.*)");
+      navigate({ to: "/restaurant", replace: true });
+    }
+  }, [hostMode, isRestaurantHost, isAllowedOnRestaurantHost, navigate, path]);
+
+  usePrefetchOnIdle(
+    hostMode === "admin" || hostMode === "restaurant"
+      ? []
+      : [{ to: "/panier" }, { to: "/commandes" }, { to: "/profil" }, { to: "/recherche" }],
+  );
+
   // Sur le sous-domaine admin OU les routes /admin|/superadmin, on masque tout
   // le chrome client (header, dock, cart, onboarding) : l'admin a son propre layout.
   const isAdminHost = hostMode === "admin";
@@ -147,7 +170,7 @@ function RootComponent() {
     path.startsWith("/admin/login") ||
     path.startsWith("/admin/unauthorized") ||
     path.startsWith("/superadmin/login");
-  const hideClientChrome = isAdminHost || isAdminRoute || isAuthRoute;
+  const hideClientChrome = isAdminHost || isRestaurantHost || isAdminRoute || isAuthRoute;
   void PUBLIC_ROUTES;
   void PUBLIC_PREFIXES;
   return (
