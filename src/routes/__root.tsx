@@ -186,7 +186,9 @@ function RootComponent() {
                 crashs en localisant l'erreur sous l'Outlet uniquement. */}
             <RootErrorBoundary>
               <Suspense fallback={<RouteSkeleton />}>
-                {isAdminRoute ? (
+                {isRestaurantHost && !isAllowedOnRestaurantHost ? (
+                  <RouteSkeleton />
+                ) : isAdminRoute || isRestaurantHost ? (
                   <Outlet />
                 ) : (
                   <AnimatePresence mode="wait" initial={false}>
