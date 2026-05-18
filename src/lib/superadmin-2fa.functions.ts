@@ -28,6 +28,7 @@ import {
   consumeBackupCode,
 } from "./totp.server";
 import { SERVER_CONFIG } from "@/shared/config/server-config";
+import { enforceRateLimit } from "@/shared/server/rate-limit";
 
 const { maxAttempts, lockMinutes, sessionTtlHours } = SERVER_CONFIG.superadmin2fa;
 
@@ -63,6 +64,40 @@ async function logAttempt(
     });
   } catch {
     /* noop */
+  }
+}
+
+/**
+ * Logue un événement sensible dans audit_logs via la RPC log_audit.
+ * Cible explicitement les actions superadmin qui ne déclenchent pas de
+ * trigger d'audit automatique (login, 2FA, bootstrap).
+ *
+ * Échec silencieux par design : un défaut de logging ne doit jamais
+ * bloquer une action métier déjà autorisée par les autres vérifications.
+ */
+async function logSecurityEvent(
+  action: string,
+  userId: string | null,
+  metadata: Record<string, unknown> = {},
+) {
+  try {
+    const req = getRequest();
+    const ip =
+      req?.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      req?.headers.get("cf-connecting-ip") ??
+      null;
+    const ua = req?.headers.get("user-agent") ?? null;
+    await supabaseAdmin.from("audit_logs").insert({
+      action,
+      target_table: "superadmin_2fa",
+      target_id: null,
+      actor_id: userId,
+      actor_role: "superadmin",
+      metadata: { ...metadata, ip, user_agent: ua },
+    });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn("[audit] logSecurityEvent failed:", err);
   }
 }
 
@@ -176,6 +211,11 @@ export const confirmSetup2fa = createServerFn({ method: "POST" })
     });
 
     await logAttempt(userId, true, "setup");
+    // AUDIT — activation initiale 2FA superadmin. Trace l'événement de
+    // sécurisation du compte.
+    await logSecurityEvent("superadmin.2fa_enabled", userId, {
+      backup_codes_generated: codes.plain.length,
+    });
     return { ok: true, backupCodes: codes.plain };
   });
 
@@ -194,6 +234,14 @@ export const verifyLogin2fa = createServerFn({ method: "POST" })
   )
   .handler(async ({ context, data }) => {
     const userId = context.userId;
+    // RATE LIMIT : 15 essais 2FA par IP toutes les 15 min.
+    // Vient en COMPLÉMENT du lockout interne (maxAttempts par compte) :
+    // protège aussi contre un attaquant qui tournerait sur plusieurs
+    // comptes superadmin différents depuis la même IP.
+    await enforceRateLimit("sa_2fa_verify", getRequest(), {
+      limit: 15,
+      windowSeconds: 900,
+    });
     await assertIsSuperadmin(userId);
     const row = await getRow(userId);
     if (
@@ -239,6 +287,13 @@ export const verifyLogin2fa = createServerFn({ method: "POST" })
         })
         .eq("user_id", userId);
       await logAttempt(userId, false, data.useBackup ? "backup" : "totp");
+      // AUDIT — tentative de connexion superadmin échouée. Critique pour
+      // détecter un brute force ciblé sur un compte superadmin.
+      await logSecurityEvent("superadmin.login.2fa_failure", userId, {
+        method: data.useBackup ? "backup_code" : "totp",
+        attempts_count: attempts,
+        locked: lock,
+      });
       throw new Error(
         lock
           ? `Trop de tentatives. Compte verrouillé ${lockMinutes} min.`
@@ -263,6 +318,13 @@ export const verifyLogin2fa = createServerFn({ method: "POST" })
       sa2faAt: Date.now(),
     });
     await logAttempt(userId, true, data.useBackup ? "backup" : "totp");
+    // AUDIT — connexion superadmin réussie (action sensible non triggée
+    // automatiquement par les triggers de table — il faut la logger ici).
+    await logSecurityEvent("superadmin.login.2fa_success", userId, {
+      method: data.useBackup ? "backup_code" : "totp",
+      backup_codes_remaining:
+        newBackup?.length ?? row.backup_codes_hashed?.length ?? 0,
+    });
     return {
       ok: true,
       backupCodesRemaining:
@@ -310,6 +372,8 @@ export const disable2fa = createServerFn({ method: "POST" })
       sa2faAt: undefined,
     });
     await logAttempt(userId, true, "disable");
+    // AUDIT — désactivation 2FA = action critique (sécurité fortement réduite).
+    await logSecurityEvent("superadmin.2fa_disabled", userId, {});
     return { ok: true as const };
   });
 
