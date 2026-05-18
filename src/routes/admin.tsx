@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { isRedirect } from "@tanstack/react-router";
+import { getHostMode } from "@/hooks/useHostMode";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: async () => {
@@ -213,12 +214,21 @@ function AdminAccessDenied({ email }: { email: string | null }) {
             <LogOut className="h-4 w-4" />
             {signingOut ? "Déconnexion…" : "Se déconnecter et changer de compte"}
           </button>
-          <Link
-            to="/"
-            className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground hover:bg-muted/40"
-          >
-            Retour à l'app cliente
-          </Link>
+          {getHostMode() === "admin" ? (
+            <Link
+              to="/admin/login"
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground hover:bg-muted/40"
+            >
+              Retour à la connexion admin
+            </Link>
+          ) : (
+            <Link
+              to="/"
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground hover:bg-muted/40"
+            >
+              Retour à l'app cliente
+            </Link>
+          )}
         </div>
         <p className="mt-6 text-[11px] text-muted-foreground">
           Si vous pensez que c'est une erreur, vérifiez que votre compte a bien
@@ -265,7 +275,13 @@ function AdminHeader({
   }, []);
 
   const handleBack = () => {
-    // Sortie de l'espace admin → toujours rediriger vers le Profil utilisateur
+    // Sur le sous-domaine admin, "Accueil/Retour" reste dans l'espace admin
+    // (jamais de redirection vers l'app cliente). Sur les autres hosts, on
+    // ramène l'utilisateur sur son profil client.
+    if (getHostMode() === "admin") {
+      router.navigate({ to: "/admin" });
+      return;
+    }
     router.navigate({ to: "/profil" });
   };
 
