@@ -73,6 +73,7 @@ import { Route as AdminMenusRouteImport } from './routes/admin.menus'
 import { Route as AdminLogsRouteImport } from './routes/admin.logs'
 import { Route as AdminLivreursRouteImport } from './routes/admin.livreurs'
 import { Route as AdminLitigesRouteImport } from './routes/admin.litiges'
+import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
 import { Route as AdminCommissionsRouteImport } from './routes/admin.commissions'
 import { Route as AdminCommandesRouteImport } from './routes/admin.commandes'
 import { Route as AdminClientsRouteImport } from './routes/admin.clients'
@@ -404,6 +405,11 @@ const AdminLitigesRoute = AdminLitigesRouteImport.update({
   path: '/litiges',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminDashboardRoute = AdminDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCommissionsRoute = AdminCommissionsRouteImport.update({
   id: '/commissions',
   path: '/commissions',
@@ -497,6 +503,7 @@ export interface FileRoutesByFullPath {
   '/admin/clients': typeof AdminClientsRoute
   '/admin/commandes': typeof AdminCommandesRoute
   '/admin/commissions': typeof AdminCommissionsRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
   '/admin/logs': typeof AdminLogsRoute
@@ -570,6 +577,7 @@ export interface FileRoutesByTo {
   '/admin/clients': typeof AdminClientsRoute
   '/admin/commandes': typeof AdminCommandesRoute
   '/admin/commissions': typeof AdminCommissionsRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
   '/admin/logs': typeof AdminLogsRoute
@@ -647,6 +655,7 @@ export interface FileRoutesById {
   '/admin/clients': typeof AdminClientsRoute
   '/admin/commandes': typeof AdminCommandesRoute
   '/admin/commissions': typeof AdminCommissionsRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
   '/admin/logs': typeof AdminLogsRoute
@@ -725,6 +734,7 @@ export interface FileRouteTypes {
     | '/admin/clients'
     | '/admin/commandes'
     | '/admin/commissions'
+    | '/admin/dashboard'
     | '/admin/litiges'
     | '/admin/livreurs'
     | '/admin/logs'
@@ -798,6 +808,7 @@ export interface FileRouteTypes {
     | '/admin/clients'
     | '/admin/commandes'
     | '/admin/commissions'
+    | '/admin/dashboard'
     | '/admin/litiges'
     | '/admin/livreurs'
     | '/admin/logs'
@@ -874,6 +885,7 @@ export interface FileRouteTypes {
     | '/admin/clients'
     | '/admin/commandes'
     | '/admin/commissions'
+    | '/admin/dashboard'
     | '/admin/litiges'
     | '/admin/livreurs'
     | '/admin/logs'
@@ -1417,6 +1429,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLitigesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/dashboard': {
+      id: '/admin/dashboard'
+      path: '/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AdminDashboardRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/commissions': {
       id: '/admin/commissions'
       path: '/commissions'
@@ -1494,6 +1513,7 @@ interface AdminRouteChildren {
   AdminClientsRoute: typeof AdminClientsRoute
   AdminCommandesRoute: typeof AdminCommandesRoute
   AdminCommissionsRoute: typeof AdminCommissionsRoute
+  AdminDashboardRoute: typeof AdminDashboardRoute
   AdminLitigesRoute: typeof AdminLitigesRoute
   AdminLivreursRoute: typeof AdminLivreursRoute
   AdminLogsRoute: typeof AdminLogsRoute
@@ -1508,6 +1528,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminClientsRoute: AdminClientsRoute,
   AdminCommandesRoute: AdminCommandesRoute,
   AdminCommissionsRoute: AdminCommissionsRoute,
+  AdminDashboardRoute: AdminDashboardRoute,
   AdminLitigesRoute: AdminLitigesRoute,
   AdminLivreursRoute: AdminLivreursRoute,
   AdminLogsRoute: AdminLogsRoute,
