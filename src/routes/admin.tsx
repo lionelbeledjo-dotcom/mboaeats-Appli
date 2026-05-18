@@ -101,6 +101,17 @@ function AdminLayout() {
   useEffect(() => {
     let alive = true;
 
+    // Log de diagnostic : permet d'identifier rapidement les pbs de routing/host
+    // sans toucher au client. À garder tant que /admin n'est pas 100% stable.
+    if (typeof window !== "undefined") {
+      // eslint-disable-next-line no-console
+      console.info("[ADMIN-LAYOUT] mount", {
+        hostname: window.location.hostname,
+        pathname: window.location.pathname,
+        hostMode: getHostMode(),
+      });
+    }
+
     const refresh = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
