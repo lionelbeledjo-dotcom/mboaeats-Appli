@@ -42,6 +42,54 @@ function OnboardingGate() {
   return <OnboardingCarousel onDone={markSeen} />;
 }
 
+/**
+ * Guard strict pour le sous-domaine restaurant.* :
+ * - en cours de chargement → skeleton
+ * - non authentifié        → laisse passer (la page /restaurant montre l'écran "Se connecter")
+ * - authentifié sans rôle  restaurateur / admin / superadmin → Accès refusé
+ */
+function RestaurantHostGuard({ children }: { children: React.ReactNode }) {
+  const {
+    isLoading,
+    isAuthenticated,
+    principal,
+    isPlatformAdmin,
+    isPlatformSuperadmin,
+  } = useSession();
+
+  if (isLoading) return <RouteSkeleton />;
+  if (!isAuthenticated) return <>{children}</>;
+
+  const hasRestoMembership =
+    !!principal &&
+    principal.memberships.some(
+      (m) => m.status === "active" && m.role !== "kitchen",
+    );
+  const allowed = hasRestoMembership || isPlatformAdmin || isPlatformSuperadmin;
+
+  if (!allowed) {
+    console.warn("[hostMode] accès refusé sur restaurant.* — rôle insuffisant");
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background p-6">
+        <div className="max-w-md rounded-3xl border border-border bg-surface/60 p-6 text-center">
+          <h1 className="font-display text-2xl font-bold">Accès refusé</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Ce sous-domaine est réservé aux restaurateurs et aux administrateurs.
+          </p>
+          <Link
+            to="/connexion"
+            className="mt-5 inline-flex rounded-full bg-gradient-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-glow"
+          >
+            Se reconnecter avec un autre compte
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
+
 // AuthGate est maintenant importé depuis @/auth/components/AuthGate (refonte sécurité).
 // Le mode `?preview=1` (bypass auth) a été supprimé — corrige audit C6.
 
