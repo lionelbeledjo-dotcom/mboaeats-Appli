@@ -214,12 +214,21 @@ function AdminAccessDenied({ email }: { email: string | null }) {
             <LogOut className="h-4 w-4" />
             {signingOut ? "Déconnexion…" : "Se déconnecter et changer de compte"}
           </button>
-          <Link
-            to="/"
-            className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground hover:bg-muted/40"
-          >
-            Retour à l'app cliente
-          </Link>
+          {getHostMode() === "admin" ? (
+            <Link
+              to="/admin/login"
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground hover:bg-muted/40"
+            >
+              Retour à la connexion admin
+            </Link>
+          ) : (
+            <Link
+              to="/"
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground hover:bg-muted/40"
+            >
+              Retour à l'app cliente
+            </Link>
+          )}
         </div>
         <p className="mt-6 text-[11px] text-muted-foreground">
           Si vous pensez que c'est une erreur, vérifiez que votre compte a bien
