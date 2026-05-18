@@ -1,6 +1,10 @@
 import { useMemo } from "react";
 
 const ADMIN_HOSTS = new Set(["admin.mboaeat.site", "admin.mboaeats.com"]);
+const RESTAURANT_HOSTS = new Set([
+  "restaurant.mboaeat.site",
+  "restaurant.mboaeats.com",
+]);
 const CLIENT_HOSTS = new Set([
   "mboaeat.site",
   "www.mboaeat.site",
@@ -9,7 +13,7 @@ const CLIENT_HOSTS = new Set([
   "mboaeats.lovable.app",
 ]);
 
-export type HostMode = "admin" | "client" | "any";
+export type HostMode = "admin" | "restaurant" | "client" | "any";
 
 export function getHostMode(hostname?: string): HostMode {
   if (!hostname) {
@@ -18,6 +22,7 @@ export function getHostMode(hostname?: string): HostMode {
   }
   const h = hostname.toLowerCase();
   if (ADMIN_HOSTS.has(h)) return "admin";
+  if (RESTAURANT_HOSTS.has(h)) return "restaurant";
   if (CLIENT_HOSTS.has(h)) return "client";
   return "any";
 }
