@@ -132,14 +132,20 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const location = useLocation();
   const path = location.pathname;
-  // Sur le sous-domaine admin OU les routes /admin|/superadmin, on masque tout
-  // le chrome client (header, dock, cart, onboarding) : l'admin a son propre layout.
+  // Sur le sous-domaine admin OU les routes métier (/admin, /superadmin,
+  // /restaurant, /devenir-resto, /livreur), on masque tout le chrome client
+  // (header, dock, cart, onboarding) : ces pages ont leur propre layout.
   const isAdminHost = hostMode === "admin";
-  const isAdminRoute =
+  const isMetierRoute =
     path === "/admin" ||
     path.startsWith("/admin/") ||
     path === "/superadmin" ||
-    path.startsWith("/superadmin/");
+    path.startsWith("/superadmin/") ||
+    path === "/restaurant" ||
+    path.startsWith("/restaurant/") ||
+    path === "/devenir-resto" ||
+    path === "/livreur" ||
+    path.startsWith("/livreur/");
   const isAuthRoute =
     path === "/connexion" ||
     path === "/inscription" ||
@@ -147,7 +153,7 @@ function RootComponent() {
     path.startsWith("/admin/login") ||
     path.startsWith("/admin/unauthorized") ||
     path.startsWith("/superadmin/login");
-  const hideClientChrome = isAdminHost || isAdminRoute || isAuthRoute;
+  const hideClientChrome = isAdminHost || isMetierRoute || isAuthRoute;
   void PUBLIC_ROUTES;
   void PUBLIC_PREFIXES;
   return (
@@ -163,7 +169,7 @@ function RootComponent() {
                 crashs en localisant l'erreur sous l'Outlet uniquement. */}
             <RootErrorBoundary>
               <Suspense fallback={<RouteSkeleton />}>
-                {isAdminRoute ? (
+                {isMetierRoute ? (
                   <Outlet />
                 ) : (
                   <AnimatePresence mode="wait" initial={false}>
