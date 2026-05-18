@@ -382,6 +382,24 @@ export const createMyRestaurant = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
+    // GARDE-FOU ANTI-SPAM : un user ne peut pas avoir plusieurs restos en
+    // pending simultanément. Évite qu'un attaquant inscrit n soumissions
+    // pour saturer la file de modération admin.
+    const { data: existing } = await supabaseAdmin
+      .from("restaurants")
+      .select("id, name, validation_status")
+      .eq("owner_id", context.userId)
+      .eq("validation_status", "pending")
+      .is("deleted_at", null)
+      .limit(1);
+
+    if (existing && existing.length > 0) {
+      throw new Error(
+        "Vous avez déjà un restaurant en attente de validation. " +
+          "Veuillez patienter jusqu'à la décision de notre équipe.",
+      );
+    }
+
     const slug =
       data.name
         .toLowerCase()
@@ -404,8 +422,12 @@ export const createMyRestaurant = createServerFn({ method: "POST" })
         cuisine: data.cuisine,
         city: data.city,
         neighborhood: data.neighborhood ?? null,
-        is_open: true,
-        is_active: true,
+        // MODÉRATION ACTIVE : le resto démarre EN ATTENTE et INVISIBLE.
+        // Un admin doit le valider explicitement avant que des clients
+        // puissent passer commande. Voir migration `resto_moderation`.
+        is_open: false,
+        is_active: false,
+        validation_status: "pending",
       })
       .select()
       .single();
@@ -498,7 +520,11 @@ export const getMyRestaurant = createServerFn({ method: "GET" })
     const { data: row } = await supabaseAdmin
       .from("restaurants")
       .select(
-        "id, name, cuisine, city, neighborhood, is_open, delivery_fee, eta_min, eta_max, " +
+        "id, name, cuisine, city, neighborhood, is_open, is_active, " +
+          "delivery_fee, eta_min, eta_max, " +
+          // Champs de modération : permet au frontend d'afficher l'écran
+          // "En attente" ou "Refusé" selon le statut.
+          "validation_status, validation_note, validated_at, created_at, " +
           "members:restaurant_members!inner(user_id, status, role)",
       )
       .eq("members.user_id", context.userId)
