@@ -20,6 +20,7 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { useKeyboardViewport } from "@/hooks/useKeyboardViewport";
 import { usePrefetchOnIdle } from "@/auth/hooks/usePrefetch";
 import { getHostMode } from "@/hooks/useHostMode";
+import { useSession } from "@/auth/hooks/useSession";
 
 
 // Mode invité : pages de découverte accessibles sans compte. Le checkout reste protégé via une porte dédiée.
