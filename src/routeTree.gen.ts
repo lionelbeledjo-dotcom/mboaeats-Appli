@@ -51,6 +51,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TableePaiementRouteImport } from './routes/tablee.paiement'
 import { Route as SuperadminSetup2faRouteImport } from './routes/superadmin_.setup-2fa'
 import { Route as SuperadminLoginRouteImport } from './routes/superadmin_.login'
+import { Route as SuperadminDashboardRouteImport } from './routes/superadmin.dashboard'
 import { Route as SuiviOrderIdRouteImport } from './routes/suivi.$orderId'
 import { Route as RestaurantsRestoIdRouteImport } from './routes/restaurants.$restoId'
 import { Route as RSlugRouteImport } from './routes/r.$slug'
@@ -295,6 +296,11 @@ const SuperadminLoginRoute = SuperadminLoginRouteImport.update({
   path: '/superadmin/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SuperadminDashboardRoute = SuperadminDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => SuperadminRoute,
+} as any)
 const SuiviOrderIdRoute = SuiviOrderIdRouteImport.update({
   id: '/$orderId',
   path: '/$orderId',
@@ -526,6 +532,7 @@ export interface FileRoutesByFullPath {
   '/r/$slug': typeof RSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
+  '/superadmin/dashboard': typeof SuperadminDashboardRoute
   '/superadmin/login': typeof SuperadminLoginRoute
   '/superadmin/setup-2fa': typeof SuperadminSetup2faRoute
   '/tablee/paiement': typeof TableePaiementRoute
@@ -600,6 +607,7 @@ export interface FileRoutesByTo {
   '/r/$slug': typeof RSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
+  '/superadmin/dashboard': typeof SuperadminDashboardRoute
   '/superadmin/login': typeof SuperadminLoginRoute
   '/superadmin/setup-2fa': typeof SuperadminSetup2faRoute
   '/tablee/paiement': typeof TableePaiementRoute
@@ -678,6 +686,7 @@ export interface FileRoutesById {
   '/r/$slug': typeof RSlugRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
+  '/superadmin/dashboard': typeof SuperadminDashboardRoute
   '/superadmin_/login': typeof SuperadminLoginRoute
   '/superadmin_/setup-2fa': typeof SuperadminSetup2faRoute
   '/tablee/paiement': typeof TableePaiementRoute
@@ -757,6 +766,7 @@ export interface FileRouteTypes {
     | '/r/$slug'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
+    | '/superadmin/dashboard'
     | '/superadmin/login'
     | '/superadmin/setup-2fa'
     | '/tablee/paiement'
@@ -831,6 +841,7 @@ export interface FileRouteTypes {
     | '/r/$slug'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
+    | '/superadmin/dashboard'
     | '/superadmin/login'
     | '/superadmin/setup-2fa'
     | '/tablee/paiement'
@@ -908,6 +919,7 @@ export interface FileRouteTypes {
     | '/r/$slug'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
+    | '/superadmin/dashboard'
     | '/superadmin_/login'
     | '/superadmin_/setup-2fa'
     | '/tablee/paiement'
@@ -1275,6 +1287,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuperadminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/superadmin/dashboard': {
+      id: '/superadmin/dashboard'
+      path: '/dashboard'
+      fullPath: '/superadmin/dashboard'
+      preLoaderRoute: typeof SuperadminDashboardRouteImport
+      parentRoute: typeof SuperadminRoute
+    }
     '/suivi/$orderId': {
       id: '/suivi/$orderId'
       path: '/$orderId'
@@ -1582,10 +1601,12 @@ const SuiviRouteChildren: SuiviRouteChildren = {
 const SuiviRouteWithChildren = SuiviRoute._addFileChildren(SuiviRouteChildren)
 
 interface SuperadminRouteChildren {
+  SuperadminDashboardRoute: typeof SuperadminDashboardRoute
   SuperadminIndexRoute: typeof SuperadminIndexRoute
 }
 
 const SuperadminRouteChildren: SuperadminRouteChildren = {
+  SuperadminDashboardRoute: SuperadminDashboardRoute,
   SuperadminIndexRoute: SuperadminIndexRoute,
 }
 
