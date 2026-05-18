@@ -86,7 +86,7 @@ const TONES: Record<string, NavTone> = {
 };
 
 const navItems = [
-  { title: "Vue d'ensemble", url: "/admin", icon: LayoutDashboard, exact: true, tone: "blue" as const },
+  { title: "Vue d'ensemble", url: "/admin/dashboard", icon: LayoutDashboard, exact: false, tone: "blue" as const },
   { title: "Commissions", url: "/admin/commissions", icon: Coins, tone: "green" as const },
   { title: "Zones livraison", url: "/admin/zones", icon: MapPin, tone: "yellow" as const },
   { title: "Restaurants", url: "/admin/restaurants", icon: Store, tone: "purple" as const },
