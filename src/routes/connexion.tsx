@@ -196,8 +196,19 @@ function Connexion() {
   );
   const fullPhone = `${country.dial}${phone.replace(/\D/g, "")}`;
 
+  // Détecte la cible post-login en fonction du sous-domaine.
+  // restaurant.* → /restaurant   |   admin.* → /admin   |   sinon → /
+  const postLoginTarget = (): "/" | "/restaurant" | "/admin" => {
+    if (typeof window === "undefined") return "/";
+    const h = window.location.hostname.toLowerCase();
+    if (h.startsWith("restaurant.")) return "/restaurant";
+    if (h.startsWith("admin.")) return "/admin";
+    return "/";
+  };
+
   useEffect(() => {
-    if (!authLoading && isAuthenticated) navigate({ to: "/", replace: true });
+    if (!authLoading && isAuthenticated)
+      navigate({ to: postLoginTarget(), replace: true });
   }, [authLoading, isAuthenticated, navigate]);
 
   useEffect(() => {
