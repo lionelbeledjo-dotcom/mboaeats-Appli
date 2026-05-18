@@ -192,6 +192,10 @@ function RootComponent() {
               <Suspense fallback={<RouteSkeleton />}>
                 {isRestaurantHost && !isAllowedOnRestaurantHost ? (
                   <RouteSkeleton />
+                ) : isRestaurantHost && isRestaurantRoute ? (
+                  <RestaurantHostGuard>
+                    <Outlet />
+                  </RestaurantHostGuard>
                 ) : isAdminRoute || isRestaurantHost ? (
                   <Outlet />
                 ) : (
