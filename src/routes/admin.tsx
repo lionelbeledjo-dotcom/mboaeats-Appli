@@ -43,6 +43,15 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminErrorBoundary({ error, reset }: { error: Error; reset: () => void }) {
+  // Log explicite pour identifier l'erreur exacte du dashboard admin.
+  // Visible dans la console navigateur — n'affecte ni client ni restaurant.
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.error("[ADMIN-BOUNDARY] erreur dashboard admin :", error);
+    // eslint-disable-next-line no-console
+    console.error("[ADMIN-BOUNDARY] stack :", error?.stack);
+  }, [error]);
+
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 p-8 text-center">
       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10">
@@ -54,8 +63,8 @@ function AdminErrorBoundary({ error, reset }: { error: Error; reset: () => void 
         <button onClick={() => reset()} className="rounded-xl border border-border bg-surface px-4 py-2 text-sm font-semibold hover:bg-background">
           Réessayer
         </button>
-        <Link to="/admin" className="rounded-xl bg-gradient-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-glow">
-          Retour à l'accueil
+        <Link to="/admin/dashboard" className="rounded-xl bg-gradient-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-glow">
+          Retour au tableau de bord
         </Link>
       </div>
     </div>
@@ -77,7 +86,7 @@ const TONES: Record<string, NavTone> = {
 };
 
 const navItems = [
-  { title: "Vue d'ensemble", url: "/admin", icon: LayoutDashboard, exact: true, tone: "blue" as const },
+  { title: "Vue d'ensemble", url: "/admin/dashboard", icon: LayoutDashboard, exact: false, tone: "blue" as const },
   { title: "Commissions", url: "/admin/commissions", icon: Coins, tone: "green" as const },
   { title: "Zones livraison", url: "/admin/zones", icon: MapPin, tone: "yellow" as const },
   { title: "Restaurants", url: "/admin/restaurants", icon: Store, tone: "purple" as const },
@@ -91,6 +100,17 @@ function AdminLayout() {
 
   useEffect(() => {
     let alive = true;
+
+    // Log de diagnostic : permet d'identifier rapidement les pbs de routing/host
+    // sans toucher au client. À garder tant que /admin n'est pas 100% stable.
+    if (typeof window !== "undefined") {
+      // eslint-disable-next-line no-console
+      console.info("[ADMIN-LAYOUT] mount", {
+        hostname: window.location.hostname,
+        pathname: window.location.pathname,
+        hostMode: getHostMode(),
+      });
+    }
 
     const refresh = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -467,8 +487,14 @@ function AdminSidebar() {
     navigate({ to: "/superadmin/login", replace: true });
   };
 
-  const isActive = (item: typeof navItems[number]) =>
-    item.exact ? path === item.url : path.startsWith(item.url);
+  const isActive = (item: typeof navItems[number]) => {
+    // "Vue d'ensemble" pointe vers /admin/dashboard (alias) mais reste actif
+    // également sur la racine /admin (la racine EST le dashboard).
+    if (item.url === "/admin/dashboard") {
+      return path === "/admin" || path === "/admin/" || path.startsWith("/admin/dashboard");
+    }
+    return item.exact ? path === item.url : path.startsWith(item.url);
+  };
 
   // Sur mobile (sheet blanc) : fond blanc / texte noir / icônes colorées dans des chips.
   // Sur desktop (panneau sombre) : on conserve le rendu "premium" actuel.
