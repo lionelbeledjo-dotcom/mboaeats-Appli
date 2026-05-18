@@ -53,6 +53,7 @@ import { Route as SuperadminSetup2faRouteImport } from './routes/superadmin_.set
 import { Route as SuperadminLoginRouteImport } from './routes/superadmin_.login'
 import { Route as SuiviOrderIdRouteImport } from './routes/suivi.$orderId'
 import { Route as RestaurantsRestoIdRouteImport } from './routes/restaurants.$restoId'
+import { Route as RestaurantConnexionRouteImport } from './routes/restaurant.connexion'
 import { Route as RSlugRouteImport } from './routes/r.$slug'
 import { Route as PartenaireRevenusRouteImport } from './routes/partenaire.revenus'
 import { Route as PartenaireParametresRouteImport } from './routes/partenaire.parametres'
@@ -304,6 +305,11 @@ const RestaurantsRestoIdRoute = RestaurantsRestoIdRouteImport.update({
   path: '/restaurants/$restoId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RestaurantConnexionRoute = RestaurantConnexionRouteImport.update({
+  id: '/connexion',
+  path: '/connexion',
+  getParentRoute: () => RestaurantRoute,
+} as any)
 const RSlugRoute = RSlugRouteImport.update({
   id: '/r/$slug',
   path: '/r/$slug',
@@ -489,7 +495,7 @@ export interface FileRoutesByFullPath {
   '/proximite': typeof ProximiteRoute
   '/recherche': typeof RechercheRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/restaurant': typeof RestaurantRoute
+  '/restaurant': typeof RestaurantRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suivi': typeof SuiviRouteWithChildren
   '/superadmin': typeof SuperadminRouteWithChildren
@@ -517,6 +523,7 @@ export interface FileRoutesByFullPath {
   '/partenaire/parametres': typeof PartenaireParametresRoute
   '/partenaire/revenus': typeof PartenaireRevenusRoute
   '/r/$slug': typeof RSlugRoute
+  '/restaurant/connexion': typeof RestaurantConnexionRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
   '/superadmin/login': typeof SuperadminLoginRoute
@@ -563,7 +570,7 @@ export interface FileRoutesByTo {
   '/proximite': typeof ProximiteRoute
   '/recherche': typeof RechercheRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/restaurant': typeof RestaurantRoute
+  '/restaurant': typeof RestaurantRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suivi': typeof SuiviRouteWithChildren
   '/tablee': typeof TableeRouteWithChildren
@@ -590,6 +597,7 @@ export interface FileRoutesByTo {
   '/partenaire/parametres': typeof PartenaireParametresRoute
   '/partenaire/revenus': typeof PartenaireRevenusRoute
   '/r/$slug': typeof RSlugRoute
+  '/restaurant/connexion': typeof RestaurantConnexionRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
   '/superadmin/login': typeof SuperadminLoginRoute
@@ -639,7 +647,7 @@ export interface FileRoutesById {
   '/proximite': typeof ProximiteRoute
   '/recherche': typeof RechercheRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/restaurant': typeof RestaurantRoute
+  '/restaurant': typeof RestaurantRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suivi': typeof SuiviRouteWithChildren
   '/superadmin': typeof SuperadminRouteWithChildren
@@ -667,6 +675,7 @@ export interface FileRoutesById {
   '/partenaire/parametres': typeof PartenaireParametresRoute
   '/partenaire/revenus': typeof PartenaireRevenusRoute
   '/r/$slug': typeof RSlugRoute
+  '/restaurant/connexion': typeof RestaurantConnexionRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
   '/superadmin_/login': typeof SuperadminLoginRoute
@@ -745,6 +754,7 @@ export interface FileRouteTypes {
     | '/partenaire/parametres'
     | '/partenaire/revenus'
     | '/r/$slug'
+    | '/restaurant/connexion'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
     | '/superadmin/login'
@@ -818,6 +828,7 @@ export interface FileRouteTypes {
     | '/partenaire/parametres'
     | '/partenaire/revenus'
     | '/r/$slug'
+    | '/restaurant/connexion'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
     | '/superadmin/login'
@@ -894,6 +905,7 @@ export interface FileRouteTypes {
     | '/partenaire/parametres'
     | '/partenaire/revenus'
     | '/r/$slug'
+    | '/restaurant/connexion'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
     | '/superadmin_/login'
@@ -943,7 +955,7 @@ export interface RootRouteChildren {
   ProximiteRoute: typeof ProximiteRoute
   RechercheRoute: typeof RechercheRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
-  RestaurantRoute: typeof RestaurantRoute
+  RestaurantRoute: typeof RestaurantRouteWithChildren
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SuiviRoute: typeof SuiviRouteWithChildren
   SuperadminRoute: typeof SuperadminRouteWithChildren
@@ -1277,6 +1289,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RestaurantsRestoIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/restaurant/connexion': {
+      id: '/restaurant/connexion'
+      path: '/connexion'
+      fullPath: '/restaurant/connexion'
+      preLoaderRoute: typeof RestaurantConnexionRouteImport
+      parentRoute: typeof RestaurantRoute
+    }
     '/r/$slug': {
       id: '/r/$slug'
       path: '/r/$slug'
@@ -1550,6 +1569,18 @@ const PartenaireRouteWithChildren = PartenaireRoute._addFileChildren(
   PartenaireRouteChildren,
 )
 
+interface RestaurantRouteChildren {
+  RestaurantConnexionRoute: typeof RestaurantConnexionRoute
+}
+
+const RestaurantRouteChildren: RestaurantRouteChildren = {
+  RestaurantConnexionRoute: RestaurantConnexionRoute,
+}
+
+const RestaurantRouteWithChildren = RestaurantRoute._addFileChildren(
+  RestaurantRouteChildren,
+)
+
 interface SuiviRouteChildren {
   SuiviOrderIdRoute: typeof SuiviOrderIdRoute
 }
@@ -1626,7 +1657,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProximiteRoute: ProximiteRoute,
   RechercheRoute: RechercheRoute,
   ResetPasswordRoute: ResetPasswordRoute,
-  RestaurantRoute: RestaurantRoute,
+  RestaurantRoute: RestaurantRouteWithChildren,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SuiviRoute: SuiviRouteWithChildren,
   SuperadminRoute: SuperadminRouteWithChildren,

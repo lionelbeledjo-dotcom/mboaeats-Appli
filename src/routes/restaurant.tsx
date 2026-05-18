@@ -114,17 +114,26 @@ function RestaurantSpace() {
       <CenterCard>
         <h1 className="font-display text-2xl font-bold">Espace Restaurant</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Connecte-toi pour gérer ton restaurant.
+          Connectez-vous pour gérer votre restaurant.
         </p>
         <Link
-          to="/connexion"
+          to="/restaurant/connexion"
           preload="intent"
-          aria-label="Se connecter"
+          aria-label="Se connecter à l'espace partenaire"
           className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#064E3B] px-6 py-3 text-base font-bold text-white border-2 border-white/95 shadow-[0_8px_24px_-8px_rgba(6,193,103,0.55)] transition-all duration-150 hover:border-[#D4AF37] active:scale-95 min-h-11 min-w-[44px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#D4AF37]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <ChefHat className="h-5 w-5" strokeWidth={2.5} />
           Se connecter
         </Link>
+        <p className="mt-3 text-xs text-muted-foreground">
+          Pas encore partenaire ?{" "}
+          <Link
+            to="/devenir-resto"
+            className="font-semibold text-primary hover:underline"
+          >
+            Devenir restaurateur
+          </Link>
+        </p>
       </CenterCard>
     );
   }
