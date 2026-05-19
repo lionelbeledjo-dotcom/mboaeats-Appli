@@ -14,13 +14,15 @@ import {
   listRestaurantOrders,
   updateOrderStatus,
   getRestaurantMenu,
-  upsertCategory,
-  deleteCategory,
   upsertDish,
   deleteDish,
+  toggleDishAvailability,
+  ensureStandardCategories,
   getRestaurantStats,
   createMyRestaurant,
 } from "@/server/restaurant.functions";
+
+
 
 export const Route = createFileRoute("/restaurant")({
   component: RestaurantSpaceGuarded,
@@ -592,43 +594,89 @@ type Dish = {
   is_popular: boolean | null;
 };
 
+// Liste fixe des 5 catégories standard MboaEats + emoji placeholder.
+const STD_CATEGORIES = [
+  "Entrée",
+  "Plat",
+  "Dessert",
+  "Boisson",
+  "Accompagnement",
+] as const;
+
+function categoryEmoji(name: string | null | undefined): string {
+  switch ((name ?? "").trim()) {
+    case "Entrée":
+    case "Entrées":
+      return "🥗";
+    case "Plat":
+    case "Plats":
+      return "🍛";
+    case "Dessert":
+    case "Desserts":
+      return "🍰";
+    case "Boisson":
+    case "Boissons":
+      return "🥤";
+    case "Accompagnement":
+    case "Accompagnements":
+      return "🍚";
+    default:
+      return "🍽️";
+  }
+}
+
 function MenuPanel({ restoId }: { restoId: string }) {
   const fetchMenu = useServerFn(getRestaurantMenu);
-  const saveCat = useServerFn(upsertCategory);
-  const removeCat = useServerFn(deleteCategory);
+  const seedCats = useServerFn(ensureStandardCategories);
   const saveDish = useServerFn(upsertDish);
   const removeDish = useServerFn(deleteDish);
+  const toggleDish = useServerFn(toggleDishAvailability);
 
   const [cats, setCats] = useState<Cat[]>([]);
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [editing, setEditing] = useState<Partial<Dish> | null>(null);
-  const [editingCat, setEditingCat] = useState<Partial<Cat> | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Dish | null>(null);
 
   const reload = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
     try {
+      // Garantit que les 5 catégories standard existent avant d'afficher.
+      try {
+        await seedCats({ data: { restaurant_id: restoId } });
+      } catch (e) {
+        console.warn("[MenuPanel] ensureStandardCategories failed:", e);
+      }
       const r = await fetchMenu({ data: { restaurant_id: restoId } });
       setCats((r.categories ?? []) as Cat[]);
       setDishes((r.dishes ?? []) as Dish[]);
     } catch (e: any) {
-      // BUG 4 : sans cette garde, le throw d'une server function (ex. 403
-      // assertMembership, table absente, RLS) crashe tout l'onglet Menu et
-      // affiche l'écran d'erreur générique du route boundary. On préfère
-      // logguer + afficher un empty state propre pour ne pas bloquer le
-      // restaurateur.
       console.error("[MenuPanel] fetchMenu failed:", e);
-      setLoadError(e?.message ?? "Impossible de charger le menu pour le moment.");
+      setLoadError(e?.message ?? "Impossible de charger le menu.");
       setCats([]);
       setDishes([]);
     } finally {
       setLoading(false);
     }
-  }, [fetchMenu, restoId]);
+  }, [fetchMenu, seedCats, restoId]);
 
   useEffect(() => { reload(); }, [reload]);
+
+  // Trie les catégories selon l'ordre standard, puis le reste alphabétique.
+  const orderedCats = useMemo(() => {
+    const idx = (n: string) => {
+      const i = STD_CATEGORIES.findIndex(
+        (s) => s === n || s + "s" === n,
+      );
+      return i === -1 ? 99 : i;
+    };
+    return [...cats].sort((a, b) => {
+      const da = idx(a.name) - idx(b.name);
+      return da !== 0 ? da : a.name.localeCompare(b.name);
+    });
+  }, [cats]);
 
   const grouped = useMemo(() => {
     const m = new Map<string, Dish[]>();
@@ -637,103 +685,151 @@ function MenuPanel({ restoId }: { restoId: string }) {
       if (!m.has(k)) m.set(k, []);
       m.get(k)!.push(d);
     }
+    for (const arr of m.values()) {
+      arr.sort((a, b) => a.name.localeCompare(b.name));
+    }
     return m;
   }, [dishes]);
 
-  if (loading) return <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />;
+  const handleToggle = async (d: Dish) => {
+    // Optimistic update
+    setDishes((prev) =>
+      prev.map((x) =>
+        x.id === d.id ? { ...x, is_available: !x.is_available } : x,
+      ),
+    );
+    try {
+      const r = await toggleDish({
+        data: { id: d.id, restaurant_id: restoId },
+      });
+      toast.success(r.is_available ? "Plat disponible" : "Plat indisponible");
+    } catch (e: any) {
+      // Rollback
+      setDishes((prev) =>
+        prev.map((x) =>
+          x.id === d.id ? { ...x, is_available: d.is_available } : x,
+        ),
+      );
+      toast.error(e?.message ?? "Échec du changement");
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await removeDish({
+        data: { id: deleteTarget.id, restaurant_id: restoId },
+      });
+      toast.success("Plat supprimé");
+      setDeleteTarget(null);
+      reload();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Échec de la suppression");
+    }
+  };
+
+  if (loading) {
+    return <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />;
+  }
+
+  const hasDishes = dishes.length > 0;
 
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-display text-xl font-bold">Menu</h2>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setEditingCat({ name: "" })}
-            className="inline-flex items-center gap-1 rounded-xl border border-border bg-surface px-3 py-1.5 text-xs font-bold hover:border-primary/40"
-          >
-            <Plus className="h-3.5 w-3.5" /> Catégorie
-          </button>
-          <button
-            onClick={() => setEditing({ name: "", price: 0, is_available: true })}
-            className="inline-flex items-center gap-1 rounded-xl bg-gradient-primary px-3 py-1.5 text-xs font-bold text-primary-foreground shadow-glow"
-          >
-            <Plus className="h-3.5 w-3.5" /> Nouveau plat
-          </button>
-        </div>
+        <button
+          onClick={() =>
+            setEditing({ name: "", price: 0, is_available: true })
+          }
+          className="inline-flex items-center gap-1 rounded-xl bg-gradient-primary px-3 py-1.5 text-xs font-bold text-primary-foreground shadow-glow"
+        >
+          <Plus className="h-3.5 w-3.5" /> Ajouter un plat
+        </button>
       </div>
 
       {loadError && (
         <div className="mb-4 rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-          {loadError} — réessayez plus tard ou contactez le support si le
-          problème persiste.
+          {loadError}
         </div>
       )}
 
-      {cats.length === 0 && dishes.length === 0 && !loadError && (
-        <p className="rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-          Aucun plat dans votre menu. Créez une catégorie puis ajoutez votre
-          premier plat pour démarrer.
-        </p>
+      {!hasDishes && !loadError && (
+        <div className="rounded-2xl border border-dashed border-border p-10 text-center">
+          <ChefHat className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
+          <p className="font-display text-base font-bold">
+            Aucun plat dans votre menu
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Ajoutez votre premier plat pour démarrer.
+          </p>
+          <button
+            onClick={() =>
+              setEditing({ name: "", price: 0, is_available: true })
+            }
+            className="mt-4 inline-flex items-center gap-1 rounded-xl bg-gradient-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-glow"
+          >
+            <Plus className="h-3.5 w-3.5" /> Ajouter un plat
+          </button>
+        </div>
       )}
 
-      <div className="space-y-6">
-        {cats.map((cat) => (
-          <section key={cat.id}>
-            <div className="mb-2 flex items-center justify-between">
-              <h3 className="font-display text-base font-bold">{cat.name}</h3>
-              <div className="flex gap-1">
-                <button
-                  onClick={() => setEditingCat(cat)}
-                  className="rounded-lg p-1.5 text-muted-foreground hover:bg-surface hover:text-foreground"
-                >
-                  <Pencil className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  onClick={async () => {
-                    if (!confirm("Supprimer cette catégorie ?")) return;
-                    await removeCat({ data: { id: cat.id } });
-                    toast.success("Catégorie supprimée");
-                    reload();
-                  }}
-                  className="rounded-lg p-1.5 text-destructive hover:bg-destructive/10"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            </div>
-            <ul className="grid gap-2 md:grid-cols-2">
-              {(grouped.get(cat.id) ?? []).map((d) => (
-                <DishRow key={d.id} dish={d} onEdit={() => setEditing(d)} onDelete={async () => {
-                  if (!confirm(`Supprimer ${d.name} ?`)) return;
-                  await removeDish({ data: { id: d.id } });
-                  toast.success("Plat supprimé");
-                  reload();
-                }} />
-              ))}
-            </ul>
-          </section>
-        ))}
-        {(grouped.get("_") ?? []).length > 0 && (
-          <section>
-            <h3 className="mb-2 font-display text-base font-bold text-muted-foreground">
-              Sans catégorie
-            </h3>
-            <ul className="grid gap-2 md:grid-cols-2">
-              {(grouped.get("_") ?? []).map((d) => (
-                <DishRow key={d.id} dish={d} onEdit={() => setEditing(d)} onDelete={async () => {
-                  await removeDish({ data: { id: d.id } });
-                  reload();
-                }} />
-              ))}
-            </ul>
-          </section>
-        )}
-      </div>
+      {hasDishes && (
+        <div className="space-y-6">
+          {orderedCats.map((cat) => {
+            const items = grouped.get(cat.id) ?? [];
+            if (items.length === 0) return null;
+            return (
+              <section key={cat.id}>
+                <h3 className="mb-2 flex items-center gap-2 font-display text-base font-bold">
+                  <span aria-hidden>{categoryEmoji(cat.name)}</span>
+                  {cat.name}
+                  <span className="text-xs font-normal text-muted-foreground">
+                    ({items.length})
+                  </span>
+                </h3>
+                <ul className="grid gap-2 md:grid-cols-2">
+                  {items.map((d) => (
+                    <DishRow
+                      key={d.id}
+                      dish={d}
+                      categoryName={cat.name}
+                      onEdit={() => setEditing(d)}
+                      onDelete={() => setDeleteTarget(d)}
+                      onToggle={() => handleToggle(d)}
+                    />
+                  ))}
+                </ul>
+              </section>
+            );
+          })}
+          {(grouped.get("_") ?? []).length > 0 && (
+            <section>
+              <h3 className="mb-2 font-display text-base font-bold text-muted-foreground">
+                Sans catégorie
+              </h3>
+              <ul className="grid gap-2 md:grid-cols-2">
+                {(grouped.get("_") ?? []).map((d) => (
+                  <DishRow
+                    key={d.id}
+                    dish={d}
+                    categoryName={null}
+                    onEdit={() => setEditing(d)}
+                    onDelete={() => setDeleteTarget(d)}
+                    onToggle={() => handleToggle(d)}
+                  />
+                ))}
+              </ul>
+            </section>
+          )}
+        </div>
+      )}
 
       {editing && (
         <DishModal
           initial={editing}
-          categories={cats}
+          categories={orderedCats}
+          restoId={restoId}
           onClose={() => setEditing(null)}
           onSave={async (d) => {
             await saveDish({
@@ -749,149 +845,294 @@ function MenuPanel({ restoId }: { restoId: string }) {
                 is_popular: d.is_popular ?? false,
               },
             });
-            toast.success(d.id ? "Plat mis à jour" : "Plat créé");
+            toast.success(d.id ? "Plat mis à jour" : "Plat ajouté");
             setEditing(null);
             reload();
           }}
         />
       )}
 
-      {editingCat && (
-        <CategoryModal
-          initial={editingCat}
-          onClose={() => setEditingCat(null)}
-          onSave={async (c) => {
-            await saveCat({
-              data: {
-                id: c.id,
-                restaurant_id: restoId,
-                name: c.name!,
-                sort_order: c.sort_order ?? 0,
-              },
-            });
-            toast.success(c.id ? "Catégorie mise à jour" : "Catégorie créée");
-            setEditingCat(null);
-            reload();
-          }}
-        />
+      {deleteTarget && (
+        <Modal onClose={() => setDeleteTarget(null)} title="Supprimer le plat">
+          <p className="text-sm text-muted-foreground">
+            Supprimer <span className="font-semibold text-foreground">{deleteTarget.name}</span> ?
+            Cette action est irréversible.
+          </p>
+          <div className="mt-5 flex justify-end gap-2">
+            <button
+              onClick={() => setDeleteTarget(null)}
+              className="rounded-xl border border-border px-4 py-2 text-xs font-bold"
+            >
+              Annuler
+            </button>
+            <button
+              onClick={confirmDelete}
+              className="inline-flex items-center gap-1 rounded-xl bg-destructive px-4 py-2 text-xs font-bold text-destructive-foreground"
+            >
+              <Trash2 className="h-3.5 w-3.5" /> Supprimer
+            </button>
+          </div>
+        </Modal>
       )}
     </div>
   );
 }
 
 function DishRow({
-  dish, onEdit, onDelete,
+  dish, categoryName, onEdit, onDelete, onToggle,
 }: {
-  dish: Dish; onEdit: () => void; onDelete: () => void;
+  dish: Dish;
+  categoryName: string | null;
+  onEdit: () => void;
+  onDelete: () => void;
+  onToggle: () => void;
 }) {
+  const available = dish.is_available ?? true;
   return (
     <li className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3">
-      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-surface">
-        {dish.image_url && (
-          <SmartImage src={dish.image_url} alt={dish.name} ratio="1 / 1" width={56} height={56} wrapperClassName="!h-full" />
+      <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-surface text-2xl">
+        {dish.image_url ? (
+          <SmartImage
+            src={dish.image_url}
+            alt={dish.name}
+            ratio="1 / 1"
+            width={56}
+            height={56}
+            wrapperClassName="!h-full"
+          />
+        ) : (
+          <span aria-hidden>{categoryEmoji(categoryName)}</span>
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <p className="truncate text-sm font-semibold">{dish.name}</p>
-          {!dish.is_available && (
-            <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
-              Indispo
-            </span>
-          )}
-        </div>
-        <p className="text-xs text-primary">{dish.price.toLocaleString("fr-FR")} F</p>
+        <p className="truncate text-sm font-semibold">{dish.name}</p>
+        {dish.description && (
+          <p className="line-clamp-2 text-xs text-muted-foreground">
+            {dish.description}
+          </p>
+        )}
+        <p className="text-xs font-bold text-primary">
+          {dish.price.toLocaleString("fr-FR")} FCFA
+        </p>
       </div>
-      <button onClick={onEdit} className="rounded-lg p-1.5 text-muted-foreground hover:bg-surface hover:text-foreground">
-        <Pencil className="h-4 w-4" />
-      </button>
-      <button onClick={onDelete} className="rounded-lg p-1.5 text-destructive hover:bg-destructive/10">
-        <Trash2 className="h-4 w-4" />
-      </button>
+      <div className="flex flex-col items-end gap-1">
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-pressed={available}
+          title={available ? "Disponible" : "Indisponible"}
+          className={`relative h-5 w-9 rounded-full transition-colors ${
+            available ? "bg-emerald-500" : "bg-muted"
+          }`}
+        >
+          <span
+            className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${
+              available ? "left-4" : "left-0.5"
+            }`}
+          />
+        </button>
+        <div className="flex gap-0.5">
+          <button
+            onClick={onEdit}
+            title="Éditer"
+            className="rounded-lg p-1.5 text-muted-foreground hover:bg-surface hover:text-foreground"
+          >
+            <Pencil className="h-4 w-4" />
+          </button>
+          <button
+            onClick={onDelete}
+            title="Supprimer"
+            className="rounded-lg p-1.5 text-destructive hover:bg-destructive/10"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
     </li>
   );
 }
 
 function DishModal({
-  initial, categories, onClose, onSave,
+  initial, categories, restoId, onClose, onSave,
 }: {
   initial: Partial<Dish>;
   categories: Cat[];
+  restoId: string;
   onClose: () => void;
   onSave: (d: Partial<Dish>) => Promise<void>;
 }) {
   const [d, setD] = useState<Partial<Dish>>(initial);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  const nameOk = (d.name ?? "").trim().length >= 2;
+  const priceOk =
+    typeof d.price === "number" && Number.isInteger(d.price) && d.price >= 0;
+  const categoryOk = !!d.category_id;
+  const canSave = nameOk && priceOk && categoryOk && !saving && !uploading;
+
+  const handleFile = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Format d'image invalide");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image trop lourde (max 5 Mo)");
+      return;
+    }
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${restoId}/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage
+        .from("dish-images")
+        .upload(path, file, { upsert: false, contentType: file.type });
+      if (error) throw error;
+      const { data: pub } = supabase.storage
+        .from("dish-images")
+        .getPublicUrl(path);
+      setD((prev) => ({ ...prev, image_url: pub.publicUrl }));
+    } catch (e: any) {
+      toast.error(e?.message ?? "Upload échoué");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <Modal onClose={onClose} title={initial.id ? "Modifier le plat" : "Nouveau plat"}>
       <div className="space-y-3">
-        <Field label="Nom" value={d.name ?? ""} onChange={(v) => setD({ ...d, name: v })} />
+        <Field
+          label="Nom *"
+          value={d.name ?? ""}
+          onChange={(v) => setD({ ...d, name: v })}
+          placeholder="Ndolè aux crevettes"
+        />
         <label className="block">
-          <span className="text-xs font-semibold text-muted-foreground">Description</span>
+          <span className="text-xs font-semibold text-muted-foreground">
+            Description
+          </span>
           <textarea
             value={d.description ?? ""}
-            onChange={(e) => setD({ ...d, description: e.target.value })}
+            onChange={(e) =>
+              setD({ ...d, description: e.target.value.slice(0, 280) })
+            }
             rows={2}
+            maxLength={280}
+            placeholder="Quelques mots pour donner envie…"
             className="mt-1 w-full rounded-xl border border-border bg-background/50 px-3 py-2 text-sm outline-none focus:border-primary"
           />
+          <span className="mt-0.5 block text-right text-[10px] text-muted-foreground">
+            {(d.description ?? "").length}/280
+          </span>
         </label>
         <div className="grid grid-cols-2 gap-3">
           <Field
-            label="Prix (FCFA)"
+            label="Prix (FCFA) *"
             type="number"
             value={String(d.price ?? 0)}
-            onChange={(v) => setD({ ...d, price: parseInt(v || "0", 10) })}
+            onChange={(v) =>
+              setD({ ...d, price: Math.max(0, parseInt(v || "0", 10)) })
+            }
           />
           <label className="block">
-            <span className="text-xs font-semibold text-muted-foreground">Catégorie</span>
+            <span className="text-xs font-semibold text-muted-foreground">
+              Catégorie *
+            </span>
             <select
               value={d.category_id ?? ""}
-              onChange={(e) => setD({ ...d, category_id: e.target.value || null })}
+              onChange={(e) =>
+                setD({ ...d, category_id: e.target.value || null })
+              }
               className="mt-1 w-full rounded-xl border border-border bg-background/50 px-3 py-2.5 text-sm outline-none focus:border-primary"
             >
-              <option value="">— Aucune —</option>
+              <option value="">— Choisir —</option>
               {categories.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
+                <option key={c.id} value={c.id}>
+                  {categoryEmoji(c.name)} {c.name}
+                </option>
               ))}
             </select>
           </label>
         </div>
-        <Field
-          label="URL de l'image"
-          value={d.image_url ?? ""}
-          onChange={(v) => setD({ ...d, image_url: v })}
-          placeholder="https://…"
-        />
-        <div className="flex gap-4 text-xs">
-          <label className="inline-flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={d.is_available ?? true}
-              onChange={(e) => setD({ ...d, is_available: e.target.checked })}
-            />
-            Disponible
-          </label>
-          <label className="inline-flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={d.is_popular ?? false}
-              onChange={(e) => setD({ ...d, is_popular: e.target.checked })}
-            />
-            Plat populaire
-          </label>
+
+        <div>
+          <span className="text-xs font-semibold text-muted-foreground">
+            Image (optionnel)
+          </span>
+          <div className="mt-1 flex items-center gap-3">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-surface text-3xl">
+              {d.image_url ? (
+                <img
+                  src={d.image_url}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <span aria-hidden>🍽️</span>
+              )}
+            </div>
+            <div className="flex flex-1 flex-col gap-1">
+              <label className="inline-flex cursor-pointer items-center gap-2 self-start rounded-xl border border-border bg-surface px-3 py-1.5 text-xs font-bold hover:border-primary/40">
+                {uploading ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Plus className="h-3.5 w-3.5" />
+                )}
+                {d.image_url ? "Changer l'image" : "Choisir une image"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) handleFile(f);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+              {d.image_url && (
+                <button
+                  type="button"
+                  onClick={() => setD({ ...d, image_url: null })}
+                  className="self-start text-xs text-destructive hover:underline"
+                >
+                  Retirer l'image
+                </button>
+              )}
+            </div>
+          </div>
         </div>
+
+        <label className="inline-flex items-center gap-2 text-xs">
+          <input
+            type="checkbox"
+            checked={d.is_available ?? true}
+            onChange={(e) =>
+              setD({ ...d, is_available: e.target.checked })
+            }
+          />
+          Disponible immédiatement
+        </label>
       </div>
       <div className="mt-5 flex justify-end gap-2">
-        <button onClick={onClose} className="rounded-xl border border-border px-4 py-2 text-xs font-bold">
+        <button
+          onClick={onClose}
+          className="rounded-xl border border-border px-4 py-2 text-xs font-bold"
+        >
           Annuler
         </button>
         <button
-          disabled={saving || !d.name?.trim()}
+          disabled={!canSave}
           onClick={async () => {
             setSaving(true);
-            try { await onSave(d); } catch (e) { toast.error(e instanceof Error ? e.message : "Erreur"); }
-            finally { setSaving(false); }
+            try {
+              await onSave(d);
+            } catch (e) {
+              toast.error(e instanceof Error ? e.message : "Erreur");
+            } finally {
+              setSaving(false);
+            }
           }}
           className="inline-flex items-center gap-1 rounded-xl bg-gradient-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-glow disabled:opacity-50"
         >
@@ -903,32 +1144,8 @@ function DishModal({
   );
 }
 
-function CategoryModal({
-  initial, onClose, onSave,
-}: {
-  initial: Partial<Cat>;
-  onClose: () => void;
-  onSave: (c: Partial<Cat>) => Promise<void>;
-}) {
-  const [c, setC] = useState<Partial<Cat>>(initial);
-  const [saving, setSaving] = useState(false);
-  return (
-    <Modal onClose={onClose} title={initial.id ? "Modifier la catégorie" : "Nouvelle catégorie"}>
-      <Field label="Nom" value={c.name ?? ""} onChange={(v) => setC({ ...c, name: v })} placeholder="Entrées" />
-      <div className="mt-5 flex justify-end gap-2">
-        <button onClick={onClose} className="rounded-xl border border-border px-4 py-2 text-xs font-bold">Annuler</button>
-        <button
-          disabled={saving || !c.name?.trim()}
-          onClick={async () => { setSaving(true); try { await onSave(c); } finally { setSaving(false); } }}
-          className="inline-flex items-center gap-1 rounded-xl bg-gradient-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-glow disabled:opacity-50"
-        >
-          {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-          Enregistrer
-        </button>
-      </div>
-    </Modal>
-  );
-}
+
+
 
 function Modal({ children, onClose, title }: { children: React.ReactNode; onClose: () => void; title: string }) {
   return (

@@ -324,6 +324,73 @@ export const deleteDish = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
+// Flip is_available d'un plat — utilisé par le toggle direct sur la liste.
+export const toggleDishAvailability = createServerFn({ method: "POST" })
+  .middleware([requireAuth])
+  .inputValidator((d) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        restaurant_id: z.string().uuid(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertMembership(context, data.restaurant_id, "manager");
+    const { data: cur, error: e1 } = await supabaseAdmin
+      .from("dishes")
+      .select("is_available")
+      .eq("id", data.id)
+      .eq("restaurant_id", data.restaurant_id)
+      .maybeSingle();
+    if (e1) throw new Error(e1.message);
+    if (!cur) throw new Error("Plat introuvable");
+    const next = !cur.is_available;
+    const { error } = await supabaseAdmin
+      .from("dishes")
+      .update({ is_available: next })
+      .eq("id", data.id)
+      .eq("restaurant_id", data.restaurant_id);
+    if (error) throw new Error(error.message);
+    return { is_available: next };
+  });
+
+// Garantit que les 5 catégories MboaEats standards existent pour ce resto.
+export const ensureStandardCategories = createServerFn({ method: "POST" })
+  .middleware([requireAuth])
+  .inputValidator((d) =>
+    z.object({ restaurant_id: z.string().uuid() }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertMembership(context, data.restaurant_id, "manager");
+    const STD = [
+      { name: "Entrée", sort_order: 1 },
+      { name: "Plat", sort_order: 2 },
+      { name: "Dessert", sort_order: 3 },
+      { name: "Boisson", sort_order: 4 },
+      { name: "Accompagnement", sort_order: 5 },
+    ];
+    const { data: existing } = await supabaseAdmin
+      .from("menu_categories")
+      .select("name")
+      .eq("restaurant_id", data.restaurant_id);
+    const have = new Set((existing ?? []).map((c) => c.name));
+    const missing = STD.filter((s) => !have.has(s.name)).map((s) => ({
+      restaurant_id: data.restaurant_id,
+      name: s.name,
+      sort_order: s.sort_order,
+    }));
+    if (missing.length > 0) {
+      const { error } = await supabaseAdmin
+        .from("menu_categories")
+        .insert(missing);
+      if (error) throw new Error(error.message);
+    }
+    return { ok: true as const, created: missing.length };
+  });
+
+
+
 // -----------------------------------------------------------------------------
 // Stats restaurant (staff+)
 // -----------------------------------------------------------------------------
