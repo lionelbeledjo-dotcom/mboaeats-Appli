@@ -150,7 +150,7 @@ export const listRestaurantOrders = createServerFn({ method: "GET" })
       client_name: r.user_id ? profiles[r.user_id]?.full_name ?? null : null,
       client_phone: r.user_id ? profiles[r.user_id]?.phone ?? null : null,
     }));
-    const newCount = enriched.filter((o) => o.status === "paid").length;
+    const newCount = enriched.filter((o) => (o as { status?: string }).status === "paid").length;
     return { orders: enriched, newCount };
   });
 
