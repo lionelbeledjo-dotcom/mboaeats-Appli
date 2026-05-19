@@ -695,12 +695,13 @@ export const getRestaurantsForModeration = createServerFn({ method: "POST" })
       }),
     );
 
-    const restaurants = (rows ?? []).map((r) => ({
+    const restaurants = rows.map((r) => ({
       ...r,
       owner_email: r.owner_id ? emailMap.get(r.owner_id) ?? null : null,
       owner_full_name: r.owner_id ? profilesMap.get(r.owner_id)?.full_name ?? null : null,
       owner_phone: r.owner_id ? profilesMap.get(r.owner_id)?.phone ?? null : null,
     }));
+
 
     // Compteurs par statut (pour les badges des tabs)
     const { data: counts } = await supabaseAdmin
