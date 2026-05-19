@@ -48,7 +48,10 @@ async function resolvePostLoginRedirect(explicitRedirect?: string): Promise<stri
       .eq("user_id", user.id);
     const list = (roles ?? []).map((r: any) => r.role);
     console.log("[connexion] post-login roles:", list);
+    // Ordre de priorité : superadmin > admin > restaurateur > client.
     if (list.includes("superadmin")) return "/superadmin";
+    if (list.includes("admin")) return "/admin";
+    if (list.includes("restaurateur")) return "/restaurant";
   } catch (e) {
     console.error("[connexion] resolvePostLoginRedirect error:", e);
   }
