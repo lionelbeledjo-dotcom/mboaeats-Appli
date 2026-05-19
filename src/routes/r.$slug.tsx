@@ -264,24 +264,7 @@ function RestoLivePage() {
                       slug={slug}
                       dish={dish}
                       restoOpen={!!resto.is_open}
-                      onAdd={() => {
-                        addToCart({
-                          id: `db__${dish.id}`,
-                          dishId: dish.id,
-                          restoId: resto.id,
-                          name: dish.name,
-                          price: dish.price,
-                          qty: 1,
-                          image: dish.image_url ?? undefined,
-                        });
-                        toast.success("Ajouté au panier", {
-                          description: `1 × ${dish.name}`,
-                          action: {
-                            label: "Voir le panier",
-                            onClick: () => navigate({ to: "/checkout" }),
-                          },
-                        });
-                      }}
+                      onAdd={() => handleAdd(dish)}
                     />
                   ))}
                 </ul>
