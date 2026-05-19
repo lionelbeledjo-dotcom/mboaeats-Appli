@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { getRestaurantPageData as getRestaurantBySlug } from "@/server/catalog.fast.functions";
+import { getRestaurant } from "@/data/restaurants";
+import { supabase } from "@/integrations/supabase/client";
 import { addToCart, useCart, clearCart } from "@/hooks/use-cart";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { AddToCartFab } from "@/components/AddToCartFab";
