@@ -606,10 +606,19 @@
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
 }
-html, body, #root {
+/* Only html and #root clip horizontal overflow. Body stays in normal flow
+   so the document (html) is the unique vertical scroll container — avoids
+   the desktop bug where body becomes a second scroll context sized to its
+   own min-height and traps content (notably /panier and /checkout). */
+html, #root {
   width: 100%;
   max-width: 100vw;
   overflow-x: hidden;
+  overscroll-behavior: none;
+}
+body {
+  width: 100%;
+  max-width: 100vw;
   overscroll-behavior: none;
 }
 html:has([data-admin-shell]),
@@ -619,6 +628,7 @@ body:has([data-admin-shell]) {
 }
 body:has([data-admin-shell]) {
   touch-action: auto;
+  overflow-x: hidden;
 }
 html, body { min-height: 100%; }
 /* Override Tailwind min-h-screen (100vh) → 100dvh : empêche le contenu
@@ -630,8 +640,7 @@ html, body { min-height: 100%; }
   --bottom-dock-h: calc(70px + env(safe-area-inset-bottom));
 }
 body {
-  /* Smooth vertical scroll, prevent rubber-band horizontal */
-  overflow-y: auto;
+  /* Smooth touch scroll on mobile; vertical scroll is handled by <html>. */
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
 }
