@@ -661,12 +661,14 @@ export const getRestaurantsForModeration = createServerFn({ method: "POST" })
       q = q.eq("validation_status", data.status);
     }
 
-    const { data: rows, error } = await q;
+    const { data: rowsRaw, error } = await q;
     if (error) throw new Error(error.message);
+    const rows = (rowsRaw ?? []) as Array<Record<string, any>>;
 
     const ownerIds = Array.from(
-      new Set((rows ?? []).map((r) => r.owner_id).filter(Boolean) as string[]),
+      new Set(rows.map((r) => r.owner_id).filter(Boolean) as string[]),
     );
+
 
     // Profils (full_name + phone)
     const profilesMap = new Map<string, { full_name: string | null; phone: string | null }>();
