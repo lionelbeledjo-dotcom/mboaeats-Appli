@@ -601,15 +601,27 @@ function MenuPanel({ restoId }: { restoId: string }) {
   const [cats, setCats] = useState<Cat[]>([]);
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [editing, setEditing] = useState<Partial<Dish> | null>(null);
   const [editingCat, setEditingCat] = useState<Partial<Cat> | null>(null);
 
   const reload = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const r = await fetchMenu({ data: { restaurant_id: restoId } });
-      setCats(r.categories as Cat[]);
-      setDishes(r.dishes as Dish[]);
+      setCats((r.categories ?? []) as Cat[]);
+      setDishes((r.dishes ?? []) as Dish[]);
+    } catch (e: any) {
+      // BUG 4 : sans cette garde, le throw d'une server function (ex. 403
+      // assertMembership, table absente, RLS) crashe tout l'onglet Menu et
+      // affiche l'écran d'erreur générique du route boundary. On préfère
+      // logguer + afficher un empty state propre pour ne pas bloquer le
+      // restaurateur.
+      console.error("[MenuPanel] fetchMenu failed:", e);
+      setLoadError(e?.message ?? "Impossible de charger le menu pour le moment.");
+      setCats([]);
+      setDishes([]);
     } finally {
       setLoading(false);
     }
