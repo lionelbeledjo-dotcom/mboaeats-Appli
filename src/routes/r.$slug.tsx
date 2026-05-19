@@ -127,7 +127,7 @@ function RestoLivePage() {
   }, [otherRestoItem?.restoId]);
 
 
-  const doAdd = (dish: Dish) => {
+  const doAdd = (dish: Dish, opts?: { silent?: boolean }) => {
     if (!resto) return;
     addToCart({
       id: `db__${dish.id}`,
@@ -138,6 +138,7 @@ function RestoLivePage() {
       qty: 1,
       image: dish.image_url ?? undefined,
     });
+    if (opts?.silent) return;
     toast.success("Ajouté au panier", {
       description: `1 × ${dish.name}`,
       action: { label: "Voir le panier", onClick: () => navigate({ to: "/panier" }) },
