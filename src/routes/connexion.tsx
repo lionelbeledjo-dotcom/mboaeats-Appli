@@ -47,6 +47,7 @@ async function resolvePostLoginRedirect(explicitRedirect?: string): Promise<stri
       .select("role")
       .eq("user_id", user.id);
     const list = (roles ?? []).map((r: any) => r.role);
+    console.log("[connexion] post-login roles:", list);
     if (list.includes("superadmin")) return "/superadmin";
   } catch (e) {
     console.error("[connexion] resolvePostLoginRedirect error:", e);
