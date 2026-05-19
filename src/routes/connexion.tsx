@@ -379,7 +379,8 @@ function Connexion() {
       }
       invalidateSessionCache();
       toast.success("Connexion réussie 🎉");
-      navigate({ to: "/", replace: true });
+      const to = await resolvePostLoginRedirect(explicitRedirect);
+      navigate({ to, replace: true });
     } catch (err: any) {
       setError(err?.message ?? "Code invalide");
       setOtpCode("");
