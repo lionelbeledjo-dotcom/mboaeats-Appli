@@ -1225,16 +1225,13 @@ function RestaurantRejectedScreen({ resto }: { resto: Resto }) {
 }
 
 import { RoleGuard } from "@/components/RoleGuard";
+void RoleGuard;
 function RestaurantSpaceGuarded() {
-  return (
-    <RoleGuard
-      role="restaurateur"
-      title="Espace restaurateur"
-      description="Cet espace est réservé aux restaurateurs partenaires MboaEats."
-      ctaTo="/devenir-resto"
-      ctaLabel="Devenir restaurateur"
-    >
-      <RestaurantSpace />
-    </RoleGuard>
-  );
+  // La priorité de rendu est gérée directement par RestaurantSpace :
+  // 1) non connecté → CTA connexion ; 2) resto en base → pending/rejected/dashboard ;
+  // 3) connecté sans resto → écran "Espace réservé" (CTA devenir-resto).
+  // On NE PASSE PLUS par RoleGuard, qui se basait sur restaurant_members
+  // et bloquait les restaurateurs dont la membership n'avait pas (encore) été créée.
+  return <RestaurantSpace />;
 }
+
