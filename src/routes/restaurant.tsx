@@ -14,8 +14,6 @@ import {
   listRestaurantOrders,
   updateOrderStatus,
   getRestaurantMenu,
-  upsertCategory,
-  deleteCategory,
   upsertDish,
   deleteDish,
   toggleDishAvailability,
@@ -23,6 +21,7 @@ import {
   getRestaurantStats,
   createMyRestaurant,
 } from "@/server/restaurant.functions";
+
 
 
 export const Route = createFileRoute("/restaurant")({
