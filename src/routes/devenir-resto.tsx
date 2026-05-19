@@ -470,15 +470,12 @@ function AccountStep({
 
 function RestoStep({
   userEmail,
-  onCreated,
+  createResto,
+  onDone,
 }: {
   userEmail: string | null;
-  onCreated: (data: {
-    name: string;
-    cuisine: string;
-    city: string;
-    neighborhood?: string;
-  }) => Promise<void>;
+  createResto: (opts: { data: { name: string; cuisine: string; city: string; neighborhood?: string } }) => Promise<unknown>;
+  onDone: () => void;
 }) {
   const [name, setName] = useState("");
   const [cuisine, setCuisine] = useState("");
@@ -490,26 +487,46 @@ function RestoStep({
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    e.stopPropagation();
     setErr(null);
+    console.info("[devenir-resto] submit phase=resto", { name, cuisine, city, accepted });
 
     if (!accepted) {
-      return setErr("Vous devez accepter les conditions partenaires pour continuer.");
+      const msg = "Vous devez accepter les conditions partenaires pour continuer.";
+      setErr(msg);
+      toast.error(msg);
+      return;
     }
     const n = restoNameSchema.safeParse(name);
-    if (!n.success) return setErr(n.error.issues[0].message);
+    if (!n.success) {
+      const msg = n.error.issues[0].message;
+      setErr(msg); toast.error(msg); return;
+    }
     const c = cuisineSchema.safeParse(cuisine);
-    if (!c.success) return setErr(c.error.issues[0].message);
+    if (!c.success) {
+      const msg = c.error.issues[0].message;
+      setErr(msg); toast.error(msg); return;
+    }
 
     setBusy(true);
     try {
-      await onCreated({
-        name: n.data,
-        cuisine: c.data,
-        city,
-        neighborhood: neighborhood.trim() || undefined,
+      console.info("[devenir-resto] calling createMyRestaurant…");
+      await createResto({
+        data: {
+          name: n.data,
+          cuisine: c.data,
+          city,
+          neighborhood: neighborhood.trim() || undefined,
+        },
       });
+      console.info("[devenir-resto] createMyRestaurant OK");
+      toast.success("Demande envoyée ! Validation sous 24-48h.");
+      onDone();
     } catch (e: any) {
-      setErr(e?.message ?? "Une erreur est survenue. Réessayez.");
+      console.error("[devenir-resto] createMyRestaurant failed", e);
+      const msg = e?.message ?? "Une erreur est survenue. Réessayez.";
+      setErr(msg);
+      toast.error(msg);
     } finally {
       setBusy(false);
     }
@@ -529,6 +546,14 @@ function RestoStep({
           "Décrivez votre restaurant en quelques champs."
         )}
       </p>
+
+      {/* Erreur affichée EN HAUT pour être toujours visible */}
+      {err && (
+        <div className="mt-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>{err}</span>
+        </div>
+      )}
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4" noValidate>
         <Field
@@ -588,23 +613,26 @@ function RestoStep({
           </div>
         </div>
 
-        {/* Acceptation conditions */}
-        <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-neutral-200 bg-white p-4 hover:border-neutral-300">
-          <input
-            type="checkbox"
-            checked={accepted}
-            onChange={(e) => setAccepted(e.target.checked)}
-            className="mt-0.5 h-5 w-5 shrink-0 accent-emerald-600"
-          />
-          <span className="text-xs text-neutral-700">
-            J'accepte les{" "}
-            <Link to="/cgu" className="font-semibold text-emerald-700 underline">
-              conditions partenaires
-            </Link>{" "}
-            ainsi que la commission de service appliquée par MboaEats sur
-            chaque commande livrée.
-          </span>
-        </label>
+        {/* Acceptation conditions — checkbox SÉPARÉ du lien CGU pour éviter le toggle accidentel */}
+        <div className="rounded-2xl border border-neutral-200 bg-white p-4">
+          <label className="flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              checked={accepted}
+              onChange={(e) => setAccepted(e.target.checked)}
+              className="mt-0.5 h-5 w-5 shrink-0 accent-emerald-600"
+            />
+            <span className="text-xs text-neutral-700">
+              J'accepte les conditions partenaires ainsi que la commission de
+              service appliquée par MboaEats sur chaque commande livrée.
+            </span>
+          </label>
+          <div className="mt-2 pl-8 text-xs">
+            <Link to="/cgu" target="_blank" className="font-semibold text-emerald-700 underline">
+              Lire les conditions partenaires →
+            </Link>
+          </div>
+        </div>
 
         {err && (
           <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
@@ -616,10 +644,12 @@ function RestoStep({
         <button
           type="submit"
           disabled={busy}
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-700 text-sm font-bold text-white shadow-lg shadow-emerald-500/30 hover:from-emerald-700 hover:to-emerald-800 disabled:opacity-60"
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-700 text-sm font-bold text-white shadow-lg shadow-emerald-500/30 hover:from-emerald-700 hover:to-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {busy ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
+            <>
+              <Loader2 className="h-5 w-5 animate-spin" /> Envoi en cours…
+            </>
           ) : (
             <>
               Soumettre ma demande <ArrowRight className="h-4 w-4" />
