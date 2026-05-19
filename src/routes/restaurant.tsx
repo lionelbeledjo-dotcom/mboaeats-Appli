@@ -161,16 +161,25 @@ function RestaurantSpace() {
   }
 
   if (!resto) {
+    const isRestaurateur = roles.includes("restaurateur");
     return (
-      <Onboarding
-        onCreated={async (data) => {
-          await createResto({ data });
-          toast.success("Votre demande a été envoyée à notre équipe.");
-          await reload();
-        }}
-      />
+      <CenterCard>
+        <h1 className="font-display text-2xl font-bold">Espace restaurateur</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {isRestaurateur
+            ? "Aucun restaurant n'est encore rattaché à votre compte. Finalisez votre inscription pour démarrer."
+            : "Cet espace est réservé aux restaurateurs partenaires MboaEats."}
+        </p>
+        <Link
+          to="/devenir-resto"
+          className="mt-5 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-extrabold uppercase tracking-wide text-primary-foreground shadow-glow"
+        >
+          Devenir restaurateur
+        </Link>
+      </CenterCard>
     );
   }
+
 
   // ÉCRAN "EN ATTENTE DE VALIDATION" — pour un resto qui vient d'être créé
   // et n'a pas encore été validé par l'admin MboaEats.
