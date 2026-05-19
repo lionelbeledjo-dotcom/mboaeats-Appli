@@ -122,12 +122,15 @@ export const listRestaurantOrders = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false })
       .limit(100);
     if (data.status) q = q.eq("status", data.status as never);
-    const { data: rows, error } = await q;
+    const { data: rawRows, error } = await q;
     if (error) throw new Error(error.message);
+    const rows = (rawRows ?? []) as unknown as Array<
+      Record<string, unknown> & { user_id: string | null }
+    >;
 
     // Hydrater nom + téléphone client depuis profiles
     const userIds = Array.from(
-      new Set((rows ?? []).map((r) => r.user_id).filter(Boolean)),
+      new Set(rows.map((r) => r.user_id).filter(Boolean)),
     ) as string[];
     let profiles: Record<string, { full_name: string | null; phone: string | null }> = {};
     if (userIds.length > 0) {
@@ -142,10 +145,10 @@ export const listRestaurantOrders = createServerFn({ method: "GET" })
         ]),
       );
     }
-    const enriched = (rows ?? []).map((r) => ({
+    const enriched = rows.map((r) => ({
       ...r,
-      client_name: profiles[r.user_id as string]?.full_name ?? null,
-      client_phone: profiles[r.user_id as string]?.phone ?? null,
+      client_name: r.user_id ? profiles[r.user_id]?.full_name ?? null : null,
+      client_phone: r.user_id ? profiles[r.user_id]?.phone ?? null : null,
     }));
     const newCount = enriched.filter((o) => o.status === "paid").length;
     return { orders: enriched, newCount };
