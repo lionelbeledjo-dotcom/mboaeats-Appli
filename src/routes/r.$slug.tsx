@@ -95,6 +95,35 @@ function RestoLivePage() {
   const restoSubtotal = restoCartItems.reduce((s, i) => s + i.qty * i.price, 0);
   const restoCount = restoCartItems.reduce((s, i) => s + i.qty, 0);
 
+  // Mono-resto guard
+  const otherRestoItem = items.find((i) => resto?.id && i.restoId && i.restoId !== resto.id);
+  const [pendingDish, setPendingDish] = useState<Dish | null>(null);
+
+  const doAdd = (dish: Dish) => {
+    if (!resto) return;
+    addToCart({
+      id: `db__${dish.id}`,
+      dishId: dish.id,
+      restoId: resto.id,
+      name: dish.name,
+      price: dish.price,
+      qty: 1,
+      image: dish.image_url ?? undefined,
+    });
+    toast.success("Ajouté au panier", {
+      description: `1 × ${dish.name}`,
+      action: { label: "Voir le panier", onClick: () => navigate({ to: "/panier" }) },
+    });
+  };
+
+  const handleAdd = (dish: Dish) => {
+    if (otherRestoItem) {
+      setPendingDish(dish);
+      return;
+    }
+    doAdd(dish);
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
