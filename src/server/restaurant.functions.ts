@@ -607,4 +607,12 @@ export const updateMyRestaurant = createServerFn({ method: "POST" })
 // -- FROM restaurants
 // -- WHERE owner_id IS NOT NULL
 // -- ON CONFLICT (user_id, role) DO NOTHING;
+//
+// -- Ceinture + bretelles : laisser l'owner lire son propre resto même
+// -- quand validation_status != 'approved' (la policy "Restaurants public
+// -- read" bloque les non-approved). À exécuter une fois :
+// -- CREATE POLICY "Restaurants owner read"
+// -- ON public.restaurants FOR SELECT
+// -- TO authenticated
+// -- USING (owner_id = auth.uid());
 
