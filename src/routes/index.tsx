@@ -151,7 +151,7 @@ function Index() {
                   key={r.id}
                   restaurant={r}
                   minPrice={minPriceOf(r)}
-                  onAdd={() => handleAdd(r)}
+                  onAdd={(r as any).dbSlug ? undefined : () => handleAdd(r)}
                   onPrefetch={() => prefetchRestaurantImages(r.id)}
                 />
               ))}
@@ -183,7 +183,7 @@ function Index() {
                       key={r.id}
                       restaurant={r}
                       minPrice={minPriceOf(r)}
-                      onAdd={() => handleAdd(r)}
+                      onAdd={(r as any).dbSlug ? undefined : () => handleAdd(r)}
                       onPrefetch={() => prefetchRestaurantImages(r.id)}
                     />
                   ))}
@@ -202,7 +202,7 @@ function Index() {
                     key={r.id}
                     restaurant={r}
                     minPrice={minPriceOf(r)}
-                    onAdd={() => handleAdd(r)}
+                    onAdd={(r as any).dbSlug ? undefined : () => handleAdd(r)}
                     onPrefetch={() => prefetchRestaurantImages(r.id)}
                   />
                 ))}
