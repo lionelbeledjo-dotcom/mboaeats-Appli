@@ -12,7 +12,7 @@ import {
 } from "@/lib/restaurant-meta";
 
 type Props = {
-  restaurant: Restaurant;
+  restaurant: Restaurant & { dbSlug?: string };
   minPrice: number;
   onAdd?: () => void;
   onPrefetch?: () => void;
@@ -24,10 +24,13 @@ export function RestaurantListCard({ restaurant: r, minPrice, onAdd, onPrefetch 
   const dist = distanceKm(r);
   const promo = hasPromo(r) ? promoLabel(r) : null;
 
+  const linkProps = r.dbSlug
+    ? ({ to: "/r/$slug", params: { slug: r.dbSlug } } as const)
+    : ({ to: "/restaurants/$restoId", params: { restoId: r.id } } as const);
+
   return (
     <Link
-      to="/restaurants/$restoId"
-      params={{ restoId: r.id }}
+      {...linkProps}
       preload="intent"
       onMouseEnter={onPrefetch}
       onTouchStart={onPrefetch}
