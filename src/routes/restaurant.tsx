@@ -661,9 +661,17 @@ function MenuPanel({ restoId }: { restoId: string }) {
         </div>
       </div>
 
-      {cats.length === 0 && dishes.length === 0 && (
+      {loadError && (
+        <div className="mb-4 rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+          {loadError} — réessayez plus tard ou contactez le support si le
+          problème persiste.
+        </div>
+      )}
+
+      {cats.length === 0 && dishes.length === 0 && !loadError && (
         <p className="rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-          Crée ta première catégorie puis ajoute tes plats.
+          Aucun plat dans votre menu. Créez une catégorie puis ajoutez votre
+          premier plat pour démarrer.
         </p>
       )}
 
