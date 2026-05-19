@@ -3,6 +3,7 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition }
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { Search, SlidersHorizontal, X, Star, Clock, Bike } from "lucide-react";
 import { restaurants } from "@/data/restaurants";
+import { useDbRestaurants } from "@/hooks/useDbRestaurants";
 import { SmartImage } from "@/components/SmartImage";
 import {
   CUISINE_KEYS,
@@ -57,11 +58,19 @@ function RecherchePage() {
     return () => window.clearTimeout(t);
   }, [q]);
 
+  const { data: dbRestos } = useDbRestaurants();
+
   const results = useMemo(() => {
     const needle = deferredQ.trim().toLowerCase();
-    let list = restaurants.filter((r) => {
+    // Fusion : DB-approved (visibles dès validation) + dataset statique.
+    const merged = [...(dbRestos ?? []), ...restaurants];
+    let list = merged.filter((r) => {
       if (needle) {
-        const inResto = r.name.toLowerCase().includes(needle) || r.tagline.toLowerCase().includes(needle);
+        const inResto =
+          r.name.toLowerCase().includes(needle) ||
+          r.tagline.toLowerCase().includes(needle) ||
+          r.city.toLowerCase().includes(needle) ||
+          (r.neighborhood ?? "").toLowerCase().includes(needle);
         const inDish = r.categories.some((c) => c.dishes.some((d) => d.name.toLowerCase().includes(needle)));
         if (!inResto && !inDish) return false;
       }
@@ -76,11 +85,11 @@ function RecherchePage() {
     else if (sort === "eta") sorted.sort((a, b) => etaMinAvg(a.eta) - etaMinAvg(b.eta));
     else if (sort === "distance") sorted.sort((a, b) => distanceKm(a) - distanceKm(b));
     else if (sort === "price") {
-      const min = (r: typeof restaurants[number]) => Math.min(...r.categories.flatMap((c) => c.dishes.map((d) => d.price)));
+      const min = (r: typeof merged[number]) => Math.min(...r.categories.flatMap((c) => c.dishes.map((d) => d.price)));
       sorted.sort((a, b) => min(a) - min(b));
     }
     return sorted;
-  }, [deferredQ, sort, cuisine, promosOnly, maxEta]);
+  }, [deferredQ, sort, cuisine, promosOnly, maxEta, dbRestos]);
 
   const isStale = isPending || deferredQ !== appliedQ || appliedQ !== q;
 
@@ -251,8 +260,9 @@ function VirtualResults({
             }}
           >
             <Link
-              to="/restaurants/$restoId"
-              params={{ restoId: r.id }}
+              {...((r as any).dbSlug
+                ? ({ to: "/r/$slug", params: { slug: (r as any).dbSlug } } as const)
+                : ({ to: "/restaurants/$restoId", params: { restoId: r.id } } as const))}
               className="grid h-[104px] w-full max-w-full grid-cols-[5rem_minmax(0,1fr)] gap-3 overflow-hidden rounded-2xl bg-white p-3 transition active:bg-white/90"
               style={{ boxShadow: "0 2px 12px -8px rgba(0,0,0,0.08)" }}
             >

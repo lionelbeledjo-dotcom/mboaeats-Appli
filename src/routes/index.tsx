@@ -8,6 +8,7 @@ import { CategoriesRow } from "@/components/home/CategoriesRow";
 import { RestaurantListCard } from "@/components/home/RestaurantListCard";
 import { SmartImage } from "@/components/SmartImage";
 import { restaurants as realRestaurants, getRestaurant, type Restaurant } from "@/data/restaurants";
+import { useDbRestaurants } from "@/hooks/useDbRestaurants";
 import { addToCart } from "@/hooks/use-cart";
 import { etaMinAvg, isFastDelivery, isNew } from "@/lib/restaurant-meta";
 import { toast } from "sonner";
@@ -56,27 +57,37 @@ function firstDishOf(r: Restaurant) {
 
 function Index() {
   const [query, setQuery] = useState("");
+  const { data: dbRestos } = useDbRestaurants();
+
+  const allRestos = useMemo(
+    () => [...(dbRestos ?? []), ...realRestaurants],
+    [dbRestos],
+  );
 
   const searchResults = useMemo(() => {
     if (!query.trim()) return null;
     const q = query.toLowerCase();
-    return realRestaurants.filter(
+    return allRestos.filter(
       (r) =>
         r.name.toLowerCase().includes(q) ||
         r.tagline.toLowerCase().includes(q) ||
+        r.city.toLowerCase().includes(q) ||
         r.categories.some((c) => c.dishes.some((d) => d.name.toLowerCase().includes(q))),
     );
-  }, [query]);
+  }, [query, allRestos]);
 
   const popular = useMemo(
-    () => [...realRestaurants].sort((a, b) => b.rating - a.rating).slice(0, 8),
-    [],
+    () => [...allRestos].sort((a, b) => b.rating - a.rating).slice(0, 8),
+    [allRestos],
   );
   const fast = useMemo(
-    () => realRestaurants.filter(isFastDelivery).sort((a, b) => etaMinAvg(a.eta) - etaMinAvg(b.eta)).slice(0, 6),
-    [],
+    () => allRestos.filter(isFastDelivery).sort((a, b) => etaMinAvg(a.eta) - etaMinAvg(b.eta)).slice(0, 6),
+    [allRestos],
   );
-  const news = useMemo(() => realRestaurants.filter(isNew), []);
+  const news = useMemo(
+    () => [...(dbRestos ?? []), ...realRestaurants.filter(isNew)].slice(0, 8),
+    [dbRestos],
+  );
 
   const handleAdd = (r: Restaurant) => {
     const fd = firstDishOf(r);
@@ -140,7 +151,7 @@ function Index() {
                   key={r.id}
                   restaurant={r}
                   minPrice={minPriceOf(r)}
-                  onAdd={() => handleAdd(r)}
+                  onAdd={(r as any).dbSlug ? undefined : () => handleAdd(r)}
                   onPrefetch={() => prefetchRestaurantImages(r.id)}
                 />
               ))}
@@ -172,7 +183,7 @@ function Index() {
                       key={r.id}
                       restaurant={r}
                       minPrice={minPriceOf(r)}
-                      onAdd={() => handleAdd(r)}
+                      onAdd={(r as any).dbSlug ? undefined : () => handleAdd(r)}
                       onPrefetch={() => prefetchRestaurantImages(r.id)}
                     />
                   ))}
@@ -191,7 +202,7 @@ function Index() {
                     key={r.id}
                     restaurant={r}
                     minPrice={minPriceOf(r)}
-                    onAdd={() => handleAdd(r)}
+                    onAdd={(r as any).dbSlug ? undefined : () => handleAdd(r)}
                     onPrefetch={() => prefetchRestaurantImages(r.id)}
                   />
                 ))}
