@@ -63,13 +63,24 @@ function RestaurantSpace() {
 
   const [authReady, setAuthReady] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
+  const [userInfo, setUserInfo] = useState<{ id: string; email: string | null } | null>(null);
+  const [roles, setRoles] = useState<string[]>([]);
   const [resto, setResto] = useState<Resto | null>(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>("commandes");
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setSignedIn(!!data.user);
+    supabase.auth.getUser().then(async ({ data }) => {
+      const u = data.user;
+      setSignedIn(!!u);
+      setUserInfo(u ? { id: u.id, email: u.email ?? null } : null);
+      if (u) {
+        const { data: rr } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", u.id);
+        setRoles((rr ?? []).map((x: any) => x.role));
+      }
       setAuthReady(true);
     });
   }, []);
@@ -78,7 +89,13 @@ function RestaurantSpace() {
     setLoading(true);
     try {
       const r = await fetchResto();
+      // eslint-disable-next-line no-console
+      console.log("[restaurant.tsx] getMyRestaurant →", r);
       setResto(r.restaurant as Resto | null);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error("[restaurant.tsx] getMyRestaurant error", e);
+      setResto(null);
     } finally {
       setLoading(false);
     }
@@ -87,6 +104,11 @@ function RestaurantSpace() {
   useEffect(() => {
     if (signedIn) reload();
   }, [signedIn, reload]);
+
+  // eslint-disable-next-line no-console
+  console.log("[restaurant.tsx] state", { user: userInfo, roles, resto });
+
+
 
   const toggleOpen = async () => {
     if (!resto) return;
@@ -139,16 +161,25 @@ function RestaurantSpace() {
   }
 
   if (!resto) {
+    const isRestaurateur = roles.includes("restaurateur");
     return (
-      <Onboarding
-        onCreated={async (data) => {
-          await createResto({ data });
-          toast.success("Votre demande a été envoyée à notre équipe.");
-          await reload();
-        }}
-      />
+      <CenterCard>
+        <h1 className="font-display text-2xl font-bold">Espace restaurateur</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {isRestaurateur
+            ? "Aucun restaurant n'est encore rattaché à votre compte. Finalisez votre inscription pour démarrer."
+            : "Cet espace est réservé aux restaurateurs partenaires MboaEats."}
+        </p>
+        <Link
+          to="/devenir-resto"
+          className="mt-5 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-extrabold uppercase tracking-wide text-primary-foreground shadow-glow"
+        >
+          Devenir restaurateur
+        </Link>
+      </CenterCard>
     );
   }
+
 
   // ÉCRAN "EN ATTENTE DE VALIDATION" — pour un resto qui vient d'être créé
   // et n'a pas encore été validé par l'admin MboaEats.
@@ -1194,16 +1225,13 @@ function RestaurantRejectedScreen({ resto }: { resto: Resto }) {
 }
 
 import { RoleGuard } from "@/components/RoleGuard";
+void RoleGuard;
 function RestaurantSpaceGuarded() {
-  return (
-    <RoleGuard
-      role="restaurateur"
-      title="Espace restaurateur"
-      description="Cet espace est réservé aux restaurateurs partenaires MboaEats."
-      ctaTo="/devenir-resto"
-      ctaLabel="Devenir restaurateur"
-    >
-      <RestaurantSpace />
-    </RoleGuard>
-  );
+  // La priorité de rendu est gérée directement par RestaurantSpace :
+  // 1) non connecté → CTA connexion ; 2) resto en base → pending/rejected/dashboard ;
+  // 3) connecté sans resto → écran "Espace réservé" (CTA devenir-resto).
+  // On NE PASSE PLUS par RoleGuard, qui se basait sur restaurant_members
+  // et bloquait les restaurateurs dont la membership n'avait pas (encore) été créée.
+  return <RestaurantSpace />;
 }
+
