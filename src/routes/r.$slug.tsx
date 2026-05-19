@@ -333,13 +333,21 @@ function RestoLivePage() {
               onClick={() => {
                 const d = pendingDish;
                 const prevName = otherRestoName ?? "le restaurant précédent";
+                const snapshot = items.map((i) => ({ ...i, options: i.options ? { ...i.options } : undefined }));
                 clearCart();
                 setPendingDish(null);
                 if (d) {
                   doAdd(d, { silent: true });
                   toast.success("Panier mis à jour", {
                     description: `Panier de ${prevName} vidé · 1 × ${d.name} ajouté depuis ${resto.name}`,
-                    action: { label: "Voir le panier", onClick: () => navigate({ to: "/panier" }) },
+                    duration: 8000,
+                    action: {
+                      label: "Annuler",
+                      onClick: () => {
+                        restoreCartItems(snapshot);
+                        toast.success(`Panier de ${prevName} restauré`);
+                      },
+                    },
                   });
                 }
               }}
