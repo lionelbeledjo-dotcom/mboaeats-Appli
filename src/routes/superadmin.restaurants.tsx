@@ -260,15 +260,22 @@ function SuperAdminRestaurants() {
             rows={3}
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setApproveOpen(null)} disabled={submitting}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setApproveOpen(null)}
+              disabled={submitting}
+            >
               Annuler
             </Button>
             <Button
+              type="button"
               onClick={submitApprove}
               disabled={submitting}
               className="bg-emerald-600 text-white hover:bg-emerald-700"
             >
-              <Check className="mr-1 h-4 w-4" /> Valider
+              <Check className="mr-1 h-4 w-4" />
+              {submitting ? "Validation…" : "Valider"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -302,15 +309,22 @@ function SuperAdminRestaurants() {
             rows={4}
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectOpen(null)} disabled={submitting}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setRejectOpen(null)}
+              disabled={submitting}
+            >
               Annuler
             </Button>
             <Button
+              type="button"
               variant="destructive"
               onClick={submitReject}
               disabled={submitting || !note.trim()}
             >
-              <Ban className="mr-1 h-4 w-4" /> Refuser
+              <Ban className="mr-1 h-4 w-4" />
+              {submitting ? "Refus…" : "Refuser"}
             </Button>
           </DialogFooter>
         </DialogContent>
