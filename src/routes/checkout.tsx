@@ -395,7 +395,7 @@ function Checkout() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground" style={{ overflow: "visible" }}>
       <header
         className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur-md"
         style={{ paddingTop: "env(safe-area-inset-top)" }}
