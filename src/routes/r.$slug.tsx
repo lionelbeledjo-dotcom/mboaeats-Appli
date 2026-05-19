@@ -319,9 +319,16 @@ function RestoLivePage() {
             <AlertDialogAction
               onClick={() => {
                 const d = pendingDish;
+                const prevName = otherRestoName ?? "le restaurant précédent";
                 clearCart();
                 setPendingDish(null);
-                if (d) doAdd(d);
+                if (d) {
+                  doAdd(d, { silent: true });
+                  toast.success("Panier mis à jour", {
+                    description: `Panier de ${prevName} vidé · 1 × ${d.name} ajouté depuis ${resto.name}`,
+                    action: { label: "Voir le panier", onClick: () => navigate({ to: "/panier" }) },
+                  });
+                }
               }}
             >
               Vider et ajouter
