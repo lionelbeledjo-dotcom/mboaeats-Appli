@@ -241,6 +241,23 @@ function PanierPage() {
         </span>
       </div>
 
+      {/* Vider le panier */}
+      <div className="px-4 pb-6 flex justify-center">
+        <button
+          type="button"
+          onClick={() => {
+            if (window.confirm("Vider entièrement le panier ? Vous pourrez ensuite commander dans un autre restaurant.")) {
+              clearCart();
+              toast.success("Panier vidé");
+            }
+          }}
+          className="inline-flex items-center gap-2 text-[13px] font-medium text-gray-500 underline-offset-4 hover:underline active:text-gray-700"
+        >
+          <Trash2 className="h-4 w-4" />
+          Vider le panier
+        </button>
+      </div>
+
       {/* Footer sticky — collé juste au-dessus du BottomDock, peu importe la
           hauteur de viewport. Plus de saut, plus d'espace vide en bas. */}
       <div
