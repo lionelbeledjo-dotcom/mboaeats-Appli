@@ -188,6 +188,8 @@ function OtpInput({
 
 function Connexion() {
   const navigate = useNavigate();
+  const search = Route.useSearch();
+  const explicitRedirect = search.redirect || search.next;
   const { isAuthenticated, loading: authLoading } = useAuth();
 
   const loginFn = useServerFn(loginWithPassword);
