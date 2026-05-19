@@ -309,9 +309,22 @@ function RestoLivePage() {
       <AlertDialog open={!!pendingDish} onOpenChange={(o) => { if (!o) setPendingDish(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Vider le panier ?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Votre panier contient déjà des plats de <strong>{otherRestoName ?? "un autre restaurant"}</strong>. Vous ne pouvez commander que dans un seul restaurant à la fois. Vider le panier et ajouter « {pendingDish?.name} » de <strong>{resto.name}</strong> ?
+            <AlertDialogTitle>Changer de restaurant ?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <p>
+                  Votre panier contient déjà des plats de{" "}
+                  <strong className="font-semibold text-foreground">
+                    {otherRestoName ?? "un autre restaurant"}
+                  </strong>.
+                </p>
+                <p>
+                  Vous ne pouvez commander que dans un seul restaurant à la fois. Voulez-vous vider le panier et ajouter{" "}
+                  <strong className="font-semibold text-foreground">{pendingDish?.name ?? "ce plat"}</strong>{" "}
+                  de{" "}
+                  <strong className="font-semibold text-foreground">{resto.name}</strong> ?
+                </p>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
