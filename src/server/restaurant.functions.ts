@@ -616,3 +616,137 @@ export const updateMyRestaurant = createServerFn({ method: "POST" })
 // -- TO authenticated
 // -- USING (owner_id = auth.uid());
 
+// ============================================================================
+// MODÉRATION SUPERADMIN — Pack 3
+// ============================================================================
+
+async function assertSuperadmin(userId: string): Promise<void> {
+  const { data, error } = await supabaseAdmin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .in("role", ["superadmin", "admin"])
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error("Role check failed");
+  if (!data) throw new Error("Superadmin role required");
+}
+
+export const getRestaurantsForModeration = createServerFn({ method: "POST" })
+  .middleware([requireAuth])
+  .inputValidator((d) =>
+    z
+      .object({
+        status: z
+          .enum(["pending", "approved", "rejected", "all"])
+          .optional()
+          .default("pending"),
+      })
+      .parse(d ?? {}),
+  )
+  .handler(async ({ data, context }) => {
+    await assertSuperadmin(context.userId);
+
+    let q = supabaseAdmin
+      .from("restaurants")
+      .select(
+        "id, name, slug, cuisine, city, neighborhood, image_url, owner_id, " +
+          "validation_status, validation_note, validated_at, created_at, is_active",
+      )
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    if (data.status !== "all") {
+      q = q.eq("validation_status", data.status);
+    }
+
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+
+    const ownerIds = Array.from(
+      new Set((rows ?? []).map((r) => r.owner_id).filter(Boolean) as string[]),
+    );
+
+    // Profils (full_name + phone)
+    const profilesMap = new Map<string, { full_name: string | null; phone: string | null }>();
+    if (ownerIds.length) {
+      const { data: profs } = await supabaseAdmin
+        .from("profiles")
+        .select("user_id, full_name, phone")
+        .in("user_id", ownerIds);
+      for (const p of profs ?? []) {
+        profilesMap.set(p.user_id, { full_name: p.full_name, phone: p.phone });
+      }
+    }
+
+    // Emails via auth.admin.getUserById (≤ 50 appels)
+    const emailMap = new Map<string, string | null>();
+    await Promise.all(
+      ownerIds.map(async (uid) => {
+        try {
+          const { data: u } = await supabaseAdmin.auth.admin.getUserById(uid);
+          emailMap.set(uid, u?.user?.email ?? null);
+        } catch {
+          emailMap.set(uid, null);
+        }
+      }),
+    );
+
+    const restaurants = (rows ?? []).map((r) => ({
+      ...r,
+      owner_email: r.owner_id ? emailMap.get(r.owner_id) ?? null : null,
+      owner_full_name: r.owner_id ? profilesMap.get(r.owner_id)?.full_name ?? null : null,
+      owner_phone: r.owner_id ? profilesMap.get(r.owner_id)?.phone ?? null : null,
+    }));
+
+    // Compteurs par statut (pour les badges des tabs)
+    const { data: counts } = await supabaseAdmin
+      .from("restaurants")
+      .select("validation_status")
+      .is("deleted_at", null);
+    const tally = { pending: 0, approved: 0, rejected: 0, all: 0 };
+    for (const c of counts ?? []) {
+      tally.all++;
+      const s = c.validation_status as keyof typeof tally;
+      if (s in tally) tally[s]++;
+    }
+
+    return { restaurants, counts: tally };
+  });
+
+export const moderateRestaurant = createServerFn({ method: "POST" })
+  .middleware([requireAuth])
+  .inputValidator((d) =>
+    z
+      .object({
+        restaurantId: z.string().uuid(),
+        action: z.enum(["approve", "reject"]),
+        note: z.string().max(1000).optional().default(""),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertSuperadmin(context.userId);
+
+    if (data.action === "reject" && !data.note.trim()) {
+      throw new Error("Une raison est obligatoire pour refuser un restaurant.");
+    }
+
+    const { error: rpcError } = await supabaseAdmin.rpc("moderate_restaurant", {
+      p_restaurant_id: data.restaurantId,
+      p_decision: data.action === "approve" ? "approved" : "rejected",
+      p_note: data.note?.trim() || null,
+    });
+    if (rpcError) throw new Error(rpcError.message);
+
+    const { data: row, error } = await supabaseAdmin
+      .from("restaurants")
+      .select("*")
+      .eq("id", data.restaurantId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return { restaurant: row };
+  });
+
+
