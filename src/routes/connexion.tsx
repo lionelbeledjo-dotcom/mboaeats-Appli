@@ -229,8 +229,13 @@ function Connexion() {
   const fullPhone = `${country.dial}${phone.replace(/\D/g, "")}`;
 
   useEffect(() => {
-    if (!authLoading && isAuthenticated) navigate({ to: "/", replace: true });
-  }, [authLoading, isAuthenticated, navigate]);
+    if (!authLoading && isAuthenticated) {
+      resolvePostLoginRedirect(explicitRedirect).then((to) => {
+        navigate({ to, replace: true });
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, isAuthenticated]);
 
   useEffect(() => {
     if (resendIn <= 0) return;
