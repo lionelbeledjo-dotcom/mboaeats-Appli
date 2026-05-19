@@ -18,9 +18,12 @@ import {
   deleteCategory,
   upsertDish,
   deleteDish,
+  toggleDishAvailability,
+  ensureStandardCategories,
   getRestaurantStats,
   createMyRestaurant,
 } from "@/server/restaurant.functions";
+
 
 export const Route = createFileRoute("/restaurant")({
   component: RestaurantSpaceGuarded,
