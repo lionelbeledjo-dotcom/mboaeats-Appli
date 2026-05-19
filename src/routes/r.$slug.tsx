@@ -5,9 +5,19 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { getRestaurantPageData as getRestaurantBySlug } from "@/server/catalog.fast.functions";
-import { addToCart, useCart } from "@/hooks/use-cart";
+import { addToCart, useCart, clearCart } from "@/hooks/use-cart";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { AddToCartFab } from "@/components/AddToCartFab";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/r/$slug")({
   component: RestoLivePage,
@@ -84,6 +94,35 @@ function RestoLivePage() {
   const restoCartItems = items.filter((i) => i.restoId === resto?.id);
   const restoSubtotal = restoCartItems.reduce((s, i) => s + i.qty * i.price, 0);
   const restoCount = restoCartItems.reduce((s, i) => s + i.qty, 0);
+
+  // Mono-resto guard
+  const otherRestoItem = items.find((i) => resto?.id && i.restoId && i.restoId !== resto.id);
+  const [pendingDish, setPendingDish] = useState<Dish | null>(null);
+
+  const doAdd = (dish: Dish) => {
+    if (!resto) return;
+    addToCart({
+      id: `db__${dish.id}`,
+      dishId: dish.id,
+      restoId: resto.id,
+      name: dish.name,
+      price: dish.price,
+      qty: 1,
+      image: dish.image_url ?? undefined,
+    });
+    toast.success("Ajouté au panier", {
+      description: `1 × ${dish.name}`,
+      action: { label: "Voir le panier", onClick: () => navigate({ to: "/panier" }) },
+    });
+  };
+
+  const handleAdd = (dish: Dish) => {
+    if (otherRestoItem) {
+      setPendingDish(dish);
+      return;
+    }
+    doAdd(dish);
+  };
 
   if (loading) {
     return (
@@ -225,24 +264,7 @@ function RestoLivePage() {
                       slug={slug}
                       dish={dish}
                       restoOpen={!!resto.is_open}
-                      onAdd={() => {
-                        addToCart({
-                          id: `db__${dish.id}`,
-                          dishId: dish.id,
-                          restoId: resto.id,
-                          name: dish.name,
-                          price: dish.price,
-                          qty: 1,
-                          image: dish.image_url ?? undefined,
-                        });
-                        toast.success("Ajouté au panier", {
-                          description: `1 × ${dish.name}`,
-                          action: {
-                            label: "Voir le panier",
-                            onClick: () => navigate({ to: "/checkout" }),
-                          },
-                        });
-                      }}
+                      onAdd={() => handleAdd(dish)}
                     />
                   ))}
                 </ul>
@@ -254,6 +276,30 @@ function RestoLivePage() {
 
       {/* Floating Add-to-cart FAB (uses items for THIS restaurant) */}
       <AddToCartFab count={restoCount || count} total={restoSubtotal || subtotal} restoId={resto.id} />
+
+      <AlertDialog open={!!pendingDish} onOpenChange={(o) => { if (!o) setPendingDish(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Vider le panier ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Votre panier contient déjà des plats d'un autre restaurant. Vous ne pouvez commander que dans un seul restaurant à la fois. Vider le panier et ajouter « {pendingDish?.name} » de {resto.name} ?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingDish(null)}>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                const d = pendingDish;
+                clearCart();
+                setPendingDish(null);
+                if (d) doAdd(d);
+              }}
+            >
+              Vider et ajouter
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
