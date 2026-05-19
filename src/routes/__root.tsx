@@ -34,9 +34,18 @@ const PUBLIC_PREFIXES = ["/admin", "/r/", "/restaurants/", "/categorie/", "/aide
 function OnboardingGate() {
   const { seen, hydrated, markSeen } = useOnboarding();
   const location = useLocation();
-  // Ne pas afficher l'onboarding sur les pages auth/admin
-  const blocked = location.pathname.startsWith("/admin") ||
-    ["/connexion", "/inscription", "/reset-password"].includes(location.pathname);
+  // Ne pas afficher l'onboarding sur les pages auth/admin/partenaire.
+  // L'espace /restaurant gère son propre flux (pending/rejected/dashboard)
+  // et /devenir-resto est l'inscription partenaire — pas d'onboarding client.
+  const p = location.pathname;
+  const blocked =
+    p.startsWith("/admin") ||
+    p.startsWith("/superadmin") ||
+    p === "/restaurant" ||
+    p.startsWith("/restaurant/") ||
+    p.startsWith("/restaurant_/") ||
+    p === "/devenir-resto" ||
+    ["/connexion", "/inscription", "/reset-password"].includes(p);
   if (!hydrated || seen || blocked) return null;
   return <OnboardingCarousel onDone={markSeen} />;
 }
