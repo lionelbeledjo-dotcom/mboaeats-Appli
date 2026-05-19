@@ -247,10 +247,8 @@ function DevenirResto() {
           {phase === "resto" && (
             <RestoStep
               userEmail={userEmail}
-              onCreated={async (data) => {
-                await createResto({ data });
-                setPhase("done");
-              }}
+              createResto={createResto}
+              onDone={() => navigate({ to: "/restaurant", replace: true })}
             />
           )}
         </div>
