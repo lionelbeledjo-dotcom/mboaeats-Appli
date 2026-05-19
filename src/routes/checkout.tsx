@@ -395,7 +395,7 @@ function Checkout() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground" style={{ overflow: "visible" }}>
       <header
         className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur-md"
         style={{ paddingTop: "env(safe-area-inset-top)" }}
@@ -411,7 +411,7 @@ function Checkout() {
 
       <main
         className="relative z-10 mx-auto grid max-w-5xl gap-5 px-4 py-5 md:grid-cols-[1.4fr_1fr] md:gap-6 md:px-8 md:py-6"
-        style={{ paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(120px + env(safe-area-inset-bottom))", overflow: "visible" }}
       >
         <section className="space-y-5">
           {topError && (

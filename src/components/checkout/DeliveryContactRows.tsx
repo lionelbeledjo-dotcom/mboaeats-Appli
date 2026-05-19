@@ -168,11 +168,11 @@ function EditSheet({
 }) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40"
+      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/40"
       onClick={onCancel}
     >
       <div
-        className="w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl p-5 pb-[calc(20px+env(safe-area-inset-bottom))]"
+        className="w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl p-5 pb-[calc(20px+env(safe-area-inset-bottom)+80px)] sm:pb-[calc(20px+env(safe-area-inset-bottom))] max-h-[calc(100dvh-40px)] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
