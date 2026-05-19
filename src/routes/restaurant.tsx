@@ -63,13 +63,24 @@ function RestaurantSpace() {
 
   const [authReady, setAuthReady] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
+  const [userInfo, setUserInfo] = useState<{ id: string; email: string | null } | null>(null);
+  const [roles, setRoles] = useState<string[]>([]);
   const [resto, setResto] = useState<Resto | null>(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>("commandes");
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setSignedIn(!!data.user);
+    supabase.auth.getUser().then(async ({ data }) => {
+      const u = data.user;
+      setSignedIn(!!u);
+      setUserInfo(u ? { id: u.id, email: u.email ?? null } : null);
+      if (u) {
+        const { data: rr } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", u.id);
+        setRoles((rr ?? []).map((x: any) => x.role));
+      }
       setAuthReady(true);
     });
   }, []);
@@ -78,7 +89,13 @@ function RestaurantSpace() {
     setLoading(true);
     try {
       const r = await fetchResto();
+      // eslint-disable-next-line no-console
+      console.log("[restaurant.tsx] getMyRestaurant →", r);
       setResto(r.restaurant as Resto | null);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error("[restaurant.tsx] getMyRestaurant error", e);
+      setResto(null);
     } finally {
       setLoading(false);
     }
@@ -87,6 +104,11 @@ function RestaurantSpace() {
   useEffect(() => {
     if (signedIn) reload();
   }, [signedIn, reload]);
+
+  // eslint-disable-next-line no-console
+  console.log("[restaurant.tsx] state", { user: userInfo, roles, resto });
+
+
 
   const toggleOpen = async () => {
     if (!resto) return;
