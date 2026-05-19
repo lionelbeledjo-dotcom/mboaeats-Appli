@@ -114,7 +114,7 @@ export const listRestaurantOrders = createServerFn({ method: "GET" })
       .select(
         "id, reference, status, total, subtotal, delivery_fee, eta_minutes, " +
           "created_at, paid_at, accepted_at, ready_at, picked_up_at, " +
-          "delivered_at, delivery_address, notes, " +
+          "delivered_at, delivery_address, notes, user_id, " +
           "items:order_items(id, name, qty, unit_price, line_total)",
       )
       .eq("restaurant_id", data.restaurant_id)
@@ -122,15 +122,49 @@ export const listRestaurantOrders = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false })
       .limit(100);
     if (data.status) q = q.eq("status", data.status as never);
-    const { data: rows, error } = await q;
+    const { data: rawRows, error } = await q;
     if (error) throw new Error(error.message);
-    return { orders: rows ?? [] };
+    const rows = (rawRows ?? []) as unknown as Array<
+      Record<string, unknown> & { user_id: string | null }
+    >;
+
+    // Hydrater nom + téléphone client depuis profiles
+    const userIds = Array.from(
+      new Set(rows.map((r) => r.user_id).filter(Boolean)),
+    ) as string[];
+    let profiles: Record<string, { full_name: string | null; phone: string | null }> = {};
+    if (userIds.length > 0) {
+      const { data: profs } = await supabaseAdmin
+        .from("profiles")
+        .select("user_id, full_name, phone")
+        .in("user_id", userIds);
+      profiles = Object.fromEntries(
+        (profs ?? []).map((p) => [
+          p.user_id,
+          { full_name: p.full_name, phone: p.phone },
+        ]),
+      );
+    }
+    const enriched = rows.map((r) => ({
+      ...r,
+      client_name: r.user_id ? profiles[r.user_id]?.full_name ?? null : null,
+      client_phone: r.user_id ? profiles[r.user_id]?.phone ?? null : null,
+    }));
+    const newCount = enriched.filter((o) => (o as { status?: string }).status === "paid").length;
+    return { orders: enriched, newCount };
   });
 
 // -----------------------------------------------------------------------------
 // updateOrderStatus — staff+ (commande doit appartenir à ce resto)
 // -----------------------------------------------------------------------------
 const ALLOWED_STATUS = ["accepted", "preparing", "ready", "cancelled"] as const;
+
+// Transitions autorisées côté restaurateur
+const ALLOWED_TRANSITIONS: Record<string, readonly string[]> = {
+  paid: ["accepted", "cancelled"],
+  accepted: ["preparing", "cancelled"],
+  preparing: ["ready"],
+};
 
 export const updateOrderStatus = createServerFn({ method: "POST" })
   .middleware([requireAuth])
@@ -139,6 +173,7 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
       .object({
         order_id: z.string().uuid(),
         status: z.enum(ALLOWED_STATUS),
+        note: z.string().max(500).optional(),
       })
       .parse(d),
   )
@@ -156,7 +191,18 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
     // 2) Vérifier la membership sur CE resto
     await assertMembership(context, order.restaurant_id, "staff");
 
-    // 3) Update + event
+    // 3) Vérifier la transition
+    const allowed = ALLOWED_TRANSITIONS[order.status as string] ?? [];
+    if (!allowed.includes(data.status)) {
+      throw new Error(
+        `Transition interdite : ${order.status} → ${data.status}`,
+      );
+    }
+    if (data.status === "cancelled" && !data.note?.trim()) {
+      throw new Error("Une raison est obligatoire pour refuser une commande.");
+    }
+
+    // 4) Update + event
     const stamp: Record<string, string> = {};
     const now = new Date().toISOString();
     if (data.status === "accepted") stamp.accepted_at = now;
@@ -172,6 +218,7 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
     await supabaseAdmin.from("order_events").insert({
       order_id: data.order_id,
       event_type: data.status,
+      payload: data.note ? { note: data.note } : {},
       created_by: context.userId,
     });
     return { ok: true as const };

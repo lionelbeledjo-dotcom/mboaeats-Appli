@@ -380,18 +380,59 @@ type Order = {
   delivered_at: string | null;
   delivery_address: { line?: string; city?: string } | null;
   notes: string | null;
+  client_name: string | null;
+  client_phone: string | null;
   items: { id: string; name: string; qty: number; unit_price: number; line_total: number }[];
 };
+
+type OrderTab = "new" | "ongoing" | "done" | "all";
+
+const TAB_STATUSES: Record<OrderTab, string[] | null> = {
+  new: ["paid"],
+  ongoing: ["accepted", "preparing", "ready", "picked_up", "delivering"],
+  done: ["delivered", "cancelled", "refunded"],
+  all: null,
+};
+
+type PendingAction =
+  | { kind: "accept"; order: Order }
+  | { kind: "reject"; order: Order }
+  | { kind: "preparing"; order: Order }
+  | { kind: "ready"; order: Order };
+
+const REJECT_REASONS = [
+  "Restaurant fermé temporairement",
+  "Plat indisponible",
+  "Capacité maximale atteinte",
+];
+
+function shortRef(id: string): string {
+  const clean = id.replace(/-/g, "").toUpperCase();
+  const tail = clean.slice(-8);
+  return `#${tail.slice(0, 4)}-${tail.slice(4)}`;
+}
+
+function relativeTime(iso: string): string {
+  const diff = Math.max(0, Date.now() - new Date(iso).getTime());
+  const m = Math.floor(diff / 60_000);
+  if (m < 1) return "à l'instant";
+  if (m < 60) return `il y a ${m} min`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `il y a ${h} h`;
+  const d = Math.floor(h / 24);
+  return `il y a ${d} j`;
+}
 
 function OrdersPanel({ restoId }: { restoId: string }) {
   const list = useServerFn(listRestaurantOrders);
   const update = useServerFn(updateOrderStatus);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"active" | "all">("active");
+  const [tab, setTab] = useState<OrderTab>("new");
+  const [pending, setPending] = useState<PendingAction | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
-    setLoading(true);
     try {
       const r = await list({ data: { restaurant_id: restoId } });
       setOrders((r.orders as unknown as Order[]) ?? []);
@@ -401,6 +442,7 @@ function OrdersPanel({ restoId }: { restoId: string }) {
   }, [list, restoId]);
 
   useEffect(() => {
+    setLoading(true);
     reload();
     const ch = supabase
       .channel(`resto-${restoId}`)
@@ -423,35 +465,66 @@ function OrdersPanel({ restoId }: { restoId: string }) {
     };
   }, [restoId, reload]);
 
-  const visible = filter === "active"
-    ? orders.filter((o) => !["delivered", "cancelled"].includes(o.status))
-    : orders;
+  const counts = useMemo(() => ({
+    new: orders.filter((o) => TAB_STATUSES.new!.includes(o.status)).length,
+    ongoing: orders.filter((o) => TAB_STATUSES.ongoing!.includes(o.status)).length,
+    done: orders.filter((o) => TAB_STATUSES.done!.includes(o.status)).length,
+    all: orders.length,
+  }), [orders]);
 
-  const setStatus = async (id: string, status: "accepted" | "preparing" | "ready" | "cancelled") => {
-    setOrders((cur) => cur.map((o) => (o.id === id ? { ...o, status } : o)));
+  const visible = useMemo(() => {
+    const s = TAB_STATUSES[tab];
+    return s ? orders.filter((o) => s.includes(o.status)) : orders;
+  }, [orders, tab]);
+
+  const runUpdate = async (
+    order: Order,
+    status: "accepted" | "preparing" | "ready" | "cancelled",
+    note?: string,
+    successMsg?: string,
+  ) => {
+    setBusyId(order.id);
+    setOrders((cur) => cur.map((o) => (o.id === order.id ? { ...o, status } : o)));
     try {
-      await update({ data: { order_id: id, status } });
-      toast.success(`Commande ${status}`);
+      await update({ data: { order_id: order.id, status, note } });
+      toast.success(successMsg ?? "Commande mise à jour");
+      setPending(null);
     } catch (e) {
-      toast.error("Mise à jour impossible");
+      toast.error(e instanceof Error ? e.message : "Mise à jour impossible");
       reload();
+    } finally {
+      setBusyId(null);
     }
   };
 
+  const TABS: { key: OrderTab; label: string; badge?: number }[] = [
+    { key: "new", label: "Nouvelles", badge: counts.new },
+    { key: "ongoing", label: "En cours", badge: counts.ongoing },
+    { key: "done", label: "Terminées" },
+    { key: "all", label: "Toutes" },
+  ];
+
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-display text-xl font-bold">Commandes</h2>
-        <div className="flex gap-1 rounded-xl border border-border bg-surface/60 p-1">
-          {(["active", "all"] as const).map((f) => (
+        <div className="flex flex-wrap gap-1 rounded-xl border border-border bg-surface/60 p-1">
+          {TABS.map((t) => (
             <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`rounded-lg px-3 py-1 text-xs font-semibold ${
-                filter === f ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1 text-xs font-semibold transition ${
+                tab === t.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {f === "active" ? "Actives" : "Toutes"}
+              {t.label}
+              {t.badge !== undefined && t.badge > 0 && (
+                <span className={`rounded-full px-1.5 text-[10px] font-bold ${
+                  tab === t.key ? "bg-primary-foreground/20" : "bg-primary/15 text-primary"
+                }`}>
+                  {t.badge}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -461,25 +534,23 @@ function OrdersPanel({ restoId }: { restoId: string }) {
         <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
       ) : visible.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-          Aucune commande pour le moment.
+          Aucune commande dans cet onglet.
         </p>
       ) : (
         <ul className="grid gap-3 md:grid-cols-2">
           {visible.map((o) => (
             <li key={o.id} className="rounded-2xl border border-border bg-card p-4">
               <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className="font-display text-sm font-bold">{o.reference}</p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {new Date(o.created_at).toLocaleTimeString("fr-FR", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                    {" · "}
-                    {o.delivery_address?.line ?? "Adresse non renseignée"}
-                  </p>
+                <div className="min-w-0">
+                  <p className="font-display text-sm font-bold">{shortRef(o.id)}</p>
+                  <p className="text-[11px] text-muted-foreground">{relativeTime(o.created_at)}</p>
                 </div>
-                <StatusBadge status={o.status} />
+                <div className="flex flex-col items-end gap-1">
+                  <span className="font-display text-base font-bold text-emerald-500">
+                    {o.total.toLocaleString("fr-FR")} F
+                  </span>
+                  <StatusBadge status={o.status} />
+                </div>
               </div>
 
               <ul className="mt-3 space-y-1 text-xs">
@@ -492,38 +563,64 @@ function OrdersPanel({ restoId }: { restoId: string }) {
                   </li>
                 ))}
               </ul>
-              {o.notes && (
-                <p className="mt-2 rounded-lg border border-border bg-background/50 p-2 text-[11px] text-muted-foreground">
-                  📝 {o.notes}
-                </p>
-              )}
 
-              <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
-                <span className="text-xs text-muted-foreground">Total</span>
-                <span className="font-display text-base font-bold text-primary">
-                  {o.total.toLocaleString("fr-FR")} F
-                </span>
+              <div className="mt-3 space-y-1 rounded-lg border border-border bg-background/40 p-2 text-[11px]">
+                <p className="font-semibold">{o.client_name ?? "Client"}</p>
+                {o.client_phone && (
+                  <a href={`tel:${o.client_phone}`} className="text-primary underline">
+                    {o.client_phone}
+                  </a>
+                )}
+                <p className="text-muted-foreground">
+                  📍 {o.delivery_address?.line ?? "Adresse non renseignée"}
+                  {o.delivery_address?.city ? `, ${o.delivery_address.city}` : ""}
+                </p>
+                {o.notes && (
+                  <p className="rounded-md border border-border bg-background/50 p-1.5 text-muted-foreground">
+                    📝 {o.notes}
+                  </p>
+                )}
               </div>
 
               <div className="mt-3 flex flex-wrap gap-2">
                 {o.status === "paid" && (
                   <>
-                    <ActionBtn onClick={() => setStatus(o.id, "accepted")} icon={Check} variant="primary">
+                    <ActionBtn
+                      onClick={() => setPending({ kind: "accept", order: o })}
+                      icon={Check}
+                      variant="primary"
+                      disabled={busyId === o.id}
+                    >
                       Accepter
                     </ActionBtn>
-                    <ActionBtn onClick={() => setStatus(o.id, "cancelled")} icon={X} variant="danger">
+                    <ActionBtn
+                      onClick={() => setPending({ kind: "reject", order: o })}
+                      icon={X}
+                      variant="danger"
+                      disabled={busyId === o.id}
+                    >
                       Refuser
                     </ActionBtn>
                   </>
                 )}
                 {o.status === "accepted" && (
-                  <ActionBtn onClick={() => setStatus(o.id, "preparing")} icon={ChefHat} variant="primary">
-                    En préparation
+                  <ActionBtn
+                    onClick={() => setPending({ kind: "preparing", order: o })}
+                    icon={ChefHat}
+                    variant="primary"
+                    disabled={busyId === o.id}
+                  >
+                    Démarrer préparation
                   </ActionBtn>
                 )}
                 {o.status === "preparing" && (
-                  <ActionBtn onClick={() => setStatus(o.id, "ready")} icon={ShoppingBag} variant="primary">
-                    Prêt à enlever
+                  <ActionBtn
+                    onClick={() => setPending({ kind: "ready", order: o })}
+                    icon={ShoppingBag}
+                    variant="primary"
+                    disabled={busyId === o.id}
+                  >
+                    Marquer prête
                   </ActionBtn>
                 )}
               </div>
@@ -531,6 +628,115 @@ function OrdersPanel({ restoId }: { restoId: string }) {
           ))}
         </ul>
       )}
+
+      {pending && (
+        <ConfirmModal
+          action={pending}
+          busy={busyId === pending.order.id}
+          onClose={() => setPending(null)}
+          onConfirm={(note) => {
+            const o = pending.order;
+            if (pending.kind === "accept") runUpdate(o, "accepted", undefined, "Commande acceptée");
+            if (pending.kind === "reject") runUpdate(o, "cancelled", note, "Commande refusée");
+            if (pending.kind === "preparing") runUpdate(o, "preparing", undefined, "Préparation démarrée");
+            if (pending.kind === "ready") runUpdate(o, "ready", undefined, "Commande prête — le livreur va arriver");
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function ConfirmModal({
+  action,
+  busy,
+  onClose,
+  onConfirm,
+}: {
+  action: PendingAction;
+  busy: boolean;
+  onClose: () => void;
+  onConfirm: (note?: string) => void;
+}) {
+  const [reason, setReason] = useState("");
+  const ref = shortRef(action.order.id);
+
+  const titleMap: Record<PendingAction["kind"], string> = {
+    accept: `Accepter ${ref} ?`,
+    reject: `Refuser ${ref}`,
+    preparing: `Démarrer la préparation ?`,
+    ready: `Commande prête ?`,
+  };
+  const descMap: Record<PendingAction["kind"], string> = {
+    accept: "Le client sera prévenu que sa commande est confirmée.",
+    reject: "Indique une raison — elle sera visible par le client.",
+    preparing: "Le client verra que sa commande est en cours de préparation.",
+    ready: "Le client sera prévenu qu'un livreur va bientôt arriver.",
+  };
+
+  const canConfirm = action.kind !== "reject" || reason.trim().length > 0;
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 p-4 sm:items-center"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-2xl border border-border bg-card p-5 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 className="font-display text-lg font-bold">{titleMap[action.kind]}</h3>
+        <p className="mt-1 text-sm text-muted-foreground">{descMap[action.kind]}</p>
+
+        {action.kind === "reject" && (
+          <div className="mt-4 space-y-2">
+            <div className="flex flex-wrap gap-1.5">
+              {REJECT_REASONS.map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setReason(r)}
+                  className={`rounded-full border px-2.5 py-1 text-xs transition ${
+                    reason === r
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Raison (obligatoire)"
+              rows={3}
+              className="w-full rounded-lg border border-border bg-background p-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+        )}
+
+        <div className="mt-5 flex justify-end gap-2">
+          <button
+            onClick={onClose}
+            disabled={busy}
+            className="rounded-xl border border-border px-4 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground disabled:opacity-50"
+          >
+            Annuler
+          </button>
+          <button
+            onClick={() => onConfirm(action.kind === "reject" ? reason.trim() : undefined)}
+            disabled={!canConfirm || busy}
+            className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition disabled:opacity-50 ${
+              action.kind === "reject"
+                ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                : "bg-gradient-primary text-primary-foreground shadow-glow hover:scale-[1.02]"
+            }`}
+          >
+            {busy && <Loader2 className="h-4 w-4 animate-spin" />}
+            {action.kind === "reject" ? "Refuser" : "Confirmer"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -545,7 +751,8 @@ function StatusBadge({ status }: { status: string }) {
     picked_up: { label: "Enlevée", cls: "bg-emerald-500/15 text-emerald-400" },
     delivering: { label: "En route", cls: "bg-emerald-500/15 text-emerald-400" },
     delivered: { label: "Livrée", cls: "bg-muted text-muted-foreground" },
-    cancelled: { label: "Annulée", cls: "bg-destructive/15 text-destructive" },
+    cancelled: { label: "Refusée", cls: "bg-destructive/15 text-destructive" },
+    refunded: { label: "Remboursée", cls: "bg-muted text-muted-foreground" },
   };
   const m = map[status] ?? { label: status, cls: "bg-muted text-muted-foreground" };
   return (
@@ -560,16 +767,19 @@ function ActionBtn({
   onClick,
   icon: Icon,
   variant,
+  disabled,
 }: {
   children: React.ReactNode;
   onClick: () => void;
   icon: React.ComponentType<{ className?: string }>;
   variant: "primary" | "danger";
+  disabled?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
-      className={`inline-flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-bold transition ${
+      disabled={disabled}
+      className={`inline-flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-bold transition disabled:opacity-50 ${
         variant === "primary"
           ? "bg-gradient-primary text-primary-foreground shadow-glow hover:scale-[1.02]"
           : "border border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20"
