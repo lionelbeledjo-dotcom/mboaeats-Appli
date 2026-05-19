@@ -15,6 +15,12 @@ import { MboaEatsLogo } from "@/components/brand/MboaEatsLogo";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 
 export const Route = createFileRoute("/connexion")({
+  validateSearch: (search: Record<string, unknown>): { redirect?: string; next?: string } => {
+    const out: { redirect?: string; next?: string } = {};
+    if (typeof search.redirect === "string") out.redirect = search.redirect;
+    if (typeof search.next === "string") out.next = search.next;
+    return out;
+  },
   component: Connexion,
   head: () => ({
     meta: [
@@ -24,6 +30,30 @@ export const Route = createFileRoute("/connexion")({
     ],
   }),
 });
+
+/**
+ * Calcule la destination post-login : ?redirect=… prioritaire,
+ * sinon /superadmin si l'utilisateur a le rôle superadmin, sinon "/".
+ */
+async function resolvePostLoginRedirect(explicitRedirect?: string): Promise<string> {
+  if (explicitRedirect && explicitRedirect.startsWith("/") && explicitRedirect !== "/") {
+    return explicitRedirect;
+  }
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return explicitRedirect || "/";
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id);
+    const list = (roles ?? []).map((r: any) => r.role);
+    console.log("[connexion] post-login roles:", list);
+    if (list.includes("superadmin")) return "/superadmin";
+  } catch (e) {
+    console.error("[connexion] resolvePostLoginRedirect error:", e);
+  }
+  return explicitRedirect || "/";
+}
 
 const COUNTRIES = [
   { code: "FR", iso: "fr", dial: "+33", flag: "🇫🇷", name: "France" },
@@ -158,6 +188,8 @@ function OtpInput({
 
 function Connexion() {
   const navigate = useNavigate();
+  const search = Route.useSearch();
+  const explicitRedirect = search.redirect || search.next;
   const { isAuthenticated, loading: authLoading } = useAuth();
 
   const loginFn = useServerFn(loginWithPassword);
@@ -197,8 +229,13 @@ function Connexion() {
   const fullPhone = `${country.dial}${phone.replace(/\D/g, "")}`;
 
   useEffect(() => {
-    if (!authLoading && isAuthenticated) navigate({ to: "/", replace: true });
-  }, [authLoading, isAuthenticated, navigate]);
+    if (!authLoading && isAuthenticated) {
+      resolvePostLoginRedirect(explicitRedirect).then((to) => {
+        navigate({ to, replace: true });
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, isAuthenticated]);
 
   useEffect(() => {
     if (resendIn <= 0) return;
@@ -238,7 +275,8 @@ function Connexion() {
       await supabase.auth.signInWithPassword({ email: trimmed, password });
       invalidateSessionCache();
       toast.success("Connexion réussie 🎉");
-      navigate({ to: "/", replace: true });
+      const to = await resolvePostLoginRedirect(explicitRedirect);
+      navigate({ to, replace: true });
     } catch (err: any) {
       setError(err?.message ?? "Erreur de connexion");
     } finally {
@@ -341,7 +379,8 @@ function Connexion() {
       }
       invalidateSessionCache();
       toast.success("Connexion réussie 🎉");
-      navigate({ to: "/", replace: true });
+      const to = await resolvePostLoginRedirect(explicitRedirect);
+      navigate({ to, replace: true });
     } catch (err: any) {
       setError(err?.message ?? "Code invalide");
       setOtpCode("");

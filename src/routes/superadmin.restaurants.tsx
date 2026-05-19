@@ -120,17 +120,28 @@ function SuperAdminRestaurants() {
   };
 
   const submitApprove = async () => {
-    if (!approveOpen) return;
+    console.log("[superadmin.restaurants] submitApprove click", {
+      id: approveOpen?.id,
+      note,
+    });
+    if (!approveOpen) {
+      console.warn("[superadmin.restaurants] submitApprove: no approveOpen");
+      return;
+    }
+    const restaurantId = approveOpen.id;
     setSubmitting(true);
     try {
-      await moderate({
-        data: { restaurantId: approveOpen.id, action: "approve", note },
+      const res = await moderate({
+        data: { restaurantId, action: "approve", note: note ?? "" },
       });
+      console.log("[superadmin.restaurants] moderate approve →", res);
       toast.success("Restaurant validé");
       setApproveOpen(null);
+      setNote("");
       await reload();
       router.invalidate();
     } catch (e: any) {
+      console.error("[superadmin.restaurants] approve error:", e);
       toast.error(e?.message || "Échec de la validation");
     } finally {
       setSubmitting(false);
@@ -138,17 +149,29 @@ function SuperAdminRestaurants() {
   };
 
   const submitReject = async () => {
-    if (!rejectOpen || !note.trim()) return;
+    console.log("[superadmin.restaurants] submitReject click", {
+      id: rejectOpen?.id,
+      note,
+    });
+    if (!rejectOpen) return;
+    if (!note.trim()) {
+      toast.error("Veuillez indiquer une raison pour refuser ce restaurant.");
+      return;
+    }
+    const restaurantId = rejectOpen.id;
     setSubmitting(true);
     try {
-      await moderate({
-        data: { restaurantId: rejectOpen.id, action: "reject", note },
+      const res = await moderate({
+        data: { restaurantId, action: "reject", note },
       });
+      console.log("[superadmin.restaurants] moderate reject →", res);
       toast.success("Restaurant refusé");
       setRejectOpen(null);
+      setNote("");
       await reload();
       router.invalidate();
     } catch (e: any) {
+      console.error("[superadmin.restaurants] reject error:", e);
       toast.error(e?.message || "Échec du refus");
     } finally {
       setSubmitting(false);
@@ -237,15 +260,22 @@ function SuperAdminRestaurants() {
             rows={3}
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setApproveOpen(null)} disabled={submitting}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setApproveOpen(null)}
+              disabled={submitting}
+            >
               Annuler
             </Button>
             <Button
+              type="button"
               onClick={submitApprove}
               disabled={submitting}
               className="bg-emerald-600 text-white hover:bg-emerald-700"
             >
-              <Check className="mr-1 h-4 w-4" /> Valider
+              <Check className="mr-1 h-4 w-4" />
+              {submitting ? "Validation…" : "Valider"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -279,15 +309,22 @@ function SuperAdminRestaurants() {
             rows={4}
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectOpen(null)} disabled={submitting}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setRejectOpen(null)}
+              disabled={submitting}
+            >
               Annuler
             </Button>
             <Button
+              type="button"
               variant="destructive"
               onClick={submitReject}
               disabled={submitting || !note.trim()}
             >
-              <Ban className="mr-1 h-4 w-4" /> Refuser
+              <Ban className="mr-1 h-4 w-4" />
+              {submitting ? "Refus…" : "Refuser"}
             </Button>
           </DialogFooter>
         </DialogContent>
