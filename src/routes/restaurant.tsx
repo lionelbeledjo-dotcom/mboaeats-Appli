@@ -201,8 +201,9 @@ function RestaurantSpace() {
           <Link
             to="/"
             className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+            title="Retour à la home publique MboaEats"
           >
-            <ArrowLeft className="h-3.5 w-3.5" /> Site
+            <ArrowLeft className="h-3.5 w-3.5" /> Accueil MboaEats
           </Link>
           <div className="flex min-w-0 items-center gap-2">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-primary shadow-glow">

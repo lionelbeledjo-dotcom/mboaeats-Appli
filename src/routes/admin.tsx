@@ -265,8 +265,9 @@ function AdminHeader({
   }, []);
 
   const handleBack = () => {
-    // Sortie de l'espace admin → toujours rediriger vers le Profil utilisateur
-    router.navigate({ to: "/profil" });
+    // /admin est une sous-console du hub /superadmin → la flèche retour
+    // ramène TOUJOURS au tableau de bord Super Admin, jamais à la home client.
+    router.navigate({ to: "/superadmin" });
   };
 
   return (
@@ -282,15 +283,16 @@ function AdminHeader({
           <Menu className="h-6 w-6" strokeWidth={2.4} />
         </button>
 
-        {/* Retour — toujours visible (sortie de l'espace admin sur la racine) */}
+        {/* Retour vers le hub Super Admin (parent hiérarchique de /admin). */}
         <button
           type="button"
           onClick={handleBack}
-          aria-label={isAdminHome ? "Quitter l'espace admin" : "Retour"}
-          title={isAdminHome ? "Quitter l'espace admin" : "Retour"}
-          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border bg-background text-foreground transition-colors duration-200 hover:bg-muted/50"
+          aria-label="Retour au tableau de bord Super Admin"
+          title="← Tableau de bord"
+          className="inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-2xl border border-border bg-background px-3 text-foreground transition-colors duration-200 hover:bg-muted/50"
         >
-          <ArrowLeft className="h-5 w-5" strokeWidth={2.4} />
+          <ArrowLeft className="h-4 w-4" strokeWidth={2.4} />
+          <span className="hidden text-xs font-semibold sm:inline">Tableau de bord</span>
         </button>
 
         {/* Titre */}
