@@ -15,9 +15,11 @@ import { MboaEatsLogo } from "@/components/brand/MboaEatsLogo";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 
 export const Route = createFileRoute("/connexion")({
-  validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
-    const r = typeof search.redirect === "string" ? search.redirect : undefined;
-    return r ? { redirect: r } : {};
+  validateSearch: (search: Record<string, unknown>): { redirect?: string; next?: string } => {
+    const out: { redirect?: string; next?: string } = {};
+    if (typeof search.redirect === "string") out.redirect = search.redirect;
+    if (typeof search.next === "string") out.next = search.next;
+    return out;
   },
   component: Connexion,
   head: () => ({
