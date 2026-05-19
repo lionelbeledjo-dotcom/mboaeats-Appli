@@ -276,6 +276,30 @@ function RestoLivePage() {
 
       {/* Floating Add-to-cart FAB (uses items for THIS restaurant) */}
       <AddToCartFab count={restoCount || count} total={restoSubtotal || subtotal} restoId={resto.id} />
+
+      <AlertDialog open={!!pendingDish} onOpenChange={(o) => { if (!o) setPendingDish(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Vider le panier ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Votre panier contient déjà des plats d'un autre restaurant. Vous ne pouvez commander que dans un seul restaurant à la fois. Vider le panier et ajouter « {pendingDish?.name} » de {resto.name} ?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingDish(null)}>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                const d = pendingDish;
+                clearCart();
+                setPendingDish(null);
+                if (d) doAdd(d);
+              }}
+            >
+              Vider et ajouter
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
