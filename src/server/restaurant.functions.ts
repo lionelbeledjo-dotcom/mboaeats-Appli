@@ -738,7 +738,7 @@ export const moderateRestaurant = createServerFn({ method: "POST" })
     const { error: rpcError } = await supabaseAdmin.rpc("moderate_restaurant", {
       p_restaurant_id: data.restaurantId,
       p_decision: data.action === "approve" ? "approved" : "rejected",
-      p_note: data.note?.trim() || null,
+      p_note: data.note?.trim() || undefined,
     });
     if (rpcError) throw new Error(rpcError.message);
 
