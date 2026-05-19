@@ -53,7 +53,7 @@ import { Route as SuperadminSetup2faRouteImport } from './routes/superadmin_.set
 import { Route as SuperadminLoginRouteImport } from './routes/superadmin_.login'
 import { Route as SuiviOrderIdRouteImport } from './routes/suivi.$orderId'
 import { Route as RestaurantsRestoIdRouteImport } from './routes/restaurants.$restoId'
-import { Route as RestaurantConnexionRouteImport } from './routes/restaurant.connexion'
+import { Route as RestaurantConnexionRouteImport } from './routes/restaurant_.connexion'
 import { Route as RSlugRouteImport } from './routes/r.$slug'
 import { Route as PartenaireRevenusRouteImport } from './routes/partenaire.revenus'
 import { Route as PartenaireParametresRouteImport } from './routes/partenaire.parametres'
@@ -306,9 +306,9 @@ const RestaurantsRestoIdRoute = RestaurantsRestoIdRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const RestaurantConnexionRoute = RestaurantConnexionRouteImport.update({
-  id: '/connexion',
-  path: '/connexion',
-  getParentRoute: () => RestaurantRoute,
+  id: '/restaurant_/connexion',
+  path: '/restaurant/connexion',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const RSlugRoute = RSlugRouteImport.update({
   id: '/r/$slug',
@@ -495,7 +495,7 @@ export interface FileRoutesByFullPath {
   '/proximite': typeof ProximiteRoute
   '/recherche': typeof RechercheRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/restaurant': typeof RestaurantRouteWithChildren
+  '/restaurant': typeof RestaurantRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suivi': typeof SuiviRouteWithChildren
   '/superadmin': typeof SuperadminRouteWithChildren
@@ -570,7 +570,7 @@ export interface FileRoutesByTo {
   '/proximite': typeof ProximiteRoute
   '/recherche': typeof RechercheRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/restaurant': typeof RestaurantRouteWithChildren
+  '/restaurant': typeof RestaurantRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suivi': typeof SuiviRouteWithChildren
   '/tablee': typeof TableeRouteWithChildren
@@ -647,7 +647,7 @@ export interface FileRoutesById {
   '/proximite': typeof ProximiteRoute
   '/recherche': typeof RechercheRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/restaurant': typeof RestaurantRouteWithChildren
+  '/restaurant': typeof RestaurantRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suivi': typeof SuiviRouteWithChildren
   '/superadmin': typeof SuperadminRouteWithChildren
@@ -675,7 +675,7 @@ export interface FileRoutesById {
   '/partenaire/parametres': typeof PartenaireParametresRoute
   '/partenaire/revenus': typeof PartenaireRevenusRoute
   '/r/$slug': typeof RSlugRoute
-  '/restaurant/connexion': typeof RestaurantConnexionRoute
+  '/restaurant_/connexion': typeof RestaurantConnexionRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
   '/superadmin_/login': typeof SuperadminLoginRoute
@@ -905,7 +905,7 @@ export interface FileRouteTypes {
     | '/partenaire/parametres'
     | '/partenaire/revenus'
     | '/r/$slug'
-    | '/restaurant/connexion'
+    | '/restaurant_/connexion'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
     | '/superadmin_/login'
@@ -955,7 +955,7 @@ export interface RootRouteChildren {
   ProximiteRoute: typeof ProximiteRoute
   RechercheRoute: typeof RechercheRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
-  RestaurantRoute: typeof RestaurantRouteWithChildren
+  RestaurantRoute: typeof RestaurantRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SuiviRoute: typeof SuiviRouteWithChildren
   SuperadminRoute: typeof SuperadminRouteWithChildren
@@ -968,6 +968,7 @@ export interface RootRouteChildren {
   ComptePaiementsRoute: typeof ComptePaiementsRoute
   CompteSecuriteRoute: typeof CompteSecuriteRoute
   RSlugRoute: typeof RSlugRoute
+  RestaurantConnexionRoute: typeof RestaurantConnexionRoute
   RestaurantsRestoIdRoute: typeof RestaurantsRestoIdRouteWithChildren
   SuperadminLoginRoute: typeof SuperadminLoginRoute
   SuperadminSetup2faRoute: typeof SuperadminSetup2faRoute
@@ -1289,12 +1290,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RestaurantsRestoIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/restaurant/connexion': {
-      id: '/restaurant/connexion'
-      path: '/connexion'
+    '/restaurant_/connexion': {
+      id: '/restaurant_/connexion'
+      path: '/restaurant/connexion'
       fullPath: '/restaurant/connexion'
       preLoaderRoute: typeof RestaurantConnexionRouteImport
-      parentRoute: typeof RestaurantRoute
+      parentRoute: typeof rootRouteImport
     }
     '/r/$slug': {
       id: '/r/$slug'
@@ -1569,18 +1570,6 @@ const PartenaireRouteWithChildren = PartenaireRoute._addFileChildren(
   PartenaireRouteChildren,
 )
 
-interface RestaurantRouteChildren {
-  RestaurantConnexionRoute: typeof RestaurantConnexionRoute
-}
-
-const RestaurantRouteChildren: RestaurantRouteChildren = {
-  RestaurantConnexionRoute: RestaurantConnexionRoute,
-}
-
-const RestaurantRouteWithChildren = RestaurantRoute._addFileChildren(
-  RestaurantRouteChildren,
-)
-
 interface SuiviRouteChildren {
   SuiviOrderIdRoute: typeof SuiviOrderIdRoute
 }
@@ -1657,7 +1646,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProximiteRoute: ProximiteRoute,
   RechercheRoute: RechercheRoute,
   ResetPasswordRoute: ResetPasswordRoute,
-  RestaurantRoute: RestaurantRouteWithChildren,
+  RestaurantRoute: RestaurantRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SuiviRoute: SuiviRouteWithChildren,
   SuperadminRoute: SuperadminRouteWithChildren,
@@ -1670,6 +1659,7 @@ const rootRouteChildren: RootRouteChildren = {
   ComptePaiementsRoute: ComptePaiementsRoute,
   CompteSecuriteRoute: CompteSecuriteRoute,
   RSlugRoute: RSlugRoute,
+  RestaurantConnexionRoute: RestaurantConnexionRoute,
   RestaurantsRestoIdRoute: RestaurantsRestoIdRouteWithChildren,
   SuperadminLoginRoute: SuperadminLoginRoute,
   SuperadminSetup2faRoute: SuperadminSetup2faRoute,
@@ -1683,3 +1673,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
