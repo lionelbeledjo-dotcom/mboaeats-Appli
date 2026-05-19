@@ -388,7 +388,7 @@ type Order = {
 type OrderTab = "new" | "ongoing" | "done" | "all";
 
 const TAB_STATUSES: Record<OrderTab, string[] | null> = {
-  new: ["paid"],
+  new: ["draft", "pending_payment", "paid"],
   ongoing: ["accepted", "preparing", "ready", "picked_up", "delivering"],
   done: ["delivered", "cancelled", "refunded"],
   all: null,
@@ -583,7 +583,7 @@ function OrdersPanel({ restoId }: { restoId: string }) {
               </div>
 
               <div className="mt-3 flex flex-wrap gap-2">
-                {o.status === "paid" && (
+                {(o.status === "paid" || o.status === "pending_payment" || o.status === "draft") && (
                   <>
                     <ActionBtn
                       onClick={() => setPending({ kind: "accept", order: o })}
