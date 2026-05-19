@@ -1147,32 +1147,6 @@ function DishModal({
 
 
 
-function CategoryModal({
-  initial, onClose, onSave,
-}: {
-  initial: Partial<Cat>;
-  onClose: () => void;
-  onSave: (c: Partial<Cat>) => Promise<void>;
-}) {
-  const [c, setC] = useState<Partial<Cat>>(initial);
-  const [saving, setSaving] = useState(false);
-  return (
-    <Modal onClose={onClose} title={initial.id ? "Modifier la catégorie" : "Nouvelle catégorie"}>
-      <Field label="Nom" value={c.name ?? ""} onChange={(v) => setC({ ...c, name: v })} placeholder="Entrées" />
-      <div className="mt-5 flex justify-end gap-2">
-        <button onClick={onClose} className="rounded-xl border border-border px-4 py-2 text-xs font-bold">Annuler</button>
-        <button
-          disabled={saving || !c.name?.trim()}
-          onClick={async () => { setSaving(true); try { await onSave(c); } finally { setSaving(false); } }}
-          className="inline-flex items-center gap-1 rounded-xl bg-gradient-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-glow disabled:opacity-50"
-        >
-          {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-          Enregistrer
-        </button>
-      </div>
-    </Modal>
-  );
-}
 
 function Modal({ children, onClose, title }: { children: React.ReactNode; onClose: () => void; title: string }) {
   return (
