@@ -596,3 +596,16 @@ export const updateMyRestaurant = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { restaurant: row };
   });
+
+// -----------------------------------------------------------------------------
+// RATTRAPAGE MANUEL pour comptes existants (à exécuter une fois dans l'éditeur
+// SQL) — restaure le rôle 'restaurateur' pour tout owner ayant déjà un resto
+// en base mais à qui le rôle n'a jamais été attribué (anciens comptes créés
+// avant le fix de createMyRestaurant).
+//
+// -- INSERT INTO user_roles (user_id, role)
+// -- SELECT DISTINCT owner_id, 'restaurateur'
+// -- FROM restaurants
+// -- WHERE owner_id IS NOT NULL
+// -- ON CONFLICT (user_id, role) DO NOTHING;
+
