@@ -260,8 +260,9 @@ function VirtualResults({
             }}
           >
             <Link
-              to="/restaurants/$restoId"
-              params={{ restoId: r.id }}
+              {...((r as any).dbSlug
+                ? ({ to: "/r/$slug", params: { slug: (r as any).dbSlug } } as const)
+                : ({ to: "/restaurants/$restoId", params: { restoId: r.id } } as const))}
               className="grid h-[104px] w-full max-w-full grid-cols-[5rem_minmax(0,1fr)] gap-3 overflow-hidden rounded-2xl bg-white p-3 transition active:bg-white/90"
               style={{ boxShadow: "0 2px 12px -8px rgba(0,0,0,0.08)" }}
             >
