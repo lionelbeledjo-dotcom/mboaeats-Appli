@@ -749,7 +749,7 @@ export const moderateRestaurant = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!prev) throw new Error("Restaurant introuvable");
 
-    const update: Record<string, any> = {
+    const update = {
       validation_status: newStatus,
       validation_note: note,
       validated_by: context.userId,
