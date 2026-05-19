@@ -35,7 +35,7 @@ import { GoogleSignInButton } from "@/components/GoogleSignInButton";
  * à l'espace restaurant se fait via le RoleGuard sur /restaurant, pas ici.
  * Cette page est juste une "porte d'entrée" UX différente.
  */
-export const Route = createFileRoute("/restaurant/connexion")({
+export const Route = createFileRoute("/restaurant_/connexion")({
   head: () => ({
     meta: [
       { title: "Connexion Partenaire — MboaEats" },
