@@ -94,7 +94,7 @@ function SuperAdminRestaurants() {
     try {
       const res = await fetchList({ data: { status: s } });
       console.log("[superadmin.restaurants] getRestaurantsForModeration →", res);
-      setRestaurants((res?.restaurants ?? []) as Resto[]);
+      setRestaurants((res?.restaurants ?? []) as unknown as Resto[]);
       setCounts(res?.counts ?? { pending: 0, approved: 0, rejected: 0, all: 0 });
     } catch (e: any) {
       console.error("[superadmin.restaurants] load error:", e);
