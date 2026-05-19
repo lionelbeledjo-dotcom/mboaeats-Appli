@@ -310,7 +310,7 @@ function RestoLivePage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Vider le panier ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Votre panier contient déjà des plats d'un autre restaurant. Vous ne pouvez commander que dans un seul restaurant à la fois. Vider le panier et ajouter « {pendingDish?.name} » de {resto.name} ?
+              Votre panier contient déjà des plats de <strong>{otherRestoName ?? "un autre restaurant"}</strong>. Vous ne pouvez commander que dans un seul restaurant à la fois. Vider le panier et ajouter « {pendingDish?.name} » de <strong>{resto.name}</strong> ?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
