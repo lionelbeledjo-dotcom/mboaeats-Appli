@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { getRestaurantPageData as getRestaurantBySlug } from "@/server/catalog.fast.functions";
+import { getRestaurant } from "@/data/restaurants";
+import { supabase } from "@/integrations/supabase/client";
 import { addToCart, useCart, clearCart } from "@/hooks/use-cart";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { AddToCartFab } from "@/components/AddToCartFab";
@@ -98,6 +100,32 @@ function RestoLivePage() {
   // Mono-resto guard
   const otherRestoItem = items.find((i) => resto?.id && i.restoId && i.restoId !== resto.id);
   const [pendingDish, setPendingDish] = useState<Dish | null>(null);
+  const [otherRestoName, setOtherRestoName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!otherRestoItem?.restoId) {
+      setOtherRestoName(null);
+      return;
+    }
+    const local = getRestaurant(otherRestoItem.restoId)?.name;
+    if (local) {
+      setOtherRestoName(local);
+      return;
+    }
+    let cancelled = false;
+    supabase
+      .from("restaurants")
+      .select("name")
+      .eq("id", otherRestoItem.restoId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled) setOtherRestoName(data?.name ?? null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [otherRestoItem?.restoId]);
+
 
   const doAdd = (dish: Dish) => {
     if (!resto) return;
@@ -282,7 +310,7 @@ function RestoLivePage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Vider le panier ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Votre panier contient déjà des plats d'un autre restaurant. Vous ne pouvez commander que dans un seul restaurant à la fois. Vider le panier et ajouter « {pendingDish?.name} » de {resto.name} ?
+              Votre panier contient déjà des plats de <strong>{otherRestoName ?? "un autre restaurant"}</strong>. Vous ne pouvez commander que dans un seul restaurant à la fois. Vider le panier et ajouter « {pendingDish?.name} » de <strong>{resto.name}</strong> ?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
