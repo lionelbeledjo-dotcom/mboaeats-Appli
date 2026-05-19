@@ -730,18 +730,53 @@ export const moderateRestaurant = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
+    console.log("[moderateRestaurant] userId=", context.userId, "input=", data);
     await assertSuperadmin(context.userId);
 
     if (data.action === "reject" && !data.note.trim()) {
       throw new Error("Une raison est obligatoire pour refuser un restaurant.");
     }
 
-    const { error: rpcError } = await supabaseAdmin.rpc("moderate_restaurant", {
-      p_restaurant_id: data.restaurantId,
-      p_decision: data.action === "approve" ? "approved" : "rejected",
-      p_note: data.note?.trim() || undefined,
+    const newStatus = data.action === "approve" ? "approved" : "rejected";
+    const note = data.note?.trim() || null;
+
+    // Lire l'ancien statut pour l'audit
+    const { data: prev } = await supabaseAdmin
+      .from("restaurants")
+      .select("validation_status")
+      .eq("id", data.restaurantId)
+      .is("deleted_at", null)
+      .maybeSingle();
+    if (!prev) throw new Error("Restaurant introuvable");
+
+    const update = {
+      validation_status: newStatus,
+      validation_note: note,
+      validated_by: context.userId,
+      validated_at: new Date().toISOString(),
+      is_active: newStatus === "approved",
+    };
+
+    const { error: updErr } = await supabaseAdmin
+      .from("restaurants")
+      .update(update)
+      .eq("id", data.restaurantId);
+    if (updErr) throw new Error(updErr.message);
+
+    // Audit log manuel
+    await supabaseAdmin.from("audit_logs").insert({
+      action: `restaurant.${newStatus}`,
+      target_table: "restaurants",
+      target_id: data.restaurantId,
+      restaurant_id: data.restaurantId,
+      actor_id: context.userId,
+      actor_role: "admin",
+      metadata: {
+        previous_status: (prev as any).validation_status,
+        new_status: newStatus,
+        note,
+      },
     });
-    if (rpcError) throw new Error(rpcError.message);
 
     const { data: row, error } = await supabaseAdmin
       .from("restaurants")
