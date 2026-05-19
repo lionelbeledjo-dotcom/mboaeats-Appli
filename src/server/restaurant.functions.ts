@@ -548,22 +548,21 @@ export const listRestaurantMembers = createServerFn({ method: "GET" })
 export const getMyRestaurant = createServerFn({ method: "GET" })
   .middleware([requireAuth])
   .handler(async ({ context }) => {
-    const { data: row } = await supabaseAdmin
+    // On lit via supabaseAdmin (service role) pour ne pas dépendre des
+    // policies RLS — notamment "Restaurants public read" qui ne laisse voir
+    // que les restos approved+active et bloquerait l'owner d'un resto en
+    // pending. On filtre strictement par owner_id = userId courant.
+    const { data: row, error } = await supabaseAdmin
       .from("restaurants")
-      .select(
-        "id, name, cuisine, city, neighborhood, is_open, is_active, " +
-          "delivery_fee, eta_min, eta_max, " +
-          // Champs de modération : permet au frontend d'afficher l'écran
-          // "En attente" ou "Refusé" selon le statut.
-          "validation_status, validation_note, validated_at, created_at, " +
-          "members:restaurant_members!inner(user_id, status, role)",
-      )
-      .eq("members.user_id", context.userId)
-      .eq("members.status", "active")
+      .select("*")
+      .eq("owner_id", context.userId)
       .is("deleted_at", null)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
+    if (error) {
+      console.error("[getMyRestaurant] query error:", error);
+    }
     return { restaurant: (row as unknown as Record<string, any>) ?? null };
   });
 
