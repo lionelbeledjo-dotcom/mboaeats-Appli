@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Component, useEffect, useState, type ReactNode } from "react";
 import { Minus, Plus, Trash2, X, UserPlus, Gift, ChevronRight, ShoppingCart, ShoppingBag } from "lucide-react";
-import { useCart } from "@/hooks/use-cart";
+import { useCart, clearCart } from "@/hooks/use-cart";
+import { toast } from "sonner";
 import { EmptyState } from "@/components/EmptyState";
 import { SmartImage } from "@/components/SmartImage";
 import { getRestaurant } from "@/data/restaurants";
@@ -238,6 +239,23 @@ function PanierPage() {
         <span className="text-[18px] font-bold text-black">
           {subtotal.toLocaleString("fr-FR")} FCFA
         </span>
+      </div>
+
+      {/* Vider le panier */}
+      <div className="px-4 pb-6 flex justify-center">
+        <button
+          type="button"
+          onClick={() => {
+            if (window.confirm("Vider entièrement le panier ? Vous pourrez ensuite commander dans un autre restaurant.")) {
+              clearCart();
+              toast.success("Panier vidé");
+            }
+          }}
+          className="inline-flex items-center gap-2 text-[13px] font-medium text-gray-500 underline-offset-4 hover:underline active:text-gray-700"
+        >
+          <Trash2 className="h-4 w-4" />
+          Vider le panier
+        </button>
       </div>
 
       {/* Footer sticky — collé juste au-dessus du BottomDock, peu importe la
