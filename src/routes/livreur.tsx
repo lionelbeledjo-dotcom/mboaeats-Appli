@@ -69,7 +69,7 @@ function Livreur() {
   const [authReady, setAuthReady] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const [online, setOnline] = useState(false);
-  const [tab, setTab] = useState<Tab>("courses");
+  const [tab, setTab] = useState<Tab>("available");
 
   const [available, setAvailable] = useState<MissionRow[]>([]);
   const [mine, setMine] = useState<MissionRow[]>([]);
