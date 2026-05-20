@@ -286,9 +286,11 @@ function RestaurantSpace() {
             <Power className="h-3.5 w-3.5" />
             {resto.manually_closed
               ? "Fermé (manuel)"
-              : autoOpen
-                ? "Ouvert"
-                : "Fermé (horaires)"}
+              : resto.manually_open && !scheduleOpen
+                ? "Ouvert (forcé)"
+                : autoOpen
+                  ? "Ouvert"
+                  : "Fermé (horaires)"}
           </button>
         </div>
 
