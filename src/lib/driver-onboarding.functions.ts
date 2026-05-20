@@ -124,12 +124,11 @@ export const rejectDriverApplication = createServerFn({ method: "POST" })
       .delete()
       .eq("user_id", data.user_id)
       .eq("role", "livreur" as never);
-    // Email
-    void (async () => {
-      try {
-        const { sendEmail, getUserEmail } = await import("@/server/email.functions");
-        const email = await getUserEmail(data.user_id);
-        if (!email) return;
+    // Email — awaited inline.
+    try {
+      const { sendEmail, getUserEmail } = await import("@/server/email.functions");
+      const email = await getUserEmail(data.user_id);
+      if (email) {
         const { data: prof } = await supabaseAdmin
           .from("driver_profiles").select("full_name").eq("user_id", data.user_id).maybeSingle();
         await sendEmail({
@@ -137,7 +136,7 @@ export const rejectDriverApplication = createServerFn({ method: "POST" })
           related_id: `${data.user_id}-rejected`, user_id: data.user_id,
           data: { full_name: (prof as any)?.full_name, reason: data.reason },
         });
-      } catch (e) { console.error("[rejectDriverApplication email] failed", e); }
-    })();
+      }
+    } catch (e) { console.error("[rejectDriverApplication email] failed", e); }
     return { ok: true };
   });
