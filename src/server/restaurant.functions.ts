@@ -793,6 +793,7 @@ export const updateMyRestaurantProfile = createServerFn({ method: "POST" })
         logo_url: z.string().url().nullable().optional(),
         opening_hours: OpeningHoursSchema.optional(),
         manually_closed: z.boolean().optional(),
+        manually_open: z.boolean().optional(),
       })
       .parse(d ?? {}),
   )
@@ -816,6 +817,8 @@ export const updateMyRestaurantProfile = createServerFn({ method: "POST" })
     if (data.logo_url !== undefined) patch.logo_url = data.logo_url;
     if (data.opening_hours !== undefined) patch.opening_hours = data.opening_hours;
     if (data.manually_closed !== undefined) patch.manually_closed = data.manually_closed;
+    if (data.manually_open !== undefined) patch.manually_open = data.manually_open;
+
 
     if (Object.keys(patch).length === 0) {
       return { restaurant: existing };

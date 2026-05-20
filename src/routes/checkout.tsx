@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Component, useEffect, useState, type ReactNode } from "react";
+import { Component, useEffect, useRef, useState, type ReactNode } from "react";
 import { SmartImage } from "@/components/SmartImage";
 import {
   ArrowLeft, Smartphone, CreditCard, Banknote, Check, Loader2, ShieldCheck,
@@ -166,6 +166,8 @@ function Checkout() {
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "pending" | "succeeded" | "failed">("idle");
   const [contactErrors, setContactErrors] = useState<DeliveryContactErrors>({});
   const [activeWallet, setActiveWallet] = useState<"apple" | "google" | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
 
   // Confirme automatiquement la commande quand le webhook signale un succès
   // pendant un paiement Apple Pay / Google Pay (sinon CardScreen s'en charge).
@@ -289,9 +291,17 @@ function Checkout() {
   };
 
   const start = async () => {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+    setSubmitting(true);
+    const release = () => {
+      submittingRef.current = false;
+      setSubmitting(false);
+    };
     setTopError(null);
     if (cartItems.length === 0) {
       setTopError("Votre panier est vide. Ajoutez un plat avant de passer au paiement.");
+      release();
       return;
     }
     const errs = validateDeliveryContact(contact);
@@ -299,6 +309,7 @@ function Checkout() {
     if (Object.keys(errs).length > 0) {
       setDeliveryErr(errs.address ?? "Vérifiez vos informations de livraison");
       setTopError("Complétez l'adresse, les instructions et le téléphone avant de payer.");
+      release();
       return;
     }
     setDeliveryErr(null);
@@ -308,10 +319,11 @@ function Checkout() {
       activeOrderId = (await ensureLiveOrder()) ?? liveOrderId;
     } catch (e) {
       setTopError(e instanceof Error ? e.message : "Impossible de créer la commande");
+      release();
       return;
     }
 
-    if (method === "cash") return setStep("success");
+    if (method === "cash") { setStep("success"); release(); return; }
     if (method === "card") {
       setPending(true);
       setPaymentStatus("pending");
@@ -335,6 +347,7 @@ function Checkout() {
         setPending(false);
         setPaymentStatus("failed");
         setTopError(e instanceof Error ? e.message : "Erreur paiement carte");
+        release();
       }
       return;
     }
@@ -360,6 +373,7 @@ function Checkout() {
       setPending(false);
       setPaymentStatus("failed");
       setTopError(e instanceof Error ? e.message : "Erreur paiement");
+      release();
     }
   };
 
@@ -488,9 +502,11 @@ function Checkout() {
               <ChooseMethod
                 method={method} setMethod={setMethod}
                 phone={phone} setPhone={setPhone}
-                disabled={payDisabled}
+                disabled={payDisabled || submitting}
+                submitting={submitting}
                 disabledReason={payDisabledReason}
                 onWalletPay={(w) => {
+                  if (submittingRef.current) return;
                   if (payDisabled) {
                     setTopError(payDisabledReason);
                     setContactErrors(liveContactErrors);
@@ -502,6 +518,7 @@ function Checkout() {
                   start();
                 }}
                 onPay={() => {
+                  if (submittingRef.current) return;
                   if (payDisabled) {
                     setTopError(payDisabledReason);
                     setContactErrors(liveContactErrors);
@@ -567,14 +584,14 @@ function Checkout() {
 }
 
 function ChooseMethod({
-  method, setMethod, phone, setPhone, onPay, onWalletPay, total, disabled = false, disabledReason = null,
+  method, setMethod, phone, setPhone, onPay, onWalletPay, total, disabled = false, disabledReason = null, submitting = false,
 }: {
   method: Method; setMethod: (m: Method) => void;
   phone: string; setPhone: (s: string) => void;
   onPay: () => void;
   onWalletPay?: (wallet: "apple" | "google") => void;
   total: number;
-  disabled?: boolean; disabledReason?: string | null;
+  disabled?: boolean; disabledReason?: string | null; submitting?: boolean;
 }) {
   return (
     <>
@@ -644,13 +661,14 @@ function ChooseMethod({
       )}
       <button
         onClick={onPay}
-        disabled={disabled}
-        aria-disabled={disabled}
+        disabled={disabled || submitting}
+        aria-disabled={disabled || submitting}
         title={disabled ? (disabledReason ?? "") : undefined}
         className="relative z-10 flex w-full items-center justify-center gap-3 rounded-2xl bg-black py-5 text-[16px] font-semibold text-white shadow-[0_10px_28px_-12px_rgba(0,0,0,0.55)] transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-neutral-400 disabled:shadow-none disabled:active:scale-100"
       >
-        Commander et payer
-        <span className="text-white/80 font-bold">· {total.toLocaleString("fr-FR")} FCFA</span>
+        {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+        {submitting ? "Création de la commande..." : "Commander et payer"}
+        {!submitting && <span className="text-white/80 font-bold">· {total.toLocaleString("fr-FR")} FCFA</span>}
       </button>
     </>
   );

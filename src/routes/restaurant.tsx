@@ -64,6 +64,7 @@ type Resto = {
   description: string | null;
   opening_hours: OpeningHours | null;
   manually_closed: boolean | null;
+  manually_open: boolean | null;
   // Modération : voir migration `resto_moderation`.
   validation_status: "pending" | "approved" | "rejected";
   validation_note: string | null;
@@ -128,20 +129,48 @@ function RestaurantSpace() {
 
 
   const updateProfile = useServerFn(updateMyRestaurantProfile);
-  const autoOpen = useMemo(
-    () => (resto ? isRestoOpenNow(resto.opening_hours, resto.manually_closed) : false),
+  const scheduleOpen = useMemo(
+    () => (resto ? isOpenBySchedule(resto.opening_hours) : false),
     [resto],
   );
+  const autoOpen = useMemo(
+    () =>
+      resto
+        ? resto.manually_closed
+          ? false
+          : resto.manually_open
+            ? true
+            : scheduleOpen
+        : false,
+    [resto, scheduleOpen],
+  );
 
+  // Toggle = bascule ouvert/fermé. Si horaires disent fermé et user clique
+  // "ouvrir" → manually_open=true (override). Si actuellement ouvert
+  // → manually_closed=true. Sinon → on lève manually_closed.
   const toggleManuallyClosed = async () => {
     if (!resto) return;
-    const next = !resto.manually_closed;
-    setResto({ ...resto, manually_closed: next });
+    let patch: { manually_closed?: boolean; manually_open?: boolean };
+    let next: Partial<Resto>;
+    if (autoOpen) {
+      patch = { manually_closed: true, manually_open: false };
+      next = { manually_closed: true, manually_open: false };
+    } else if (resto.manually_closed) {
+      // Fermé manuellement → on rouvre (override si horaires fermés)
+      patch = { manually_closed: false, manually_open: !scheduleOpen };
+      next = { manually_closed: false, manually_open: !scheduleOpen };
+    } else {
+      // Fermé par horaires → on force l'ouverture
+      patch = { manually_open: true };
+      next = { manually_open: true };
+    }
+    const prev = { manually_closed: resto.manually_closed, manually_open: resto.manually_open };
+    setResto({ ...resto, ...next });
     try {
-      await updateProfile({ data: { manually_closed: next } });
-      toast.success(next ? "Restaurant fermé temporairement" : "Fermeture manuelle levée");
-    } catch (e) {
-      setResto({ ...resto, manually_closed: !next });
+      await updateProfile({ data: patch });
+      toast.success(patch.manually_closed ? "Restaurant fermé" : "Restaurant ouvert");
+    } catch {
+      setResto({ ...resto, ...prev });
       toast.error("Action impossible");
     }
   };
@@ -257,9 +286,11 @@ function RestaurantSpace() {
             <Power className="h-3.5 w-3.5" />
             {resto.manually_closed
               ? "Fermé (manuel)"
-              : autoOpen
-                ? "Ouvert"
-                : "Fermé (horaires)"}
+              : resto.manually_open && !scheduleOpen
+                ? "Ouvert (forcé)"
+                : autoOpen
+                  ? "Ouvert"
+                  : "Fermé (horaires)"}
           </button>
         </div>
 
@@ -1466,23 +1497,51 @@ const DAY_LABELS: Array<[keyof OpeningHours, string]> = [
   ["dimanche", "Dimanche"],
 ];
 
+/**
+ * Heure courante au Cameroun (Africa/Douala = UTC+1, pas de DST).
+ * Compare l'heure locale Cameroun aux horaires stockés (en heure locale).
+ * Gère les horaires qui passent minuit (ex: 18:00 → 02:00).
+ */
+export function isOpenBySchedule(
+  hours: OpeningHours | null | undefined,
+): boolean {
+  const h = hours ?? DEFAULT_HOURS;
+  // Heure locale Cameroun via Intl, indépendamment du fuseau du runtime.
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Africa/Douala",
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date());
+  const weekday = parts.find((p) => p.type === "weekday")?.value ?? "Mon";
+  const hourStr = parts.find((p) => p.type === "hour")?.value ?? "00";
+  const minStr = parts.find((p) => p.type === "minute")?.value ?? "00";
+  const map: Record<string, keyof OpeningHours> = {
+    Mon: "lundi", Tue: "mardi", Wed: "mercredi", Thu: "jeudi",
+    Fri: "vendredi", Sat: "samedi", Sun: "dimanche",
+  };
+  const day = h[map[weekday]];
+  if (!day?.is_open) return false;
+  const cur = parseInt(hourStr, 10) * 60 + parseInt(minStr, 10);
+  const [oh, om] = day.open.split(":").map(Number);
+  const [ch, cm] = day.close.split(":").map(Number);
+  const openMin = oh * 60 + om;
+  const closeMin = ch * 60 + cm;
+  if (closeMin <= openMin) {
+    // Passe minuit
+    return cur >= openMin || cur <= closeMin;
+  }
+  return cur >= openMin && cur <= closeMin;
+}
+
+/** Compat : ancienne signature (manuallyClosed prioritaire). */
 export function isRestoOpenNow(
   hours: OpeningHours | null | undefined,
   manuallyClosed: boolean | null | undefined,
 ): boolean {
   if (manuallyClosed) return false;
-  const h = hours ?? DEFAULT_HOURS;
-  const now = new Date();
-  const jsDay = now.getDay(); // 0 = dimanche
-  const order: Array<keyof OpeningHours> = [
-    "dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi",
-  ];
-  const day = h[order[jsDay]];
-  if (!day?.is_open) return false;
-  const cur = now.getHours() * 60 + now.getMinutes();
-  const [oh, om] = day.open.split(":").map(Number);
-  const [ch, cm] = day.close.split(":").map(Number);
-  return cur >= oh * 60 + om && cur <= ch * 60 + cm;
+  return isOpenBySchedule(hours);
 }
 
 function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void }) {
@@ -1571,6 +1630,7 @@ function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void })
     setSavingHours(true);
     try {
       await updateProfile({ data: { opening_hours: hours } });
+      setInitialHoursJson(JSON.stringify(hours));
       toast.success("Horaires enregistrés");
       onSaved();
     } catch (e) {
@@ -1579,6 +1639,12 @@ function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void })
       setSavingHours(false);
     }
   };
+
+  const [initialHoursJson, setInitialHoursJson] = useState(() => JSON.stringify(hours));
+  const hoursDirty = useMemo(
+    () => JSON.stringify(hours) !== initialHoursJson,
+    [hours, initialHoursJson],
+  );
 
   const copyMondayToAll = () => {
     const monday = hours.lundi;
@@ -1756,7 +1822,7 @@ function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void })
 
         <button
           onClick={saveHours}
-          disabled={savingHours}
+          disabled={savingHours || !hoursDirty}
           className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-glow disabled:opacity-50"
         >
           {savingHours && <Loader2 className="h-4 w-4 animate-spin" />}

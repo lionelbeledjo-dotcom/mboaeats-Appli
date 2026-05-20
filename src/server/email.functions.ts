@@ -42,24 +42,12 @@ export interface SendEmailParams {
  * Toujours fire-and-forget — n'attend pas l'envoi réel.
  */
 export async function sendEmail(params: SendEmailParams): Promise<void> {
+  const { to, template, data = {}, related_id, user_id, subject: subjectOverride } = params
+  if (!to || !template) return
+
+  let logId: string | null = null
   try {
-    const { to, template, data = {}, related_id, user_id, subject: subjectOverride } = params
-
-    if (!to || !template) return
-
-    // 1. Anti-doublon
-    if (related_id) {
-      const { data: existing } = await supabaseAdmin
-        .from('email_log')
-        .select('id')
-        .eq('template', template)
-        .eq('related_id', related_id)
-        .in('status', ['sent', 'pending'])
-        .maybeSingle()
-      if (existing) return
-    }
-
-    // 2. Préférence utilisateur
+    // 1. Préférence utilisateur
     if (user_id) {
       const { data: pref } = await supabaseAdmin
         .from('notification_preferences')
@@ -69,7 +57,7 @@ export async function sendEmail(params: SendEmailParams): Promise<void> {
       if (pref && pref.email_enabled === false) return
     }
 
-    // 3. Suppression list
+    // 2. Suppression list
     const normalized = to.toLowerCase()
     const { data: sup } = await supabaseAdmin
       .from('suppressed_emails')
@@ -78,14 +66,14 @@ export async function sendEmail(params: SendEmailParams): Promise<void> {
       .maybeSingle()
     if (sup) return
 
-    // 4. Template
+    // 3. Template
     const tpl = TEMPLATES[template]
     if (!tpl) {
       console.warn('[sendEmail] template not found:', template)
       return
     }
 
-    // 5. Rendu
+    // 4. Rendu
     const element = React.createElement(tpl.component, data)
     const html = await render(element)
     const text = await render(element, { plainText: true })
@@ -93,7 +81,25 @@ export async function sendEmail(params: SendEmailParams): Promise<void> {
       subjectOverride ??
       (typeof tpl.subject === 'function' ? tpl.subject(data) : tpl.subject)
 
-    // 6. Unsubscribe token (1 par email)
+    // 5. INSERT pending — toujours, capture l'id
+    const { data: logRow, error: logErr } = await supabaseAdmin
+      .from('email_log')
+      .insert({
+        recipient: to,
+        template,
+        related_id: related_id ?? null,
+        subject,
+        status: 'pending',
+      })
+      .select('id')
+      .single()
+    if (logErr) {
+      console.error('[sendEmail] email_log insert failed', { template, error: logErr.message })
+    } else {
+      logId = (logRow as { id: string }).id
+    }
+
+    // 6. Unsubscribe token
     let unsubscribeToken: string | undefined
     const { data: existingTok } = await supabaseAdmin
       .from('email_unsubscribe_tokens')
@@ -117,30 +123,19 @@ export async function sendEmail(params: SendEmailParams): Promise<void> {
         .maybeSingle()
       unsubscribeToken = re?.token ?? unsubscribeToken
     } else {
-      // Token utilisé → utilisateur désabonné, ne pas envoyer
+      // Token utilisé → désabonné
+      if (logId) {
+        await supabaseAdmin
+          .from('email_log')
+          .update({ status: 'failed', error_message: 'unsubscribed' })
+          .eq('id', logId)
+      }
       return
     }
 
-    // 7. Insert email_log (gère le doublon via UNIQUE)
-    if (related_id) {
-      const { error: logErr } = await supabaseAdmin
-        .from('email_log')
-        .insert({
-          recipient: to,
-          template,
-          related_id,
-          subject,
-          status: 'pending',
-        })
-      // Si conflit unique → un autre process a déjà envoyé, on s'arrête
-      if (logErr && (logErr.code === '23505' || /duplicate/i.test(logErr.message))) {
-        return
-      }
-    }
-
-    // 8. Enqueue
+    // 7. Enqueue
     const messageId = crypto.randomUUID()
-    const idempotencyKey = related_id ? `${template}-${related_id}` : messageId
+    const idempotencyKey = related_id ? `${template}-${related_id}-${messageId}` : messageId
 
     await supabaseAdmin.from('email_send_log').insert({
       message_id: messageId,
@@ -169,38 +164,46 @@ export async function sendEmail(params: SendEmailParams): Promise<void> {
 
     if (enqErr) {
       console.error('[sendEmail] enqueue failed', { template, error: enqErr.message })
-      // Mettre à jour email_log en failed
-      if (related_id) {
+      if (logId) {
         await supabaseAdmin
           .from('email_log')
           .update({ status: 'failed', error_message: enqErr.message })
-          .eq('template', template)
-          .eq('related_id', related_id)
-      } else {
-        await supabaseAdmin.from('email_log').insert({
-          recipient: to, template, subject,
-          status: 'failed', error_message: enqErr.message,
-        })
+          .eq('id', logId)
       }
       return
     }
 
-    // 9. Marquer sent
-    if (related_id) {
+    // 8. Marquer sent
+    if (logId) {
       await supabaseAdmin
         .from('email_log')
         .update({ status: 'sent' })
-        .eq('template', template)
-        .eq('related_id', related_id)
-    } else {
-      await supabaseAdmin.from('email_log').insert({
-        recipient: to, template, subject, status: 'sent',
-      })
+        .eq('id', logId)
     }
   } catch (err) {
-    console.error('[sendEmail] silent failure', err)
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[sendEmail] failure', { template, error: msg })
+    try {
+      if (logId) {
+        await supabaseAdmin
+          .from('email_log')
+          .update({ status: 'failed', error_message: msg })
+          .eq('id', logId)
+      } else {
+        await supabaseAdmin.from('email_log').insert({
+          recipient: to,
+          template,
+          related_id: related_id ?? null,
+          status: 'failed',
+          error_message: msg,
+        })
+      }
+    } catch {
+      /* silencieux : log uniquement */
+    }
   }
 }
+
 
 /**
  * Résout l'email d'un utilisateur via l'API admin auth.
