@@ -1495,23 +1495,51 @@ const DAY_LABELS: Array<[keyof OpeningHours, string]> = [
   ["dimanche", "Dimanche"],
 ];
 
+/**
+ * Heure courante au Cameroun (Africa/Douala = UTC+1, pas de DST).
+ * Compare l'heure locale Cameroun aux horaires stockés (en heure locale).
+ * Gère les horaires qui passent minuit (ex: 18:00 → 02:00).
+ */
+export function isOpenBySchedule(
+  hours: OpeningHours | null | undefined,
+): boolean {
+  const h = hours ?? DEFAULT_HOURS;
+  // Heure locale Cameroun via Intl, indépendamment du fuseau du runtime.
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Africa/Douala",
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date());
+  const weekday = parts.find((p) => p.type === "weekday")?.value ?? "Mon";
+  const hourStr = parts.find((p) => p.type === "hour")?.value ?? "00";
+  const minStr = parts.find((p) => p.type === "minute")?.value ?? "00";
+  const map: Record<string, keyof OpeningHours> = {
+    Mon: "lundi", Tue: "mardi", Wed: "mercredi", Thu: "jeudi",
+    Fri: "vendredi", Sat: "samedi", Sun: "dimanche",
+  };
+  const day = h[map[weekday]];
+  if (!day?.is_open) return false;
+  const cur = parseInt(hourStr, 10) * 60 + parseInt(minStr, 10);
+  const [oh, om] = day.open.split(":").map(Number);
+  const [ch, cm] = day.close.split(":").map(Number);
+  const openMin = oh * 60 + om;
+  const closeMin = ch * 60 + cm;
+  if (closeMin <= openMin) {
+    // Passe minuit
+    return cur >= openMin || cur <= closeMin;
+  }
+  return cur >= openMin && cur <= closeMin;
+}
+
+/** Compat : ancienne signature (manuallyClosed prioritaire). */
 export function isRestoOpenNow(
   hours: OpeningHours | null | undefined,
   manuallyClosed: boolean | null | undefined,
 ): boolean {
   if (manuallyClosed) return false;
-  const h = hours ?? DEFAULT_HOURS;
-  const now = new Date();
-  const jsDay = now.getDay(); // 0 = dimanche
-  const order: Array<keyof OpeningHours> = [
-    "dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi",
-  ];
-  const day = h[order[jsDay]];
-  if (!day?.is_open) return false;
-  const cur = now.getHours() * 60 + now.getMinutes();
-  const [oh, om] = day.open.split(":").map(Number);
-  const [ch, cm] = day.close.split(":").map(Number);
-  return cur >= oh * 60 + om && cur <= ch * 60 + cm;
+  return isOpenBySchedule(hours);
 }
 
 function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void }) {
