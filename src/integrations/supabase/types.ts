@@ -1591,6 +1591,7 @@ export type Database = {
           lng: number | null
           logo_url: string | null
           manually_closed: boolean
+          manually_open: boolean
           min_order: number | null
           name: string
           neighborhood: string | null
@@ -1625,6 +1626,7 @@ export type Database = {
           lng?: number | null
           logo_url?: string | null
           manually_closed?: boolean
+          manually_open?: boolean
           min_order?: number | null
           name: string
           neighborhood?: string | null
@@ -1659,6 +1661,7 @@ export type Database = {
           lng?: number | null
           logo_url?: string | null
           manually_closed?: boolean
+          manually_open?: boolean
           min_order?: number | null
           name?: string
           neighborhood?: string | null
