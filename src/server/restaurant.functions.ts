@@ -775,7 +775,7 @@ export const updateMyRestaurantProfile = createServerFn({ method: "POST" })
 
     const { data: row, error } = await supabaseAdmin
       .from("restaurants")
-      .update(patch)
+      .update(patch as never)
       .eq("id", existing.id)
       .eq("owner_id", context.userId)
       .select()
@@ -812,7 +812,7 @@ export const setRestaurantImage = createServerFn({ method: "POST" })
     const column = data.kind === "cover" ? "cover_url" : "logo_url";
     const { data: row, error } = await supabaseAdmin
       .from("restaurants")
-      .update({ [column]: data.url })
+      .update({ [column]: data.url } as never)
       .eq("id", existing.id)
       .eq("owner_id", context.userId)
       .select()
