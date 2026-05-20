@@ -102,15 +102,14 @@ export const updateMissionStatus = createServerFn({ method: "POST" })
       created_by: userId,
     });
 
-    // Emails fire-and-forget
-    void (async () => {
-      try {
-        const { sendEmail, getUserEmail } = await import("@/server/email.functions");
-        const { data: full } = await supabaseAdmin
-          .from("orders")
-          .select("id, reference, user_id, restaurants(name)")
-          .eq("id", data.order_id).maybeSingle();
-        if (!full) return;
+    // Emails — awaited inline (Workers tue les promesses détachées).
+    try {
+      const { sendEmail, getUserEmail } = await import("@/server/email.functions");
+      const { data: full } = await supabaseAdmin
+        .from("orders")
+        .select("id, reference, user_id, restaurants(name)")
+        .eq("id", data.order_id).maybeSingle();
+      if (full) {
         const row = full as any;
         const reference = row.reference;
         const restaurant_name = row.restaurants?.name ?? "";
@@ -132,8 +131,8 @@ export const updateMissionStatus = createServerFn({ method: "POST" })
             data: { reference, order_id, restaurant_name },
           });
         }
-      } catch (e) { console.error("[updateMissionStatus email] failed", e); }
-    })();
+      }
+    } catch (e) { console.error("[updateMissionStatus email] failed", e); }
 
     return { ok: true };
   });
