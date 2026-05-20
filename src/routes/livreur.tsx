@@ -662,7 +662,7 @@ function MyDeliveriesTab({
   );
 }
 
-
+function MissionCard({ m, onClaim }: { m: MissionRow; onClaim: (id: string) => void }) {
   return (
     <div className="animate-fade-up rounded-3xl border border-primary/40 bg-surface/60 p-5 shadow-glow">
       <div className="flex items-center justify-between">
