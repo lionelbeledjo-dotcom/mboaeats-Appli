@@ -254,21 +254,26 @@ function Livreur() {
       <Header online={online} setOnline={toggleOnline} avgRating={reviews.avg} />
       <Stats online={online} earnings={earnings} />
 
-      <nav className="sticky top-[64px] z-30 mx-auto flex max-w-5xl gap-2 px-4 py-3 md:px-8 overflow-x-auto">
-        {(["courses", "navigation", "portefeuille", "evals"] as Tab[]).map((t) => (
+      <nav className="sticky top-[64px] z-30 mx-auto flex max-w-5xl gap-2 px-4 py-3 md:px-8">
+        {([
+          { key: "available", label: "Commandes disponibles" },
+          { key: "mine", label: "Mes livraisons" },
+        ] as { key: Tab; label: string }[]).map((t) => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`flex-1 min-w-[110px] rounded-2xl px-4 py-2.5 text-sm font-semibold capitalize transition ${
-              tab === t
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`flex-1 rounded-2xl px-4 py-2.5 text-sm font-semibold transition ${
+              tab === t.key
                 ? "bg-gradient-primary text-primary-foreground shadow-glow"
                 : "border border-border bg-surface/60 text-muted-foreground hover:text-foreground"
             }`}
           >
-            {t === "courses" ? "Courses"
-              : t === "navigation" ? "Navigation"
-              : t === "portefeuille" ? "Portefeuille"
-              : "Évaluations"}
+            {t.label}
+            {t.key === "available" && available.length > 0 && (
+              <span className="ml-2 rounded-full bg-background/30 px-2 py-0.5 text-[10px] font-bold">
+                {available.length}
+              </span>
+            )}
           </button>
         ))}
       </nav>
@@ -278,28 +283,21 @@ function Livreur() {
           <div className="flex items-center justify-center py-16 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" />
           </div>
-        ) : tab === "courses" ? (
-          <Courses
+        ) : tab === "available" ? (
+          <AvailableTab
             online={online}
             available={available}
             current={currentMission}
-            mine={mine}
             onClaim={handleClaim}
+          />
+        ) : (
+          <MyDeliveriesTab
+            mine={mine}
+            current={currentMission}
             onStatus={handleStatus}
             onArrived={handleArrived}
             arrivedAt={arrivedAt}
           />
-        ) : tab === "navigation" ? (
-          <NavigationView
-            mission={currentMission}
-            onStatus={handleStatus}
-            onArrived={handleArrived}
-            arrived={!!(currentMission && arrivedAt[currentMission.id])}
-          />
-        ) : tab === "portefeuille" ? (
-          <Portefeuille earnings={earnings} mine={mine} />
-        ) : (
-          <Evaluations reviews={reviews.list} avg={reviews.avg ?? 0} count={reviews.count} />
         )}
       </main>
 
