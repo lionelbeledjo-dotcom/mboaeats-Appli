@@ -64,6 +64,7 @@ type Resto = {
   description: string | null;
   opening_hours: OpeningHours | null;
   manually_closed: boolean | null;
+  manually_open: boolean | null;
   // Modération : voir migration `resto_moderation`.
   validation_status: "pending" | "approved" | "rejected";
   validation_note: string | null;
