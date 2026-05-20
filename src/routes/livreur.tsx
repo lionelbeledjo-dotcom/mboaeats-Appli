@@ -31,7 +31,7 @@ export const Route = createFileRoute("/livreur")({
   }),
 });
 
-type Tab = "courses" | "navigation" | "portefeuille" | "evals";
+type Tab = "available" | "mine";
 
 type MissionRow = {
   id: string;
