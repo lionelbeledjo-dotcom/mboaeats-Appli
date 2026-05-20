@@ -531,7 +531,138 @@ function Courses({
   );
 }
 
-function MissionCard({ m, onClaim }: { m: MissionRow; onClaim: (id: string) => void }) {
+function AvailableTab({
+  online, available, current, onClaim,
+}: {
+  online: boolean;
+  available: MissionRow[];
+  current: MissionRow | null;
+  onClaim: (id: string) => void;
+}) {
+  if (!online) {
+    return (
+      <div className="py-4">
+        <EmptyOffline />
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-4 py-4">
+      {current && (
+        <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+          Vous avez une livraison en cours (#{current.reference}). Terminez-la avant d'en accepter une nouvelle.
+        </div>
+      )}
+      <h2 className="font-display text-lg font-bold">Commandes disponibles</h2>
+      {available.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-border bg-surface/30 px-6 py-12 text-center text-sm text-muted-foreground">
+          Aucune mission ouverte pour le moment. On vous notifie dès qu'une commande est prête.
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {available.map((m) => (
+            <MissionCard key={m.id} m={m} onClaim={current ? () => {} : onClaim} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MyDeliveriesTab({
+  mine, current, onStatus, onArrived, arrivedAt,
+}: {
+  mine: MissionRow[];
+  current: MissionRow | null;
+  onStatus: (id: string, s: "picked_up" | "delivering" | "delivered" | "cancelled") => void;
+  onArrived: (id: string) => void;
+  arrivedAt: Record<string, boolean>;
+}) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayDeliveries = mine.filter(
+    (m) => m.status === "delivered" && m.delivered_at && new Date(m.delivered_at) >= today,
+  );
+  const todayEarnings = todayDeliveries.reduce((s, m) => s + (m.delivery_fee ?? 0), 0);
+  const history = mine
+    .filter((m) => m.status === "delivered")
+    .filter((h) => !todayDeliveries.find((t) => t.id === h.id))
+    .slice(0, 12);
+
+  return (
+    <div className="space-y-4 py-4">
+      {current ? (
+        <ActiveCourse
+          mission={current}
+          onStatus={onStatus}
+          onArrived={onArrived}
+          arrived={!!arrivedAt[current.id]}
+        />
+      ) : (
+        <div className="rounded-3xl border border-dashed border-border bg-surface/30 px-6 py-10 text-center text-sm text-muted-foreground">
+          Aucune livraison en cours. Acceptez une commande dans l'onglet "Commandes disponibles".
+        </div>
+      )}
+
+      <div className="mt-2 flex items-end justify-between">
+        <h2 className="font-display text-lg font-bold">Livraisons du jour</h2>
+        <p className="text-sm font-bold text-emerald-400">
+          +{todayEarnings.toLocaleString("fr-FR")} FCFA
+        </p>
+      </div>
+      {todayDeliveries.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Aucune livraison terminée aujourd'hui.</p>
+      ) : (
+        <div className="space-y-2">
+          {todayDeliveries.map((r) => (
+            <div key={r.id} className="flex items-center justify-between rounded-2xl border border-border bg-surface/40 p-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400">
+                  <Check className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">{r.restaurants?.name ?? "Restaurant"}</p>
+                  <p className="text-xs text-muted-foreground">
+                    #{r.reference}
+                    {r.delivered_at && ` · ${new Date(r.delivered_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`}
+                  </p>
+                </div>
+              </div>
+              <p className="text-sm font-bold">+{(r.delivery_fee ?? 0).toLocaleString("fr-FR")} FCFA</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {history.length > 0 && (
+        <div>
+          <h2 className="mt-6 font-display text-lg font-bold">Historique récent</h2>
+          <div className="mt-3 space-y-2">
+            {history.map((r) => (
+              <div key={r.id} className="flex items-center justify-between rounded-2xl border border-border bg-surface/40 p-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <Check className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold">{r.restaurants?.name ?? "Restaurant"}</p>
+                    <p className="text-xs text-muted-foreground">
+                      #{r.reference}
+                      {r.delivered_at && ` · ${new Date(r.delivered_at).toLocaleDateString("fr-FR")}`}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-sm font-bold">{(r.delivery_fee ?? 0).toLocaleString("fr-FR")} FCFA</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
   return (
     <div className="animate-fade-up rounded-3xl border border-primary/40 bg-surface/60 p-5 shadow-glow">
       <div className="flex items-center justify-between">
