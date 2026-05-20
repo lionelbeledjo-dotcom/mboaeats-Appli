@@ -31,6 +31,11 @@ export const Route = createFileRoute("/r/$slug")({
   }),
 });
 
+type DayHours = { is_open: boolean; open: string; close: string };
+type OpeningHours = Record<
+  "lundi" | "mardi" | "mercredi" | "jeudi" | "vendredi" | "samedi" | "dimanche",
+  DayHours
+>;
 type Resto = {
   id: string;
   name: string;
@@ -40,6 +45,11 @@ type Resto = {
   neighborhood: string | null;
   image_url: string | null;
   cover_url: string | null;
+  logo_url: string | null;
+  phone: string | null;
+  description: string | null;
+  opening_hours: OpeningHours | null;
+  manually_closed: boolean | null;
   rating: number | null;
   reviews_count: number | null;
   eta_min: number | null;
