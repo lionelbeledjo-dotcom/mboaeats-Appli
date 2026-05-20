@@ -224,15 +224,14 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
       created_by: context.userId,
     });
 
-    // Emails fire-and-forget
-    void (async () => {
-      try {
-        const { sendEmail, getUserEmail, listOnlineApprovedDrivers } = await import("@/server/email.functions");
-        const { data: full } = await supabaseAdmin
-          .from("orders")
-          .select("id, reference, user_id, restaurant_id, eta_minutes, delivery_fee, delivery_address, restaurants(name, city)")
-          .eq("id", data.order_id).maybeSingle();
-        if (!full) return;
+    // Emails — awaited inline (Workers tue les promesses détachées).
+    try {
+      const { sendEmail, getUserEmail, listOnlineApprovedDrivers } = await import("@/server/email.functions");
+      const { data: full } = await supabaseAdmin
+        .from("orders")
+        .select("id, reference, user_id, restaurant_id, eta_minutes, delivery_fee, delivery_address, restaurants(name, city)")
+        .eq("id", data.order_id).maybeSingle();
+      if (full) {
         const row = full as any;
         const restaurant_name = row.restaurants?.name ?? "Le restaurant";
         const city = row.restaurants?.city ?? "votre ville";
@@ -259,14 +258,16 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
             typeof row.delivery_address === "object" && row.delivery_address
               ? (row.delivery_address.label || row.delivery_address.address || "")
               : "";
+          // 1 ligne email_log par livreur via related_id unique
           await Promise.all(drivers.map((d) => sendEmail({
             to: d.email, template: "order_ready_drivers",
+            related_id: `${order_id}-${d.user_id}`,
             user_id: d.user_id,
             data: { reference, city, restaurant_name, delivery_address, delivery_fee: row.delivery_fee },
           })));
         }
-      } catch (e) { console.error("[updateOrderStatus email] failed", e); }
-    })();
+      }
+    } catch (e) { console.error("[updateOrderStatus email] failed", e); }
 
     return { ok: true as const };
   });
@@ -1055,12 +1056,11 @@ export const moderateRestaurant = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) throw new Error(error.message);
 
-    // Email fire-and-forget au propriétaire
-    void (async () => {
-      try {
-        const { sendEmail, getRestaurantOwnerEmail } = await import("@/server/email.functions");
-        const owner = await getRestaurantOwnerEmail(data.restaurantId);
-        if (!owner.email) return;
+    // Email au propriétaire — awaited inline.
+    try {
+      const { sendEmail, getRestaurantOwnerEmail } = await import("@/server/email.functions");
+      const owner = await getRestaurantOwnerEmail(data.restaurantId);
+      if (owner.email) {
         const restaurant_name = (row as any)?.name ?? "Votre restaurant";
         if (newStatus === "approved") {
           await sendEmail({
@@ -1075,8 +1075,8 @@ export const moderateRestaurant = createServerFn({ method: "POST" })
             data: { restaurant_name, reason: note },
           });
         }
-      } catch (e) { console.error("[moderateRestaurant email] failed", e); }
-    })();
+      }
+    } catch (e) { console.error("[moderateRestaurant email] failed", e); }
 
     return { restaurant: row };
   });
