@@ -387,6 +387,7 @@ export const createOrder = createServerFn({ method: "POST" })
 
     // Emails — awaited inline (Workers tue les promesses détachées).
     // Le try/catch garantit qu'un échec d'email n'interrompt jamais le flow.
+    console.log("[createOrder email] BEGIN order_id=", order.id, "user_id=", userId);
     try {
       const { sendEmail, getUserEmail, getRestaurantOwnerEmail } = await import("@/server/email.functions");
       const { data: restoRow } = await supabaseAdmin
@@ -398,6 +399,7 @@ export const createOrder = createServerFn({ method: "POST" })
       }));
 
       const clientEmail = await getUserEmail(userId);
+      console.log("[createOrder email] clientEmail=", clientEmail);
       if (clientEmail) {
         await sendEmail({
           to: clientEmail, template: "order_confirmation_client",
@@ -406,6 +408,7 @@ export const createOrder = createServerFn({ method: "POST" })
         });
       }
       const owner = await getRestaurantOwnerEmail(data.restaurant_id);
+      console.log("[createOrder email] ownerEmail=", owner.email, "owner_user_id=", owner.user_id);
       if (owner.email) {
         await sendEmail({
           to: owner.email, template: "order_new_restaurant",
@@ -413,6 +416,7 @@ export const createOrder = createServerFn({ method: "POST" })
           data: { reference: order.reference, items: itemsForEmail, total },
         });
       }
+      console.log("[createOrder email] END ok");
     } catch (e) { console.error("[createOrder email] failed", e); }
 
     return { order };
