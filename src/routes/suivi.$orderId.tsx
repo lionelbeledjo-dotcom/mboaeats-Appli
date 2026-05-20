@@ -158,13 +158,20 @@ function SuiviPage() {
   const remainingMs = etaTarget ? Math.max(0, etaTarget - now) : 0;
   const minutes = Math.floor(remainingMs / 60000);
 
-  // Animation de livraison
+  // Animation de livraison + ouverture auto du modal de notation
   const [showCelebration, setShowCelebration] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
   useEffect(() => {
     if (order.delivered_at && !sessionStorage.getItem(`celebrated:${order.id}`)) {
       setShowCelebration(true);
       sessionStorage.setItem(`celebrated:${order.id}`, "1");
-      const t = setTimeout(() => setShowCelebration(false), 3500);
+      const t = setTimeout(() => {
+        setShowCelebration(false);
+        // Ouvre le modal de notation après la célébration, si pas déjà noté
+        if (!localStorage.getItem(`review_${order.id}`)) {
+          setReviewModalOpen(true);
+        }
+      }, 3500);
       return () => clearTimeout(t);
     }
   }, [order.delivered_at, order.id]);
