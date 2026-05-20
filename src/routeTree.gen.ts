@@ -52,6 +52,7 @@ import { Route as TableePaiementRouteImport } from './routes/tablee.paiement'
 import { Route as SuperadminSetup2faRouteImport } from './routes/superadmin_.setup-2fa'
 import { Route as SuperadminLoginRouteImport } from './routes/superadmin_.login'
 import { Route as SuperadminRestaurantsRouteImport } from './routes/superadmin.restaurants'
+import { Route as SuperadminLivreursRouteImport } from './routes/superadmin.livreurs'
 import { Route as SuiviOrderIdRouteImport } from './routes/suivi.$orderId'
 import { Route as RestaurantsRestoIdRouteImport } from './routes/restaurants.$restoId'
 import { Route as RestaurantConnexionRouteImport } from './routes/restaurant_.connexion'
@@ -60,6 +61,7 @@ import { Route as PartenaireRevenusRouteImport } from './routes/partenaire.reven
 import { Route as PartenaireParametresRouteImport } from './routes/partenaire.parametres'
 import { Route as PartenaireMenuRouteImport } from './routes/partenaire.menu'
 import { Route as PartenaireCommandesRouteImport } from './routes/partenaire.commandes'
+import { Route as LivreurConnexionRouteImport } from './routes/livreur_.connexion'
 import { Route as CompteSecuriteRouteImport } from './routes/compte.securite'
 import { Route as ComptePaiementsRouteImport } from './routes/compte.paiements'
 import { Route as CompteLivraisonRouteImport } from './routes/compte.livraison'
@@ -301,6 +303,11 @@ const SuperadminRestaurantsRoute = SuperadminRestaurantsRouteImport.update({
   path: '/restaurants',
   getParentRoute: () => SuperadminRoute,
 } as any)
+const SuperadminLivreursRoute = SuperadminLivreursRouteImport.update({
+  id: '/livreurs',
+  path: '/livreurs',
+  getParentRoute: () => SuperadminRoute,
+} as any)
 const SuiviOrderIdRoute = SuiviOrderIdRouteImport.update({
   id: '/$orderId',
   path: '/$orderId',
@@ -340,6 +347,11 @@ const PartenaireCommandesRoute = PartenaireCommandesRouteImport.update({
   id: '/commandes',
   path: '/commandes',
   getParentRoute: () => PartenaireRoute,
+} as any)
+const LivreurConnexionRoute = LivreurConnexionRouteImport.update({
+  id: '/livreur_/connexion',
+  path: '/livreur/connexion',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const CompteSecuriteRoute = CompteSecuriteRouteImport.update({
   id: '/compte/securite',
@@ -524,6 +536,7 @@ export interface FileRoutesByFullPath {
   '/compte/livraison': typeof CompteLivraisonRoute
   '/compte/paiements': typeof ComptePaiementsRoute
   '/compte/securite': typeof CompteSecuriteRoute
+  '/livreur/connexion': typeof LivreurConnexionRoute
   '/partenaire/commandes': typeof PartenaireCommandesRoute
   '/partenaire/menu': typeof PartenaireMenuRoute
   '/partenaire/parametres': typeof PartenaireParametresRoute
@@ -532,6 +545,7 @@ export interface FileRoutesByFullPath {
   '/restaurant/connexion': typeof RestaurantConnexionRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
+  '/superadmin/livreurs': typeof SuperadminLivreursRoute
   '/superadmin/restaurants': typeof SuperadminRestaurantsRoute
   '/superadmin/login': typeof SuperadminLoginRoute
   '/superadmin/setup-2fa': typeof SuperadminSetup2faRoute
@@ -599,6 +613,7 @@ export interface FileRoutesByTo {
   '/compte/livraison': typeof CompteLivraisonRoute
   '/compte/paiements': typeof ComptePaiementsRoute
   '/compte/securite': typeof CompteSecuriteRoute
+  '/livreur/connexion': typeof LivreurConnexionRoute
   '/partenaire/commandes': typeof PartenaireCommandesRoute
   '/partenaire/menu': typeof PartenaireMenuRoute
   '/partenaire/parametres': typeof PartenaireParametresRoute
@@ -607,6 +622,7 @@ export interface FileRoutesByTo {
   '/restaurant/connexion': typeof RestaurantConnexionRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
+  '/superadmin/livreurs': typeof SuperadminLivreursRoute
   '/superadmin/restaurants': typeof SuperadminRestaurantsRoute
   '/superadmin/login': typeof SuperadminLoginRoute
   '/superadmin/setup-2fa': typeof SuperadminSetup2faRoute
@@ -678,6 +694,7 @@ export interface FileRoutesById {
   '/compte/livraison': typeof CompteLivraisonRoute
   '/compte/paiements': typeof ComptePaiementsRoute
   '/compte/securite': typeof CompteSecuriteRoute
+  '/livreur_/connexion': typeof LivreurConnexionRoute
   '/partenaire/commandes': typeof PartenaireCommandesRoute
   '/partenaire/menu': typeof PartenaireMenuRoute
   '/partenaire/parametres': typeof PartenaireParametresRoute
@@ -686,6 +703,7 @@ export interface FileRoutesById {
   '/restaurant_/connexion': typeof RestaurantConnexionRoute
   '/restaurants/$restoId': typeof RestaurantsRestoIdRouteWithChildren
   '/suivi/$orderId': typeof SuiviOrderIdRoute
+  '/superadmin/livreurs': typeof SuperadminLivreursRoute
   '/superadmin/restaurants': typeof SuperadminRestaurantsRoute
   '/superadmin_/login': typeof SuperadminLoginRoute
   '/superadmin_/setup-2fa': typeof SuperadminSetup2faRoute
@@ -758,6 +776,7 @@ export interface FileRouteTypes {
     | '/compte/livraison'
     | '/compte/paiements'
     | '/compte/securite'
+    | '/livreur/connexion'
     | '/partenaire/commandes'
     | '/partenaire/menu'
     | '/partenaire/parametres'
@@ -766,6 +785,7 @@ export interface FileRouteTypes {
     | '/restaurant/connexion'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
+    | '/superadmin/livreurs'
     | '/superadmin/restaurants'
     | '/superadmin/login'
     | '/superadmin/setup-2fa'
@@ -833,6 +853,7 @@ export interface FileRouteTypes {
     | '/compte/livraison'
     | '/compte/paiements'
     | '/compte/securite'
+    | '/livreur/connexion'
     | '/partenaire/commandes'
     | '/partenaire/menu'
     | '/partenaire/parametres'
@@ -841,6 +862,7 @@ export interface FileRouteTypes {
     | '/restaurant/connexion'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
+    | '/superadmin/livreurs'
     | '/superadmin/restaurants'
     | '/superadmin/login'
     | '/superadmin/setup-2fa'
@@ -911,6 +933,7 @@ export interface FileRouteTypes {
     | '/compte/livraison'
     | '/compte/paiements'
     | '/compte/securite'
+    | '/livreur_/connexion'
     | '/partenaire/commandes'
     | '/partenaire/menu'
     | '/partenaire/parametres'
@@ -919,6 +942,7 @@ export interface FileRouteTypes {
     | '/restaurant_/connexion'
     | '/restaurants/$restoId'
     | '/suivi/$orderId'
+    | '/superadmin/livreurs'
     | '/superadmin/restaurants'
     | '/superadmin_/login'
     | '/superadmin_/setup-2fa'
@@ -979,6 +1003,7 @@ export interface RootRouteChildren {
   CompteLivraisonRoute: typeof CompteLivraisonRoute
   ComptePaiementsRoute: typeof ComptePaiementsRoute
   CompteSecuriteRoute: typeof CompteSecuriteRoute
+  LivreurConnexionRoute: typeof LivreurConnexionRoute
   RSlugRoute: typeof RSlugRoute
   RestaurantConnexionRoute: typeof RestaurantConnexionRoute
   RestaurantsRestoIdRoute: typeof RestaurantsRestoIdRouteWithChildren
@@ -1295,6 +1320,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuperadminRestaurantsRouteImport
       parentRoute: typeof SuperadminRoute
     }
+    '/superadmin/livreurs': {
+      id: '/superadmin/livreurs'
+      path: '/livreurs'
+      fullPath: '/superadmin/livreurs'
+      preLoaderRoute: typeof SuperadminLivreursRouteImport
+      parentRoute: typeof SuperadminRoute
+    }
     '/suivi/$orderId': {
       id: '/suivi/$orderId'
       path: '/$orderId'
@@ -1350,6 +1382,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/partenaire/commandes'
       preLoaderRoute: typeof PartenaireCommandesRouteImport
       parentRoute: typeof PartenaireRoute
+    }
+    '/livreur_/connexion': {
+      id: '/livreur_/connexion'
+      path: '/livreur/connexion'
+      fullPath: '/livreur/connexion'
+      preLoaderRoute: typeof LivreurConnexionRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/compte/securite': {
       id: '/compte/securite'
@@ -1600,11 +1639,13 @@ const SuiviRouteChildren: SuiviRouteChildren = {
 const SuiviRouteWithChildren = SuiviRoute._addFileChildren(SuiviRouteChildren)
 
 interface SuperadminRouteChildren {
+  SuperadminLivreursRoute: typeof SuperadminLivreursRoute
   SuperadminRestaurantsRoute: typeof SuperadminRestaurantsRoute
   SuperadminIndexRoute: typeof SuperadminIndexRoute
 }
 
 const SuperadminRouteChildren: SuperadminRouteChildren = {
+  SuperadminLivreursRoute: SuperadminLivreursRoute,
   SuperadminRestaurantsRoute: SuperadminRestaurantsRoute,
   SuperadminIndexRoute: SuperadminIndexRoute,
 }
@@ -1679,6 +1720,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompteLivraisonRoute: CompteLivraisonRoute,
   ComptePaiementsRoute: ComptePaiementsRoute,
   CompteSecuriteRoute: CompteSecuriteRoute,
+  LivreurConnexionRoute: LivreurConnexionRoute,
   RSlugRoute: RSlugRoute,
   RestaurantConnexionRoute: RestaurantConnexionRoute,
   RestaurantsRestoIdRoute: RestaurantsRestoIdRouteWithChildren,
@@ -1694,13 +1736,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
