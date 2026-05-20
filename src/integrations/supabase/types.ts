@@ -1547,6 +1547,7 @@ export type Database = {
           cuisine: string
           deleted_at: string | null
           delivery_fee: number | null
+          description: string | null
           eta_max: number | null
           eta_min: number | null
           id: string
@@ -1555,11 +1556,14 @@ export type Database = {
           is_open: boolean | null
           lat: number | null
           lng: number | null
+          logo_url: string | null
+          manually_closed: boolean
           min_order: number | null
           name: string
           neighborhood: string | null
           opening_hours: Json | null
           owner_id: string | null
+          phone: string | null
           rating: number | null
           reviews_count: number | null
           slug: string
@@ -1577,6 +1581,7 @@ export type Database = {
           cuisine: string
           deleted_at?: string | null
           delivery_fee?: number | null
+          description?: string | null
           eta_max?: number | null
           eta_min?: number | null
           id?: string
@@ -1585,11 +1590,14 @@ export type Database = {
           is_open?: boolean | null
           lat?: number | null
           lng?: number | null
+          logo_url?: string | null
+          manually_closed?: boolean
           min_order?: number | null
           name: string
           neighborhood?: string | null
           opening_hours?: Json | null
           owner_id?: string | null
+          phone?: string | null
           rating?: number | null
           reviews_count?: number | null
           slug: string
@@ -1607,6 +1615,7 @@ export type Database = {
           cuisine?: string
           deleted_at?: string | null
           delivery_fee?: number | null
+          description?: string | null
           eta_max?: number | null
           eta_min?: number | null
           id?: string
@@ -1615,11 +1624,14 @@ export type Database = {
           is_open?: boolean | null
           lat?: number | null
           lng?: number | null
+          logo_url?: string | null
+          manually_closed?: boolean
           min_order?: number | null
           name?: string
           neighborhood?: string | null
           opening_hours?: Json | null
           owner_id?: string | null
+          phone?: string | null
           rating?: number | null
           reviews_count?: number | null
           slug?: string
