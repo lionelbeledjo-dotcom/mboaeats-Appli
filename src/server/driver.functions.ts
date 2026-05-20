@@ -65,6 +65,7 @@ export const claimMission = createServerFn({ method: "POST" })
       event_type: "driver_assigned",
       created_by: userId,
     });
+    // Email picked_up est envoyé sur updateMissionStatus('picked_up')
     return { ok: true };
   });
 
@@ -100,6 +101,40 @@ export const updateMissionStatus = createServerFn({ method: "POST" })
       event_type: data.status,
       created_by: userId,
     });
+
+    // Emails fire-and-forget
+    void (async () => {
+      try {
+        const { sendEmail, getUserEmail } = await import("@/server/email.functions");
+        const { data: full } = await supabaseAdmin
+          .from("orders")
+          .select("id, reference, user_id, restaurants(name)")
+          .eq("id", data.order_id).maybeSingle();
+        if (!full) return;
+        const row = full as any;
+        const reference = row.reference;
+        const restaurant_name = row.restaurants?.name ?? "";
+        const order_id = row.id;
+        if (data.status === "picked_up") {
+          const { data: drv } = await supabaseAdmin
+            .from("driver_profiles").select("full_name").eq("user_id", userId).maybeSingle();
+          const clientEmail = await getUserEmail(row.user_id);
+          if (clientEmail) await sendEmail({
+            to: clientEmail, template: "order_picked_up_client",
+            related_id: order_id, user_id: row.user_id,
+            data: { reference, order_id, driver_name: (drv as any)?.full_name },
+          });
+        } else if (data.status === "delivered") {
+          const clientEmail = await getUserEmail(row.user_id);
+          if (clientEmail) await sendEmail({
+            to: clientEmail, template: "order_delivered_client",
+            related_id: `${order_id}-delivered`, user_id: row.user_id,
+            data: { reference, order_id, restaurant_name },
+          });
+        }
+      } catch (e) { console.error("[updateMissionStatus email] failed", e); }
+    })();
+
     return { ok: true };
   });
 

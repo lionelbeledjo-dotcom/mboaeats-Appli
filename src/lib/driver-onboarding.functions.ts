@@ -89,6 +89,21 @@ export const approveDriverApplication = createServerFn({ method: "POST" })
     await supabaseAdmin
       .from("user_roles")
       .upsert({ user_id: data.user_id, role: "livreur" as never }, { onConflict: "user_id,role" });
+    // Email
+    void (async () => {
+      try {
+        const { sendEmail, getUserEmail } = await import("@/server/email.functions");
+        const email = await getUserEmail(data.user_id);
+        if (!email) return;
+        const { data: prof } = await supabaseAdmin
+          .from("driver_profiles").select("full_name").eq("user_id", data.user_id).maybeSingle();
+        await sendEmail({
+          to: email, template: "driver_approved",
+          related_id: data.user_id, user_id: data.user_id,
+          data: { full_name: (prof as any)?.full_name },
+        });
+      } catch (e) { console.error("[approveDriverApplication email] failed", e); }
+    })();
     return { ok: true };
   });
 
@@ -110,5 +125,20 @@ export const rejectDriverApplication = createServerFn({ method: "POST" })
       .delete()
       .eq("user_id", data.user_id)
       .eq("role", "livreur" as never);
+    // Email
+    void (async () => {
+      try {
+        const { sendEmail, getUserEmail } = await import("@/server/email.functions");
+        const email = await getUserEmail(data.user_id);
+        if (!email) return;
+        const { data: prof } = await supabaseAdmin
+          .from("driver_profiles").select("full_name").eq("user_id", data.user_id).maybeSingle();
+        await sendEmail({
+          to: email, template: "driver_rejected",
+          related_id: `${data.user_id}-rejected`, user_id: data.user_id,
+          data: { full_name: (prof as any)?.full_name, reason: data.reason },
+        });
+      } catch (e) { console.error("[rejectDriverApplication email] failed", e); }
+    })();
     return { ok: true };
   });

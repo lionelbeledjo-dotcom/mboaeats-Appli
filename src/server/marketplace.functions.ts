@@ -385,6 +385,37 @@ export const createOrder = createServerFn({ method: "POST" })
       payload: { subtotal, total, items_count: orderItemsToInsert.length },
     });
 
+    // Emails fire-and-forget (n'interrompt jamais le flow)
+    void (async () => {
+      try {
+        const { sendEmail, getUserEmail, getRestaurantOwnerEmail } = await import("@/server/email.functions");
+        const { data: restoRow } = await supabaseAdmin
+          .from("restaurants").select("name").eq("id", data.restaurant_id).maybeSingle();
+        const restaurant_name = (restoRow as { name?: string } | null)?.name ?? "le restaurant";
+
+        const itemsForEmail = orderItemsToInsert.map((i) => ({
+          name: i.name, qty: i.qty, line_total: i.line_total,
+        }));
+
+        const clientEmail = await getUserEmail(userId);
+        if (clientEmail) {
+          await sendEmail({
+            to: clientEmail, template: "order_confirmation_client",
+            related_id: order.id, user_id: userId,
+            data: { reference: order.reference, order_id: order.id, items: itemsForEmail, subtotal, delivery_fee, total, restaurant_name },
+          });
+        }
+        const owner = await getRestaurantOwnerEmail(data.restaurant_id);
+        if (owner.email) {
+          await sendEmail({
+            to: owner.email, template: "order_new_restaurant",
+            related_id: order.id, user_id: owner.user_id,
+            data: { reference: order.reference, items: itemsForEmail, total },
+          });
+        }
+      } catch (e) { console.error("[createOrder email] failed", e); }
+    })();
+
     return { order };
   });
 
