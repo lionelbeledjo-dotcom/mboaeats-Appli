@@ -85,6 +85,10 @@ export const approveDriverApplication = createServerFn({ method: "POST" })
       .update({ status: "valide", validated_by: context.userId, rejection_reason: null })
       .eq("user_id", data.user_id);
     if (error) throw new Error(error.message);
+    // Grant 'livreur' role so the user can access /livreur after approval.
+    await supabaseAdmin
+      .from("user_roles")
+      .upsert({ user_id: data.user_id, role: "livreur" as never }, { onConflict: "user_id,role" });
     return { ok: true };
   });
 

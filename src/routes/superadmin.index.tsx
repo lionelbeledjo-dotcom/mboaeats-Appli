@@ -1,23 +1,29 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { Crown, LayoutDashboard, ShieldCheck, Store } from "lucide-react";
+import { Bike, Crown, LayoutDashboard, ShieldCheck, Store } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getRestaurantsForModeration } from "@/server/restaurant.functions";
+import { listDriverApplications } from "@/lib/driver-onboarding.functions";
 
 export const Route = createFileRoute("/superadmin/")({
   component: SuperAdminHome,
 });
 
 function SuperAdminHome() {
-  const fetchList = useServerFn(getRestaurantsForModeration);
-  const [pendingCount, setPendingCount] = useState<number | null>(null);
+  const fetchRestos = useServerFn(getRestaurantsForModeration);
+  const fetchDrivers = useServerFn(listDriverApplications);
+  const [pendingRestos, setPendingRestos] = useState<number | null>(null);
+  const [pendingDrivers, setPendingDrivers] = useState<number | null>(null);
 
   useEffect(() => {
-    fetchList({ data: { status: "pending" } })
-      .then((r) => setPendingCount(r?.counts?.pending ?? 0))
-      .catch(() => setPendingCount(null));
-  }, [fetchList]);
+    fetchRestos({ data: { status: "pending" } })
+      .then((r) => setPendingRestos(r?.counts?.pending ?? 0))
+      .catch(() => setPendingRestos(null));
+    fetchDrivers({ data: { status: "en_attente" } })
+      .then((r) => setPendingDrivers(r?.applications?.length ?? 0))
+      .catch(() => setPendingDrivers(null));
+  }, [fetchRestos, fetchDrivers]);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -37,12 +43,27 @@ function SuperAdminHome() {
           <Store className="h-5 w-5 text-emerald-600" />
           <p className="mt-3 font-semibold flex items-center gap-2">
             Modération restaurants
-            {pendingCount !== null && pendingCount > 0 && (
-              <Badge className="bg-emerald-600 hover:bg-emerald-600">{pendingCount}</Badge>
+            {pendingRestos !== null && pendingRestos > 0 && (
+              <Badge className="bg-emerald-600 hover:bg-emerald-600">{pendingRestos}</Badge>
             )}
           </p>
           <p className="text-xs text-muted-foreground">
             Validez ou refusez les demandes des restaurateurs partenaires.
+          </p>
+        </Link>
+        <Link
+          to="/superadmin/livreurs"
+          className="group relative rounded-2xl border border-border bg-card p-5 transition hover:border-orange-400/60 hover:bg-card/80"
+        >
+          <Bike className="h-5 w-5 text-orange-600" />
+          <p className="mt-3 font-semibold flex items-center gap-2">
+            Modération livreurs
+            {pendingDrivers !== null && pendingDrivers > 0 && (
+              <Badge className="bg-orange-600 hover:bg-orange-600">{pendingDrivers}</Badge>
+            )}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Validez ou refusez les candidatures de livreurs.
           </p>
         </Link>
         <Link to="/admin" className="group rounded-2xl border border-border bg-card p-5 transition hover:border-primary/40 hover:bg-card/80">
