@@ -1630,6 +1630,7 @@ function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void })
     setSavingHours(true);
     try {
       await updateProfile({ data: { opening_hours: hours } });
+      setInitialHoursJson(JSON.stringify(hours));
       toast.success("Horaires enregistrés");
       onSaved();
     } catch (e) {
@@ -1638,6 +1639,12 @@ function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void })
       setSavingHours(false);
     }
   };
+
+  const [initialHoursJson, setInitialHoursJson] = useState(() => JSON.stringify(hours));
+  const hoursDirty = useMemo(
+    () => JSON.stringify(hours) !== initialHoursJson,
+    [hours, initialHoursJson],
+  );
 
   const copyMondayToAll = () => {
     const monday = hours.lundi;
