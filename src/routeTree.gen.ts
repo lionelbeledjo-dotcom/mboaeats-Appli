@@ -62,6 +62,7 @@ import { Route as PartenaireParametresRouteImport } from './routes/partenaire.pa
 import { Route as PartenaireMenuRouteImport } from './routes/partenaire.menu'
 import { Route as PartenaireCommandesRouteImport } from './routes/partenaire.commandes'
 import { Route as LivreurConnexionRouteImport } from './routes/livreur_.connexion'
+import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CompteSecuriteRouteImport } from './routes/compte.securite'
 import { Route as ComptePaiementsRouteImport } from './routes/compte.paiements'
 import { Route as CompteLivraisonRouteImport } from './routes/compte.livraison'
@@ -81,9 +82,12 @@ import { Route as AdminCommissionsRouteImport } from './routes/admin.commissions
 import { Route as AdminCommandesRouteImport } from './routes/admin.commandes'
 import { Route as AdminClientsRouteImport } from './routes/admin.clients'
 import { Route as RestaurantsRestoIdMenuRouteImport } from './routes/restaurants.$restoId.menu'
+import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicCampayWebhookRouteImport } from './routes/api/public/campay-webhook'
 import { Route as RestaurantsRestoIdPlatsPlatIdRouteImport } from './routes/restaurants.$restoId_.plats.$platId'
 import { Route as RSlugPlatsDishIdRouteImport } from './routes/r.$slug_.plats.$dishId'
+import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
@@ -353,6 +357,11 @@ const LivreurConnexionRoute = LivreurConnexionRouteImport.update({
   path: '/livreur/connexion',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
+  id: '/email/unsubscribe',
+  path: '/email/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CompteSecuriteRoute = CompteSecuriteRouteImport.update({
   id: '/compte/securite',
   path: '/compte/securite',
@@ -448,6 +457,11 @@ const RestaurantsRestoIdMenuRoute = RestaurantsRestoIdMenuRouteImport.update({
   path: '/menu',
   getParentRoute: () => RestaurantsRestoIdRoute,
 } as any)
+const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
+  id: '/lovable/email/suppression',
+  path: '/lovable/email/suppression',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCampayWebhookRoute = ApiPublicCampayWebhookRouteImport.update({
   id: '/api/public/campay-webhook',
   path: '/api/public/campay-webhook',
@@ -464,6 +478,18 @@ const RSlugPlatsDishIdRoute = RSlugPlatsDishIdRouteImport.update({
   path: '/r/$slug/plats/$dishId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LovableEmailTransactionalSendRoute =
+  LovableEmailTransactionalSendRouteImport.update({
+    id: '/lovable/email/transactional/send',
+    path: '/lovable/email/transactional/send',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
     id: '/lovable/email/queue/process',
@@ -536,6 +562,7 @@ export interface FileRoutesByFullPath {
   '/compte/livraison': typeof CompteLivraisonRoute
   '/compte/paiements': typeof ComptePaiementsRoute
   '/compte/securite': typeof CompteSecuriteRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/livreur/connexion': typeof LivreurConnexionRoute
   '/partenaire/commandes': typeof PartenaireCommandesRoute
   '/partenaire/menu': typeof PartenaireMenuRoute
@@ -554,10 +581,13 @@ export interface FileRoutesByFullPath {
   '/partenaire/': typeof PartenaireIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
   '/api/public/campay-webhook': typeof ApiPublicCampayWebhookRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/restaurants/$restoId/menu': typeof RestaurantsRestoIdMenuRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/r/$slug/plats/$dishId': typeof RSlugPlatsDishIdRoute
   '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
 }
@@ -613,6 +643,7 @@ export interface FileRoutesByTo {
   '/compte/livraison': typeof CompteLivraisonRoute
   '/compte/paiements': typeof ComptePaiementsRoute
   '/compte/securite': typeof CompteSecuriteRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/livreur/connexion': typeof LivreurConnexionRoute
   '/partenaire/commandes': typeof PartenaireCommandesRoute
   '/partenaire/menu': typeof PartenaireMenuRoute
@@ -631,10 +662,13 @@ export interface FileRoutesByTo {
   '/partenaire': typeof PartenaireIndexRoute
   '/superadmin': typeof SuperadminIndexRoute
   '/api/public/campay-webhook': typeof ApiPublicCampayWebhookRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/restaurants/$restoId/menu': typeof RestaurantsRestoIdMenuRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/r/$slug/plats/$dishId': typeof RSlugPlatsDishIdRoute
   '/restaurants/$restoId/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
 }
@@ -694,6 +728,7 @@ export interface FileRoutesById {
   '/compte/livraison': typeof CompteLivraisonRoute
   '/compte/paiements': typeof ComptePaiementsRoute
   '/compte/securite': typeof CompteSecuriteRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/livreur_/connexion': typeof LivreurConnexionRoute
   '/partenaire/commandes': typeof PartenaireCommandesRoute
   '/partenaire/menu': typeof PartenaireMenuRoute
@@ -712,10 +747,13 @@ export interface FileRoutesById {
   '/partenaire/': typeof PartenaireIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
   '/api/public/campay-webhook': typeof ApiPublicCampayWebhookRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/restaurants/$restoId/menu': typeof RestaurantsRestoIdMenuRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/r/$slug_/plats/$dishId': typeof RSlugPlatsDishIdRoute
   '/restaurants/$restoId_/plats/$platId': typeof RestaurantsRestoIdPlatsPlatIdRoute
 }
@@ -776,6 +814,7 @@ export interface FileRouteTypes {
     | '/compte/livraison'
     | '/compte/paiements'
     | '/compte/securite'
+    | '/email/unsubscribe'
     | '/livreur/connexion'
     | '/partenaire/commandes'
     | '/partenaire/menu'
@@ -794,10 +833,13 @@ export interface FileRouteTypes {
     | '/partenaire/'
     | '/superadmin/'
     | '/api/public/campay-webhook'
+    | '/lovable/email/suppression'
     | '/restaurants/$restoId/menu'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
     | '/r/$slug/plats/$dishId'
     | '/restaurants/$restoId/plats/$platId'
   fileRoutesByTo: FileRoutesByTo
@@ -853,6 +895,7 @@ export interface FileRouteTypes {
     | '/compte/livraison'
     | '/compte/paiements'
     | '/compte/securite'
+    | '/email/unsubscribe'
     | '/livreur/connexion'
     | '/partenaire/commandes'
     | '/partenaire/menu'
@@ -871,10 +914,13 @@ export interface FileRouteTypes {
     | '/partenaire'
     | '/superadmin'
     | '/api/public/campay-webhook'
+    | '/lovable/email/suppression'
     | '/restaurants/$restoId/menu'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
     | '/r/$slug/plats/$dishId'
     | '/restaurants/$restoId/plats/$platId'
   id:
@@ -933,6 +979,7 @@ export interface FileRouteTypes {
     | '/compte/livraison'
     | '/compte/paiements'
     | '/compte/securite'
+    | '/email/unsubscribe'
     | '/livreur_/connexion'
     | '/partenaire/commandes'
     | '/partenaire/menu'
@@ -951,10 +998,13 @@ export interface FileRouteTypes {
     | '/partenaire/'
     | '/superadmin/'
     | '/api/public/campay-webhook'
+    | '/lovable/email/suppression'
     | '/restaurants/$restoId/menu'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
     | '/r/$slug_/plats/$dishId'
     | '/restaurants/$restoId_/plats/$platId'
   fileRoutesById: FileRoutesById
@@ -1003,6 +1053,7 @@ export interface RootRouteChildren {
   CompteLivraisonRoute: typeof CompteLivraisonRoute
   ComptePaiementsRoute: typeof ComptePaiementsRoute
   CompteSecuriteRoute: typeof CompteSecuriteRoute
+  EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   LivreurConnexionRoute: typeof LivreurConnexionRoute
   RSlugRoute: typeof RSlugRoute
   RestaurantConnexionRoute: typeof RestaurantConnexionRoute
@@ -1010,9 +1061,12 @@ export interface RootRouteChildren {
   SuperadminLoginRoute: typeof SuperadminLoginRoute
   SuperadminSetup2faRoute: typeof SuperadminSetup2faRoute
   ApiPublicCampayWebhookRoute: typeof ApiPublicCampayWebhookRoute
+  LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
+  LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
   RSlugPlatsDishIdRoute: typeof RSlugPlatsDishIdRoute
   RestaurantsRestoIdPlatsPlatIdRoute: typeof RestaurantsRestoIdPlatsPlatIdRoute
 }
@@ -1390,6 +1444,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LivreurConnexionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/email/unsubscribe': {
+      id: '/email/unsubscribe'
+      path: '/email/unsubscribe'
+      fullPath: '/email/unsubscribe'
+      preLoaderRoute: typeof EmailUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/compte/securite': {
       id: '/compte/securite'
       path: '/compte/securite'
@@ -1523,6 +1584,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RestaurantsRestoIdMenuRouteImport
       parentRoute: typeof RestaurantsRestoIdRoute
     }
+    '/lovable/email/suppression': {
+      id: '/lovable/email/suppression'
+      path: '/lovable/email/suppression'
+      fullPath: '/lovable/email/suppression'
+      preLoaderRoute: typeof LovableEmailSuppressionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/campay-webhook': {
       id: '/api/public/campay-webhook'
       path: '/api/public/campay-webhook'
@@ -1542,6 +1610,20 @@ declare module '@tanstack/react-router' {
       path: '/r/$slug/plats/$dishId'
       fullPath: '/r/$slug/plats/$dishId'
       preLoaderRoute: typeof RSlugPlatsDishIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/send': {
+      id: '/lovable/email/transactional/send'
+      path: '/lovable/email/transactional/send'
+      fullPath: '/lovable/email/transactional/send'
+      preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/lovable/email/queue/process': {
@@ -1720,6 +1802,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompteLivraisonRoute: CompteLivraisonRoute,
   ComptePaiementsRoute: ComptePaiementsRoute,
   CompteSecuriteRoute: CompteSecuriteRoute,
+  EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   LivreurConnexionRoute: LivreurConnexionRoute,
   RSlugRoute: RSlugRoute,
   RestaurantConnexionRoute: RestaurantConnexionRoute,
@@ -1727,22 +1810,15 @@ const rootRouteChildren: RootRouteChildren = {
   SuperadminLoginRoute: SuperadminLoginRoute,
   SuperadminSetup2faRoute: SuperadminSetup2faRoute,
   ApiPublicCampayWebhookRoute: ApiPublicCampayWebhookRoute,
+  LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
+  LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
   RSlugPlatsDishIdRoute: RSlugPlatsDishIdRoute,
   RestaurantsRestoIdPlatsPlatIdRoute: RestaurantsRestoIdPlatsPlatIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

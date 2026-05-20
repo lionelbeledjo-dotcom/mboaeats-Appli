@@ -223,6 +223,51 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
       payload: data.note ? { note: data.note } : {},
       created_by: context.userId,
     });
+
+    // Emails fire-and-forget
+    void (async () => {
+      try {
+        const { sendEmail, getUserEmail, listOnlineApprovedDrivers } = await import("@/server/email.functions");
+        const { data: full } = await supabaseAdmin
+          .from("orders")
+          .select("id, reference, user_id, restaurant_id, eta_minutes, delivery_fee, delivery_address, restaurants(name, city)")
+          .eq("id", data.order_id).maybeSingle();
+        if (!full) return;
+        const row = full as any;
+        const restaurant_name = row.restaurants?.name ?? "Le restaurant";
+        const city = row.restaurants?.city ?? "votre ville";
+        const reference = row.reference;
+        const order_id = row.id;
+
+        if (data.status === "accepted") {
+          const clientEmail = await getUserEmail(row.user_id);
+          if (clientEmail) await sendEmail({
+            to: clientEmail, template: "order_accepted_client",
+            related_id: order_id, user_id: row.user_id,
+            data: { reference, restaurant_name, order_id, eta_minutes: row.eta_minutes },
+          });
+        } else if (data.status === "cancelled") {
+          const clientEmail = await getUserEmail(row.user_id);
+          if (clientEmail) await sendEmail({
+            to: clientEmail, template: "order_rejected_client",
+            related_id: order_id, user_id: row.user_id,
+            data: { reference, restaurant_name, reason: data.note },
+          });
+        } else if (data.status === "ready") {
+          const drivers = await listOnlineApprovedDrivers();
+          const delivery_address =
+            typeof row.delivery_address === "object" && row.delivery_address
+              ? (row.delivery_address.label || row.delivery_address.address || "")
+              : "";
+          await Promise.all(drivers.map((d) => sendEmail({
+            to: d.email, template: "order_ready_drivers",
+            user_id: d.user_id,
+            data: { reference, city, restaurant_name, delivery_address, delivery_fee: row.delivery_fee },
+          })));
+        }
+      } catch (e) { console.error("[updateOrderStatus email] failed", e); }
+    })();
+
     return { ok: true as const };
   });
 
@@ -1009,6 +1054,30 @@ export const moderateRestaurant = createServerFn({ method: "POST" })
       .eq("id", data.restaurantId)
       .maybeSingle();
     if (error) throw new Error(error.message);
+
+    // Email fire-and-forget au propriétaire
+    void (async () => {
+      try {
+        const { sendEmail, getRestaurantOwnerEmail } = await import("@/server/email.functions");
+        const owner = await getRestaurantOwnerEmail(data.restaurantId);
+        if (!owner.email) return;
+        const restaurant_name = (row as any)?.name ?? "Votre restaurant";
+        if (newStatus === "approved") {
+          await sendEmail({
+            to: owner.email, template: "restaurant_approved",
+            related_id: data.restaurantId, user_id: owner.user_id,
+            data: { restaurant_name },
+          });
+        } else {
+          await sendEmail({
+            to: owner.email, template: "restaurant_rejected",
+            related_id: `${data.restaurantId}-rejected`, user_id: owner.user_id,
+            data: { restaurant_name, reason: note },
+          });
+        }
+      } catch (e) { console.error("[moderateRestaurant email] failed", e); }
+    })();
+
     return { restaurant: row };
   });
 
