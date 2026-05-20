@@ -166,6 +166,8 @@ function Checkout() {
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "pending" | "succeeded" | "failed">("idle");
   const [contactErrors, setContactErrors] = useState<DeliveryContactErrors>({});
   const [activeWallet, setActiveWallet] = useState<"apple" | "google" | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
 
   // Confirme automatiquement la commande quand le webhook signale un succès
   // pendant un paiement Apple Pay / Google Pay (sinon CardScreen s'en charge).
