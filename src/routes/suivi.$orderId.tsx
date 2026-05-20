@@ -158,13 +158,20 @@ function SuiviPage() {
   const remainingMs = etaTarget ? Math.max(0, etaTarget - now) : 0;
   const minutes = Math.floor(remainingMs / 60000);
 
-  // Animation de livraison
+  // Animation de livraison + ouverture auto du modal de notation
   const [showCelebration, setShowCelebration] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
   useEffect(() => {
     if (order.delivered_at && !sessionStorage.getItem(`celebrated:${order.id}`)) {
       setShowCelebration(true);
       sessionStorage.setItem(`celebrated:${order.id}`, "1");
-      const t = setTimeout(() => setShowCelebration(false), 3500);
+      const t = setTimeout(() => {
+        setShowCelebration(false);
+        // Ouvre le modal de notation après la célébration, si pas déjà noté
+        if (!localStorage.getItem(`review_${order.id}`)) {
+          setReviewModalOpen(true);
+        }
+      }, 3500);
       return () => clearTimeout(t);
     }
   }, [order.delivered_at, order.id]);
@@ -495,6 +502,48 @@ function SuiviPage() {
       )}
 
       {showCelebration && <DeliveryCelebration />}
+
+      {reviewModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center"
+          onClick={() => setReviewModalOpen(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-3xl bg-white p-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="flex items-center gap-2 text-base font-bold" style={{ color: "#1A1A1A" }}>
+                <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+                Comment s'est passée votre commande ?
+              </h3>
+              <button
+                type="button"
+                onClick={() => setReviewModalOpen(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-full"
+                style={{ backgroundColor: "#F4F4F4" }}
+                aria-label="Plus tard"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <p className="mt-1 text-xs" style={{ color: "#888888" }}>
+              Votre avis aide les autres clients et le restaurant à s'améliorer.
+            </p>
+            <div className="mt-3">
+              <ReviewForm restaurantId={order.restaurant_id} orderId={order.id} />
+            </div>
+            <button
+              type="button"
+              onClick={() => setReviewModalOpen(false)}
+              className="mt-2 w-full text-center text-xs font-semibold"
+              style={{ color: "#888888" }}
+            >
+              Plus tard
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

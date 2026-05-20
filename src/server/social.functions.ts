@@ -92,10 +92,37 @@ export const listReviews = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rows, error } = await supabaseAdmin
       .from("restaurant_reviews")
-      .select("id, rating, comment, created_at")
+      .select("id, rating, comment, created_at, user_id")
       .eq("restaurant_id", data.restaurantId)
       .order("created_at", { ascending: false })
-      .limit(20);
+      .limit(50);
     if (error) throw new Error(error.message);
-    return { reviews: rows ?? [] };
+    const ids = Array.from(new Set((rows ?? []).map((r) => r.user_id).filter(Boolean)));
+    const names = new Map<string, string>();
+    if (ids.length > 0) {
+      const { data: profs } = await supabaseAdmin
+        .from("profiles")
+        .select("user_id, full_name")
+        .in("user_id", ids);
+      for (const p of profs ?? []) {
+        if (p.user_id && p.full_name) names.set(p.user_id, p.full_name);
+      }
+    }
+    const reviews = (rows ?? []).map((r) => {
+      const full = r.user_id ? names.get(r.user_id) : null;
+      const author = full
+        ? full.split(" ").map((w, i) => (i === 0 ? w : (w[0] ?? "") + ".")).join(" ")
+        : "Client MboaEats";
+      return {
+        id: r.id,
+        rating: r.rating,
+        comment: r.comment,
+        created_at: r.created_at,
+        author,
+      };
+    });
+    const avg = reviews.length
+      ? Math.round((reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) * 10) / 10
+      : 0;
+    return { reviews, avg, count: reviews.length };
   });

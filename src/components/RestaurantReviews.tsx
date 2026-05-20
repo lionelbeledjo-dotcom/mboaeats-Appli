@@ -1,38 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
-import { Star } from "lucide-react";
-import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import { Star, Loader2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { listReviews } from "@/server/social.functions";
 
 type Review = {
   id: string;
   author: string;
   rating: number;
-  comment: string;
+  comment: string | null;
   created_at: string;
 };
-
-const STORAGE_PREFIX = "mboa_resto_reviews_";
-
-function loadReviews(restoId: string): Review[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(STORAGE_PREFIX + restoId);
-    return raw ? (JSON.parse(raw) as Review[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-const REVIEWS_EVENT = "mboa:reviews-updated";
-
-function saveReviews(restoId: string, list: Review[]) {
-  localStorage.setItem(STORAGE_PREFIX + restoId, JSON.stringify(list));
-  // Notify other components in the same tab (storage event only fires cross-tab)
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(
-      new CustomEvent(REVIEWS_EVENT, { detail: { restoId } }),
-    );
-  }
-}
 
 export function RestaurantReviews({
   restoId,
@@ -41,69 +18,28 @@ export function RestaurantReviews({
   restoId: string;
   baseRating?: number;
 }) {
+  const fetchReviews = useServerFn(listReviews);
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [author, setAuthor] = useState("");
-  const [rating, setRating] = useState(0);
-  const [hover, setHover] = useState(0);
-  const [comment, setComment] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [highlightId, setHighlightId] = useState<string | null>(null);
+  const [avg, setAvg] = useState<number>(baseRating ?? 0);
+  const [count, setCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  // Initial load + live sync (cross-tab via 'storage', same-tab via custom event)
   useEffect(() => {
-    setReviews(loadReviews(restoId));
-
-    const refresh = () => setReviews(loadReviews(restoId));
-
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === STORAGE_PREFIX + restoId) refresh();
-    };
-    const onCustom = (e: Event) => {
-      const detail = (e as CustomEvent<{ restoId: string }>).detail;
-      if (!detail || detail.restoId === restoId) refresh();
-    };
-
-    window.addEventListener("storage", onStorage);
-    window.addEventListener(REVIEWS_EVENT, onCustom);
+    let active = true;
+    setLoading(true);
+    fetchReviews({ data: { restaurantId: restoId } })
+      .then((res) => {
+        if (!active) return;
+        setReviews(res.reviews);
+        setAvg(res.avg || baseRating || 0);
+        setCount(res.count);
+      })
+      .catch(() => {})
+      .finally(() => active && setLoading(false));
     return () => {
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener(REVIEWS_EVENT, onCustom);
+      active = false;
     };
-  }, [restoId]);
-
-  const avg = useMemo(() => {
-    if (reviews.length === 0) return baseRating ?? 0;
-    return reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
-  }, [reviews, baseRating]);
-
-  const submit = () => {
-    if (rating < 1) {
-      toast.error("Choisissez une note de 1 à 5 étoiles");
-      return;
-    }
-    if (!comment.trim()) {
-      toast.error("Ajoutez un commentaire");
-      return;
-    }
-    setSubmitting(true);
-    const next: Review = {
-      id: crypto.randomUUID(),
-      author: author.trim() || "Client MboaEats",
-      rating,
-      comment: comment.trim(),
-      created_at: new Date().toISOString(),
-    };
-    const list = [next, ...reviews];
-    setReviews(list);
-    saveReviews(restoId, list);
-    setHighlightId(next.id);
-    setTimeout(() => setHighlightId((id) => (id === next.id ? null : id)), 2500);
-    setRating(0);
-    setComment("");
-    setAuthor("");
-    setSubmitting(false);
-    toast.success("Merci pour votre avis ! 🎉");
-  };
+  }, [restoId, fetchReviews, baseRating]);
 
   return (
     <section className="mt-8">
@@ -111,7 +47,7 @@ export function RestaurantReviews({
         <h2 className="font-display text-lg font-bold">
           Avis clients
           <span className="ml-2 text-sm font-medium text-muted-foreground">
-            ({reviews.length})
+            ({count})
           </span>
         </h2>
         {avg > 0 && (
@@ -122,77 +58,24 @@ export function RestaurantReviews({
         )}
       </div>
 
-      {/* Form */}
-      <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
-        <p className="mb-3 text-sm font-semibold">Laisser un avis</p>
-        <input
-          type="text"
-          value={author}
-          onChange={(e) => setAuthor(e.target.value.slice(0, 40))}
-          placeholder="Votre prénom (optionnel)"
-          className="mb-3 w-full rounded-xl border border-border/60 bg-background px-3 py-2 text-sm outline-none focus:border-[#06C167]"
-        />
-        <div className="mb-3 flex items-center gap-1">
-          {[1, 2, 3, 4, 5].map((n) => {
-            const active = (hover || rating) >= n;
-            return (
-              <button
-                key={n}
-                type="button"
-                onMouseEnter={() => setHover(n)}
-                onMouseLeave={() => setHover(0)}
-                onClick={() => setRating(n)}
-                aria-label={`${n} étoile${n > 1 ? "s" : ""}`}
-                className="p-0.5"
-              >
-                <Star
-                  className={`h-7 w-7 transition ${
-                    active
-                      ? "fill-amber-400 text-amber-400"
-                      : "text-muted-foreground/40"
-                  }`}
-                />
-              </button>
-            );
-          })}
-        </div>
-        <textarea
-          value={comment}
-          onChange={(e) => setComment(e.target.value.slice(0, 500))}
-          rows={3}
-          placeholder="Partagez votre expérience…"
-          className="w-full resize-none rounded-xl border border-border/60 bg-background p-3 text-sm outline-none focus:border-[#06C167]"
-        />
-        <div className="mt-3 flex items-center justify-between">
-          <span className="text-[11px] text-muted-foreground">
-            {comment.length}/500
-          </span>
-          <button
-            type="button"
-            disabled={submitting}
-            onClick={submit}
-            className="rounded-full bg-[#06C167] px-5 py-2 text-xs font-bold text-white shadow-[0_8px_20px_-8px_rgba(6,193,103,0.7)] transition active:scale-95 disabled:opacity-50"
-          >
-            {submitting ? "Envoi…" : "Publier mon avis"}
-          </button>
-        </div>
-      </div>
+      <p className="mb-4 rounded-2xl border border-dashed border-border/60 bg-card/50 p-3 text-center text-xs text-muted-foreground">
+        💡 Seuls les clients ayant reçu une commande peuvent laisser un avis.
+      </p>
 
-      {/* List */}
-      <div className="mt-4 space-y-3">
-        {reviews.length === 0 ? (
+      <div className="space-y-3">
+        {loading ? (
+          <div className="flex justify-center py-6">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : reviews.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-border/60 bg-card/50 p-4 text-center text-sm text-muted-foreground">
-            Aucun avis pour le moment. Soyez le premier !
+            Aucun avis pour le moment. Soyez le premier après votre prochaine commande !
           </p>
         ) : (
           reviews.map((r) => (
             <article
               key={r.id}
-              className={`rounded-2xl border bg-card p-4 transition-all duration-500 ${
-                highlightId === r.id
-                  ? "animate-in fade-in slide-in-from-top-2 border-[#06C167] ring-2 ring-[#06C167]/30"
-                  : "border-border/60"
-              }`}
+              className="rounded-2xl border border-border/60 bg-card p-4"
             >
               <header className="mb-2 flex items-center justify-between">
                 <div>
@@ -218,9 +101,9 @@ export function RestaurantReviews({
                   })}
                 </span>
               </header>
-              <p className="text-sm leading-relaxed text-foreground">
-                {r.comment}
-              </p>
+              {r.comment && (
+                <p className="text-sm leading-relaxed text-foreground">{r.comment}</p>
+              )}
             </article>
           ))
         )}
