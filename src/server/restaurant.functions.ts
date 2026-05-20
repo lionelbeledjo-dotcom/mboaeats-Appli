@@ -712,6 +712,115 @@ export const updateMyRestaurant = createServerFn({ method: "POST" })
     return { restaurant: row };
   });
 
+// ============================================================================
+// PACK 7 — Profil restaurant éditable
+// ============================================================================
+
+const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
+const DAYS = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"] as const;
+const DaySchema = z.object({
+  is_open: z.boolean(),
+  open: z.string().regex(HHMM, "Format HH:MM attendu"),
+  close: z.string().regex(HHMM, "Format HH:MM attendu"),
+});
+const OpeningHoursSchema = z.object({
+  lundi: DaySchema, mardi: DaySchema, mercredi: DaySchema, jeudi: DaySchema,
+  vendredi: DaySchema, samedi: DaySchema, dimanche: DaySchema,
+});
+
+// Tél Cameroun : +237XXXXXXXXX (9 chiffres) ou 9 chiffres locaux
+const phoneSchema = z
+  .string()
+  .trim()
+  .regex(/^(\+237)?\s*[26]\d{8}$/, "Format Cameroun attendu (+237 ou 9 chiffres)");
+
+export const updateMyRestaurantProfile = createServerFn({ method: "POST" })
+  .middleware([requireAuth])
+  .inputValidator((d) =>
+    z
+      .object({
+        description: z.string().max(280).nullable().optional(),
+        phone: phoneSchema.nullable().optional().or(z.literal("").transform(() => null)),
+        cover_url: z.string().url().nullable().optional(),
+        logo_url: z.string().url().nullable().optional(),
+        opening_hours: OpeningHoursSchema.optional(),
+        manually_closed: z.boolean().optional(),
+      })
+      .parse(d ?? {}),
+  )
+  .handler(async ({ data, context }) => {
+    // Même logique de résolution que getMyRestaurant — surtout pas de divergence
+    const { data: existing, error: e1 } = await supabaseAdmin
+      .from("restaurants")
+      .select("id, owner_id")
+      .eq("owner_id", context.userId)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (e1) throw new Error(e1.message);
+    if (!existing) throw new Error("Aucun restaurant rattaché à votre compte");
+
+    const patch: Record<string, unknown> = {};
+    if (data.description !== undefined) patch.description = data.description;
+    if (data.phone !== undefined) patch.phone = data.phone;
+    if (data.cover_url !== undefined) patch.cover_url = data.cover_url;
+    if (data.logo_url !== undefined) patch.logo_url = data.logo_url;
+    if (data.opening_hours !== undefined) patch.opening_hours = data.opening_hours;
+    if (data.manually_closed !== undefined) patch.manually_closed = data.manually_closed;
+
+    if (Object.keys(patch).length === 0) {
+      return { restaurant: existing };
+    }
+
+    const { data: row, error } = await supabaseAdmin
+      .from("restaurants")
+      .update(patch as never)
+      .eq("id", existing.id)
+      .eq("owner_id", context.userId)
+      .select()
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return { restaurant: row };
+  });
+
+// L'upload du binaire se fait côté client via supabase.storage (bucket public
+// 'restaurant-images'). Cette fonction côté serveur enregistre l'URL publique
+// retournée sur la colonne adéquate, en vérifiant l'ownership.
+export const setRestaurantImage = createServerFn({ method: "POST" })
+  .middleware([requireAuth])
+  .inputValidator((d) =>
+    z
+      .object({
+        kind: z.enum(["cover", "logo"]),
+        url: z.string().url(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: existing, error: e1 } = await supabaseAdmin
+      .from("restaurants")
+      .select("id")
+      .eq("owner_id", context.userId)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (e1) throw new Error(e1.message);
+    if (!existing) throw new Error("Aucun restaurant rattaché à votre compte");
+
+    const column = data.kind === "cover" ? "cover_url" : "logo_url";
+    const { data: row, error } = await supabaseAdmin
+      .from("restaurants")
+      .update({ [column]: data.url } as never)
+      .eq("id", existing.id)
+      .eq("owner_id", context.userId)
+      .select()
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return { restaurant: row };
+  });
+
 // -----------------------------------------------------------------------------
 // RATTRAPAGE MANUEL pour comptes existants (à exécuter une fois dans l'éditeur
 // SQL) — restaure le rôle 'restaurateur' pour tout owner ayant déjà un resto

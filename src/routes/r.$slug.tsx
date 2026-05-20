@@ -31,6 +31,11 @@ export const Route = createFileRoute("/r/$slug")({
   }),
 });
 
+type DayHours = { is_open: boolean; open: string; close: string };
+type OpeningHours = Record<
+  "lundi" | "mardi" | "mercredi" | "jeudi" | "vendredi" | "samedi" | "dimanche",
+  DayHours
+>;
 type Resto = {
   id: string;
   name: string;
@@ -40,6 +45,11 @@ type Resto = {
   neighborhood: string | null;
   image_url: string | null;
   cover_url: string | null;
+  logo_url: string | null;
+  phone: string | null;
+  description: string | null;
+  opening_hours: OpeningHours | null;
+  manually_closed: boolean | null;
   rating: number | null;
   reviews_count: number | null;
   eta_min: number | null;
@@ -206,24 +216,32 @@ function RestoLivePage() {
           style={{ boxShadow: "var(--shadow-soft)" }}
         >
           <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
-                {resto.name}
-              </h1>
-              <p className="mt-1 text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                {resto.cuisine}
-              </p>
+            <div className="flex min-w-0 items-start gap-3">
+              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-card bg-emerald-500 shadow">
+                {resto.logo_url ? (
+                  <img src={resto.logo_url} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center font-display text-lg font-bold text-white">
+                    {resto.name.slice(0, 2).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
+                  {resto.name}
+                </h1>
+                <p className="mt-1 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  {resto.cuisine}
+                </p>
+              </div>
             </div>
-            <span
-              className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold ${
-                resto.is_open
-                  ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
-                  : "bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
-              }`}
-            >
-              {resto.is_open ? "● Ouvert" : "Fermé"}
-            </span>
+            <RestoOpenBadge resto={resto} />
           </div>
+          {resto.description && (
+            <p className="mt-3 text-sm text-neutral-700 dark:text-neutral-300">
+              {resto.description}
+            </p>
+          )}
           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-neutral-700 dark:text-neutral-300">
             <span className="flex items-center gap-1 font-semibold text-foreground">
               <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" strokeWidth={2} />
@@ -241,7 +259,13 @@ function RestoLivePage() {
             <span>
               Livraison {(resto.delivery_fee ?? 0).toLocaleString("fr-FR")} F
             </span>
+            {resto.phone && (
+              <a href={`tel:${resto.phone}`} className="font-semibold text-primary hover:underline">
+                {resto.phone}
+              </a>
+            )}
           </div>
+          <TodayHours resto={resto} />
         </div>
 
         {/* Category pills */}
@@ -440,5 +464,73 @@ function DishCard({
         </div>
       </Link>
     </li>
+  );
+}
+
+const DAYS_ORDER: Array<keyof OpeningHours> = [
+  "dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi",
+];
+const DAY_LABEL: Record<keyof OpeningHours, string> = {
+  lundi:"Lundi",mardi:"Mardi",mercredi:"Mercredi",jeudi:"Jeudi",
+  vendredi:"Vendredi",samedi:"Samedi",dimanche:"Dimanche",
+};
+
+function isOpenNow(h: OpeningHours | null, manual: boolean | null): boolean {
+  if (manual) return false;
+  if (!h) return false;
+  const now = new Date();
+  const day = h[DAYS_ORDER[now.getDay()]];
+  if (!day?.is_open) return false;
+  const cur = now.getHours()*60 + now.getMinutes();
+  const [oh,om] = day.open.split(":").map(Number);
+  const [ch,cm] = day.close.split(":").map(Number);
+  return cur >= oh*60+om && cur <= ch*60+cm;
+}
+
+function RestoOpenBadge({ resto }: { resto: Resto }) {
+  const open = isOpenNow(resto.opening_hours, resto.manually_closed);
+  return (
+    <span className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold ${
+      open ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+           : "bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
+    }`}>
+      {open ? "● Ouvert" : "Fermé"}
+    </span>
+  );
+}
+
+function TodayHours({ resto }: { resto: Resto }) {
+  const [open, setOpen] = useState(false);
+  const h = resto.opening_hours;
+  if (!h) return null;
+  const today = h[DAYS_ORDER[new Date().getDay()]];
+  const todayLabel = today?.is_open
+    ? `Aujourd'hui : ${today.open} – ${today.close}`
+    : "Fermé aujourd'hui";
+  return (
+    <div className="mt-3 text-xs">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="font-semibold text-foreground hover:underline"
+      >
+        {todayLabel} · {open ? "Masquer" : "Voir tous les horaires"}
+      </button>
+      {open && (
+        <ul className="mt-2 space-y-1 rounded-xl border border-neutral-200 bg-card p-3 dark:border-neutral-800">
+          {(Object.keys(DAY_LABEL) as Array<keyof OpeningHours>).map((k) => {
+            const d = h[k];
+            return (
+              <li key={k} className="flex justify-between">
+                <span className="font-medium">{DAY_LABEL[k]}</span>
+                <span className="text-muted-foreground">
+                  {d?.is_open ? `${d.open} – ${d.close}` : "Fermé"}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
   );
 }
