@@ -584,14 +584,14 @@ function Checkout() {
 }
 
 function ChooseMethod({
-  method, setMethod, phone, setPhone, onPay, onWalletPay, total, disabled = false, disabledReason = null,
+  method, setMethod, phone, setPhone, onPay, onWalletPay, total, disabled = false, disabledReason = null, submitting = false,
 }: {
   method: Method; setMethod: (m: Method) => void;
   phone: string; setPhone: (s: string) => void;
   onPay: () => void;
   onWalletPay?: (wallet: "apple" | "google") => void;
   total: number;
-  disabled?: boolean; disabledReason?: string | null;
+  disabled?: boolean; disabledReason?: string | null; submitting?: boolean;
 }) {
   return (
     <>
