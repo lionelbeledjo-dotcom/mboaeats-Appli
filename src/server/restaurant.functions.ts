@@ -259,9 +259,11 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
               ? (row.delivery_address.label || row.delivery_address.address || "")
               : "";
           // 1 ligne email_log par livreur via related_id unique
+          // related_id volontairement omis : email_log.related_id est UUID,
+          // un composite ${order_id}-${driver_id} ferait échouer l'INSERT.
+          // Le wrapper insère alors une ligne email_log sans dédup (1 par livreur).
           await Promise.all(drivers.map((d) => sendEmail({
             to: d.email, template: "order_ready_drivers",
-            related_id: `${order_id}-${d.user_id}`,
             user_id: d.user_id,
             data: { reference, city, restaurant_name, delivery_address, delivery_fee: row.delivery_fee },
           })));
