@@ -216,24 +216,32 @@ function RestoLivePage() {
           style={{ boxShadow: "var(--shadow-soft)" }}
         >
           <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
-                {resto.name}
-              </h1>
-              <p className="mt-1 text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                {resto.cuisine}
-              </p>
+            <div className="flex min-w-0 items-start gap-3">
+              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-card bg-emerald-500 shadow">
+                {resto.logo_url ? (
+                  <img src={resto.logo_url} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center font-display text-lg font-bold text-white">
+                    {resto.name.slice(0, 2).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
+                  {resto.name}
+                </h1>
+                <p className="mt-1 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  {resto.cuisine}
+                </p>
+              </div>
             </div>
-            <span
-              className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold ${
-                resto.is_open
-                  ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
-                  : "bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
-              }`}
-            >
-              {resto.is_open ? "● Ouvert" : "Fermé"}
-            </span>
+            <RestoOpenBadge resto={resto} />
           </div>
+          {resto.description && (
+            <p className="mt-3 text-sm text-neutral-700 dark:text-neutral-300">
+              {resto.description}
+            </p>
+          )}
           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-neutral-700 dark:text-neutral-300">
             <span className="flex items-center gap-1 font-semibold text-foreground">
               <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" strokeWidth={2} />
@@ -251,7 +259,13 @@ function RestoLivePage() {
             <span>
               Livraison {(resto.delivery_fee ?? 0).toLocaleString("fr-FR")} F
             </span>
+            {resto.phone && (
+              <a href={`tel:${resto.phone}`} className="font-semibold text-primary hover:underline">
+                {resto.phone}
+              </a>
+            )}
           </div>
+          <TodayHours resto={resto} />
         </div>
 
         {/* Category pills */}
