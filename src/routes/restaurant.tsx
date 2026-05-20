@@ -75,7 +75,7 @@ type Tab = "commandes" | "menu" | "stats" | "profil";
 
 function RestaurantSpace() {
   const fetchResto = useServerFn(getMyRestaurant);
-  const updateResto = useServerFn(updateMyRestaurant);
+  void updateMyRestaurant; // conservé pour compat ascendante d'autres écrans
   const createResto = useServerFn(createMyRestaurant);
 
   const [authReady, setAuthReady] = useState(false);
