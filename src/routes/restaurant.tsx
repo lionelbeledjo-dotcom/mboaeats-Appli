@@ -127,15 +127,21 @@ function RestaurantSpace() {
 
 
 
-  const toggleOpen = async () => {
+  const updateProfile = useServerFn(updateMyRestaurantProfile);
+  const autoOpen = useMemo(
+    () => (resto ? isRestoOpenNow(resto.opening_hours, resto.manually_closed) : false),
+    [resto],
+  );
+
+  const toggleManuallyClosed = async () => {
     if (!resto) return;
-    const next = !resto.is_open;
-    setResto({ ...resto, is_open: next });
+    const next = !resto.manually_closed;
+    setResto({ ...resto, manually_closed: next });
     try {
-      await updateResto({ data: { id: resto.id, is_open: next } });
-      toast.success(next ? "Restaurant ouvert" : "Restaurant fermé");
+      await updateProfile({ data: { manually_closed: next } });
+      toast.success(next ? "Restaurant fermé temporairement" : "Fermeture manuelle levée");
     } catch (e) {
-      setResto({ ...resto, is_open: !next });
+      setResto({ ...resto, manually_closed: !next });
       toast.error("Action impossible");
     }
   };
@@ -236,15 +242,24 @@ function RestaurantSpace() {
             </div>
           </div>
           <button
-            onClick={toggleOpen}
+            onClick={toggleManuallyClosed}
+            title={
+              resto.manually_closed
+                ? "Lever la fermeture temporaire"
+                : "Forcer la fermeture (pause exceptionnelle)"
+            }
             className={`flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-bold transition ${
-              resto.is_open
+              autoOpen && !resto.manually_closed
                 ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-400"
                 : "border-border bg-surface text-muted-foreground"
             }`}
           >
             <Power className="h-3.5 w-3.5" />
-            {resto.is_open ? "Ouvert" : "Fermé"}
+            {resto.manually_closed
+              ? "Fermé (manuel)"
+              : autoOpen
+                ? "Ouvert"
+                : "Fermé (horaires)"}
           </button>
         </div>
 
