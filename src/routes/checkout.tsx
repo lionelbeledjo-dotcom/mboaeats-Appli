@@ -294,9 +294,14 @@ function Checkout() {
     if (submittingRef.current) return;
     submittingRef.current = true;
     setSubmitting(true);
+    const release = () => {
+      submittingRef.current = false;
+      setSubmitting(false);
+    };
     setTopError(null);
     if (cartItems.length === 0) {
       setTopError("Votre panier est vide. Ajoutez un plat avant de passer au paiement.");
+      release();
       return;
     }
     const errs = validateDeliveryContact(contact);
@@ -304,6 +309,7 @@ function Checkout() {
     if (Object.keys(errs).length > 0) {
       setDeliveryErr(errs.address ?? "Vérifiez vos informations de livraison");
       setTopError("Complétez l'adresse, les instructions et le téléphone avant de payer.");
+      release();
       return;
     }
     setDeliveryErr(null);
@@ -313,10 +319,11 @@ function Checkout() {
       activeOrderId = (await ensureLiveOrder()) ?? liveOrderId;
     } catch (e) {
       setTopError(e instanceof Error ? e.message : "Impossible de créer la commande");
+      release();
       return;
     }
 
-    if (method === "cash") return setStep("success");
+    if (method === "cash") { setStep("success"); release(); return; }
     if (method === "card") {
       setPending(true);
       setPaymentStatus("pending");
@@ -340,6 +347,7 @@ function Checkout() {
         setPending(false);
         setPaymentStatus("failed");
         setTopError(e instanceof Error ? e.message : "Erreur paiement carte");
+        release();
       }
       return;
     }
@@ -365,6 +373,7 @@ function Checkout() {
       setPending(false);
       setPaymentStatus("failed");
       setTopError(e instanceof Error ? e.message : "Erreur paiement");
+      release();
     }
   };
 
