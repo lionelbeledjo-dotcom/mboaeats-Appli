@@ -70,6 +70,74 @@ type Dish = {
   is_available: boolean | null;
 };
 
+const DAYS_ORDER: Array<keyof OpeningHours> = [
+  "dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi",
+];
+const DAY_LABEL: Record<keyof OpeningHours, string> = {
+  lundi:"Lundi",mardi:"Mardi",mercredi:"Mercredi",jeudi:"Jeudi",
+  vendredi:"Vendredi",samedi:"Samedi",dimanche:"Dimanche",
+};
+
+function isOpenNow(h: OpeningHours | null, manual: boolean | null): boolean {
+  if (manual) return false;
+  if (!h) return false;
+  const now = new Date();
+  const day = h[DAYS_ORDER[now.getDay()]];
+  if (!day?.is_open) return false;
+  const cur = now.getHours()*60 + now.getMinutes();
+  const [oh,om] = day.open.split(":").map(Number);
+  const [ch,cm] = day.close.split(":").map(Number);
+  return cur >= oh*60+om && cur <= ch*60+cm;
+}
+
+function RestoOpenBadge({ resto }: { resto: Resto }) {
+  const open = isOpenNow(resto.opening_hours, resto.manually_closed);
+  return (
+    <span className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold ${
+      open ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+           : "bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
+    }`}>
+      {open ? "● Ouvert" : "Fermé"}
+    </span>
+  );
+}
+
+function TodayHours({ resto }: { resto: Resto }) {
+  const [open, setOpen] = useState(false);
+  const h = resto.opening_hours;
+  if (!h) return null;
+  const today = h[DAYS_ORDER[new Date().getDay()]];
+  const todayLabel = today?.is_open
+    ? `Aujourd'hui : ${today.open} – ${today.close}`
+    : "Fermé aujourd'hui";
+  return (
+    <div className="mt-3 text-xs">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="font-semibold text-foreground hover:underline"
+      >
+        {todayLabel} · {open ? "Masquer" : "Voir tous les horaires"}
+      </button>
+      {open && (
+        <ul className="mt-2 space-y-1 rounded-xl border border-neutral-200 bg-card p-3 dark:border-neutral-800">
+          {(Object.keys(DAY_LABEL) as Array<keyof OpeningHours>).map((k) => {
+            const d = h[k];
+            return (
+              <li key={k} className="flex justify-between">
+                <span className="font-medium">{DAY_LABEL[k]}</span>
+                <span className="text-muted-foreground">
+                  {d?.is_open ? `${d.open} – ${d.close}` : "Fermé"}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 function RestoLivePage() {
   const { slug } = Route.useParams();
   const navigate = useNavigate();
@@ -467,70 +535,3 @@ function DishCard({
   );
 }
 
-const DAYS_ORDER: Array<keyof OpeningHours> = [
-  "dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi",
-];
-const DAY_LABEL: Record<keyof OpeningHours, string> = {
-  lundi:"Lundi",mardi:"Mardi",mercredi:"Mercredi",jeudi:"Jeudi",
-  vendredi:"Vendredi",samedi:"Samedi",dimanche:"Dimanche",
-};
-
-function isOpenNow(h: OpeningHours | null, manual: boolean | null): boolean {
-  if (manual) return false;
-  if (!h) return false;
-  const now = new Date();
-  const day = h[DAYS_ORDER[now.getDay()]];
-  if (!day?.is_open) return false;
-  const cur = now.getHours()*60 + now.getMinutes();
-  const [oh,om] = day.open.split(":").map(Number);
-  const [ch,cm] = day.close.split(":").map(Number);
-  return cur >= oh*60+om && cur <= ch*60+cm;
-}
-
-function RestoOpenBadge({ resto }: { resto: Resto }) {
-  const open = isOpenNow(resto.opening_hours, resto.manually_closed);
-  return (
-    <span className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold ${
-      open ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
-           : "bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
-    }`}>
-      {open ? "● Ouvert" : "Fermé"}
-    </span>
-  );
-}
-
-function TodayHours({ resto }: { resto: Resto }) {
-  const [open, setOpen] = useState(false);
-  const h = resto.opening_hours;
-  if (!h) return null;
-  const today = h[DAYS_ORDER[new Date().getDay()]];
-  const todayLabel = today?.is_open
-    ? `Aujourd'hui : ${today.open} – ${today.close}`
-    : "Fermé aujourd'hui";
-  return (
-    <div className="mt-3 text-xs">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="font-semibold text-foreground hover:underline"
-      >
-        {todayLabel} · {open ? "Masquer" : "Voir tous les horaires"}
-      </button>
-      {open && (
-        <ul className="mt-2 space-y-1 rounded-xl border border-neutral-200 bg-card p-3 dark:border-neutral-800">
-          {(Object.keys(DAY_LABEL) as Array<keyof OpeningHours>).map((k) => {
-            const d = h[k];
-            return (
-              <li key={k} className="flex justify-between">
-                <span className="font-medium">{DAY_LABEL[k]}</span>
-                <span className="text-muted-foreground">
-                  {d?.is_open ? `${d.open} – ${d.close}` : "Fermé"}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </div>
-  );
-}
