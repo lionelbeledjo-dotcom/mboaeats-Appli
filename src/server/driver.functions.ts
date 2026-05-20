@@ -125,9 +125,10 @@ export const updateMissionStatus = createServerFn({ method: "POST" })
           });
         } else if (data.status === "delivered") {
           const clientEmail = await getUserEmail(row.user_id);
+          // related_id = order_id seul (UUID valide). Dédup naturelle par template+order.
           if (clientEmail) await sendEmail({
             to: clientEmail, template: "order_delivered_client",
-            related_id: `${order_id}-delivered`, user_id: row.user_id,
+            related_id: order_id, user_id: row.user_id,
             data: { reference, order_id, restaurant_name },
           });
         }
