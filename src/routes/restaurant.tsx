@@ -129,20 +129,48 @@ function RestaurantSpace() {
 
 
   const updateProfile = useServerFn(updateMyRestaurantProfile);
-  const autoOpen = useMemo(
-    () => (resto ? isRestoOpenNow(resto.opening_hours, resto.manually_closed) : false),
+  const scheduleOpen = useMemo(
+    () => (resto ? isOpenBySchedule(resto.opening_hours) : false),
     [resto],
   );
+  const autoOpen = useMemo(
+    () =>
+      resto
+        ? resto.manually_closed
+          ? false
+          : resto.manually_open
+            ? true
+            : scheduleOpen
+        : false,
+    [resto, scheduleOpen],
+  );
 
+  // Toggle = bascule ouvert/fermé. Si horaires disent fermé et user clique
+  // "ouvrir" → manually_open=true (override). Si actuellement ouvert
+  // → manually_closed=true. Sinon → on lève manually_closed.
   const toggleManuallyClosed = async () => {
     if (!resto) return;
-    const next = !resto.manually_closed;
-    setResto({ ...resto, manually_closed: next });
+    let patch: { manually_closed?: boolean; manually_open?: boolean };
+    let next: Partial<Resto>;
+    if (autoOpen) {
+      patch = { manually_closed: true, manually_open: false };
+      next = { manually_closed: true, manually_open: false };
+    } else if (resto.manually_closed) {
+      // Fermé manuellement → on rouvre (override si horaires fermés)
+      patch = { manually_closed: false, manually_open: !scheduleOpen };
+      next = { manually_closed: false, manually_open: !scheduleOpen };
+    } else {
+      // Fermé par horaires → on force l'ouverture
+      patch = { manually_open: true };
+      next = { manually_open: true };
+    }
+    const prev = { manually_closed: resto.manually_closed, manually_open: resto.manually_open };
+    setResto({ ...resto, ...next });
     try {
-      await updateProfile({ data: { manually_closed: next } });
-      toast.success(next ? "Restaurant fermé temporairement" : "Fermeture manuelle levée");
-    } catch (e) {
-      setResto({ ...resto, manually_closed: !next });
+      await updateProfile({ data: patch });
+      toast.success(patch.manually_closed ? "Restaurant fermé" : "Restaurant ouvert");
+    } catch {
+      setResto({ ...resto, ...prev });
       toast.error("Action impossible");
     }
   };
