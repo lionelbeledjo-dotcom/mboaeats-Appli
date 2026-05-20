@@ -1056,12 +1056,11 @@ export const moderateRestaurant = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) throw new Error(error.message);
 
-    // Email fire-and-forget au propriétaire
-    void (async () => {
-      try {
-        const { sendEmail, getRestaurantOwnerEmail } = await import("@/server/email.functions");
-        const owner = await getRestaurantOwnerEmail(data.restaurantId);
-        if (!owner.email) return;
+    // Email au propriétaire — awaited inline.
+    try {
+      const { sendEmail, getRestaurantOwnerEmail } = await import("@/server/email.functions");
+      const owner = await getRestaurantOwnerEmail(data.restaurantId);
+      if (owner.email) {
         const restaurant_name = (row as any)?.name ?? "Votre restaurant";
         if (newStatus === "approved") {
           await sendEmail({
@@ -1076,8 +1075,8 @@ export const moderateRestaurant = createServerFn({ method: "POST" })
             data: { restaurant_name, reason: note },
           });
         }
-      } catch (e) { console.error("[moderateRestaurant email] failed", e); }
-    })();
+      }
+    } catch (e) { console.error("[moderateRestaurant email] failed", e); }
 
     return { restaurant: row };
   });
