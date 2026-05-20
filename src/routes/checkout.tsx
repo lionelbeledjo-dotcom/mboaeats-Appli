@@ -291,6 +291,9 @@ function Checkout() {
   };
 
   const start = async () => {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+    setSubmitting(true);
     setTopError(null);
     if (cartItems.length === 0) {
       setTopError("Votre panier est vide. Ajoutez un plat avant de passer au paiement.");
