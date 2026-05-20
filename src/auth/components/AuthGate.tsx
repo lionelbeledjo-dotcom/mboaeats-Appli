@@ -29,6 +29,8 @@ const PUBLIC_ROUTES: ReadonlyArray<string> = [
   "/reset-password",
   "/devenir-resto",
   "/restaurant/connexion",
+  "/devenir-livreur",
+  "/livreur/connexion",
   "/admin/login",
   "/admin/unauthorized",
   "/superadmin/login",
