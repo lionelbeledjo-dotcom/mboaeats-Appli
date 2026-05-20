@@ -1448,76 +1448,321 @@ function StatsPanel({ restoId }: { restoId: string }) {
   );
 }
 
-// ─── Profil ─────────────────────────────────────────────────────────────────
+// ─── Profil (Pack 7) ────────────────────────────────────────────────────────
+
+const DEFAULT_HOURS: OpeningHours = {
+  lundi:    { is_open: true, open: "09:00", close: "22:00" },
+  mardi:    { is_open: true, open: "09:00", close: "22:00" },
+  mercredi: { is_open: true, open: "09:00", close: "22:00" },
+  jeudi:    { is_open: true, open: "09:00", close: "22:00" },
+  vendredi: { is_open: true, open: "09:00", close: "22:00" },
+  samedi:   { is_open: true, open: "09:00", close: "22:00" },
+  dimanche: { is_open: true, open: "09:00", close: "22:00" },
+};
+
+const DAY_LABELS: Array<[keyof OpeningHours, string]> = [
+  ["lundi", "Lundi"], ["mardi", "Mardi"], ["mercredi", "Mercredi"],
+  ["jeudi", "Jeudi"], ["vendredi", "Vendredi"], ["samedi", "Samedi"],
+  ["dimanche", "Dimanche"],
+];
+
+export function isRestoOpenNow(
+  hours: OpeningHours | null | undefined,
+  manuallyClosed: boolean | null | undefined,
+): boolean {
+  if (manuallyClosed) return false;
+  const h = hours ?? DEFAULT_HOURS;
+  const now = new Date();
+  const jsDay = now.getDay(); // 0 = dimanche
+  const order: Array<keyof OpeningHours> = [
+    "dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi",
+  ];
+  const day = h[order[jsDay]];
+  if (!day?.is_open) return false;
+  const cur = now.getHours() * 60 + now.getMinutes();
+  const [oh, om] = day.open.split(":").map(Number);
+  const [ch, cm] = day.close.split(":").map(Number);
+  return cur >= oh * 60 + om && cur <= ch * 60 + cm;
+}
+
 function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void }) {
-  const update = useServerFn(updateMyRestaurant);
-  const [form, setForm] = useState({
-    name: resto.name,
-    cuisine: resto.cuisine,
-    neighborhood: resto.neighborhood ?? "",
-    eta_min: resto.eta_min ?? 20,
-    eta_max: resto.eta_max ?? 40,
-    delivery_fee: resto.delivery_fee ?? 0,
-  });
-  const [saving, setSaving] = useState(false);
+  const updateProfile = useServerFn(updateMyRestaurantProfile);
+  const setImage = useServerFn(setRestaurantImage);
+
+  const [description, setDescription] = useState(resto.description ?? "");
+  const [phone, setPhone] = useState(resto.phone ?? "");
+  const [hours, setHours] = useState<OpeningHours>(
+    (resto.opening_hours && Object.keys(resto.opening_hours).length >= 7
+      ? resto.opening_hours
+      : DEFAULT_HOURS) as OpeningHours,
+  );
+  const [coverUrl, setCoverUrl] = useState<string | null>(resto.cover_url);
+  const [logoUrl, setLogoUrl] = useState<string | null>(resto.logo_url);
+  const [savingInfo, setSavingInfo] = useState(false);
+  const [savingHours, setSavingHours] = useState(false);
+  const [uploading, setUploading] = useState<"cover" | "logo" | null>(null);
+
+  const initials = useMemo(
+    () =>
+      resto.name
+        .split(/\s+/)
+        .map((w) => w[0])
+        .filter(Boolean)
+        .slice(0, 2)
+        .join("")
+        .toUpperCase(),
+    [resto.name],
+  );
+
+  const handleUpload = async (kind: "cover" | "logo", file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Sélectionnez une image");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image trop lourde (5 Mo max)");
+      return;
+    }
+    setUploading(kind);
+    try {
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+      const path = `restaurants/${resto.id}/${kind}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("restaurant-images")
+        .upload(path, file, { upsert: true, cacheControl: "3600" });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("restaurant-images").getPublicUrl(path);
+      const url = pub.publicUrl;
+      await setImage({ data: { kind, url } });
+      if (kind === "cover") setCoverUrl(url);
+      else setLogoUrl(url);
+      toast.success("Image mise à jour");
+      onSaved();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Upload impossible");
+    } finally {
+      setUploading(null);
+    }
+  };
+
+  const saveInfo = async () => {
+    if (description.length > 280) {
+      toast.error("Description trop longue (280 max)");
+      return;
+    }
+    setSavingInfo(true);
+    try {
+      await updateProfile({
+        data: {
+          description: description.trim() || null,
+          phone: phone.trim() || null,
+        },
+      });
+      toast.success("Informations enregistrées");
+      onSaved();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erreur");
+    } finally {
+      setSavingInfo(false);
+    }
+  };
+
+  const saveHours = async () => {
+    setSavingHours(true);
+    try {
+      await updateProfile({ data: { opening_hours: hours } });
+      toast.success("Horaires enregistrés");
+      onSaved();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erreur");
+    } finally {
+      setSavingHours(false);
+    }
+  };
+
+  const copyMondayToAll = () => {
+    const monday = hours.lundi;
+    const next = { ...hours } as OpeningHours;
+    for (const [k] of DAY_LABELS) next[k] = { ...monday };
+    setHours(next);
+    toast.success("Lundi copié sur tous les jours");
+  };
 
   return (
-    <div className="max-w-xl">
-      <h2 className="mb-4 font-display text-xl font-bold">Profil restaurant</h2>
-      <div className="space-y-3 rounded-2xl border border-border bg-card p-5">
-        <Field label="Nom" value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
-        <Field label="Cuisine" value={form.cuisine} onChange={(v) => setForm({ ...form, cuisine: v })} />
-        <Field label="Quartier" value={form.neighborhood} onChange={(v) => setForm({ ...form, neighborhood: v })} />
-        <div className="grid grid-cols-3 gap-3">
-          <Field
-            label="ETA min"
-            type="number"
-            value={String(form.eta_min)}
-            onChange={(v) => setForm({ ...form, eta_min: parseInt(v || "0", 10) })}
-          />
-          <Field
-            label="ETA max"
-            type="number"
-            value={String(form.eta_max)}
-            onChange={(v) => setForm({ ...form, eta_max: parseInt(v || "0", 10) })}
-          />
-          <Field
-            label="Livraison F"
-            type="number"
-            value={String(form.delivery_fee)}
-            onChange={(v) => setForm({ ...form, delivery_fee: parseInt(v || "0", 10) })}
-          />
+    <div className="max-w-2xl space-y-6">
+      <h2 className="font-display text-xl font-bold">Profil restaurant</h2>
+
+      {/* Section 1 — Identité visuelle */}
+      <section className="overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="relative h-40 w-full bg-gradient-to-br from-emerald-600 to-emerald-400">
+          {coverUrl && (
+            <SmartImage
+              src={coverUrl}
+              alt="Couverture"
+              className="h-full w-full object-cover"
+            />
+          )}
+          <label className="absolute right-3 top-3 inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-black/55 px-3 py-1.5 text-xs font-bold text-white backdrop-blur hover:bg-black/70">
+            {uploading === "cover" ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Pencil className="h-3.5 w-3.5" />
+            )}
+            Changer la photo
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => e.target.files?.[0] && handleUpload("cover", e.target.files[0])}
+            />
+          </label>
+
+          <label className="absolute -bottom-8 left-5 block cursor-pointer">
+            <div className="relative h-20 w-20 overflow-hidden rounded-full border-4 border-card bg-emerald-500 shadow-glow">
+              {logoUrl ? (
+                <SmartImage src={logoUrl} alt="Logo" className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center font-display text-2xl font-bold text-white">
+                  {initials || <ChefHat className="h-8 w-8" />}
+                </div>
+              )}
+              <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition group-hover:bg-black/40 group-hover:opacity-100">
+                <Pencil className="h-4 w-4 text-white" />
+              </div>
+            </div>
+            <span className="absolute -right-1 bottom-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow">
+              {uploading === "logo" ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Pencil className="h-3 w-3" />
+              )}
+            </span>
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => e.target.files?.[0] && handleUpload("logo", e.target.files[0])}
+            />
+          </label>
         </div>
+        <div className="px-5 pb-5 pt-12">
+          <p className="font-display text-lg font-bold">{resto.name}</p>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            Le nom ne peut être modifié — contactez le support si nécessaire.
+          </p>
+        </div>
+      </section>
+
+      {/* Section 2 — Informations */}
+      <section className="space-y-3 rounded-2xl border border-border bg-card p-5">
+        <h3 className="font-display text-base font-bold">Informations</h3>
+        <label className="block">
+          <span className="text-xs font-semibold text-muted-foreground">
+            Description ({description.length}/280)
+          </span>
+          <textarea
+            value={description}
+            maxLength={280}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+            placeholder="Présentez votre restaurant en quelques mots."
+            className="mt-1 w-full resize-none rounded-xl border border-border bg-background/50 px-3 py-2.5 text-sm outline-none focus:border-primary"
+          />
+        </label>
+        <label className="block">
+          <span className="text-xs font-semibold text-muted-foreground">
+            Téléphone de contact
+          </span>
+          <input
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="+237 6XX XX XX XX"
+            className="mt-1 w-full rounded-xl border border-border bg-background/50 px-3 py-2.5 text-sm outline-none focus:border-primary"
+          />
+        </label>
         <button
-          disabled={saving}
-          onClick={async () => {
-            setSaving(true);
-            try {
-              await update({
-                data: {
-                  id: resto.id,
-                  name: form.name,
-                  cuisine: form.cuisine,
-                  neighborhood: form.neighborhood || null,
-                  eta_min: form.eta_min,
-                  eta_max: form.eta_max,
-                  delivery_fee: form.delivery_fee,
-                },
-              });
-              toast.success("Profil enregistré");
-              onSaved();
-            } catch (e) {
-              toast.error(e instanceof Error ? e.message : "Erreur");
-            } finally {
-              setSaving(false);
-            }
-          }}
-          className="mt-2 inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-glow disabled:opacity-50"
+          onClick={saveInfo}
+          disabled={savingInfo}
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-glow disabled:opacity-50"
         >
-          {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+          {savingInfo && <Loader2 className="h-4 w-4 animate-spin" />}
           Enregistrer
         </button>
-      </div>
+      </section>
+
+      {/* Section 3 — Horaires */}
+      <section className="space-y-3 rounded-2xl border border-border bg-card p-5">
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="font-display text-base font-bold">Horaires d'ouverture</h3>
+          <button
+            type="button"
+            onClick={copyMondayToAll}
+            className="text-xs font-semibold text-primary hover:underline"
+          >
+            Copier lundi sur tous les jours
+          </button>
+        </div>
+
+        <div className="space-y-2">
+          {DAY_LABELS.map(([key, label]) => {
+            const d = hours[key];
+            return (
+              <div
+                key={key}
+                className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-background/40 px-3 py-2"
+              >
+                <span className="w-20 text-sm font-semibold">{label}</span>
+                <label className="inline-flex cursor-pointer items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={d.is_open}
+                    onChange={(e) =>
+                      setHours({ ...hours, [key]: { ...d, is_open: e.target.checked } })
+                    }
+                    className="h-4 w-4 accent-primary"
+                  />
+                  <span className="text-xs text-muted-foreground">Ouvert</span>
+                </label>
+                {d.is_open ? (
+                  <div className="ml-auto flex items-center gap-2">
+                    <input
+                      type="time"
+                      value={d.open}
+                      onChange={(e) =>
+                        setHours({ ...hours, [key]: { ...d, open: e.target.value } })
+                      }
+                      className="rounded-lg border border-border bg-background px-2 py-1 text-sm"
+                    />
+                    <span className="text-muted-foreground">→</span>
+                    <input
+                      type="time"
+                      value={d.close}
+                      onChange={(e) =>
+                        setHours({ ...hours, [key]: { ...d, close: e.target.value } })
+                      }
+                      className="rounded-lg border border-border bg-background px-2 py-1 text-sm"
+                    />
+                  </div>
+                ) : (
+                  <span className="ml-auto rounded-full bg-muted px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                    Fermé
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <button
+          onClick={saveHours}
+          disabled={savingHours}
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-glow disabled:opacity-50"
+        >
+          {savingHours && <Loader2 className="h-4 w-4 animate-spin" />}
+          Enregistrer les horaires
+        </button>
+      </section>
     </div>
   );
 }
