@@ -502,9 +502,11 @@ function Checkout() {
               <ChooseMethod
                 method={method} setMethod={setMethod}
                 phone={phone} setPhone={setPhone}
-                disabled={payDisabled}
+                disabled={payDisabled || submitting}
+                submitting={submitting}
                 disabledReason={payDisabledReason}
                 onWalletPay={(w) => {
+                  if (submittingRef.current) return;
                   if (payDisabled) {
                     setTopError(payDisabledReason);
                     setContactErrors(liveContactErrors);
@@ -516,6 +518,7 @@ function Checkout() {
                   start();
                 }}
                 onPay={() => {
+                  if (submittingRef.current) return;
                   if (payDisabled) {
                     setTopError(payDisabledReason);
                     setContactErrors(liveContactErrors);
