@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   getMyRestaurant,
   updateMyRestaurant,
+  updateMyRestaurantProfile,
+  setRestaurantImage,
   listRestaurantOrders,
   updateOrderStatus,
   getRestaurantMenu,
@@ -38,6 +40,12 @@ export const Route = createFileRoute("/restaurant")({
   }),
 });
 
+type DayHours = { is_open: boolean; open: string; close: string };
+type OpeningHours = Record<
+  "lundi" | "mardi" | "mercredi" | "jeudi" | "vendredi" | "samedi" | "dimanche",
+  DayHours
+>;
+
 type Resto = {
   id: string;
   name: string;
@@ -49,6 +57,13 @@ type Resto = {
   delivery_fee: number | null;
   eta_min: number | null;
   eta_max: number | null;
+  // Pack 7
+  cover_url: string | null;
+  logo_url: string | null;
+  phone: string | null;
+  description: string | null;
+  opening_hours: OpeningHours | null;
+  manually_closed: boolean | null;
   // Modération : voir migration `resto_moderation`.
   validation_status: "pending" | "approved" | "rejected";
   validation_note: string | null;
