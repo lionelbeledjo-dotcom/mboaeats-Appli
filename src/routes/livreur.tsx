@@ -31,7 +31,7 @@ export const Route = createFileRoute("/livreur")({
   }),
 });
 
-type Tab = "courses" | "navigation" | "portefeuille" | "evals";
+type Tab = "available" | "mine";
 
 type MissionRow = {
   id: string;
@@ -69,7 +69,7 @@ function Livreur() {
   const [authReady, setAuthReady] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const [online, setOnline] = useState(false);
-  const [tab, setTab] = useState<Tab>("courses");
+  const [tab, setTab] = useState<Tab>("available");
 
   const [available, setAvailable] = useState<MissionRow[]>([]);
   const [mine, setMine] = useState<MissionRow[]>([]);
@@ -254,21 +254,26 @@ function Livreur() {
       <Header online={online} setOnline={toggleOnline} avgRating={reviews.avg} />
       <Stats online={online} earnings={earnings} />
 
-      <nav className="sticky top-[64px] z-30 mx-auto flex max-w-5xl gap-2 px-4 py-3 md:px-8 overflow-x-auto">
-        {(["courses", "navigation", "portefeuille", "evals"] as Tab[]).map((t) => (
+      <nav className="sticky top-[64px] z-30 mx-auto flex max-w-5xl gap-2 px-4 py-3 md:px-8">
+        {([
+          { key: "available", label: "Commandes disponibles" },
+          { key: "mine", label: "Mes livraisons" },
+        ] as { key: Tab; label: string }[]).map((t) => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`flex-1 min-w-[110px] rounded-2xl px-4 py-2.5 text-sm font-semibold capitalize transition ${
-              tab === t
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`flex-1 rounded-2xl px-4 py-2.5 text-sm font-semibold transition ${
+              tab === t.key
                 ? "bg-gradient-primary text-primary-foreground shadow-glow"
                 : "border border-border bg-surface/60 text-muted-foreground hover:text-foreground"
             }`}
           >
-            {t === "courses" ? "Courses"
-              : t === "navigation" ? "Navigation"
-              : t === "portefeuille" ? "Portefeuille"
-              : "Évaluations"}
+            {t.label}
+            {t.key === "available" && available.length > 0 && (
+              <span className="ml-2 rounded-full bg-background/30 px-2 py-0.5 text-[10px] font-bold">
+                {available.length}
+              </span>
+            )}
           </button>
         ))}
       </nav>
@@ -278,28 +283,21 @@ function Livreur() {
           <div className="flex items-center justify-center py-16 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" />
           </div>
-        ) : tab === "courses" ? (
-          <Courses
+        ) : tab === "available" ? (
+          <AvailableTab
             online={online}
             available={available}
             current={currentMission}
-            mine={mine}
             onClaim={handleClaim}
+          />
+        ) : (
+          <MyDeliveriesTab
+            mine={mine}
+            current={currentMission}
             onStatus={handleStatus}
             onArrived={handleArrived}
             arrivedAt={arrivedAt}
           />
-        ) : tab === "navigation" ? (
-          <NavigationView
-            mission={currentMission}
-            onStatus={handleStatus}
-            onArrived={handleArrived}
-            arrived={!!(currentMission && arrivedAt[currentMission.id])}
-          />
-        ) : tab === "portefeuille" ? (
-          <Portefeuille earnings={earnings} mine={mine} />
-        ) : (
-          <Evaluations reviews={reviews.list} avg={reviews.avg ?? 0} count={reviews.count} />
         )}
       </main>
 
@@ -521,6 +519,137 @@ function Courses({
                   <div>
                     <p className="text-sm font-semibold">{r.restaurants?.name ?? "Restaurant"}</p>
                     <p className="text-xs text-muted-foreground">#{r.reference}</p>
+                  </div>
+                </div>
+                <p className="text-sm font-bold">{(r.delivery_fee ?? 0).toLocaleString("fr-FR")} FCFA</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AvailableTab({
+  online, available, current, onClaim,
+}: {
+  online: boolean;
+  available: MissionRow[];
+  current: MissionRow | null;
+  onClaim: (id: string) => void;
+}) {
+  if (!online) {
+    return (
+      <div className="py-4">
+        <EmptyOffline />
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-4 py-4">
+      {current && (
+        <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+          Vous avez une livraison en cours (#{current.reference}). Terminez-la avant d'en accepter une nouvelle.
+        </div>
+      )}
+      <h2 className="font-display text-lg font-bold">Commandes disponibles</h2>
+      {available.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-border bg-surface/30 px-6 py-12 text-center text-sm text-muted-foreground">
+          Aucune mission ouverte pour le moment. On vous notifie dès qu'une commande est prête.
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {available.map((m) => (
+            <MissionCard key={m.id} m={m} onClaim={current ? () => {} : onClaim} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MyDeliveriesTab({
+  mine, current, onStatus, onArrived, arrivedAt,
+}: {
+  mine: MissionRow[];
+  current: MissionRow | null;
+  onStatus: (id: string, s: "picked_up" | "delivering" | "delivered" | "cancelled") => void;
+  onArrived: (id: string) => void;
+  arrivedAt: Record<string, boolean>;
+}) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayDeliveries = mine.filter(
+    (m) => m.status === "delivered" && m.delivered_at && new Date(m.delivered_at) >= today,
+  );
+  const todayEarnings = todayDeliveries.reduce((s, m) => s + (m.delivery_fee ?? 0), 0);
+  const history = mine
+    .filter((m) => m.status === "delivered")
+    .filter((h) => !todayDeliveries.find((t) => t.id === h.id))
+    .slice(0, 12);
+
+  return (
+    <div className="space-y-4 py-4">
+      {current ? (
+        <ActiveCourse
+          mission={current}
+          onStatus={onStatus}
+          onArrived={onArrived}
+          arrived={!!arrivedAt[current.id]}
+        />
+      ) : (
+        <div className="rounded-3xl border border-dashed border-border bg-surface/30 px-6 py-10 text-center text-sm text-muted-foreground">
+          Aucune livraison en cours. Acceptez une commande dans l'onglet "Commandes disponibles".
+        </div>
+      )}
+
+      <div className="mt-2 flex items-end justify-between">
+        <h2 className="font-display text-lg font-bold">Livraisons du jour</h2>
+        <p className="text-sm font-bold text-emerald-400">
+          +{todayEarnings.toLocaleString("fr-FR")} FCFA
+        </p>
+      </div>
+      {todayDeliveries.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Aucune livraison terminée aujourd'hui.</p>
+      ) : (
+        <div className="space-y-2">
+          {todayDeliveries.map((r) => (
+            <div key={r.id} className="flex items-center justify-between rounded-2xl border border-border bg-surface/40 p-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400">
+                  <Check className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">{r.restaurants?.name ?? "Restaurant"}</p>
+                  <p className="text-xs text-muted-foreground">
+                    #{r.reference}
+                    {r.delivered_at && ` · ${new Date(r.delivered_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`}
+                  </p>
+                </div>
+              </div>
+              <p className="text-sm font-bold">+{(r.delivery_fee ?? 0).toLocaleString("fr-FR")} FCFA</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {history.length > 0 && (
+        <div>
+          <h2 className="mt-6 font-display text-lg font-bold">Historique récent</h2>
+          <div className="mt-3 space-y-2">
+            {history.map((r) => (
+              <div key={r.id} className="flex items-center justify-between rounded-2xl border border-border bg-surface/40 p-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <Check className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold">{r.restaurants?.name ?? "Restaurant"}</p>
+                    <p className="text-xs text-muted-foreground">
+                      #{r.reference}
+                      {r.delivered_at && ` · ${new Date(r.delivered_at).toLocaleDateString("fr-FR")}`}
+                    </p>
                   </div>
                 </div>
                 <p className="text-sm font-bold">{(r.delivery_fee ?? 0).toLocaleString("fr-FR")} FCFA</p>
