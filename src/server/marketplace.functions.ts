@@ -366,6 +366,26 @@ export const createOrder = createServerFn({ method: "POST" })
       .single();
     if (orderErr) throw new Error("Impossible de créer la commande");
 
+    // Freeze commission values at creation (never recalculated afterwards).
+    try {
+      const { data: rateRow } = await supabaseAdmin.rpc("get_commission_rate", {
+        p_restaurant_id: data.restaurant_id,
+      });
+      const rate = Number(rateRow ?? 18);
+      const commission_amount = Math.round((subtotal * rate) / 100);
+      const restaurant_payout = subtotal - commission_amount;
+      await supabaseAdmin
+        .from("orders")
+        .update({
+          commission_rate_applied: rate,
+          commission_amount,
+          restaurant_payout,
+        })
+        .eq("id", order.id);
+    } catch (e) {
+      console.error("[createOrder commission] failed", e);
+    }
+
     const { error: itemsErr } = await supabaseAdmin.from("order_items").insert(
       orderItemsToInsert.map((it) => ({
         order_id: order.id,
