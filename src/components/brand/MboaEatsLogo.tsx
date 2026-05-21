@@ -75,6 +75,7 @@ export function MboaEatsLogo({
   showBadge = true,
   badgeLabel,
   withContainer,
+  animate = false,
   className,
 }: MboaEatsLogoProps) {
   // Backward compat: withContainer={false} → ghost
