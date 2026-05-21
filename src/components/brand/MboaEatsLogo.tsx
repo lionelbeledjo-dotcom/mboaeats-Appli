@@ -140,6 +140,7 @@ export function MboaEatsLogo({
         variantClasses,
         PADDING_SIZES[size],
         CONTAINER_ALIGN[align],
+        animate && "logo-header-animate",
         className,
       )}
     >
