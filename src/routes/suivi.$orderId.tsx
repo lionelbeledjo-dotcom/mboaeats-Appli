@@ -1,4 +1,4 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, redirect } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -9,11 +9,12 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getOrder } from "@/server/marketplace.functions";
-import { getDriverContact, reportOrderIssue } from "@/server/tracking.functions";
+import { reportOrderIssue } from "@/server/tracking.functions";
 import { useRealtimeOrder } from "@/hooks/use-realtime-order";
 import { useDriverLocation } from "@/hooks/use-driver-location";
 import { ReviewModal } from "@/components/ReviewModal";
 import { OrderChat } from "@/components/OrderChat";
+import { getOrderReview } from "@/server/social.functions";
 
 export const Route = createFileRoute("/suivi/$orderId")({
   beforeLoad: async ({ params }) => {
@@ -21,7 +22,11 @@ export const Route = createFileRoute("/suivi/$orderId")({
     if (!data.user)
       throw redirect({ to: "/connexion", search: { next: `/suivi/${params.orderId}` } });
   },
-  loader: ({ params }) => getOrder({ data: { id: params.orderId } }),
+  loader: async ({ params }) => {
+    const result = await getOrder({ data: { id: params.orderId } });
+    if (!result.order) throw notFound();
+    return result;
+  },
   head: () => ({
     meta: [
       { title: "Suivi de commande · MboaEats" },
@@ -40,28 +45,54 @@ export const Route = createFileRoute("/suivi/$orderId")({
       </div>
     </div>
   ),
+  notFoundComponent: () => (
+    <div className="flex min-h-[60vh] items-center justify-center px-4 text-center">
+      <div>
+        <h1 className="text-xl font-bold" style={{ color: "#1A1A1A" }}>Commande introuvable</h1>
+        <p className="mt-2 text-sm" style={{ color: "#888888" }}>
+          Cette commande n'existe pas ou n'est pas associée à votre compte.
+        </p>
+        <Link to="/commandes" className="mt-4 inline-flex font-semibold" style={{ color: "#06C167" }}>
+          Retour aux commandes
+        </Link>
+      </div>
+    </div>
+  ),
 });
 
 const STEPS = [
+  { key: "paid", label: "Commande reçue", desc: "Votre commande est enregistrée", icon: CheckCircle2 },
+  { key: "accepted", label: "Acceptée", desc: "Acceptée par le resto", icon: CheckCircle2 },
   { key: "preparing", label: "En préparation", desc: "Le resto cuisine votre commande", icon: ChefHat },
-  { key: "ready", label: "Envoyé", desc: "Prête à être récupérée", icon: Package },
+  { key: "ready", label: "Prête", desc: "Prête à être récupérée", icon: Package },
   { key: "picked_up", label: "En route", desc: "Le livreur arrive vers vous", icon: Truck },
   { key: "delivered", label: "Livré", desc: "Bon appétit !", icon: Home },
 ] as const;
 
 const STATUS_INDEX: Record<string, number> = {
-  pending_payment: -1, paid: 0, accepted: 0, preparing: 0,
-  ready: 1, picked_up: 2, delivering: 2, delivered: 3,
+  pending_payment: -1,
+  paid: 0,
+  accepted: 1,
+  preparing: 2,
+  in_preparation: 2,
+  ready: 3,
+  picked_up: 4,
+  in_delivery: 4,
+  delivering: 4,
+  delivered: 5,
 };
 
 const STATUS_TOAST: Record<string, { title: string; emoji: string }> = {
   accepted: { title: "Commande acceptée par le restaurant", emoji: "✅" },
   preparing: { title: "Votre commande est en préparation", emoji: "🍳" },
+  in_preparation: { title: "Votre commande est en préparation", emoji: "🍳" },
   ready: { title: "Commande prête — un livreur arrive", emoji: "📦" },
   picked_up: { title: "Le livreur est en route !", emoji: "🛵" },
+  in_delivery: { title: "Le livreur est en route !", emoji: "🛵" },
   delivering: { title: "Arrivée imminente", emoji: "📍" },
   delivered: { title: "Commande livrée — bon appétit !", emoji: "🎉" },
   cancelled: { title: "Commande annulée", emoji: "❌" },
+  rejected: { title: "Commande refusée", emoji: "❌" },
 };
 
 type OrderItem = { id: string; name: string; qty: number; unit_price: number; line_total: number };
