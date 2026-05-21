@@ -13,6 +13,10 @@ export const Route = createFileRoute("/partenaire/commandes")({
 
 type Order = {
   id: string; reference: string; status: string; total: number;
+  subtotal: number;
+  commission_rate_applied: number | null;
+  commission_amount: number | null;
+  restaurant_payout: number | null;
   created_at: string; notes: string | null;
   delivery_address: { line?: string; city?: string } | null;
   items: { id: string; name: string; qty: number; line_total: number }[];
@@ -113,6 +117,22 @@ function CommandesPage() {
                         <p className="mt-2 rounded-md border border-border bg-surface p-1.5 text-[10px] text-muted-foreground">
                           📝 {o.notes}
                         </p>
+                      )}
+                      {o.commission_amount != null && o.restaurant_payout != null && (
+                        <div className="mt-2 rounded-md border border-border bg-muted/30 p-2 text-[10px]">
+                          <div className="flex justify-between text-muted-foreground">
+                            <span>Sous-total plats</span>
+                            <span className="tabular-nums">{o.subtotal.toLocaleString("fr-FR")} F</span>
+                          </div>
+                          <div className="flex justify-between text-muted-foreground">
+                            <span>Commission MboaEats{o.commission_rate_applied != null ? ` (${o.commission_rate_applied}%)` : ""}</span>
+                            <span className="tabular-nums">−{o.commission_amount.toLocaleString("fr-FR")} F</span>
+                          </div>
+                          <div className="mt-1 border-t border-border pt-1 flex justify-between font-bold text-foreground">
+                            <span>Net à percevoir</span>
+                            <span className="tabular-nums text-primary">{o.restaurant_payout.toLocaleString("fr-FR")} F</span>
+                          </div>
+                        </div>
                       )}
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {o.status === "paid" && (

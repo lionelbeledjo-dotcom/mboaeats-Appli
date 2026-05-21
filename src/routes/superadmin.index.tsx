@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { Bike, Crown, LayoutDashboard, ShieldCheck, Store } from "lucide-react";
+import { Bike, Crown, LayoutDashboard, Percent, ShieldCheck, Store } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getRestaurantsForModeration } from "@/server/restaurant.functions";
 import { listDriverApplications } from "@/lib/driver-onboarding.functions";
@@ -65,6 +65,11 @@ function SuperAdminHome() {
           <p className="text-xs text-muted-foreground">
             Validez ou refusez les candidatures de livreurs.
           </p>
+        </Link>
+        <Link to="/superadmin/commissions" className="group rounded-2xl border border-border bg-card p-5 transition hover:border-primary/40 hover:bg-card/80">
+          <Percent className="h-5 w-5 text-primary" />
+          <p className="mt-3 font-semibold">Commissions MboaEats</p>
+          <p className="text-xs text-muted-foreground">Taux global par défaut et overrides par restaurant.</p>
         </Link>
         <Link to="/admin" className="group rounded-2xl border border-border bg-card p-5 transition hover:border-primary/40 hover:bg-card/80">
           <LayoutDashboard className="h-5 w-5 text-primary" />

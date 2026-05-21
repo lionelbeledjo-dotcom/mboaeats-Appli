@@ -17,6 +17,12 @@ import {
   getRestaurantsForModeration,
   moderateRestaurant,
 } from "@/server/restaurant.functions";
+import {
+  getCommissionOverview,
+  setRestaurantCommission,
+} from "@/server/commissions.functions";
+import { Percent } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -49,6 +55,7 @@ type Resto = {
   created_at: string;
   owner_email: string | null;
   owner_full_name: string | null;
+  commission_rate: number | null;
 };
 
 const TABS: { key: StatusTab; label: string }[] = [
@@ -78,16 +85,25 @@ function SuperAdminRestaurants() {
   const router = useRouter();
   const fetchList = useServerFn(getRestaurantsForModeration);
   const moderate = useServerFn(moderateRestaurant);
+  const fetchOverview = useServerFn(getCommissionOverview);
+  const setComm = useServerFn(setRestaurantCommission);
 
   const [tab, setTab] = useState<StatusTab>("pending");
   const [loading, setLoading] = useState(true);
   const [restaurants, setRestaurants] = useState<Resto[]>([]);
   const [counts, setCounts] = useState({ pending: 0, approved: 0, rejected: 0, all: 0 });
+  const [defaultRate, setDefaultRate] = useState<number>(18);
 
   const [approveOpen, setApproveOpen] = useState<Resto | null>(null);
   const [rejectOpen, setRejectOpen] = useState<Resto | null>(null);
+  const [commOpen, setCommOpen] = useState<Resto | null>(null);
+  const [commValue, setCommValue] = useState<string>("");
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    fetchOverview().then((r) => setDefaultRate(r.defaultRate)).catch(() => {});
+  }, []);
 
   const reload = async (s: StatusTab = tab) => {
     setLoading(true);
@@ -237,12 +253,86 @@ function SuperAdminRestaurants() {
             <RestoCard
               key={r.id}
               r={r}
+              defaultRate={defaultRate}
               onApprove={() => openApprove(r)}
               onReject={() => openReject(r)}
+              onEditCommission={() => {
+                setCommValue(r.commission_rate != null ? String(r.commission_rate) : "");
+                setCommOpen(r);
+              }}
             />
           ))}
         </ul>
       )}
+
+      {/* Commission modal */}
+      <Dialog open={!!commOpen} onOpenChange={(o) => !o && setCommOpen(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Commission · {commOpen?.name}</DialogTitle>
+            <DialogDescription>
+              Laissez vide ou réinitialisez pour appliquer le taux global ({defaultRate}%).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              step="0.5"
+              min={0}
+              max={100}
+              value={commValue}
+              onChange={(e) => setCommValue(e.target.value)}
+              placeholder={`Défaut : ${defaultRate}`}
+              className="w-32"
+            />
+            <span className="text-sm text-muted-foreground">%</span>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={async () => {
+                if (!commOpen) return;
+                setSubmitting(true);
+                try {
+                  await setComm({ data: { restaurant_id: commOpen.id, rate_pct: null } });
+                  toast.success("Override supprimé · taux par défaut appliqué");
+                  setCommOpen(null);
+                  await reload();
+                } catch (e: any) {
+                  toast.error(e?.message ?? "Erreur");
+                } finally { setSubmitting(false); }
+              }}
+              disabled={submitting}
+            >
+              Réinitialiser au défaut
+            </Button>
+            <Button
+              type="button"
+              onClick={async () => {
+                if (!commOpen) return;
+                const n = Number(commValue);
+                if (!Number.isFinite(n) || n < 0 || n > 100) {
+                  toast.error("Taux invalide");
+                  return;
+                }
+                setSubmitting(true);
+                try {
+                  await setComm({ data: { restaurant_id: commOpen.id, rate_pct: n } });
+                  toast.success("Commission mise à jour");
+                  setCommOpen(null);
+                  await reload();
+                } catch (e: any) {
+                  toast.error(e?.message ?? "Erreur");
+                } finally { setSubmitting(false); }
+              }}
+              disabled={submitting || commValue === ""}
+            >
+              Enregistrer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Approve modal */}
       <Dialog open={!!approveOpen} onOpenChange={(o) => !o && setApproveOpen(null)}>
@@ -335,13 +425,19 @@ function SuperAdminRestaurants() {
 
 function RestoCard({
   r,
+  defaultRate,
   onApprove,
   onReject,
+  onEditCommission,
 }: {
   r: Resto;
+  defaultRate: number;
   onApprove: () => void;
   onReject: () => void;
+  onEditCommission: () => void;
 }) {
+  const hasOverride = r.commission_rate != null;
+  const effectiveRate = hasOverride ? Number(r.commission_rate) : defaultRate;
   const tone = useMemo(() => {
     switch (r.validation_status) {
       case "approved":
@@ -394,6 +490,20 @@ function RestoCard({
               Modéré le {new Date(r.validated_at).toLocaleString("fr-FR")}
             </p>
           )}
+          <button
+            type="button"
+            onClick={onEditCommission}
+            className={
+              "mt-2 inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium transition hover:opacity-80 " +
+              (hasOverride
+                ? "border-emerald-400 bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300"
+                : "border-border bg-muted/40 text-muted-foreground")
+            }
+            title="Modifier la commission"
+          >
+            <Percent className="h-3 w-3" />
+            {effectiveRate}% {hasOverride ? "(override)" : "(défaut)"}
+          </button>
         </div>
 
         {r.validation_status === "pending" && (

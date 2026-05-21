@@ -113,6 +113,7 @@ export const listRestaurantOrders = createServerFn({ method: "GET" })
       .from("orders")
       .select(
         "id, reference, status, total, subtotal, delivery_fee, eta_minutes, " +
+          "commission_rate_applied, commission_amount, restaurant_payout, " +
           "created_at, paid_at, accepted_at, ready_at, picked_up_at, " +
           "delivered_at, delivery_address, notes, user_id, " +
           "items:order_items(id, name, qty, unit_price, line_total)",
@@ -927,7 +928,7 @@ export const getRestaurantsForModeration = createServerFn({ method: "POST" })
       .from("restaurants")
       .select(
         "id, name, slug, cuisine, city, neighborhood, image_url, owner_id, " +
-          "validation_status, validation_note, validated_at, created_at, is_active",
+          "validation_status, validation_note, validated_at, created_at, is_active, commission_rate",
       )
       .is("deleted_at", null)
       .order("created_at", { ascending: false })
