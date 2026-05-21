@@ -89,3 +89,56 @@ export const setRestaurantCommission = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true, rate_pct: data.rate_pct };
   });
+
+// -----------------------------------------------------------------------------
+// Resto revenue summary par période (utilise les colonnes figées)
+// -----------------------------------------------------------------------------
+import { assertMembership } from "@/auth/middlewares/requireMembership";
+
+export const getRestaurantRevenue = createServerFn({ method: "POST" })
+  .middleware([requireAuth])
+  .inputValidator((d) =>
+    z
+      .object({
+        restaurant_id: z.string().uuid(),
+        period: z.enum(["today", "7d", "30d", "all"]).default("7d"),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertMembership(context, data.restaurant_id, "kitchen");
+
+    let since: Date | null = null;
+    const now = new Date();
+    if (data.period === "today") {
+      since = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    } else if (data.period === "7d") {
+      since = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
+    } else if (data.period === "30d") {
+      since = new Date(now.getTime() - 30 * 24 * 3600 * 1000);
+    }
+
+    let q = supabaseAdmin
+      .from("orders")
+      .select("subtotal, commission_amount, restaurant_payout")
+      .eq("restaurant_id", data.restaurant_id)
+      .eq("status", "delivered")
+      .is("deleted_at", null);
+    if (since) q = q.gte("delivered_at", since.toISOString());
+
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+
+    let totalSales = 0, totalCommission = 0, totalNet = 0;
+    for (const r of rows ?? []) {
+      totalSales += Number(r.subtotal ?? 0);
+      totalCommission += Number(r.commission_amount ?? 0);
+      totalNet += Number(r.restaurant_payout ?? 0);
+    }
+    return {
+      ordersCount: rows?.length ?? 0,
+      totalSales,
+      totalCommission,
+      totalNet,
+    };
+  });
