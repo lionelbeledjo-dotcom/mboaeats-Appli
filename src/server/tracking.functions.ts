@@ -26,6 +26,12 @@ export const getDriverContact = createServerFn({ method: "GET" })
       .eq("user_id", order.driver_id)
       .maybeSingle();
 
+    const { data: dp } = await supabaseAdmin
+      .from("driver_profiles")
+      .select("rating, vehicle_type")
+      .eq("user_id", order.driver_id)
+      .maybeSingle();
+
     return {
       driver: profile
         ? {
@@ -33,9 +39,19 @@ export const getDriverContact = createServerFn({ method: "GET" })
             name: (profile.full_name?.split(" ")[0] ?? "Livreur") || "Livreur",
             phone: profile.phone ?? null,
             avatar_url: profile.avatar_url ?? null,
+            rating: (dp?.rating as number | null) ?? null,
+            vehicle_type: (dp?.vehicle_type as string | null) ?? null,
           }
-        : { id: order.driver_id, name: "Livreur", phone: null, avatar_url: null },
+        : {
+            id: order.driver_id,
+            name: "Livreur",
+            phone: null,
+            avatar_url: null,
+            rating: null,
+            vehicle_type: null,
+          },
     };
+
   });
 
 /** Crée un signalement (dispute) sur une commande en cours de livraison. */

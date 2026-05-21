@@ -112,7 +112,7 @@ function SuiviPage() {
 
   // Contact livreur (chargé uniquement quand un livreur est assigné)
   const fetchContact = useServerFn(getDriverContact);
-  const [driver, setDriver] = useState<{ name: string; phone: string | null; avatar_url: string | null } | null>(null);
+  const [driver, setDriver] = useState<{ name: string; phone: string | null; avatar_url: string | null; rating?: number | null; vehicle_type?: string | null } | null>(null);
   useEffect(() => {
     if (!order.driver_id) {
       setDriver(null);
@@ -343,10 +343,16 @@ function SuiviPage() {
                 {driver?.name ?? "Votre livreur"}
               </p>
               <p className="flex items-center gap-1 text-xs" style={{ color: "#888888" }}>
-                <Star className="h-3 w-3 fill-current" style={{ color: "#FFC107" }} />
-                <span className="font-semibold" style={{ color: "#1A1A1A" }}>4.9</span>
-                {driver?.phone ? <span>· {driver.phone}</span> : <span>· Moto</span>}
+                {driver?.rating != null ? (
+                  <>
+                    <Star className="h-3 w-3 fill-current" style={{ color: "#FFC107" }} />
+                    <span className="font-semibold" style={{ color: "#1A1A1A" }}>{Number(driver.rating).toFixed(1)}</span>
+                  </>
+                ) : null}
+                {driver?.vehicle_type ? <span>· {driver.vehicle_type}</span> : null}
+                {driver?.phone ? <span>· {driver.phone}</span> : null}
               </p>
+
             </div>
             <a
               href={driver?.phone ? `sms:${driver.phone}` : undefined}
