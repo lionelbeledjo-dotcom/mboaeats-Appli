@@ -115,7 +115,14 @@ export function MboaEatsLogo({
 
   if (resolvedVariant === "ghost" || resolvedVariant === "plain") {
     return (
-      <div className={cn("inline-flex max-w-full", CONTAINER_ALIGN[align], className)}>
+      <div
+        className={cn(
+          "inline-flex max-w-full",
+          CONTAINER_ALIGN[align],
+          animate && "logo-header-animate",
+          className,
+        )}
+      >
         {inner}
       </div>
     );
