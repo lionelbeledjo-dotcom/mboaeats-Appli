@@ -5,6 +5,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireAuth } from "@/auth/middlewares/requireAuth";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { assertMembership } from "@/auth/middlewares/requireMembership";
 
 async function assertSuperadmin(userId: string): Promise<void> {
   const { data } = await supabaseAdmin
