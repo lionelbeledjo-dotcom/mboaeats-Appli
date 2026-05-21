@@ -203,6 +203,7 @@ function RootComponent() {
             <Toaster position="top-right" richColors closeButton />
           </AuthGate>
           {!hideClientChrome && <PendingPaymentWatcher />}
+          {!hideClientChrome && <SessionExpiryWatcher />}
           {!hideClientChrome && <OnboardingGate />}
         </AuthProvider>
       </ThemeProvider>
