@@ -78,6 +78,7 @@ import { Route as AdminMenusRouteImport } from './routes/admin.menus'
 import { Route as AdminLogsRouteImport } from './routes/admin.logs'
 import { Route as AdminLivreursRouteImport } from './routes/admin.livreurs'
 import { Route as AdminLitigesRouteImport } from './routes/admin.litiges'
+import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminCommissionsRouteImport } from './routes/admin.commissions'
 import { Route as AdminCommandesRouteImport } from './routes/admin.commandes'
 import { Route as AdminClientsRouteImport } from './routes/admin.clients'
@@ -437,6 +438,11 @@ const AdminLitigesRoute = AdminLitigesRouteImport.update({
   path: '/litiges',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminEmailsRoute = AdminEmailsRouteImport.update({
+  id: '/emails',
+  path: '/emails',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCommissionsRoute = AdminCommissionsRouteImport.update({
   id: '/commissions',
   path: '/commissions',
@@ -547,6 +553,7 @@ export interface FileRoutesByFullPath {
   '/admin/clients': typeof AdminClientsRoute
   '/admin/commandes': typeof AdminCommandesRoute
   '/admin/commissions': typeof AdminCommissionsRoute
+  '/admin/emails': typeof AdminEmailsRoute
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
   '/admin/logs': typeof AdminLogsRoute
@@ -628,6 +635,7 @@ export interface FileRoutesByTo {
   '/admin/clients': typeof AdminClientsRoute
   '/admin/commandes': typeof AdminCommandesRoute
   '/admin/commissions': typeof AdminCommissionsRoute
+  '/admin/emails': typeof AdminEmailsRoute
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
   '/admin/logs': typeof AdminLogsRoute
@@ -713,6 +721,7 @@ export interface FileRoutesById {
   '/admin/clients': typeof AdminClientsRoute
   '/admin/commandes': typeof AdminCommandesRoute
   '/admin/commissions': typeof AdminCommissionsRoute
+  '/admin/emails': typeof AdminEmailsRoute
   '/admin/litiges': typeof AdminLitigesRoute
   '/admin/livreurs': typeof AdminLivreursRoute
   '/admin/logs': typeof AdminLogsRoute
@@ -799,6 +808,7 @@ export interface FileRouteTypes {
     | '/admin/clients'
     | '/admin/commandes'
     | '/admin/commissions'
+    | '/admin/emails'
     | '/admin/litiges'
     | '/admin/livreurs'
     | '/admin/logs'
@@ -880,6 +890,7 @@ export interface FileRouteTypes {
     | '/admin/clients'
     | '/admin/commandes'
     | '/admin/commissions'
+    | '/admin/emails'
     | '/admin/litiges'
     | '/admin/livreurs'
     | '/admin/logs'
@@ -964,6 +975,7 @@ export interface FileRouteTypes {
     | '/admin/clients'
     | '/admin/commandes'
     | '/admin/commissions'
+    | '/admin/emails'
     | '/admin/litiges'
     | '/admin/livreurs'
     | '/admin/logs'
@@ -1556,6 +1568,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLitigesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/emails': {
+      id: '/admin/emails'
+      path: '/emails'
+      fullPath: '/admin/emails'
+      preLoaderRoute: typeof AdminEmailsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/commissions': {
       id: '/admin/commissions'
       path: '/commissions'
@@ -1654,6 +1673,7 @@ interface AdminRouteChildren {
   AdminClientsRoute: typeof AdminClientsRoute
   AdminCommandesRoute: typeof AdminCommandesRoute
   AdminCommissionsRoute: typeof AdminCommissionsRoute
+  AdminEmailsRoute: typeof AdminEmailsRoute
   AdminLitigesRoute: typeof AdminLitigesRoute
   AdminLivreursRoute: typeof AdminLivreursRoute
   AdminLogsRoute: typeof AdminLogsRoute
@@ -1668,6 +1688,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminClientsRoute: AdminClientsRoute,
   AdminCommandesRoute: AdminCommandesRoute,
   AdminCommissionsRoute: AdminCommissionsRoute,
+  AdminEmailsRoute: AdminEmailsRoute,
   AdminLitigesRoute: AdminLitigesRoute,
   AdminLivreursRoute: AdminLivreursRoute,
   AdminLogsRoute: AdminLogsRoute,

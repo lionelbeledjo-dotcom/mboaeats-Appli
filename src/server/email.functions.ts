@@ -142,6 +142,7 @@ export async function sendEmail(params: SendEmailParams): Promise<void> {
       template_name: template,
       recipient_email: to,
       status: 'pending',
+      metadata: related_id ? { related_id } : null,
     })
 
     const { error: enqErr } = await supabaseAdmin.rpc('enqueue_email' as never, {

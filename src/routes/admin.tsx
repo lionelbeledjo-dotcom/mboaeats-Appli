@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, redirect, useRouter, useRouterState, use
 import { useEffect, useRef, useState } from "react";
 import {
   LayoutDashboard, Store, Bike, AlertTriangle, Coins, Settings, ArrowLeft,
-  TrendingUp, Users, ShieldCheck, ShieldAlert, Search, Star, Check, X, MoreHorizontal, MapPin, LogOut, Utensils, Menu,
+  TrendingUp, Users, ShieldCheck, ShieldAlert, Search, Star, Check, X, MoreHorizontal, MapPin, LogOut, Utensils, Menu, Mail,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -83,6 +83,7 @@ const navItems = [
   { title: "Menus & Catégories", url: "/admin/menus", icon: Utensils, tone: "orange" as const },
   { title: "Livreurs", url: "/admin/livreurs", icon: Bike, tone: "indigo" as const },
   { title: "Litiges", url: "/admin/litiges", icon: AlertTriangle, badge: 4, tone: "red" as const },
+  { title: "Suivi emails", url: "/admin/emails", icon: Mail, tone: "blue" as const },
 ];
 
 function AdminLayout() {
