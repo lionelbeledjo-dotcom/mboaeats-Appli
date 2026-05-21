@@ -57,7 +57,7 @@ export const loginWithPassword = createServerFn({ method: "POST" })
     const recordAttempt = async (success: boolean) => {
       try {
         await supabaseAdmin.rpc("record_login_attempt", {
-          p_email: email, p_success: success, p_ip: ip, p_user_agent: userAgent,
+          p_email: email, p_success: success, p_ip: ip ?? undefined, p_user_agent: userAgent ?? undefined,
         });
       } catch (e) { console.warn("[login] record_attempt failed", e); }
     };
