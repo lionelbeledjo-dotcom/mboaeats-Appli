@@ -26,7 +26,7 @@ export function SiteHeader() {
           aria-label="MboaEats — Accueil"
           className="group inline-flex items-center transition-transform duration-300 hover:scale-[1.03] active:scale-[0.98]"
         >
-          <MboaEatsLogo size="xs" align="start" variant="ghost" showBadge={false} />
+          <MboaEatsLogo size="xs" align="start" variant="ghost" showBadge={false} animate />
         </Link>
       </div>
     </header>
