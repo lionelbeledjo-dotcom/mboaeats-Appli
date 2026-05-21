@@ -112,7 +112,7 @@ function SuiviPage() {
 
   // Contact livreur (chargé uniquement quand un livreur est assigné)
   const fetchContact = useServerFn(getDriverContact);
-  const [driver, setDriver] = useState<{ name: string; phone: string | null; avatar_url: string | null } | null>(null);
+  const [driver, setDriver] = useState<{ name: string; phone: string | null; avatar_url: string | null; rating?: number | null; vehicle_type?: string | null } | null>(null);
   useEffect(() => {
     if (!order.driver_id) {
       setDriver(null);
