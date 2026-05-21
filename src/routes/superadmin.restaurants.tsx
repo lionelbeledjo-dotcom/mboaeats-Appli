@@ -85,16 +85,25 @@ function SuperAdminRestaurants() {
   const router = useRouter();
   const fetchList = useServerFn(getRestaurantsForModeration);
   const moderate = useServerFn(moderateRestaurant);
+  const fetchOverview = useServerFn(getCommissionOverview);
+  const setComm = useServerFn(setRestaurantCommission);
 
   const [tab, setTab] = useState<StatusTab>("pending");
   const [loading, setLoading] = useState(true);
   const [restaurants, setRestaurants] = useState<Resto[]>([]);
   const [counts, setCounts] = useState({ pending: 0, approved: 0, rejected: 0, all: 0 });
+  const [defaultRate, setDefaultRate] = useState<number>(18);
 
   const [approveOpen, setApproveOpen] = useState<Resto | null>(null);
   const [rejectOpen, setRejectOpen] = useState<Resto | null>(null);
+  const [commOpen, setCommOpen] = useState<Resto | null>(null);
+  const [commValue, setCommValue] = useState<string>("");
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    fetchOverview().then((r) => setDefaultRate(r.defaultRate)).catch(() => {});
+  }, []);
 
   const reload = async (s: StatusTab = tab) => {
     setLoading(true);
