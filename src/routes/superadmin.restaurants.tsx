@@ -490,6 +490,20 @@ function RestoCard({
               Modéré le {new Date(r.validated_at).toLocaleString("fr-FR")}
             </p>
           )}
+          <button
+            type="button"
+            onClick={onEditCommission}
+            className={
+              "mt-2 inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium transition hover:opacity-80 " +
+              (hasOverride
+                ? "border-emerald-400 bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300"
+                : "border-border bg-muted/40 text-muted-foreground")
+            }
+            title="Modifier la commission"
+          >
+            <Percent className="h-3 w-3" />
+            {effectiveRate}% {hasOverride ? "(override)" : "(défaut)"}
+          </button>
         </div>
 
         {r.validation_status === "pending" && (
