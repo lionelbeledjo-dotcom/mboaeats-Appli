@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { getMboaSession } from "./session.server";
+import { getRequest } from "@tanstack/react-start/server";
 
 const loginSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
