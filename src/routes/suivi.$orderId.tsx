@@ -1,4 +1,4 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, redirect } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -9,11 +9,12 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getOrder } from "@/server/marketplace.functions";
-import { getDriverContact, reportOrderIssue } from "@/server/tracking.functions";
+import { reportOrderIssue } from "@/server/tracking.functions";
 import { useRealtimeOrder } from "@/hooks/use-realtime-order";
 import { useDriverLocation } from "@/hooks/use-driver-location";
 import { ReviewModal } from "@/components/ReviewModal";
 import { OrderChat } from "@/components/OrderChat";
+import { getOrderReview } from "@/server/social.functions";
 
 export const Route = createFileRoute("/suivi/$orderId")({
   beforeLoad: async ({ params }) => {
@@ -21,7 +22,11 @@ export const Route = createFileRoute("/suivi/$orderId")({
     if (!data.user)
       throw redirect({ to: "/connexion", search: { next: `/suivi/${params.orderId}` } });
   },
-  loader: ({ params }) => getOrder({ data: { id: params.orderId } }),
+  loader: async ({ params }) => {
+    const result = await getOrder({ data: { id: params.orderId } });
+    if (!result.order) throw notFound();
+    return result;
+  },
   head: () => ({
     meta: [
       { title: "Suivi de commande · MboaEats" },
@@ -40,31 +45,64 @@ export const Route = createFileRoute("/suivi/$orderId")({
       </div>
     </div>
   ),
+  notFoundComponent: () => (
+    <div className="flex min-h-[60vh] items-center justify-center px-4 text-center">
+      <div>
+        <h1 className="text-xl font-bold" style={{ color: "#1A1A1A" }}>Commande introuvable</h1>
+        <p className="mt-2 text-sm" style={{ color: "#888888" }}>
+          Cette commande n'existe pas ou n'est pas associée à votre compte.
+        </p>
+        <Link to="/commandes" className="mt-4 inline-flex font-semibold" style={{ color: "#06C167" }}>
+          Retour aux commandes
+        </Link>
+      </div>
+    </div>
+  ),
 });
 
 const STEPS = [
+  { key: "paid", label: "Commande reçue", desc: "Votre commande est enregistrée", icon: CheckCircle2 },
+  { key: "accepted", label: "Acceptée", desc: "Acceptée par le resto", icon: CheckCircle2 },
   { key: "preparing", label: "En préparation", desc: "Le resto cuisine votre commande", icon: ChefHat },
-  { key: "ready", label: "Envoyé", desc: "Prête à être récupérée", icon: Package },
+  { key: "ready", label: "Prête", desc: "Prête à être récupérée", icon: Package },
   { key: "picked_up", label: "En route", desc: "Le livreur arrive vers vous", icon: Truck },
   { key: "delivered", label: "Livré", desc: "Bon appétit !", icon: Home },
 ] as const;
 
 const STATUS_INDEX: Record<string, number> = {
-  pending_payment: -1, paid: 0, accepted: 0, preparing: 0,
-  ready: 1, picked_up: 2, delivering: 2, delivered: 3,
+  pending_payment: -1,
+  paid: 0,
+  accepted: 1,
+  preparing: 2,
+  in_preparation: 2,
+  ready: 3,
+  picked_up: 4,
+  in_delivery: 4,
+  delivering: 4,
+  delivered: 5,
 };
 
 const STATUS_TOAST: Record<string, { title: string; emoji: string }> = {
   accepted: { title: "Commande acceptée par le restaurant", emoji: "✅" },
   preparing: { title: "Votre commande est en préparation", emoji: "🍳" },
+  in_preparation: { title: "Votre commande est en préparation", emoji: "🍳" },
   ready: { title: "Commande prête — un livreur arrive", emoji: "📦" },
   picked_up: { title: "Le livreur est en route !", emoji: "🛵" },
+  in_delivery: { title: "Le livreur est en route !", emoji: "🛵" },
   delivering: { title: "Arrivée imminente", emoji: "📍" },
   delivered: { title: "Commande livrée — bon appétit !", emoji: "🎉" },
   cancelled: { title: "Commande annulée", emoji: "❌" },
+  rejected: { title: "Commande refusée", emoji: "❌" },
 };
 
 type OrderItem = { id: string; name: string; qty: number; unit_price: number; line_total: number };
+type DriverInfo = {
+  name: string;
+  phone: string | null;
+  avatar_url: string | null;
+  rating?: number | null;
+  vehicle_type?: string | null;
+};
 
 // Distance haversine en km
 function distanceKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
@@ -79,21 +117,25 @@ function distanceKm(a: { lat: number; lng: number }, b: { lat: number; lng: numb
 }
 
 function SuiviPage() {
+  const { orderId } = Route.useParams();
   const data = Route.useLoaderData() as {
     order: Record<string, unknown> & {
       id: string; restaurant_id: string; status: string; subtotal: number;
       delivery_fee: number; promo_code: string | null; promo_discount: number;
       total: number; eta_minutes: number | null; paid_at: string | null;
       delivered_at: string | null; reference: string; driver_id: string | null;
-      restaurant?: { name?: string; lat?: number | null; lng?: number | null } | null;
+      restaurant?: { id?: string; name?: string; lat?: number | null; lng?: number | null } | null;
       delivery_address?: { line?: string; city?: string; lat?: number | null; lng?: number | null } | null;
+      driver_profile?: { full_name?: string | null; phone?: string | null; photo_url?: string | null; rating?: number | null; vehicle_type?: string | null } | null;
     };
     items: OrderItem[];
+    reviewExists?: boolean;
   };
-  const { order: live } = useRealtimeOrder(data.order.id);
+  const { order: live } = useRealtimeOrder(orderId);
   const order = { ...data.order, ...(live ?? {}) };
 
   const stepIdx = STATUS_INDEX[order.status] ?? -1;
+  const isFailedStatus = order.status === "cancelled" || order.status === "rejected";
   const currentStep = STEPS[Math.max(0, Math.min(stepIdx, STEPS.length - 1))];
   const driverLoc = useDriverLocation(order.driver_id);
 
@@ -110,18 +152,17 @@ function SuiviPage() {
     lastStatus.current = order.status;
   }, [order.status]);
 
-  // Contact livreur (chargé uniquement quand un livreur est assigné)
-  const fetchContact = useServerFn(getDriverContact);
-  const [driver, setDriver] = useState<{ name: string; phone: string | null; avatar_url: string | null; rating?: number | null; vehicle_type?: string | null } | null>(null);
-  useEffect(() => {
-    if (!order.driver_id) {
-      setDriver(null);
-      return;
-    }
-    fetchContact({ data: { orderId: order.id } })
-      .then((r) => setDriver(r.driver))
-      .catch(() => setDriver({ name: "Livreur", phone: null, avatar_url: null }));
-  }, [order.driver_id, order.id, fetchContact]);
+  const driver = useMemo<DriverInfo | null>(() => {
+    if (!order.driver_id) return null;
+    const profile = order.driver_profile;
+    return {
+      name: profile?.full_name?.trim() || "Votre livreur",
+      phone: profile?.phone ?? null,
+      avatar_url: profile?.photo_url ?? null,
+      rating: profile?.rating ?? null,
+      vehicle_type: profile?.vehicle_type ?? null,
+    };
+  }, [order.driver_id, order.driver_profile]);
 
   // Identité courante (pour le chat)
   const [meId, setMeId] = useState<string | null>(null);
@@ -157,23 +198,54 @@ function SuiviPage() {
 
   const remainingMs = etaTarget ? Math.max(0, etaTarget - now) : 0;
   const minutes = Math.floor(remainingMs / 60000);
+  const statusSummary = isFailedStatus
+    ? {
+        eyebrow: "Commande arrêtée",
+        main: "!",
+        label: order.status === "rejected" ? "Commande refusée" : "Commande annulée",
+        desc: "Cette commande ne sera pas livrée.",
+        color: "#B71C1C",
+      }
+    : order.status === "pending_payment"
+      ? {
+          eyebrow: "Paiement en attente",
+          main: "—",
+          label: "En attente de paiement",
+          desc: "Les étapes s'activeront après confirmation.",
+          color: "#888888",
+        }
+      : {
+          eyebrow: order.status === "delivered" || order.delivered_at ? "Commande livrée" : "Arrivée estimée",
+          main: order.status === "delivered" || order.delivered_at ? "✓" : etaTarget ? `${minutes} min` : "—",
+          label: currentStep.label,
+          desc: currentStep.desc,
+          color: "#06C167",
+        };
 
   // Animation de livraison + ouverture auto du modal de notation
   const [showCelebration, setShowCelebration] = useState(false);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const checkReview = useServerFn(getOrderReview);
   useEffect(() => {
-    if (order.delivered_at && !sessionStorage.getItem(`celebrated:${order.id}`)) {
+    if (order.status !== "delivered") return;
+
+    if (!sessionStorage.getItem(`celebrated:${order.id}`)) {
       setShowCelebration(true);
       sessionStorage.setItem(`celebrated:${order.id}`, "1");
-      const t = setTimeout(() => {
-        setShowCelebration(false);
-        if (!localStorage.getItem(`review_dismissed_${order.id}`)) {
+    }
+    const t = setTimeout(() => setShowCelebration(false), 3500);
+
+    if (!localStorage.getItem(`review_dismissed_${order.id}`)) {
+      const openIfNoReview = async () => {
+        const res = data.reviewExists ? { exists: true } : await checkReview({ data: { orderId: order.id } });
+        if (!res.exists && !localStorage.getItem(`review_dismissed_${order.id}`)) {
           setReviewModalOpen(true);
         }
-      }, 3500);
-      return () => clearTimeout(t);
+      };
+      openIfNoReview().catch(() => undefined);
     }
-  }, [order.delivered_at, order.id]);
+    return () => clearTimeout(t);
+  }, [checkReview, data.reviewExists, order.id, order.status]);
 
   // Position relative livreur sur la carte (0..1)
   const mapProgress = useMemo(() => {
@@ -188,7 +260,7 @@ function SuiviPage() {
   }, [driverLoc, order.delivery_address, order.restaurant, stepIdx]);
 
   const [issueOpen, setIssueOpen] = useState(false);
-  const canReportIssue = stepIdx >= 1 && !order.delivered_at && order.status !== "cancelled";
+  const canReportIssue = stepIdx >= 1 && !order.delivered_at && !isFailedStatus;
 
   // Signalements (disputes) liés à la commande — temps réel
   type Dispute = {
@@ -265,13 +337,13 @@ function SuiviPage() {
         <div className="rounded-3xl bg-white p-5 shadow-[0_-4px_24px_-12px_rgba(0,0,0,0.15)]">
           <div className="text-center">
             <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#888888" }}>
-              {order.delivered_at ? "Commande livrée" : "Arrivée estimée"}
+              {statusSummary.eyebrow}
             </p>
             <p className="mt-1 text-4xl font-bold tabular-nums" style={{ color: "#1A1A1A" }}>
-              {order.delivered_at ? "✓" : etaTarget ? `${minutes} min` : "—"}
+              {statusSummary.main}
             </p>
-            <p className="mt-1 text-sm font-semibold" style={{ color: "#06C167" }}>
-              {currentStep.label} · {currentStep.desc}
+            <p className="mt-1 text-sm font-semibold" style={{ color: statusSummary.color }}>
+              {statusSummary.label} · {statusSummary.desc}
             </p>
           </div>
 
