@@ -49,6 +49,7 @@ type Resto = {
   created_at: string;
   owner_email: string | null;
   owner_full_name: string | null;
+  commission_rate: number | null;
 };
 
 const TABS: { key: StatusTab; label: string }[] = [
