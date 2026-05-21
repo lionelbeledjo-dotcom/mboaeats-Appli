@@ -425,13 +425,19 @@ function SuperAdminRestaurants() {
 
 function RestoCard({
   r,
+  defaultRate,
   onApprove,
   onReject,
+  onEditCommission,
 }: {
   r: Resto;
+  defaultRate: number;
   onApprove: () => void;
   onReject: () => void;
+  onEditCommission: () => void;
 }) {
+  const hasOverride = r.commission_rate != null;
+  const effectiveRate = hasOverride ? Number(r.commission_rate) : defaultRate;
   const tone = useMemo(() => {
     switch (r.validation_status) {
       case "approved":
