@@ -1626,11 +1626,13 @@ function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void })
     }
   };
 
+  const [isDirty, setIsDirty] = useState(false);
+
   const saveHours = async () => {
     setSavingHours(true);
     try {
       await updateProfile({ data: { opening_hours: hours } });
-      setInitialHoursJson(JSON.stringify(hours));
+      setIsDirty(false);
       toast.success("Horaires enregistrés");
       onSaved();
     } catch (e) {
@@ -1640,11 +1642,11 @@ function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void })
     }
   };
 
-  const [initialHoursJson, setInitialHoursJson] = useState(() => JSON.stringify(hours));
-  const hoursDirty = useMemo(
-    () => JSON.stringify(hours) !== initialHoursJson,
-    [hours, initialHoursJson],
-  );
+  // Wrapper qui marque l'état dirty à chaque modification.
+  const setHoursDirty = (next: OpeningHours) => {
+    setHours(next);
+    setIsDirty(true);
+  };
 
   const copyMondayToAll = () => {
     const monday = hours.lundi;

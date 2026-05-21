@@ -1007,7 +1007,8 @@ export const moderateRestaurant = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    console.log("[moderateRestaurant] userId=", context.userId, "input=", data);
+    // Log non-PII : on garde uniquement les UUIDs et l'action.
+    console.log("[moderateRestaurant] actor=", context.userId, "resto=", data.restaurant_id, "action=", data.action);
     await assertSuperadmin(context.userId);
 
     if (data.action === "reject" && !data.note.trim()) {
