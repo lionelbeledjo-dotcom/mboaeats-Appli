@@ -2159,6 +2159,10 @@ export type Database = {
       is_account_locked: { Args: { p_email: string }; Returns: boolean }
       is_platform_admin: { Args: never; Returns: boolean }
       is_platform_superadmin: { Args: never; Returns: boolean }
+      is_restaurant_open_now: {
+        Args: { p_restaurant_id: string }
+        Returns: boolean
+      }
       log_audit: {
         Args: {
           _action: string
