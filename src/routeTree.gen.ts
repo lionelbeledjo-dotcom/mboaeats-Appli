@@ -51,6 +51,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TableePaiementRouteImport } from './routes/tablee.paiement'
 import { Route as SuperadminSetup2faRouteImport } from './routes/superadmin_.setup-2fa'
 import { Route as SuperadminLoginRouteImport } from './routes/superadmin_.login'
+import { Route as SuperadminSecuriteRouteImport } from './routes/superadmin.securite'
 import { Route as SuperadminRestaurantsRouteImport } from './routes/superadmin.restaurants'
 import { Route as SuperadminLivreursRouteImport } from './routes/superadmin.livreurs'
 import { Route as SuperadminCommissionsRouteImport } from './routes/superadmin.commissions'
@@ -303,6 +304,11 @@ const SuperadminLoginRoute = SuperadminLoginRouteImport.update({
   id: '/superadmin_/login',
   path: '/superadmin/login',
   getParentRoute: () => rootRouteImport,
+} as any)
+const SuperadminSecuriteRoute = SuperadminSecuriteRouteImport.update({
+  id: '/securite',
+  path: '/securite',
+  getParentRoute: () => SuperadminRoute,
 } as any)
 const SuperadminRestaurantsRoute = SuperadminRestaurantsRouteImport.update({
   id: '/restaurants',
@@ -588,6 +594,7 @@ export interface FileRoutesByFullPath {
   '/superadmin/commissions': typeof SuperadminCommissionsRoute
   '/superadmin/livreurs': typeof SuperadminLivreursRoute
   '/superadmin/restaurants': typeof SuperadminRestaurantsRoute
+  '/superadmin/securite': typeof SuperadminSecuriteRoute
   '/superadmin/login': typeof SuperadminLoginRoute
   '/superadmin/setup-2fa': typeof SuperadminSetup2faRoute
   '/tablee/paiement': typeof TableePaiementRoute
@@ -671,6 +678,7 @@ export interface FileRoutesByTo {
   '/superadmin/commissions': typeof SuperadminCommissionsRoute
   '/superadmin/livreurs': typeof SuperadminLivreursRoute
   '/superadmin/restaurants': typeof SuperadminRestaurantsRoute
+  '/superadmin/securite': typeof SuperadminSecuriteRoute
   '/superadmin/login': typeof SuperadminLoginRoute
   '/superadmin/setup-2fa': typeof SuperadminSetup2faRoute
   '/tablee/paiement': typeof TableePaiementRoute
@@ -758,6 +766,7 @@ export interface FileRoutesById {
   '/superadmin/commissions': typeof SuperadminCommissionsRoute
   '/superadmin/livreurs': typeof SuperadminLivreursRoute
   '/superadmin/restaurants': typeof SuperadminRestaurantsRoute
+  '/superadmin/securite': typeof SuperadminSecuriteRoute
   '/superadmin_/login': typeof SuperadminLoginRoute
   '/superadmin_/setup-2fa': typeof SuperadminSetup2faRoute
   '/tablee/paiement': typeof TableePaiementRoute
@@ -846,6 +855,7 @@ export interface FileRouteTypes {
     | '/superadmin/commissions'
     | '/superadmin/livreurs'
     | '/superadmin/restaurants'
+    | '/superadmin/securite'
     | '/superadmin/login'
     | '/superadmin/setup-2fa'
     | '/tablee/paiement'
@@ -929,6 +939,7 @@ export interface FileRouteTypes {
     | '/superadmin/commissions'
     | '/superadmin/livreurs'
     | '/superadmin/restaurants'
+    | '/superadmin/securite'
     | '/superadmin/login'
     | '/superadmin/setup-2fa'
     | '/tablee/paiement'
@@ -1015,6 +1026,7 @@ export interface FileRouteTypes {
     | '/superadmin/commissions'
     | '/superadmin/livreurs'
     | '/superadmin/restaurants'
+    | '/superadmin/securite'
     | '/superadmin_/login'
     | '/superadmin_/setup-2fa'
     | '/tablee/paiement'
@@ -1391,6 +1403,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuperadminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/superadmin/securite': {
+      id: '/superadmin/securite'
+      path: '/securite'
+      fullPath: '/superadmin/securite'
+      preLoaderRoute: typeof SuperadminSecuriteRouteImport
+      parentRoute: typeof SuperadminRoute
+    }
     '/superadmin/restaurants': {
       id: '/superadmin/restaurants'
       path: '/restaurants'
@@ -1764,6 +1783,7 @@ interface SuperadminRouteChildren {
   SuperadminCommissionsRoute: typeof SuperadminCommissionsRoute
   SuperadminLivreursRoute: typeof SuperadminLivreursRoute
   SuperadminRestaurantsRoute: typeof SuperadminRestaurantsRoute
+  SuperadminSecuriteRoute: typeof SuperadminSecuriteRoute
   SuperadminIndexRoute: typeof SuperadminIndexRoute
 }
 
@@ -1771,6 +1791,7 @@ const SuperadminRouteChildren: SuperadminRouteChildren = {
   SuperadminCommissionsRoute: SuperadminCommissionsRoute,
   SuperadminLivreursRoute: SuperadminLivreursRoute,
   SuperadminRestaurantsRoute: SuperadminRestaurantsRoute,
+  SuperadminSecuriteRoute: SuperadminSecuriteRoute,
   SuperadminIndexRoute: SuperadminIndexRoute,
 }
 
