@@ -927,7 +927,7 @@ export const getRestaurantsForModeration = createServerFn({ method: "POST" })
       .from("restaurants")
       .select(
         "id, name, slug, cuisine, city, neighborhood, image_url, owner_id, " +
-          "validation_status, validation_note, validated_at, created_at, is_active",
+          "validation_status, validation_note, validated_at, created_at, is_active, commission_rate",
       )
       .is("deleted_at", null)
       .order("created_at", { ascending: false })
