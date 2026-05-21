@@ -99,8 +99,8 @@ export function MboaEatsLogo({
         TEXT_SIZES[size],
       )}
     >
-      <span className={wordmarkBaseColor}>Mboa</span>
-      <span className="text-brand-cm-green">Eats</span>
+      <span className={cn(wordmarkBaseColor, animate && "logo-word-mboa")}>Mboa</span>
+      <span className={cn("text-brand-cm-green", animate && "logo-word-eats")}>Eats</span>
     </h2>
   );
 
