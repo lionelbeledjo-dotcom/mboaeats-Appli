@@ -16,6 +16,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { OnboardingCarousel } from "@/components/OnboardingCarousel";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { PendingPaymentWatcher } from "@/components/PendingPaymentWatcher";
+import { SessionExpiryWatcher } from "@/components/SessionExpiryWatcher";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useKeyboardViewport } from "@/hooks/useKeyboardViewport";
 import { usePrefetchOnIdle } from "@/auth/hooks/usePrefetch";
