@@ -1786,7 +1786,7 @@ function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void })
                     type="checkbox"
                     checked={d.is_open}
                     onChange={(e) =>
-                      setHours({ ...hours, [key]: { ...d, is_open: e.target.checked } })
+                      setHoursDirty({ ...hours, [key]: { ...d, is_open: e.target.checked } })
                     }
                     className="h-4 w-4 accent-primary"
                   />
@@ -1798,7 +1798,7 @@ function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void })
                       type="time"
                       value={d.open}
                       onChange={(e) =>
-                        setHours({ ...hours, [key]: { ...d, open: e.target.value } })
+                        setHoursDirty({ ...hours, [key]: { ...d, open: e.target.value } })
                       }
                       className="rounded-lg border border-border bg-background px-2 py-1 text-sm"
                     />
@@ -1807,7 +1807,7 @@ function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void })
                       type="time"
                       value={d.close}
                       onChange={(e) =>
-                        setHours({ ...hours, [key]: { ...d, close: e.target.value } })
+                        setHoursDirty({ ...hours, [key]: { ...d, close: e.target.value } })
                       }
                       className="rounded-lg border border-border bg-background px-2 py-1 text-sm"
                     />
