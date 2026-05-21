@@ -66,6 +66,11 @@ function SuperAdminHome() {
             Validez ou refusez les candidatures de livreurs.
           </p>
         </Link>
+        <Link to="/superadmin/commissions" className="group rounded-2xl border border-border bg-card p-5 transition hover:border-primary/40 hover:bg-card/80">
+          <Percent className="h-5 w-5 text-primary" />
+          <p className="mt-3 font-semibold">Commissions MboaEats</p>
+          <p className="text-xs text-muted-foreground">Taux global par défaut et overrides par restaurant.</p>
+        </Link>
         <Link to="/admin" className="group rounded-2xl border border-border bg-card p-5 transition hover:border-primary/40 hover:bg-card/80">
           <LayoutDashboard className="h-5 w-5 text-primary" />
           <p className="mt-3 font-semibold">Console Admin</p>
