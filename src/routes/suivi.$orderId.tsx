@@ -136,29 +136,6 @@ function SuiviPage() {
   const stepIdx = STATUS_INDEX[order.status] ?? -1;
   const isFailedStatus = order.status === "cancelled" || order.status === "rejected";
   const currentStep = STEPS[Math.max(0, Math.min(stepIdx, STEPS.length - 1))];
-  const statusSummary = isFailedStatus
-    ? {
-        eyebrow: "Commande arrêtée",
-        main: "!",
-        label: order.status === "rejected" ? "Commande refusée" : "Commande annulée",
-        desc: "Cette commande ne sera pas livrée.",
-        color: "#B71C1C",
-      }
-    : order.status === "pending_payment"
-      ? {
-          eyebrow: "Paiement en attente",
-          main: "—",
-          label: "En attente de paiement",
-          desc: "Les étapes s'activeront après confirmation.",
-          color: "#888888",
-        }
-      : {
-          eyebrow: order.status === "delivered" || order.delivered_at ? "Commande livrée" : "Arrivée estimée",
-          main: order.status === "delivered" || order.delivered_at ? "✓" : etaTarget ? `${minutes} min` : "—",
-          label: currentStep.label,
-          desc: currentStep.desc,
-          color: "#06C167",
-        };
   const driverLoc = useDriverLocation(order.driver_id);
 
   // Notifications à chaque changement de statut
@@ -220,6 +197,29 @@ function SuiviPage() {
 
   const remainingMs = etaTarget ? Math.max(0, etaTarget - now) : 0;
   const minutes = Math.floor(remainingMs / 60000);
+  const statusSummary = isFailedStatus
+    ? {
+        eyebrow: "Commande arrêtée",
+        main: "!",
+        label: order.status === "rejected" ? "Commande refusée" : "Commande annulée",
+        desc: "Cette commande ne sera pas livrée.",
+        color: "#B71C1C",
+      }
+    : order.status === "pending_payment"
+      ? {
+          eyebrow: "Paiement en attente",
+          main: "—",
+          label: "En attente de paiement",
+          desc: "Les étapes s'activeront après confirmation.",
+          color: "#888888",
+        }
+      : {
+          eyebrow: order.status === "delivered" || order.delivered_at ? "Commande livrée" : "Arrivée estimée",
+          main: order.status === "delivered" || order.delivered_at ? "✓" : etaTarget ? `${minutes} min` : "—",
+          label: currentStep.label,
+          desc: currentStep.desc,
+          color: "#06C167",
+        };
 
   // Animation de livraison + ouverture auto du modal de notation
   const [showCelebration, setShowCelebration] = useState(false);
