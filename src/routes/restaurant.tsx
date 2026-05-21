@@ -1824,7 +1824,7 @@ function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void })
 
         <button
           onClick={saveHours}
-          disabled={savingHours || !hoursDirty}
+          disabled={savingHours || !isDirty}
           className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-glow disabled:opacity-50"
         >
           {savingHours && <Loader2 className="h-4 w-4 animate-spin" />}
