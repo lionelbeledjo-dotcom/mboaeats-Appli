@@ -1652,7 +1652,7 @@ function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void })
     const monday = hours.lundi;
     const next = { ...hours } as OpeningHours;
     for (const [k] of DAY_LABELS) next[k] = { ...monday };
-    setHours(next);
+    setHoursDirty(next);
     toast.success("Lundi copié sur tous les jours");
   };
 
