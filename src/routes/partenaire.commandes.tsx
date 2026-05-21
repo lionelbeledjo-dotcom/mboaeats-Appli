@@ -13,6 +13,10 @@ export const Route = createFileRoute("/partenaire/commandes")({
 
 type Order = {
   id: string; reference: string; status: string; total: number;
+  subtotal: number;
+  commission_rate_applied: number | null;
+  commission_amount: number | null;
+  restaurant_payout: number | null;
   created_at: string; notes: string | null;
   delivery_address: { line?: string; city?: string } | null;
   items: { id: string; name: string; qty: number; line_total: number }[];
