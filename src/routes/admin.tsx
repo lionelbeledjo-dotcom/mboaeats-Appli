@@ -83,6 +83,7 @@ const navItems = [
   { title: "Menus & Catégories", url: "/admin/menus", icon: Utensils, tone: "orange" as const },
   { title: "Livreurs", url: "/admin/livreurs", icon: Bike, tone: "indigo" as const },
   { title: "Litiges", url: "/admin/litiges", icon: AlertTriangle, badge: 4, tone: "red" as const },
+  { title: "Suivi emails", url: "/admin/emails", icon: Mail, tone: "blue" as const },
 ];
 
 function AdminLayout() {
