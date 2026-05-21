@@ -76,11 +76,11 @@ function SuperAdminHome() {
           <p className="mt-3 font-semibold">Console Admin</p>
           <p className="text-xs text-muted-foreground">Pilotage opérationnel : commissions, restaurants, livreurs, litiges.</p>
         </Link>
-        <div className="rounded-2xl border border-border bg-card p-5">
-          <ShieldCheck className="h-5 w-5 text-primary" />
+        <Link to="/superadmin/securite" className="group rounded-2xl border border-border bg-card p-5 transition hover:border-red-400/60 hover:bg-card/80">
+          <ShieldCheck className="h-5 w-5 text-red-600" />
           <p className="mt-3 font-semibold">Sécurité plateforme</p>
-          <p className="text-xs text-muted-foreground">Toutes les routes /superadmin/* sont protégées par un garde strict côté client et par les RLS côté base de données.</p>
-        </div>
+          <p className="text-xs text-muted-foreground">Tentatives de connexion, comptes verrouillés, déblocage manuel.</p>
+        </Link>
       </div>
     </div>
   );
