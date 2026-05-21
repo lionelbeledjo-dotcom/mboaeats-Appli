@@ -792,3 +792,90 @@ export const listAuditLogs = createServerFn({ method: "GET" })
     const pMap = new Map((profiles ?? []).map((p) => [p.user_id, p]));
     return (logs ?? []).map((l) => ({ ...l, actor_name: l.actor_id ? pMap.get(l.actor_id)?.full_name ?? null : null }));
   });
+
+// -----------------------------------------------------------------------------
+// Email send logs (deduplicated by message_id, latest status per email)
+// -----------------------------------------------------------------------------
+export const listEmailSendLogs = createServerFn({ method: "GET" })
+  .middleware([requirePlatformAdmin])
+  .inputValidator((d) =>
+    z
+      .object({
+        from: z.string().datetime().optional(),
+        to: z.string().datetime().optional(),
+        template: z.string().max(120).optional(),
+        status: z.enum(["sent", "pending", "failed", "dlq", "suppressed", "bounced", "complained"]).optional(),
+        recipient: z.string().max(255).optional(),
+        limit: z.number().min(1).max(500).default(200),
+      })
+      .parse(d ?? {}),
+  )
+  .handler(async ({ data }) => {
+    // Pull raw rows then dedup by message_id (latest created_at per id)
+    let q = supabaseAdmin
+      .from("email_send_log")
+      .select("id, message_id, template_name, recipient_email, status, error_message, metadata, created_at")
+      .order("created_at", { ascending: false })
+      .limit(1500);
+    if (data.from) q = q.gte("created_at", data.from);
+    if (data.to) q = q.lte("created_at", data.to);
+    if (data.template) q = q.eq("template_name", data.template);
+    if (data.recipient) q = q.ilike("recipient_email", `%${data.recipient}%`);
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+
+    const seen = new Map<string, typeof rows[number]>();
+    for (const r of rows ?? []) {
+      const key = r.message_id ?? r.id;
+      if (!seen.has(key)) seen.set(key, r);
+    }
+    let latest = Array.from(seen.values());
+    if (data.status) latest = latest.filter((r) => r.status === data.status);
+
+    // Stats over deduplicated set
+    const stats = {
+      total: latest.length,
+      sent: latest.filter((r) => r.status === "sent").length,
+      pending: latest.filter((r) => r.status === "pending").length,
+      failed: latest.filter((r) => ["failed", "dlq", "bounced"].includes(r.status)).length,
+      suppressed: latest.filter((r) => r.status === "suppressed").length,
+    };
+
+    // Group by order (related_id from metadata)
+    const byOrder = new Map<string, typeof latest>();
+    for (const r of latest) {
+      const oid = (r.metadata as { related_id?: string } | null)?.related_id;
+      if (!oid) continue;
+      const arr = byOrder.get(oid) ?? [];
+      arr.push(r);
+      byOrder.set(oid, arr);
+    }
+    const orderRefs = new Map<string, string>();
+    if (byOrder.size) {
+      const { data: orderRows } = await supabaseAdmin
+        .from("orders")
+        .select("id, reference")
+        .in("id", Array.from(byOrder.keys()));
+      for (const o of orderRows ?? []) orderRefs.set(o.id, o.reference ?? o.id.slice(0, 8));
+    }
+
+    const orders = Array.from(byOrder.entries())
+      .map(([id, items]) => ({
+        order_id: id,
+        reference: orderRefs.get(id) ?? id.slice(0, 8),
+        emails: items.sort((a, b) => (a.created_at < b.created_at ? 1 : -1)),
+      }))
+      .sort((a, b) =>
+        a.emails[0]!.created_at < b.emails[0]!.created_at ? 1 : -1,
+      );
+
+    // Distinct templates for the filter dropdown
+    const templates = Array.from(new Set((rows ?? []).map((r) => r.template_name))).sort();
+
+    return {
+      stats,
+      rows: latest.slice(0, data.limit),
+      orders: orders.slice(0, 50),
+      templates,
+    };
+  });
