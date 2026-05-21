@@ -1626,11 +1626,13 @@ function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void })
     }
   };
 
+  const [isDirty, setIsDirty] = useState(false);
+
   const saveHours = async () => {
     setSavingHours(true);
     try {
       await updateProfile({ data: { opening_hours: hours } });
-      setInitialHoursJson(JSON.stringify(hours));
+      setIsDirty(false);
       toast.success("Horaires enregistrés");
       onSaved();
     } catch (e) {
@@ -1640,17 +1642,17 @@ function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void })
     }
   };
 
-  const [initialHoursJson, setInitialHoursJson] = useState(() => JSON.stringify(hours));
-  const hoursDirty = useMemo(
-    () => JSON.stringify(hours) !== initialHoursJson,
-    [hours, initialHoursJson],
-  );
+  // Wrapper qui marque l'état dirty à chaque modification.
+  const setHoursDirty = (next: OpeningHours) => {
+    setHours(next);
+    setIsDirty(true);
+  };
 
   const copyMondayToAll = () => {
     const monday = hours.lundi;
     const next = { ...hours } as OpeningHours;
     for (const [k] of DAY_LABELS) next[k] = { ...monday };
-    setHours(next);
+    setHoursDirty(next);
     toast.success("Lundi copié sur tous les jours");
   };
 
@@ -1784,7 +1786,7 @@ function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void })
                     type="checkbox"
                     checked={d.is_open}
                     onChange={(e) =>
-                      setHours({ ...hours, [key]: { ...d, is_open: e.target.checked } })
+                      setHoursDirty({ ...hours, [key]: { ...d, is_open: e.target.checked } })
                     }
                     className="h-4 w-4 accent-primary"
                   />
@@ -1796,7 +1798,7 @@ function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void })
                       type="time"
                       value={d.open}
                       onChange={(e) =>
-                        setHours({ ...hours, [key]: { ...d, open: e.target.value } })
+                        setHoursDirty({ ...hours, [key]: { ...d, open: e.target.value } })
                       }
                       className="rounded-lg border border-border bg-background px-2 py-1 text-sm"
                     />
@@ -1805,7 +1807,7 @@ function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void })
                       type="time"
                       value={d.close}
                       onChange={(e) =>
-                        setHours({ ...hours, [key]: { ...d, close: e.target.value } })
+                        setHoursDirty({ ...hours, [key]: { ...d, close: e.target.value } })
                       }
                       className="rounded-lg border border-border bg-background px-2 py-1 text-sm"
                     />
@@ -1822,7 +1824,7 @@ function ProfilePanel({ resto, onSaved }: { resto: Resto; onSaved: () => void })
 
         <button
           onClick={saveHours}
-          disabled={savingHours || !hoursDirty}
+          disabled={savingHours || !isDirty}
           className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-glow disabled:opacity-50"
         >
           {savingHours && <Loader2 className="h-4 w-4 animate-spin" />}

@@ -170,14 +170,23 @@ export const createOrder = createServerFn({ method: "POST" })
     // -------------------------------------------------------------------
     const { data: resto, error: restoErr } = await supabaseAdmin
       .from("restaurants")
-      .select("id, delivery_fee, eta_min, eta_max, is_open, is_active, deleted_at, min_order")
+      .select("id, delivery_fee, eta_min, eta_max, is_open, is_active, deleted_at, min_order, manually_closed")
       .eq("id", data.restaurant_id)
       .maybeSingle();
 
     if (restoErr) throw new Error("Erreur lookup restaurant");
     if (!resto || resto.deleted_at) throw new Error("Restaurant introuvable");
     if (!resto.is_active) throw new Error("Restaurant indisponible");
-    if (!resto.is_open) throw new Error("Restaurant fermé");
+    if ((resto as { manually_closed?: boolean | null }).manually_closed) {
+      throw new Error("Restaurant fermé (fermeture manuelle)");
+    }
+    // Évaluation horaires en heure locale Africa/Douala via fonction SQL.
+    const { data: openNow, error: openErr } = await supabaseAdmin.rpc(
+      "is_restaurant_open_now",
+      { p_restaurant_id: data.restaurant_id },
+    );
+    if (openErr) throw new Error("Erreur vérification horaires");
+    if (openNow === false) throw new Error("Restaurant fermé (hors horaires)");
 
     // -------------------------------------------------------------------
     // 2. Recharger TOUS les dishes en une seule requête
@@ -407,7 +416,6 @@ export const createOrder = createServerFn({ method: "POST" })
 
     // Emails — awaited inline (Workers tue les promesses détachées).
     // Le try/catch garantit qu'un échec d'email n'interrompt jamais le flow.
-    console.log("[createOrder email] BEGIN order_id=", order.id, "user_id=", userId);
     try {
       const { sendEmail, getUserEmail, getRestaurantOwnerEmail } = await import("@/server/email.functions");
       const { data: restoRow } = await supabaseAdmin
@@ -419,7 +427,6 @@ export const createOrder = createServerFn({ method: "POST" })
       }));
 
       const clientEmail = await getUserEmail(userId);
-      console.log("[createOrder email] clientEmail=", clientEmail);
       if (clientEmail) {
         await sendEmail({
           to: clientEmail, template: "order_confirmation_client",
@@ -428,7 +435,6 @@ export const createOrder = createServerFn({ method: "POST" })
         });
       }
       const owner = await getRestaurantOwnerEmail(data.restaurant_id);
-      console.log("[createOrder email] ownerEmail=", owner.email, "owner_user_id=", owner.user_id);
       if (owner.email) {
         await sendEmail({
           to: owner.email, template: "order_new_restaurant",
@@ -436,7 +442,6 @@ export const createOrder = createServerFn({ method: "POST" })
           data: { reference: order.reference, items: itemsForEmail, total },
         });
       }
-      console.log("[createOrder email] END ok");
     } catch (e) { console.error("[createOrder email] failed", e); }
 
     return { order };
