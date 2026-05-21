@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { getMboaSession } from "./session.server";
+import { getRequest } from "@tanstack/react-start/server";
 
 const loginSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
@@ -11,7 +12,7 @@ const loginSchema = z.object({
 
 export type LoginResult =
   | { ok: true }
-  | { ok: false; code: "compte_inexistant" | "email_non_confirme" | "identifiants_invalides" | "erreur"; message: string };
+  | { ok: false; code: "compte_inexistant" | "email_non_confirme" | "identifiants_invalides" | "compte_verrouille" | "erreur"; message: string };
 
 export const accountExists = createServerFn({ method: "POST" })
   .inputValidator((d) =>
@@ -40,6 +41,37 @@ export const loginWithPassword = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<LoginResult> => {
     const { email, password } = data;
 
+    // Métadonnées de la requête (IP + UA)
+    let ip: string | null = null;
+    let userAgent: string | null = null;
+    try {
+      const req = getRequest();
+      ip =
+        req?.headers.get("cf-connecting-ip") ??
+        req?.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+        req?.headers.get("x-real-ip") ??
+        null;
+      userAgent = req?.headers.get("user-agent") ?? null;
+    } catch {}
+
+    const recordAttempt = async (success: boolean) => {
+      try {
+        await supabaseAdmin.rpc("record_login_attempt", {
+          p_email: email, p_success: success, p_ip: ip ?? undefined, p_user_agent: userAgent ?? undefined,
+        });
+      } catch (e) { console.warn("[login] record_attempt failed", e); }
+    };
+
+    // 0) Verrouillage actif ?
+    const { data: locked } = await supabaseAdmin.rpc("is_account_locked", { p_email: email });
+    if (locked === true) {
+      return {
+        ok: false,
+        code: "compte_verrouille",
+        message: "Trop de tentatives échouées. Réessayez dans 5 minutes.",
+      };
+    }
+
     // 1) Vérifier l'existence du compte (afin de différencier "inexistant" de "mauvais mdp")
     const { data: exists, error: existsErr } = await supabaseAdmin.rpc(
       "user_exists_by_email",
@@ -49,6 +81,7 @@ export const loginWithPassword = createServerFn({ method: "POST" })
       return { ok: false, code: "erreur", message: "Erreur serveur, réessayez." };
     }
     if (!exists) {
+      await recordAttempt(false);
       return {
         ok: false,
         code: "compte_inexistant",
@@ -68,6 +101,15 @@ export const loginWithPassword = createServerFn({ method: "POST" })
     });
 
     if (signErr || !signIn?.user) {
+      await recordAttempt(false);
+      const { data: lockedNow } = await supabaseAdmin.rpc("is_account_locked", { p_email: email });
+      if (lockedNow === true) {
+        return {
+          ok: false,
+          code: "compte_verrouille",
+          message: "Compte temporairement verrouillé pour sécurité (5 min).",
+        };
+      }
       const msg = signErr?.message ?? "";
       if (/email not confirmed/i.test(msg)) {
         return {
@@ -82,6 +124,8 @@ export const loginWithPassword = createServerFn({ method: "POST" })
         message: "Mot de passe incorrect.",
       };
     }
+
+    await recordAttempt(true);
 
     // 3) Pose le cookie de session MboaEats
     const session = await getMboaSession();

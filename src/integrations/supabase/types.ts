@@ -709,6 +709,33 @@ export type Database = {
         }
         Relationships: []
       }
+      login_attempts: {
+        Row: {
+          attempted_at: string
+          email: string
+          id: string
+          ip_address: unknown
+          success: boolean
+          user_agent: string | null
+        }
+        Insert: {
+          attempted_at?: string
+          email: string
+          id?: string
+          ip_address?: unknown
+          success: boolean
+          user_agent?: string | null
+        }
+        Update: {
+          attempted_at?: string
+          email?: string
+          id?: string
+          ip_address?: unknown
+          success?: boolean
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       loyalty_points: {
         Row: {
           level: string
@@ -2129,6 +2156,7 @@ export type Database = {
         Returns: boolean
       }
       home_data: { Args: { _city?: string; _limit?: number }; Returns: Json }
+      is_account_locked: { Args: { p_email: string }; Returns: boolean }
       is_platform_admin: { Args: never; Returns: boolean }
       is_platform_superadmin: { Args: never; Returns: boolean }
       log_audit: {
@@ -2157,6 +2185,7 @@ export type Database = {
         }
         Returns: number
       }
+      purge_old_login_attempts: { Args: never; Returns: number }
       purge_old_rate_limits: { Args: never; Returns: number }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
@@ -2165,6 +2194,15 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      record_login_attempt: {
+        Args: {
+          p_email: string
+          p_ip?: string
+          p_success: boolean
+          p_user_agent?: string
+        }
+        Returns: undefined
       }
       redeem_reward: { Args: { _reward_code: string }; Returns: Json }
       refund_order_to_wallet: {
@@ -2183,6 +2221,7 @@ export type Database = {
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       soft_delete_restaurant: { Args: { _id: string }; Returns: undefined }
+      unlock_account: { Args: { p_email: string }; Returns: number }
       user_exists_by_email: { Args: { _email: string }; Returns: boolean }
       user_exists_by_phone: { Args: { _phone: string }; Returns: boolean }
       wallet_apply: {
