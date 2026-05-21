@@ -117,6 +117,7 @@ function distanceKm(a: { lat: number; lng: number }, b: { lat: number; lng: numb
 }
 
 function SuiviPage() {
+  const { orderId } = Route.useParams();
   const data = Route.useLoaderData() as {
     order: Record<string, unknown> & {
       id: string; restaurant_id: string; status: string; subtotal: number;
@@ -130,7 +131,7 @@ function SuiviPage() {
     items: OrderItem[];
     reviewExists?: boolean;
   };
-  const { order: live } = useRealtimeOrder(data.order.id);
+  const { order: live } = useRealtimeOrder(orderId);
   const order = { ...data.order, ...(live ?? {}) };
 
   const stepIdx = STATUS_INDEX[order.status] ?? -1;
@@ -259,7 +260,7 @@ function SuiviPage() {
   }, [driverLoc, order.delivery_address, order.restaurant, stepIdx]);
 
   const [issueOpen, setIssueOpen] = useState(false);
-  const canReportIssue = stepIdx >= 1 && !order.delivered_at && order.status !== "cancelled";
+  const canReportIssue = stepIdx >= 1 && !order.delivered_at && !isFailedStatus;
 
   // Signalements (disputes) liés à la commande — temps réel
   type Dispute = {
@@ -336,13 +337,13 @@ function SuiviPage() {
         <div className="rounded-3xl bg-white p-5 shadow-[0_-4px_24px_-12px_rgba(0,0,0,0.15)]">
           <div className="text-center">
             <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#888888" }}>
-              {order.delivered_at ? "Commande livrée" : "Arrivée estimée"}
+              {statusSummary.eyebrow}
             </p>
             <p className="mt-1 text-4xl font-bold tabular-nums" style={{ color: "#1A1A1A" }}>
-              {order.delivered_at ? "✓" : etaTarget ? `${minutes} min` : "—"}
+              {statusSummary.main}
             </p>
-            <p className="mt-1 text-sm font-semibold" style={{ color: "#06C167" }}>
-              {currentStep.label} · {currentStep.desc}
+            <p className="mt-1 text-sm font-semibold" style={{ color: statusSummary.color }}>
+              {statusSummary.label} · {statusSummary.desc}
             </p>
           </div>
 
