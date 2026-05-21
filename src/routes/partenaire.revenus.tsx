@@ -1,63 +1,84 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, ShoppingBag, CheckCircle2, Coins, TrendingUp } from "lucide-react";
-import { getRestaurantStats } from "@/server/restaurant.functions";
+import { Loader2, ShoppingBag, Coins, TrendingUp, Percent } from "lucide-react";
+import { getRestaurantRevenue } from "@/server/commissions.functions";
 import { usePartenaire } from "@/components/partenaire/PartenaireContext";
 
 export const Route = createFileRoute("/partenaire/revenus")({
   component: RevenusPage,
 });
 
-// Commission de la plateforme (par défaut)
-const COMMISSION_RATE = 0.15;
+type Period = "today" | "7d" | "30d" | "all";
+const PERIODS: { key: Period; label: string }[] = [
+  { key: "today", label: "Aujourd'hui" },
+  { key: "7d", label: "7 jours" },
+  { key: "30d", label: "30 jours" },
+  { key: "all", label: "Total" },
+];
 
 function RevenusPage() {
   const { active } = usePartenaire();
-  const fetchStats = useServerFn(getRestaurantStats);
-  const [stats, setStats] = useState<{
-    ordersCount: number; deliveredCount: number; inProgress: number;
-    revenue: number; avgTicket: number;
+  const fetchRevenue = useServerFn(getRestaurantRevenue);
+  const [period, setPeriod] = useState<Period>("7d");
+  const [data, setData] = useState<{
+    ordersCount: number; totalSales: number;
+    totalCommission: number; totalNet: number;
   } | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const reload = useCallback(async () => {
-    const r = await fetchStats({ data: { restaurant_id: active.id } });
-    setStats(r);
-  }, [fetchStats, active.id]);
+    setLoading(true);
+    try {
+      const r = await fetchRevenue({ data: { restaurant_id: active.id, period } });
+      setData(r);
+    } finally { setLoading(false); }
+  }, [fetchRevenue, active.id, period]);
 
   useEffect(() => { reload(); }, [reload]);
 
-  if (!stats) {
+  if (loading || !data) {
     return <div className="flex h-64 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   }
 
-  const commission = Math.round(stats.revenue * COMMISSION_RATE);
-  const net = stats.revenue - commission;
-
   return (
     <div>
-      <div className="mb-5 flex items-center justify-between">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
         <h1 className="font-display text-2xl font-bold">Revenus</h1>
-        <span className="rounded-full border border-border bg-surface px-3 py-1 text-xs text-muted-foreground">
-          7 derniers jours
-        </span>
+        <div className="flex flex-wrap gap-1.5">
+          {PERIODS.map((p) => (
+            <button
+              key={p.key}
+              onClick={() => setPeriod(p.key)}
+              className={
+                "rounded-full border px-3 py-1 text-xs font-medium transition " +
+                (period === p.key
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-background text-muted-foreground hover:bg-muted")
+              }
+            >{p.label}</button>
+          ))}
+        </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={ShoppingBag} label="Commandes" value={stats.ordersCount.toString()} hint={`dont ${stats.inProgress} en cours`} />
-        <StatCard icon={CheckCircle2} label="Livrées" value={stats.deliveredCount.toString()} hint={`ticket moyen ${stats.avgTicket.toLocaleString("fr-FR")} F`} />
-        <StatCard icon={TrendingUp} label="Total commandes" value={`${stats.revenue.toLocaleString("fr-FR")} F`} hint="brut livré" />
-        <StatCard icon={Coins} label="Net restaurant" value={`${net.toLocaleString("fr-FR")} F`} hint={`commission ${(COMMISSION_RATE * 100).toFixed(0)}% = ${commission.toLocaleString("fr-FR")} F`} accent />
+        <StatCard icon={ShoppingBag} label="Commandes livrées" value={String(data.ordersCount)} />
+        <StatCard icon={TrendingUp} label="Total ventes" value={`${data.totalSales.toLocaleString("fr-FR")} F`} hint="sous-total cumulé" />
+        <StatCard icon={Percent} label="Commission MboaEats" value={`${data.totalCommission.toLocaleString("fr-FR")} F`} />
+        <StatCard icon={Coins} label="Net perçu" value={`${data.totalNet.toLocaleString("fr-FR")} F`} accent />
       </div>
 
       <div className="mt-6 rounded-2xl border border-border bg-card p-5">
         <h2 className="font-display text-sm font-bold">Détail commissions</h2>
         <dl className="mt-3 space-y-2 text-sm">
-          <Row label="Chiffre d'affaires brut (livré)" value={`${stats.revenue.toLocaleString("fr-FR")} F`} />
-          <Row label={`Commission plateforme (${(COMMISSION_RATE * 100).toFixed(0)}%)`} value={`− ${commission.toLocaleString("fr-FR")} F`} />
+          <Row label="Total ventes (sous-total cumulé)" value={`${data.totalSales.toLocaleString("fr-FR")} F`} />
+          <Row label="Commission MboaEats" value={`− ${data.totalCommission.toLocaleString("fr-FR")} F`} />
           <div className="my-2 border-t border-border" />
-          <Row label="Net à reverser" value={`${net.toLocaleString("fr-FR")} F`} bold />
+          <Row label="Net perçu" value={`${data.totalNet.toLocaleString("fr-FR")} F`} bold />
         </dl>
+        <p className="mt-3 text-[11px] text-muted-foreground">
+          La commission s'applique uniquement sur le sous-total plats (hors livraison). Chaque commande conserve le taux figé au moment de sa création.
+        </p>
       </div>
     </div>
   );
