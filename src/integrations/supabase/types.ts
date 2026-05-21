@@ -986,6 +986,8 @@ export type Database = {
           accepted_at: string | null
           address_id: string | null
           cancelled_at: string | null
+          commission_amount: number | null
+          commission_rate_applied: number | null
           created_at: string
           deleted_at: string | null
           delivered_at: string | null
@@ -1004,6 +1006,7 @@ export type Database = {
           ready_at: string | null
           reference: string
           restaurant_id: string
+          restaurant_payout: number | null
           status: Database["public"]["Enums"]["order_status"]
           subtotal: number
           total: number
@@ -1014,6 +1017,8 @@ export type Database = {
           accepted_at?: string | null
           address_id?: string | null
           cancelled_at?: string | null
+          commission_amount?: number | null
+          commission_rate_applied?: number | null
           created_at?: string
           deleted_at?: string | null
           delivered_at?: string | null
@@ -1032,6 +1037,7 @@ export type Database = {
           ready_at?: string | null
           reference?: string
           restaurant_id: string
+          restaurant_payout?: number | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal?: number
           total?: number
@@ -1042,6 +1048,8 @@ export type Database = {
           accepted_at?: string | null
           address_id?: string | null
           cancelled_at?: string | null
+          commission_amount?: number | null
+          commission_rate_applied?: number | null
           created_at?: string
           deleted_at?: string | null
           delivered_at?: string | null
@@ -1060,6 +1068,7 @@ export type Database = {
           ready_at?: string | null
           reference?: string
           restaurant_id?: string
+          restaurant_payout?: number | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal?: number
           total?: number
@@ -1581,6 +1590,7 @@ export type Database = {
         Row: {
           address: string | null
           city: string
+          commission_rate: number | null
           cover_url: string | null
           created_at: string
           cuisine: string
@@ -1616,6 +1626,7 @@ export type Database = {
         Insert: {
           address?: string | null
           city: string
+          commission_rate?: number | null
           cover_url?: string | null
           created_at?: string
           cuisine: string
@@ -1651,6 +1662,7 @@ export type Database = {
         Update: {
           address?: string | null
           city?: string
+          commission_rate?: number | null
           cover_url?: string | null
           created_at?: string
           cuisine?: string
@@ -2097,6 +2109,10 @@ export type Database = {
         Returns: number
       }
       gen_referral_code: { Args: { _uid: string }; Returns: string }
+      get_commission_rate: {
+        Args: { p_restaurant_id: string }
+        Returns: number
+      }
       has_any_superadmin: { Args: never; Returns: boolean }
       has_restaurant_membership: {
         Args: {
