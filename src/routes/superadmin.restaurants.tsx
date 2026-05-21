@@ -253,12 +253,86 @@ function SuperAdminRestaurants() {
             <RestoCard
               key={r.id}
               r={r}
+              defaultRate={defaultRate}
               onApprove={() => openApprove(r)}
               onReject={() => openReject(r)}
+              onEditCommission={() => {
+                setCommValue(r.commission_rate != null ? String(r.commission_rate) : "");
+                setCommOpen(r);
+              }}
             />
           ))}
         </ul>
       )}
+
+      {/* Commission modal */}
+      <Dialog open={!!commOpen} onOpenChange={(o) => !o && setCommOpen(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Commission · {commOpen?.name}</DialogTitle>
+            <DialogDescription>
+              Laissez vide ou réinitialisez pour appliquer le taux global ({defaultRate}%).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              step="0.5"
+              min={0}
+              max={100}
+              value={commValue}
+              onChange={(e) => setCommValue(e.target.value)}
+              placeholder={`Défaut : ${defaultRate}`}
+              className="w-32"
+            />
+            <span className="text-sm text-muted-foreground">%</span>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={async () => {
+                if (!commOpen) return;
+                setSubmitting(true);
+                try {
+                  await setComm({ data: { restaurant_id: commOpen.id, rate_pct: null } });
+                  toast.success("Override supprimé · taux par défaut appliqué");
+                  setCommOpen(null);
+                  await reload();
+                } catch (e: any) {
+                  toast.error(e?.message ?? "Erreur");
+                } finally { setSubmitting(false); }
+              }}
+              disabled={submitting}
+            >
+              Réinitialiser au défaut
+            </Button>
+            <Button
+              type="button"
+              onClick={async () => {
+                if (!commOpen) return;
+                const n = Number(commValue);
+                if (!Number.isFinite(n) || n < 0 || n > 100) {
+                  toast.error("Taux invalide");
+                  return;
+                }
+                setSubmitting(true);
+                try {
+                  await setComm({ data: { restaurant_id: commOpen.id, rate_pct: n } });
+                  toast.success("Commission mise à jour");
+                  setCommOpen(null);
+                  await reload();
+                } catch (e: any) {
+                  toast.error(e?.message ?? "Erreur");
+                } finally { setSubmitting(false); }
+              }}
+              disabled={submitting || commValue === ""}
+            >
+              Enregistrer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Approve modal */}
       <Dialog open={!!approveOpen} onOpenChange={(o) => !o && setApproveOpen(null)}>
