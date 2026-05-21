@@ -94,7 +94,8 @@ export const setRestaurantCommission = createServerFn({ method: "POST" })
 // -----------------------------------------------------------------------------
 // Resto revenue summary par période (utilise les colonnes figées)
 // -----------------------------------------------------------------------------
-import { assertMembership } from "@/auth/middlewares/requireMembership";
+
+
 
 export const getRestaurantRevenue = createServerFn({ method: "POST" })
   .middleware([requireAuth])
