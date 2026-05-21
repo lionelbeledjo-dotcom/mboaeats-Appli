@@ -12,7 +12,7 @@ const loginSchema = z.object({
 
 export type LoginResult =
   | { ok: true }
-  | { ok: false; code: "compte_inexistant" | "email_non_confirme" | "identifiants_invalides" | "erreur"; message: string };
+  | { ok: false; code: "compte_inexistant" | "email_non_confirme" | "identifiants_invalides" | "compte_verrouille" | "erreur"; message: string };
 
 export const accountExists = createServerFn({ method: "POST" })
   .inputValidator((d) =>
