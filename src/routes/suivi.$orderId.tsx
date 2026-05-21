@@ -96,6 +96,13 @@ const STATUS_TOAST: Record<string, { title: string; emoji: string }> = {
 };
 
 type OrderItem = { id: string; name: string; qty: number; unit_price: number; line_total: number };
+type DriverInfo = {
+  name: string;
+  phone: string | null;
+  avatar_url: string | null;
+  rating?: number | null;
+  vehicle_type?: string | null;
+};
 
 // Distance haversine en km
 function distanceKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
@@ -116,10 +123,12 @@ function SuiviPage() {
       delivery_fee: number; promo_code: string | null; promo_discount: number;
       total: number; eta_minutes: number | null; paid_at: string | null;
       delivered_at: string | null; reference: string; driver_id: string | null;
-      restaurant?: { name?: string; lat?: number | null; lng?: number | null } | null;
+      restaurant?: { id?: string; name?: string; lat?: number | null; lng?: number | null } | null;
       delivery_address?: { line?: string; city?: string; lat?: number | null; lng?: number | null } | null;
+      driver_profile?: { full_name?: string | null; phone?: string | null; photo_url?: string | null; rating?: number | null; vehicle_type?: string | null } | null;
     };
     items: OrderItem[];
+    reviewExists?: boolean;
   };
   const { order: live } = useRealtimeOrder(data.order.id);
   const order = { ...data.order, ...(live ?? {}) };
@@ -141,18 +150,17 @@ function SuiviPage() {
     lastStatus.current = order.status;
   }, [order.status]);
 
-  // Contact livreur (chargé uniquement quand un livreur est assigné)
-  const fetchContact = useServerFn(getDriverContact);
-  const [driver, setDriver] = useState<{ name: string; phone: string | null; avatar_url: string | null; rating?: number | null; vehicle_type?: string | null } | null>(null);
-  useEffect(() => {
-    if (!order.driver_id) {
-      setDriver(null);
-      return;
-    }
-    fetchContact({ data: { orderId: order.id } })
-      .then((r) => setDriver(r.driver))
-      .catch(() => setDriver({ name: "Livreur", phone: null, avatar_url: null }));
-  }, [order.driver_id, order.id, fetchContact]);
+  const driver = useMemo<DriverInfo | null>(() => {
+    if (!order.driver_id) return null;
+    const profile = order.driver_profile;
+    return {
+      name: profile?.full_name?.trim() || "Votre livreur",
+      phone: profile?.phone ?? null,
+      avatar_url: profile?.photo_url ?? null,
+      rating: profile?.rating ?? null,
+      vehicle_type: profile?.vehicle_type ?? null,
+    };
+  }, [order.driver_id, order.driver_profile]);
 
   // Identité courante (pour le chat)
   const [meId, setMeId] = useState<string | null>(null);
@@ -192,19 +200,27 @@ function SuiviPage() {
   // Animation de livraison + ouverture auto du modal de notation
   const [showCelebration, setShowCelebration] = useState(false);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const checkReview = useServerFn(getOrderReview);
   useEffect(() => {
-    if (order.delivered_at && !sessionStorage.getItem(`celebrated:${order.id}`)) {
+    if (order.status !== "delivered") return;
+
+    if (!sessionStorage.getItem(`celebrated:${order.id}`)) {
       setShowCelebration(true);
       sessionStorage.setItem(`celebrated:${order.id}`, "1");
-      const t = setTimeout(() => {
-        setShowCelebration(false);
-        if (!localStorage.getItem(`review_dismissed_${order.id}`)) {
+    }
+    const t = setTimeout(() => setShowCelebration(false), 3500);
+
+    if (!localStorage.getItem(`review_dismissed_${order.id}`)) {
+      const openIfNoReview = async () => {
+        const res = data.reviewExists ? { exists: true } : await checkReview({ data: { orderId: order.id } });
+        if (!res.exists && !localStorage.getItem(`review_dismissed_${order.id}`)) {
           setReviewModalOpen(true);
         }
-      }, 3500);
-      return () => clearTimeout(t);
+      };
+      openIfNoReview().catch(() => undefined);
     }
-  }, [order.delivered_at, order.id]);
+    return () => clearTimeout(t);
+  }, [checkReview, data.reviewExists, order.id, order.status]);
 
   // Position relative livreur sur la carte (0..1)
   const mapProgress = useMemo(() => {
