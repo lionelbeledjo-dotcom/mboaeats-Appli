@@ -113,6 +113,7 @@ export const listRestaurantOrders = createServerFn({ method: "GET" })
       .from("orders")
       .select(
         "id, reference, status, total, subtotal, delivery_fee, eta_minutes, " +
+          "commission_rate_applied, commission_amount, restaurant_payout, " +
           "created_at, paid_at, accepted_at, ready_at, picked_up_at, " +
           "delivered_at, delivery_address, notes, user_id, " +
           "items:order_items(id, name, qty, unit_price, line_total)",
