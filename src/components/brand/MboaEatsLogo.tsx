@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { DeliveryBadge } from "@/components/brand/DeliveryBadge";
 
-type LogoSize = "sm" | "md" | "lg" | "xl";
+type LogoSize = "xs" | "sm" | "md" | "lg" | "xl";
 type LogoAlign = "start" | "center" | "end";
 type LogoVariant = "filled" | "outline" | "ghost" | "plain";
 type BadgeSize = "sm" | "md";
@@ -34,6 +34,7 @@ interface MboaEatsLogoProps {
 
 // Tailles fluides : clamp() garantit la lisibilité jusqu'à 320px sans débordement
 const TEXT_SIZES: Record<LogoSize, string> = {
+  xs: "text-[22px]",
   sm: "text-[clamp(22px,7vw,32px)]",
   md: "text-[clamp(28px,8vw,48px)]",
   lg: "text-[clamp(30px,9vw,56px)]",
@@ -41,6 +42,7 @@ const TEXT_SIZES: Record<LogoSize, string> = {
 };
 
 const PADDING_SIZES: Record<LogoSize, string> = {
+  xs: "px-2 py-1.5",
   sm: "px-3 py-2.5 sm:px-5 sm:py-4",
   md: "px-4 py-3 sm:px-6 sm:py-5",
   lg: "px-4 py-4 sm:px-8 sm:py-6",
@@ -77,7 +79,7 @@ export function MboaEatsLogo({
   const resolvedVariant: LogoVariant =
     variant ?? (withContainer === false ? "ghost" : "filled");
 
-  const resolvedBadgeSize: BadgeSize = badgeSize ?? (size === "sm" ? "sm" : "md");
+  const resolvedBadgeSize: BadgeSize = badgeSize ?? (size === "xs" || size === "sm" ? "sm" : "md");
 
   const wordmarkBaseColor =
     resolvedVariant === "filled"
