@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { Bike, Crown, LayoutDashboard, ShieldCheck, Store } from "lucide-react";
+import { Bike, Crown, LayoutDashboard, Percent, ShieldCheck, Store } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getRestaurantsForModeration } from "@/server/restaurant.functions";
 import { listDriverApplications } from "@/lib/driver-onboarding.functions";
