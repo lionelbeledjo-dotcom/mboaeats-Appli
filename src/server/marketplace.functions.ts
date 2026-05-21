@@ -451,31 +451,54 @@ export const getOrder = createServerFn({ method: "GET" })
     z.object({ id: z.string().uuid() }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    // context.supabase est le client lié au JWT du user → les RLS du Lot A
-    // filtrent automatiquement (client / driver / membre du resto / admin).
-    const { supabase } = context;
-    const [{ data: order }, { data: items }, { data: events }] =
-      await Promise.all([
-        supabase
-          .from("orders")
-          .select(
-            "*, restaurant:restaurants(name, image_url, slug, lat, lng, neighborhood, city)",
-          )
-          .eq("id", data.id)
-          .is("deleted_at", null)
-          .maybeSingle(),
-        supabase
-          .from("order_items")
-          .select("*")
-          .eq("order_id", data.id),
-        supabase
-          .from("order_events")
-          .select("*")
-          .eq("order_id", data.id)
-          .order("created_at", { ascending: true }),
-      ]);
-    if (!order) throw new Error("Commande introuvable");
-    return { order, items: items ?? [], events: events ?? [] };
+    const { userId } = context;
+    const { data: order, error: orderErr } = await supabaseAdmin
+      .from("orders")
+      .select(
+        "id, reference, status, user_id, restaurant_id, driver_id, subtotal, " +
+          "delivery_fee, promo_code, promo_discount, total, eta_minutes, " +
+          "created_at, paid_at, accepted_at, ready_at, picked_up_at, delivered_at, " +
+          "cancelled_at, delivery_address, notes, " +
+          "restaurant:restaurants(id, name, logo_url, image_url, address, lat, lng, neighborhood, city, slug)",
+      )
+      .eq("id", data.id)
+      .eq("user_id", userId)
+      .is("deleted_at", null)
+      .maybeSingle();
+
+    if (orderErr) throw new Error("Impossible de charger la commande");
+    if (!order) return { order: null, items: [], events: [], reviewExists: false };
+
+    const orderAny = order as any;
+    const [itemsRes, eventsRes, reviewRes, driverRes] = await Promise.all([
+      supabaseAdmin.from("order_items").select("*").eq("order_id", data.id),
+      supabaseAdmin
+        .from("order_events")
+        .select("*")
+        .eq("order_id", data.id)
+        .order("created_at", { ascending: true }),
+      supabaseAdmin.from("reviews").select("id").eq("order_id", data.id).maybeSingle(),
+      orderAny.driver_id
+        ? supabaseAdmin
+            .from("driver_profiles")
+            .select("user_id, full_name, phone, photo_url, rating, vehicle_type")
+            .eq("user_id", orderAny.driver_id)
+            .maybeSingle()
+        : Promise.resolve({ data: null, error: null }),
+    ]);
+
+    if (itemsRes.error) throw new Error("Impossible de charger les articles");
+    if (eventsRes.error) throw new Error("Impossible de charger le suivi");
+
+    return {
+      order: {
+        ...orderAny,
+        driver_profile: driverRes.data ?? null,
+      },
+      items: itemsRes.data ?? [],
+      events: eventsRes.data ?? [],
+      reviewExists: !!reviewRes.data,
+    };
   });
 
 // =============================================================================
