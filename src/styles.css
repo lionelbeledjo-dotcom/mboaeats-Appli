@@ -601,6 +601,42 @@
   .animate-soft-pulse { animation: none; }
 }
 
+/* ── Header MboaEats logo entrance animation ── */
+@keyframes logo-header-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes logo-word-in {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: translateY( 0); }
+}
+.logo-header-animate {
+  animation: logo-header-in 300ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.logo-header-animate .logo-word-mboa {
+  display: inline-block;
+  animation: logo-word-in 250ms cubic-bezier(0.2, 0.8, 0.2, 1) 0ms both;
+}
+.logo-header-animate .logo-word-eats {
+  display: inline-block;
+  animation: logo-word-in 250ms cubic-bezier(0.2, 0.8, 0.2, 1) 100ms both;
+}
+@media (max-width: 767px) {
+  .logo-header-animate { animation-duration: 200ms; }
+  .logo-header-animate .logo-word-mboa,
+  .logo-header-animate .logo-word-eats { animation-duration: 180ms; }
+  .logo-header-animate .logo-word-eats { animation-delay: 60ms; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo-header-animate,
+  .logo-header-animate .logo-word-mboa,
+  .logo-header-animate .logo-word-eats {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
 /* Global stabilization: prevent horizontal scroll, eliminate tap highlight, stabilize keyboard */
 *, *::before, *::after {
   box-sizing: border-box;

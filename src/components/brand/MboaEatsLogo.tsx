@@ -29,6 +29,8 @@ interface MboaEatsLogoProps {
    * @deprecated Use `variant` instead. `withContainer={false}` ≡ variant="ghost".
    */
   withContainer?: boolean;
+  /** Active l'animation d'entrée (fade-in + scale + révélation séquentielle). À utiliser uniquement sur le header client. */
+  animate?: boolean;
   className?: string;
 }
 
