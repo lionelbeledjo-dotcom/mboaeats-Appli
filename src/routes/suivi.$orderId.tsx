@@ -12,7 +12,7 @@ import { getOrder } from "@/server/marketplace.functions";
 import { getDriverContact, reportOrderIssue } from "@/server/tracking.functions";
 import { useRealtimeOrder } from "@/hooks/use-realtime-order";
 import { useDriverLocation } from "@/hooks/use-driver-location";
-import { ReviewForm } from "@/components/ReviewForm";
+import { ReviewModal } from "@/components/ReviewModal";
 import { OrderChat } from "@/components/OrderChat";
 
 export const Route = createFileRoute("/suivi/$orderId")({
@@ -167,8 +167,7 @@ function SuiviPage() {
       sessionStorage.setItem(`celebrated:${order.id}`, "1");
       const t = setTimeout(() => {
         setShowCelebration(false);
-        // Ouvre le modal de notation après la célébration, si pas déjà noté
-        if (!localStorage.getItem(`review_${order.id}`)) {
+        if (!localStorage.getItem(`review_dismissed_${order.id}`)) {
           setReviewModalOpen(true);
         }
       }, 3500);
@@ -466,17 +465,7 @@ function SuiviPage() {
           </div>
         </div>
 
-        {order.delivered_at && (
-          <div className="mt-3 rounded-2xl bg-white p-4 shadow-[0_2px_12px_-6px_rgba(0,0,0,0.08)]">
-            <div className="mb-3 flex items-center gap-2">
-              <PartyPopper className="h-5 w-5" style={{ color: "#06C167" }} />
-              <h3 className="text-sm font-bold" style={{ color: "#1A1A1A" }}>
-                Comment s'est passée votre expérience ?
-              </h3>
-            </div>
-            <ReviewForm restaurantId={order.restaurant_id} orderId={order.id} />
-          </div>
-        )}
+        {/* Bloc d'avis sur la commande livrée — un seul avis par commande désormais */}
       </div>
 
       {showChat && meId && (
@@ -503,47 +492,16 @@ function SuiviPage() {
 
       {showCelebration && <DeliveryCelebration />}
 
-      {reviewModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center"
-          onClick={() => setReviewModalOpen(false)}
-        >
-          <div
-            className="w-full max-w-md rounded-3xl bg-white p-5 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between">
-              <h3 className="flex items-center gap-2 text-base font-bold" style={{ color: "#1A1A1A" }}>
-                <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
-                Comment s'est passée votre commande ?
-              </h3>
-              <button
-                type="button"
-                onClick={() => setReviewModalOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full"
-                style={{ backgroundColor: "#F4F4F4" }}
-                aria-label="Plus tard"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <p className="mt-1 text-xs" style={{ color: "#888888" }}>
-              Votre avis aide les autres clients et le restaurant à s'améliorer.
-            </p>
-            <div className="mt-3">
-              <ReviewForm restaurantId={order.restaurant_id} orderId={order.id} />
-            </div>
-            <button
-              type="button"
-              onClick={() => setReviewModalOpen(false)}
-              className="mt-2 w-full text-center text-xs font-semibold"
-              style={{ color: "#888888" }}
-            >
-              Plus tard
-            </button>
-          </div>
-        </div>
-      )}
+      <ReviewModal
+        open={reviewModalOpen}
+        onClose={() => setReviewModalOpen(false)}
+        orderId={order.id}
+        restaurantId={order.restaurant_id}
+        restaurantName={order.restaurant?.name ?? "Restaurant"}
+        driverId={order.driver_id}
+        driverName={driver?.name ?? null}
+        driverAvatar={driver?.avatar_url ?? null}
+      />
     </div>
   );
 }
