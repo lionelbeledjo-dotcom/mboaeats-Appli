@@ -43,8 +43,16 @@ export const listLoginAttempts = createServerFn({ method: "POST" })
       q = q.gte("attempted_at", new Date(Date.now() - 7 * 24 * 3600_000).toISOString());
     }
 
-    const { data: rows, error } = await q;
+    const { data: rowsRaw, error } = await q;
     if (error) throw new Error(error.message);
+    const rows = (rowsRaw ?? []).map((r: any) => ({
+      id: r.id as string,
+      email: r.email as string,
+      ip_address: r.ip_address == null ? null : String(r.ip_address),
+      success: r.success as boolean,
+      user_agent: (r.user_agent as string | null) ?? null,
+      attempted_at: r.attempted_at as string,
+    }));
 
     // Stats 24h
     const since24h = new Date(Date.now() - 24 * 3600_000).toISOString();
