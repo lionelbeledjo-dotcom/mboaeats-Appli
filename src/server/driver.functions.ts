@@ -229,38 +229,38 @@ export const getMyEarnings = createServerFn({ method: "GET" })
     };
   });
 
-// Évaluations clients reçues (rating laissé par les clients sur les commandes livrées par ce livreur)
+// Évaluations clients reçues par le livreur (nouvelle table reviews)
 export const getMyDriverReviews = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { userId } = context;
-    const { data: orders } = await supabaseAdmin
-      .from("orders")
-      .select("id, reference, restaurant_id, restaurants(name)")
+    const { data: rows } = await supabaseAdmin
+      .from("reviews")
+      .select("id, driver_rating, driver_comment, created_at, order_id, restaurant_id")
       .eq("driver_id", userId)
-      .eq("status", "delivered")
-      .limit(200);
-    const orderIds = (orders ?? []).map((o) => o.id);
-    if (orderIds.length === 0) {
+      .not("driver_rating", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    if (!rows || rows.length === 0) {
       return { reviews: [], avg: null, count: 0 };
     }
-    const { data: reviews } = await supabaseAdmin
-      .from("restaurant_reviews")
-      .select("id, rating, comment, created_at, order_id")
-      .in("order_id", orderIds)
-      .order("created_at", { ascending: false });
-    const list = (reviews ?? []).map((r) => {
-      const o = (orders ?? []).find((x) => x.id === r.order_id);
-      return {
-        id: r.id,
-        rating: r.rating,
-        comment: r.comment,
-        created_at: r.created_at,
-        reference: o?.reference ?? "",
-        restaurant_name: (o as { restaurants?: { name?: string } } | undefined)?.restaurants?.name ?? "Restaurant",
-      };
-    });
-    const avg = list.length > 0 ? list.reduce((s, r) => s + (r.rating ?? 0), 0) / list.length : null;
+    const orderIds = rows.map((r) => r.order_id);
+    const restoIds = Array.from(new Set(rows.map((r) => r.restaurant_id)));
+    const [{ data: orders }, { data: restos }] = await Promise.all([
+      supabaseAdmin.from("orders").select("id, reference").in("id", orderIds),
+      supabaseAdmin.from("restaurants").select("id, name").in("id", restoIds),
+    ]);
+    const orderMap = new Map((orders ?? []).map((o) => [o.id, o.reference] as const));
+    const restoMap = new Map((restos ?? []).map((r) => [r.id, r.name] as const));
+    const list = rows.map((r) => ({
+      id: r.id,
+      rating: r.driver_rating as number,
+      comment: r.driver_comment,
+      created_at: r.created_at,
+      reference: orderMap.get(r.order_id) ?? "",
+      restaurant_name: restoMap.get(r.restaurant_id) ?? "Restaurant",
+    }));
+    const avg = list.reduce((s, r) => s + r.rating, 0) / list.length;
     return { reviews: list, avg, count: list.length };
   });
 

@@ -518,7 +518,9 @@ export type Database = {
           phone: string
           photo_url: string | null
           plate_number: string | null
+          rating: number | null
           rejection_reason: string | null
+          reviews_count: number
           status: Database["public"]["Enums"]["driver_application_status"]
           updated_at: string
           user_id: string
@@ -535,7 +537,9 @@ export type Database = {
           phone: string
           photo_url?: string | null
           plate_number?: string | null
+          rating?: number | null
           rejection_reason?: string | null
+          reviews_count?: number
           status?: Database["public"]["Enums"]["driver_application_status"]
           updated_at?: string
           user_id: string
@@ -552,7 +556,9 @@ export type Database = {
           phone?: string
           photo_url?: string | null
           plate_number?: string | null
+          rating?: number | null
           rejection_reason?: string | null
+          reviews_count?: number
           status?: Database["public"]["Enums"]["driver_application_status"]
           updated_at?: string
           user_id?: string
@@ -1678,6 +1684,67 @@ export type Database = {
           validation_status?: string
         }
         Relationships: []
+      }
+      reviews: {
+        Row: {
+          client_id: string
+          created_at: string
+          driver_comment: string | null
+          driver_id: string | null
+          driver_rating: number | null
+          id: string
+          order_id: string
+          restaurant_comment: string | null
+          restaurant_id: string
+          restaurant_rating: number | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          driver_comment?: string | null
+          driver_id?: string | null
+          driver_rating?: number | null
+          id?: string
+          order_id: string
+          restaurant_comment?: string | null
+          restaurant_id: string
+          restaurant_rating?: number | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          driver_comment?: string | null
+          driver_id?: string | null
+          driver_rating?: number | null
+          id?: string
+          order_id?: string
+          restaurant_comment?: string | null
+          restaurant_id?: string
+          restaurant_rating?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_health"
+            referencedColumns: ["restaurant_id"]
+          },
+        ]
       }
       reward_redemptions: {
         Row: {
