@@ -1,5 +1,5 @@
 import { Outlet, Link, createRootRouteWithContext, HeadContent, Scripts, useLocation } from "@tanstack/react-router";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { QueryClient } from "@tanstack/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -126,6 +126,11 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   useKeyboardViewport();
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw-push.js").catch(() => {});
+    }
+  }, []);
   const hostMode = getHostMode();
   usePrefetchOnIdle(
     hostMode === "admin"

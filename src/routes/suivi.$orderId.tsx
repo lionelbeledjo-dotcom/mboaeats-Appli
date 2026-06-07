@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   CheckCircle2, ChefHat, Package, Truck, Home,
   MapPin, ArrowLeft, Phone, MessageCircle, Star, AlertTriangle, X,
-  Clock, ShieldCheck, XCircle,
+  Clock, ShieldCheck, XCircle, Heart,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,9 @@ import { useRealtimeOrder } from "@/hooks/use-realtime-order";
 import { useDriverLocation } from "@/hooks/use-driver-location";
 import { ReviewModal } from "@/components/ReviewModal";
 import { OrderChat } from "@/components/OrderChat";
+import { OrderModifyModal } from "@/components/OrderModifyModal";
+import { RefundRequestModal } from "@/components/RefundRequestModal";
+import { TipModal } from "@/components/TipModal";
 import { getOrderReview } from "@/server/social.functions";
 
 export const Route = createFileRoute("/suivi/$orderId")({
@@ -171,6 +174,12 @@ function SuiviPage() {
   }, []);
   const meRole: "client" | "driver" = meId && meId === order.driver_id ? "driver" : "client";
   const showChat = !!order.driver_id && !!meId && !order.delivered_at && order.status !== "cancelled";
+  const canModify = meRole === "client" && ["pending", "confirmed"].includes(order.status);
+  const [showModify, setShowModify] = useState(false);
+  const canRefund = meRole === "client" && ["delivered", "cancelled"].includes(order.status);
+  const [showRefund, setShowRefund] = useState(false);
+  const canTip = meRole === "client" && order.status === "delivered" && !!order.driver_id;
+  const [showTip, setShowTip] = useState(false);
 
   // ETA dynamique : si on a la position du livreur + destination, on recalcule
   const dynamicEtaMin = useMemo(() => {
@@ -543,6 +552,42 @@ function SuiviPage() {
           </div>
         </div>
 
+        {/* Modifier la commande */}
+        {canModify && (
+          <button
+            type="button"
+            onClick={() => setShowModify(true)}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border-2 bg-white py-3 text-sm font-semibold transition hover:bg-green-50"
+            style={{ borderColor: "#06C167", color: "#06C167" }}
+          >
+            Modifier ma commande
+          </button>
+        )}
+
+        {/* Pourboire livreur */}
+        {canTip && (
+          <button
+            type="button"
+            onClick={() => setShowTip(true)}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#06C167] py-3 text-sm font-bold text-white transition hover:bg-[#05a857]"
+          >
+            <Heart className="h-4 w-4" />
+            Laisser un pourboire
+          </button>
+        )}
+
+        {/* Demander remboursement */}
+        {canRefund && (
+          <button
+            type="button"
+            onClick={() => setShowRefund(true)}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed bg-white py-3 text-sm font-semibold transition hover:bg-red-50"
+            style={{ borderColor: "#E53935", color: "#E53935" }}
+          >
+            Demander un remboursement
+          </button>
+        )}
+
         {/* Bloc d'avis sur la commande livrée — un seul avis par commande désormais */}
       </div>
 
@@ -591,6 +636,32 @@ function SuiviPage() {
         driverName={driver?.name ?? null}
         driverAvatar={driver?.avatar_url ?? null}
       />
+
+      {showModify && (
+        <OrderModifyModal
+          orderId={order.id}
+          items={data.items}
+          onClose={() => setShowModify(false)}
+          onUpdated={() => { toast.success("Modification demandee"); }}
+        />
+      )}
+
+      {showRefund && (
+        <RefundRequestModal
+          orderId={order.id}
+          total={order.total}
+          onClose={() => setShowRefund(false)}
+        />
+      )}
+
+      {showTip && order.driver_id && (
+        <TipModal
+          orderId={order.id}
+          driverId={order.driver_id}
+          driverName={driver?.name ?? "Votre livreur"}
+          onClose={() => setShowTip(false)}
+        />
+      )}
     </div>
   );
 }

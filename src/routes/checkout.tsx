@@ -252,42 +252,54 @@ function Checkout() {
   }, [paymentStatus]);
 
   const ensureLiveOrder = async (): Promise<string | null> => {
-    if (!isLiveOrder || !liveRestoId) return null;
+    if (!isLiveOrder) return null;
     if (liveOrderId) return liveOrderId;
     const addr = delivery_.address;
     const scheduled =
       delivery_.schedule.type === "scheduled" ? delivery_.schedule.when : null;
-    const orderNotes = [
-      delivery_.instructions && `Livreur: ${delivery_.instructions}`,
-      scheduled && `Programmée: ${new Date(scheduled).toLocaleString("fr-FR")}`,
-      ...dbItems
-        .filter((i) => i.note)
-        .map((i) => `${i.name}: ${i.note}`),
-    ]
-      .filter(Boolean)
-      .join(" · ");
-    const res = await createOrderFn({
-      data: {
-        restaurant_id: liveRestoId,
-        items: dbItems.map((i) => ({
-          dish_id: i.dishId,
-          name: i.name,
-          qty: i.qty,
-          unit_price: i.price,
-        })),
-        delivery_address: {
-          line: addr.line,
-          city: addr.city,
-          neighborhood: addr.neighborhood ?? undefined,
-          lat: addr.lat ?? null,
-          lng: addr.lng ?? null,
+
+    const restoGroups = new Map<string, typeof dbItems>();
+    for (const it of dbItems) {
+      const rid = it.restoId || "unknown";
+      if (!restoGroups.has(rid)) restoGroups.set(rid, []);
+      restoGroups.get(rid)!.push(it);
+    }
+
+    let firstOrderId: string | null = null;
+    for (const [restoId, groupItems] of restoGroups) {
+      const orderNotes = [
+        delivery_.instructions && `Livreur: ${delivery_.instructions}`,
+        scheduled && `Programmée: ${new Date(scheduled).toLocaleString("fr-FR")}`,
+        ...groupItems
+          .filter((i) => i.note)
+          .map((i) => `${i.name}: ${i.note}`),
+      ]
+        .filter(Boolean)
+        .join(" · ");
+      const res = await createOrderFn({
+        data: {
+          restaurant_id: restoId,
+          items: groupItems.map((i) => ({
+            dish_id: i.dishId,
+            name: i.name,
+            qty: i.qty,
+            unit_price: i.price,
+          })),
+          delivery_address: {
+            line: addr.line,
+            city: addr.city,
+            neighborhood: addr.neighborhood ?? undefined,
+            lat: addr.lat ?? null,
+            lng: addr.lng ?? null,
+          },
+          promo_code: promo?.code,
+          notes: orderNotes || addr.line,
         },
-        promo_code: promo?.code,
-        notes: orderNotes || addr.line,
-      },
-    });
-    setLiveOrderId(res.order.id);
-    return res.order.id;
+      });
+      if (!firstOrderId) firstOrderId = res.order.id;
+    }
+    if (firstOrderId) setLiveOrderId(firstOrderId);
+    return firstOrderId;
   };
 
   const start = async () => {

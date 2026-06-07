@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { EmptyState } from "@/components/EmptyState";
 import { SmartImage } from "@/components/SmartImage";
 import { getRestaurant } from "@/data/restaurants";
+import { GroupOrderModal } from "@/components/GroupOrderModal";
 
 /**
  * Panier — refonte AppShell stable.
@@ -81,6 +82,16 @@ function PanierRoute() {
   );
 }
 
+function groupByRestaurant(items: ReturnType<typeof useCart>["items"]) {
+  const map = new Map<string, { resto: ReturnType<typeof getRestaurant>; items: typeof items }>();
+  for (const it of items) {
+    const key = it.restoId || "unknown";
+    if (!map.has(key)) map.set(key, { resto: getRestaurant(key), items: [] });
+    map.get(key)!.items.push(it);
+  }
+  return [...map.entries()];
+}
+
 function PanierPage() {
   const navigate = useNavigate();
   const cart = useCart();
@@ -89,6 +100,7 @@ function PanierPage() {
   const setQty = cart?.setQty ?? (() => {});
   const remove = cart?.remove ?? (() => {});
   const [promoChecked, setPromoChecked] = useState(false);
+  const [groupModalOpen, setGroupModalOpen] = useState(false);
 
   if (!items || items.length === 0) {
     return (
@@ -109,16 +121,14 @@ function PanierPage() {
     );
   }
 
-  const restoId = items[0]?.restoId;
-  const resto = restoId ? getRestaurant(restoId) : null;
-  const restoName = resto?.name ?? "Votre commande";
+  const groups = groupByRestaurant(items);
 
   return (
     <main
       className="mx-auto w-full max-w-md bg-white text-black font-sans"
       style={{ paddingBottom: STICKY_BOTTOM_OFFSET }}
     >
-      {/* Header sticky : reste visible pendant le scroll de la liste */}
+      {/* Header sticky */}
       <header
         className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-100"
       >
@@ -128,97 +138,121 @@ function PanierPage() {
           </Link>
           <button
             type="button"
-            aria-label="Ajouter une personne"
+            aria-label="Commande groupée"
+            onClick={() => setGroupModalOpen(true)}
             className="-mr-2 inline-flex h-10 w-10 items-center justify-center rounded-full active:bg-gray-100 transition-colors"
           >
             <UserPlus className="h-6 w-6 text-black" strokeWidth={2.25} />
           </button>
         </div>
-        <h1 className="px-4 pt-1 pb-3 text-[24px] font-bold tracking-tight leading-tight truncate">{restoName}</h1>
+        <h1 className="px-4 pt-1 pb-3 text-[24px] font-bold tracking-tight leading-tight">
+          {groups.length > 1 ? "Votre panier" : (groups[0]?.[1].resto?.name ?? "Votre commande")}
+        </h1>
       </header>
 
-      {/* Liste articles */}
-      <ul className="divide-y divide-gray-100">
-        {items.map((it) => (
-          <li key={it.id} className="flex gap-4 px-4 py-5">
-            {it.image ? (
-              <div
-                className="shrink-0 overflow-hidden rounded-2xl bg-gray-100"
-                style={{ width: 96, height: 96, aspectRatio: "1 / 1", flex: "0 0 96px" }}
+      {/* Groupes par restaurant */}
+      {groups.map(([restoId, group]) => (
+        <section key={restoId}>
+          {groups.length > 1 && (
+            <div className="flex items-center justify-between px-4 pt-5 pb-2 border-t border-gray-100 first:border-t-0">
+              <h2 className="text-[16px] font-bold text-black truncate">{group.resto?.name ?? "Restaurant"}</h2>
+              <button
+                type="button"
+                onClick={() => navigate({ to: "/restaurants/$restoId", params: { restoId } })}
+                className="text-[13px] font-semibold text-[#06C167]"
               >
-                <SmartImage
-                  src={it.image}
-                  alt={it.name}
-                  ratio="1 / 1"
-                  width={96}
-                  height={96}
-                  wrapperClassName="!h-full !w-full"
-                />
-              </div>
-            ) : (
-              <div
-                className="flex shrink-0 items-center justify-center rounded-2xl bg-gray-100"
-                style={{ width: 96, height: 96, flex: "0 0 96px" }}
-              >
-                <ShoppingBag className="h-7 w-7 text-gray-400" />
-              </div>
-            )}
-            <div className="flex flex-1 flex-col min-w-0">
-              <h3 className="text-[15px] font-bold leading-snug text-black">{it.name}</h3>
-              {it.options && Object.keys(it.options).length > 0 && (
-                <p className="mt-1 text-[13px] text-gray-500 leading-snug line-clamp-3">
-                  {Object.entries(it.options).map(([k, v]) => `${k}: ${v}`).join(" · ")}
-                </p>
-              )}
-              {it.note && (
-                <p className="mt-1 text-[13px] text-gray-500 italic line-clamp-2">{it.note}</p>
-              )}
-              <div className="mt-2 flex items-end justify-between gap-2">
-                <span className="text-[15px] font-semibold text-black">
-                  {(it.price * it.qty).toLocaleString("fr-FR")} FCFA
-                </span>
-                <div className="inline-flex h-11 items-center gap-1 rounded-2xl border border-gray-200 bg-white p-1 shadow-sm">
-                  <button
-                    type="button"
-                    onClick={() => (it.qty <= 1 ? remove(it.id) : setQty(it.id, it.qty - 1))}
-                    aria-label={it.qty <= 1 ? `Supprimer ${it.name}` : "Diminuer la quantité"}
-                    className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#06C167]/10 text-[#06C167] transition-transform active:scale-90"
-                  >
-                    {it.qty <= 1 ? (
-                      <Trash2 className="h-4 w-4" />
-                    ) : (
-                      <Minus className="h-4 w-4" strokeWidth={2.8} />
-                    )}
-                  </button>
-                  <span className="min-w-[2rem] px-1 text-center text-[15px] font-bold tabular-nums text-black">
-                    {it.qty}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setQty(it.id, it.qty + 1)}
-                    aria-label="Augmenter la quantité"
-                    className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#06C167] text-white shadow-sm transition-transform active:scale-90"
-                  >
-                    <Plus className="h-4 w-4" strokeWidth={2.8} />
-                  </button>
-                </div>
-              </div>
+                + Ajouter
+              </button>
             </div>
-          </li>
-        ))}
-      </ul>
+          )}
+          <ul className="divide-y divide-gray-100">
+            {group.items.map((it) => (
+              <li key={it.id} className="flex gap-4 px-4 py-5">
+                {it.image ? (
+                  <div
+                    className="shrink-0 overflow-hidden rounded-2xl bg-gray-100"
+                    style={{ width: 96, height: 96, aspectRatio: "1 / 1", flex: "0 0 96px" }}
+                  >
+                    <SmartImage
+                      src={it.image}
+                      alt={it.name}
+                      ratio="1 / 1"
+                      width={96}
+                      height={96}
+                      wrapperClassName="!h-full !w-full"
+                    />
+                  </div>
+                ) : (
+                  <div
+                    className="flex shrink-0 items-center justify-center rounded-2xl bg-gray-100"
+                    style={{ width: 96, height: 96, flex: "0 0 96px" }}
+                  >
+                    <ShoppingBag className="h-7 w-7 text-gray-400" />
+                  </div>
+                )}
+                <div className="flex flex-1 flex-col min-w-0">
+                  <h3 className="text-[15px] font-bold leading-snug text-black">{it.name}</h3>
+                  {it.options && Object.keys(it.options).length > 0 && (
+                    <p className="mt-1 text-[13px] text-gray-500 leading-snug line-clamp-3">
+                      {Object.entries(it.options).map(([k, v]) => `${k}: ${v}`).join(" · ")}
+                    </p>
+                  )}
+                  {it.note && (
+                    <p className="mt-1 text-[13px] text-gray-500 italic line-clamp-2">{it.note}</p>
+                  )}
+                  <div className="mt-2 flex items-end justify-between gap-2">
+                    <span className="text-[15px] font-semibold text-black">
+                      {(it.price * it.qty).toLocaleString("fr-FR")} FCFA
+                    </span>
+                    <div className="inline-flex h-11 items-center gap-1 rounded-2xl border border-gray-200 bg-white p-1 shadow-sm">
+                      <button
+                        type="button"
+                        onClick={() => (it.qty <= 1 ? remove(it.id) : setQty(it.id, it.qty - 1))}
+                        aria-label={it.qty <= 1 ? `Supprimer ${it.name}` : "Diminuer la quantité"}
+                        className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#06C167]/10 text-[#06C167] transition-transform active:scale-90"
+                      >
+                        {it.qty <= 1 ? (
+                          <Trash2 className="h-4 w-4" />
+                        ) : (
+                          <Minus className="h-4 w-4" strokeWidth={2.8} />
+                        )}
+                      </button>
+                      <span className="min-w-[2rem] px-1 text-center text-[15px] font-bold tabular-nums text-black">
+                        {it.qty}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setQty(it.id, it.qty + 1)}
+                        aria-label="Augmenter la quantité"
+                        className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#06C167] text-white shadow-sm transition-transform active:scale-90"
+                      >
+                        <Plus className="h-4 w-4" strokeWidth={2.8} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
 
-      {/* + Ajouter des articles */}
-      <div className="px-4 py-4 flex justify-end">
-        <button
-          type="button"
-          onClick={() => restoId && navigate({ to: "/restaurants/$restoId", params: { restoId } })}
-          className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-5 py-3 text-[14px] font-semibold text-black active:scale-[0.98] transition-transform"
-        >
-          <Plus className="h-4 w-4" strokeWidth={2.5} />
-          Ajouter des articles
-        </button>
-      </div>
+      {/* + Ajouter des articles (mono-restaurant) */}
+      {groups.length === 1 && (
+        <div className="px-4 py-4 flex justify-end">
+          <button
+            type="button"
+            onClick={() => {
+              const rid = groups[0]?.[0];
+              if (rid) navigate({ to: "/restaurants/$restoId", params: { restoId: rid } });
+            }}
+            className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-5 py-3 text-[14px] font-semibold text-black active:scale-[0.98] transition-transform"
+          >
+            <Plus className="h-4 w-4" strokeWidth={2.5} />
+            Ajouter des articles
+          </button>
+        </div>
+      )}
 
       {/* Envoyez en cadeau */}
       <button
@@ -246,7 +280,7 @@ function PanierPage() {
         <button
           type="button"
           onClick={() => {
-            if (window.confirm("Vider entièrement le panier ? Vous pourrez ensuite commander dans un autre restaurant.")) {
+            if (window.confirm("Vider entièrement le panier ?")) {
               clearCart();
               toast.success("Panier vidé");
             }
@@ -258,8 +292,16 @@ function PanierPage() {
         </button>
       </div>
 
-      {/* Footer sticky — collé juste au-dessus du BottomDock, peu importe la
-          hauteur de viewport. Plus de saut, plus d'espace vide en bas. */}
+      {/* Group order modal */}
+      {groupModalOpen && groups[0] && (
+        <GroupOrderModal
+          restoId={groups[0][0]}
+          restoName={groups[0][1].resto?.name ?? "Restaurant"}
+          onClose={() => setGroupModalOpen(false)}
+        />
+      )}
+
+      {/* Footer sticky */}
       <div
         className="sticky z-20 bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"
         style={{ bottom: STICKY_BOTTOM_OFFSET }}
@@ -281,7 +323,7 @@ function PanierPage() {
             onClick={() => navigate({ to: "/checkout" })}
             className="flex w-full h-14 items-center justify-center rounded-2xl bg-black text-white text-[16px] font-semibold shadow-[0_8px_24px_-12px_rgba(0,0,0,0.4)] active:scale-[0.98] transition-transform"
           >
-            Passer au paiement
+            Passer au paiement • {subtotal.toLocaleString("fr-FR")} FCFA
           </button>
         </div>
       </div>

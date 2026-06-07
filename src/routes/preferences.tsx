@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Bell, Mail, Smartphone, ArrowLeft, Loader2, Check, Contrast } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "@/components/ThemeProvider";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 export const Route = createFileRoute("/preferences")({
   head: () => ({
@@ -19,15 +20,14 @@ type Prefs = { push_enabled: boolean; inapp_enabled: boolean; email_enabled: boo
 function PreferencesPage() {
   const navigate = useNavigate();
   const { highContrast, toggleHighContrast } = useTheme();
+  const { permission: pushPerm, subscribed, requestPermission } = usePushNotifications();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [prefs, setPrefs] = useState<Prefs>({ push_enabled: true, inapp_enabled: true, email_enabled: true });
-  const [pushPerm, setPushPerm] = useState<NotificationPermission>("default");
 
   useEffect(() => {
-    if (typeof Notification !== "undefined") setPushPerm(Notification.permission);
     (async () => {
       const { data } = await supabase.auth.getUser();
       const u = data.user;
@@ -59,10 +59,8 @@ function PreferencesPage() {
   };
 
   const askPush = async () => {
-    if (typeof Notification === "undefined") return;
-    const p = await Notification.requestPermission();
-    setPushPerm(p);
-    if (p === "granted") setPrefs((s) => ({ ...s, push_enabled: true }));
+    const granted = await requestPermission();
+    if (granted) setPrefs((s) => ({ ...s, push_enabled: true }));
   };
 
   if (loading) {
