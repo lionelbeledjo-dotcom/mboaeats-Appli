@@ -35,12 +35,8 @@ export const Route = createFileRoute("/")({
     ],
   }),
   beforeLoad: async () => {
-    // Garde côté client uniquement : on n'accède pas au storage en SSR.
-    if (typeof window === "undefined") return;
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) {
-      throw redirect({ to: "/connexion" });
-    }
+    // Mode invité : l'accueil est accessible sans compte (comme Uber Eats).
+    // Le checkout est protégé via GuestCheckoutGate.
   },
   component: Index,
 });

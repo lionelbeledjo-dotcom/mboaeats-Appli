@@ -23,14 +23,7 @@ import { usePrefetchOnIdle } from "@/auth/hooks/usePrefetch";
 import { getHostMode } from "@/hooks/useHostMode";
 
 
-// Mode invité : pages de découverte accessibles sans compte. Le checkout reste protégé via une porte dédiée.
-const PUBLIC_ROUTES = [
-  "/", "/connexion", "/inscription", "/reset-password", "/cgu", "/confidentialite",
-  "/admin/login", "/healthcheck", "/recherche", "/explorer", "/panier", "/cuisines", "/proximite", "/populaire",
-  "/decouvrir", "/aide", "/contact", "/devenir-livreur", "/devenir-resto", "/mboapass",
-  "/parrainage", "/favoris",
-];
-const PUBLIC_PREFIXES = ["/admin", "/r/", "/restaurants/", "/categorie/", "/aide/"];
+// Routes publiques gérées dans AuthGate (@/auth/components/AuthGate.tsx)
 
 function OnboardingGate() {
   const { seen, hydrated, markSeen } = useOnboarding();
@@ -164,8 +157,6 @@ function RootComponent() {
     path.startsWith("/admin/unauthorized") ||
     path.startsWith("/superadmin/login");
   const hideClientChrome = isAdminHost || isMetierRoute || isAuthRoute;
-  void PUBLIC_ROUTES;
-  void PUBLIC_PREFIXES;
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light">

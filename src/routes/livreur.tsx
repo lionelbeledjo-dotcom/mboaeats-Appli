@@ -173,9 +173,7 @@ function Livreur() {
     };
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(push, () => {
-        // fallback Douala centre
-        const fake = { coords: { latitude: 4.0511, longitude: 9.7679, heading: null, speed: null } } as unknown as GeolocationPosition;
-        push(fake);
+        // GPS indisponible — on n'envoie pas de fausse position
       }, { enableHighAccuracy: true });
       watchId = navigator.geolocation.watchPosition(push, () => {}, { enableHighAccuracy: true, maximumAge: 8000 });
     }

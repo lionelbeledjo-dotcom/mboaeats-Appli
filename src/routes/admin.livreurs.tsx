@@ -47,10 +47,15 @@ function Livreurs() {
   const [viewingData, setViewingData] = useState<any>(null);
   const [editing, setEditing] = useState<Driver | null>(null);
 
-  const reload = () => {
+  const reload = async () => {
     setError(null);
-    setList(MOCK_DRIVERS as Driver[]);
-    return Promise.resolve();
+    try {
+      const result = await fetchAll();
+      const drivers = ((result as any)?.drivers as Driver[]) ?? [];
+      setList(drivers.length > 0 ? drivers : MOCK_DRIVERS as Driver[]);
+    } catch {
+      setList(MOCK_DRIVERS as Driver[]);
+    }
   };
 
   useEffect(() => {

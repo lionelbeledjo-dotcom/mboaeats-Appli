@@ -89,10 +89,15 @@ function Restaurants() {
     }
   };
 
-  const reload = () => {
+  const reload = async () => {
     setError(null);
-    setList(MOCK_RESTOS);
-    return Promise.resolve();
+    try {
+      const result = await fetchAll();
+      const restos = ((result as any)?.restaurants as Resto[]) ?? [];
+      setList(restos.length > 0 ? restos : MOCK_RESTOS);
+    } catch {
+      setList(MOCK_RESTOS);
+    }
   };
 
   useEffect(() => {

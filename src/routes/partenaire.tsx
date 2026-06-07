@@ -156,12 +156,16 @@ function PartenaireLayout() {
     );
   }
 
-  if (!active) return <FullscreenLoader />;
+  if (!active) {
+    const fallback = restos.find((r) => r.is_active) ?? restos[0];
+    if (fallback) { setActiveId(fallback.id); }
+    return <FullscreenLoader />;
+  }
 
   // Si l'actif n'est pas validé mais d'autres le sont, force le switch
   if (!active.is_active) {
-    const firstActive = restos.find((r) => r.is_active)!;
-    setActiveId(firstActive.id);
+    const firstActive = restos.find((r) => r.is_active);
+    if (firstActive) { setActiveId(firstActive.id); }
     return <FullscreenLoader />;
   }
 

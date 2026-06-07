@@ -894,20 +894,33 @@ function Summary({ cartItems = [], subtotal, delivery, taxes, total, hasPass, ad
   const [err, setErr] = useState<string | null>(null);
 
   const safeCartItems = Array.isArray(cartItems) ? cartItems.filter(Boolean) : [];
-  const PROMOS: Record<string, number> = {
-    MBOA10: Math.round(subtotal * 0.1),
-    BIENVENUE: 1000,
-    LIVRAISON: delivery,
-  };
+  const [validating, setValidating] = useState(false);
 
-  const apply = () => {
+  const apply = async () => {
     const k = code.trim().toUpperCase();
     if (!k) { setErr("Saisis un code"); return; }
-    const discount = PROMOS[k];
-    if (!discount) { setErr("Code promo invalide"); return; }
     setErr(null);
-    setPromo({ code: k, discount });
-    setCode("");
+    setValidating(true);
+    try {
+      const { data, error } = await (supabase as any)
+        .from("promo_codes")
+        .select("code, type, value, min_order, max_uses, uses, is_active, expires_at")
+        .eq("code", k)
+        .eq("is_active", true)
+        .single();
+      if (error || !data) { setErr("Code promo invalide"); return; }
+      const promo = data as { code: string; type: string; value: number; min_order: number | null; max_uses: number | null; uses: number; is_active: boolean; expires_at: string | null };
+      if (promo.max_uses && promo.uses >= promo.max_uses) { setErr("Ce code a atteint sa limite d'utilisation"); return; }
+      if (promo.expires_at && new Date(promo.expires_at) < new Date()) { setErr("Ce code promo a expire"); return; }
+      if (promo.min_order && subtotal < promo.min_order) { setErr(`Commande minimum : ${promo.min_order} FCFA`); return; }
+      const discount = promo.type === "percent" ? Math.round(subtotal * promo.value / 100) : promo.value;
+      setPromo({ code: k, discount });
+      setCode("");
+    } catch {
+      setErr("Erreur de validation");
+    } finally {
+      setValidating(false);
+    }
   };
 
   const handleRemove = (item: CartItem) => {
