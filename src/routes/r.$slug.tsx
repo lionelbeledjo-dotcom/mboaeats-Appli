@@ -4,7 +4,7 @@ import { ArrowLeft, Star, Clock, MapPin, Plus, Flame, Loader2 } from "lucide-rea
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { getRestaurantPageData as getRestaurantBySlug } from "@/server/catalog.fast.functions";
+import { getRestaurantPageData as getRestaurantBySlug } from "@/lib/catalog.fast.functions";
 import { getRestaurant } from "@/data/restaurants";
 import { supabase } from "@/integrations/supabase/client";
 import { addToCart, useCart, clearCart, restoreCartItems } from "@/hooks/use-cart";

@@ -5,7 +5,7 @@ import { Package, CheckCircle2, ChevronRight, MapPin, LogIn, RotateCcw, Loader2,
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { getMyOrders, getOrder } from "@/server/marketplace.functions";
+import { getMyOrders, getOrder } from "@/lib/marketplace.functions";
 import { addToCart } from "@/hooks/use-cart";
 import { RowSkeleton, EmptyState } from "@/components/ui/feedback";
 import { TabErrorBoundary, TabErrorFallback } from "@/components/TabErrorBoundary";

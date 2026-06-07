@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, Crown, Check, Truck, Sparkles, Zap, Shield, Loader2, Smartphone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { initiatePayment, verifyPayment, activateMboaPass, getActiveMboaPass } from "@/server/payments.functions";
+import { initiatePayment, verifyPayment, activateMboaPass, getActiveMboaPass } from "@/lib/payments.functions";
 
 export const Route = createFileRoute("/mboapass")({
   head: () => ({

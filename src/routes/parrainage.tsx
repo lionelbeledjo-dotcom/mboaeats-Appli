@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Gift, Copy, Check, Share2, Users, Wallet, Loader2, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { getMyReferral, applyMyReferralCode } from "@/server/loyalty.functions";
+import { getMyReferral, applyMyReferralCode } from "@/lib/loyalty.functions";
 
 export const Route = createFileRoute("/parrainage")({
   head: () => ({

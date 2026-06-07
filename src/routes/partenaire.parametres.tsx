@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
-import { getRestaurant, updateRestaurant } from "@/server/restaurant.functions";
+import { getRestaurant, updateRestaurant } from "@/lib/restaurant.functions";
 import { usePartenaire } from "@/components/partenaire/PartenaireContext";
 
 export const Route = createFileRoute("/partenaire/parametres")({

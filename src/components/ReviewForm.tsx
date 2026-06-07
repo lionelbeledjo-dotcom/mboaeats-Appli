@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Star, Loader2, Check } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { submitReview } from "@/server/social.functions";
+import { submitReview } from "@/lib/social.functions";
 
 export function ReviewForm({
   restaurantId,

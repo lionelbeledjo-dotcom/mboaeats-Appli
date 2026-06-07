@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Star, Loader2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { listReviews } from "@/server/social.functions";
+import { listReviews } from "@/lib/social.functions";
 
 type Review = {
   id: string;

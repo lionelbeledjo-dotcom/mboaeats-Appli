@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Store, ChefHat, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { listMyRestaurants } from "@/server/restaurant.functions";
+import { listMyRestaurants } from "@/lib/restaurant.functions";
 import { PartenaireCtx, type PartenaireResto } from "@/components/partenaire/PartenaireContext";
 import { PartenaireShell } from "@/components/partenaire/PartenaireShell";
 

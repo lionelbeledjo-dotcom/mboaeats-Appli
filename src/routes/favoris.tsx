@@ -4,7 +4,7 @@ import { Heart, Star, Clock, MapPin } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { SmartImage } from "@/components/SmartImage";
-import { listFavorites } from "@/server/social.functions";
+import { listFavorites } from "@/lib/social.functions";
 import { SmartBack } from "@/components/SmartBack";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { EmptyState, RowSkeleton } from "@/components/ui/feedback";

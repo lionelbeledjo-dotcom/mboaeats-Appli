@@ -4,8 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { pollPaymentStatus } from "@/server/payments.functions";
-import { markOrderPaid } from "@/server/marketplace.functions";
+import { pollPaymentStatus } from "@/lib/payments.functions";
+import { markOrderPaid } from "@/lib/marketplace.functions";
 import {
   clearPendingPayment,
   getPendingPayment,

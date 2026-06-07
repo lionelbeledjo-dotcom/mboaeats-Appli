@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Star, X, Loader2, Check } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { submitOrderReview, getOrderReview } from "@/server/social.functions";
+import { submitOrderReview, getOrderReview } from "@/lib/social.functions";
 
 type Props = {
   orderId: string;

@@ -4,7 +4,7 @@ import { Coins, Download, Loader2, Trash2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { CommissionConfig } from "@/components/admin/CommissionConfig";
-import { getCommissionsReport } from "@/server/admin.functions";
+import { getCommissionsReport } from "@/lib/admin.functions";
 
 const MOCK_REPORT = {
   totalCommission: 184500,

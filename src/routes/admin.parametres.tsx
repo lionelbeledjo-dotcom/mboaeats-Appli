@@ -6,7 +6,7 @@ import {
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { getPlatformSettings } from "@/server/admin-settings.functions";
+import { getPlatformSettings } from "@/lib/admin-settings.functions";
 
 export const Route = createFileRoute("/admin/parametres")({
   beforeLoad: async () => {

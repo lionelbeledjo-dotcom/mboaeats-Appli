@@ -3,7 +3,7 @@ import { Heart, Loader2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { isFavorite, toggleFavorite } from "@/server/social.functions";
+import { isFavorite, toggleFavorite } from "@/lib/social.functions";
 
 export function FavoriteButton({
   restaurantId,

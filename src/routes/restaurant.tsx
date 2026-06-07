@@ -22,7 +22,7 @@ import {
   ensureStandardCategories,
   getRestaurantStats,
   createMyRestaurant,
-} from "@/server/restaurant.functions";
+} from "@/lib/restaurant.functions";
 
 
 

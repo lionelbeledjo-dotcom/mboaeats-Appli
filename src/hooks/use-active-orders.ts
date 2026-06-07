@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getMyOrders } from "@/server/marketplace.functions";
+import { getMyOrders } from "@/lib/marketplace.functions";
 
 // Badge "Mes Commandes" : uniquement quand une commande est en livraison.
 const ACTIVE = new Set(["picked_up", "delivering"]);

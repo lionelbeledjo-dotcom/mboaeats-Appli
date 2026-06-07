@@ -5,7 +5,7 @@ import { Loader2, Plus, Pencil, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   getRestaurantMenu, upsertCategory, deleteCategory, upsertDish, deleteDish,
-} from "@/server/restaurant.functions";
+} from "@/lib/restaurant.functions";
 import { usePartenaire } from "@/components/partenaire/PartenaireContext";
 
 export const Route = createFileRoute("/partenaire/menu")({

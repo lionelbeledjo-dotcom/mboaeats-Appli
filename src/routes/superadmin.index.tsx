@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { Bike, Crown, LayoutDashboard, Percent, ShieldCheck, Store } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { getRestaurantsForModeration } from "@/server/restaurant.functions";
+import { getRestaurantsForModeration } from "@/lib/restaurant.functions";
 import { listDriverApplications } from "@/lib/driver-onboarding.functions";
 
 export const Route = createFileRoute("/superadmin/")({

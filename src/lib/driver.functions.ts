@@ -104,7 +104,7 @@ export const updateMissionStatus = createServerFn({ method: "POST" })
 
     // Emails — awaited inline (Workers tue les promesses détachées).
     try {
-      const { sendEmail, getUserEmail } = await import("@/server/email.functions");
+      const { sendEmail, getUserEmail } = await import("@/lib/email.functions");
       const { data: full } = await supabaseAdmin
         .from("orders")
         .select("id, reference, user_id, restaurants(name)")

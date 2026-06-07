@@ -227,7 +227,7 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
 
     // Emails — awaited inline (Workers tue les promesses détachées).
     try {
-      const { sendEmail, getUserEmail, listOnlineApprovedDrivers } = await import("@/server/email.functions");
+      const { sendEmail, getUserEmail, listOnlineApprovedDrivers } = await import("@/lib/email.functions");
       const { data: full } = await supabaseAdmin
         .from("orders")
         .select("id, reference, user_id, restaurant_id, eta_minutes, delivery_fee, delivery_address, restaurants(name, city)")
@@ -1065,7 +1065,7 @@ export const moderateRestaurant = createServerFn({ method: "POST" })
 
     // Email au propriétaire — awaited inline.
     try {
-      const { sendEmail, getRestaurantOwnerEmail } = await import("@/server/email.functions");
+      const { sendEmail, getRestaurantOwnerEmail } = await import("@/lib/email.functions");
       const owner = await getRestaurantOwnerEmail(data.restaurantId);
       if (owner.email) {
         const restaurant_name = (row as any)?.name ?? "Votre restaurant";

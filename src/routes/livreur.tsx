@@ -19,7 +19,7 @@ import {
   markArrivedAtRestaurant,
   requestPayout,
   getPayoutBalance,
-} from "@/server/driver.functions";
+} from "@/lib/driver.functions";
 
 export const Route = createFileRoute("/livreur")({
   component: LivreurGuarded,

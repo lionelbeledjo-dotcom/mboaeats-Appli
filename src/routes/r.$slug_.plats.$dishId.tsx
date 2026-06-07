@@ -6,7 +6,7 @@ import { ArrowLeft, Flame, Minus, Plus, ShoppingCart, Star } from "lucide-react"
 import { toast } from "sonner";
 import { DishSkeleton } from "@/components/Skeleton";
 import { DishReviews } from "@/components/DishReviews";
-import { getDishBySlugAndId } from "@/server/marketplace.functions";
+import { getDishBySlugAndId } from "@/lib/marketplace.functions";
 import { addToCart } from "@/hooks/use-cart";
 
 export const Route = createFileRoute("/r/$slug_/plats/$dishId")({

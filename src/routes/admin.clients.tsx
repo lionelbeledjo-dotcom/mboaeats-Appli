@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Search, ShieldOff, ShieldCheck, RefreshCw } from "lucide-react";
-import { listAllClients, setClientSuspended } from "@/server/admin.functions";
+import { listAllClients, setClientSuspended } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin/clients")({
   head: () => ({

@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Search, X as XIcon, RefreshCw } from "lucide-react";
-import { listAllOrders, cancelOrderAsAdmin } from "@/server/admin.functions";
+import { listAllOrders, cancelOrderAsAdmin } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin/commandes")({
   head: () => ({

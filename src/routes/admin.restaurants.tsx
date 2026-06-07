@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { listAllRestaurants, setRestaurantActive, getRestaurantDetails, updateRestaurantLocation, updateRestaurant, deleteRestaurant } from "@/server/admin.functions";
+import { listAllRestaurants, setRestaurantActive, getRestaurantDetails, updateRestaurantLocation, updateRestaurant, deleteRestaurant } from "@/lib/admin.functions";
 import RestaurantMap from "@/components/admin/RestaurantMap";
 import { supabase } from "@/integrations/supabase/client";
 import { ErrorState } from "@/components/admin/ErrorState";

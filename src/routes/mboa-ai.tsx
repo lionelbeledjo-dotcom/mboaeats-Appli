@@ -9,7 +9,7 @@ import dishPouletDg from "@/assets/dish-poulet-dg.webp";
 import dishEru from "@/assets/dish-eru.webp";
 import dishPoisson from "@/assets/dish-poisson.webp";
 import dishSuya from "@/assets/dish-suya.webp";
-import { recommendDishes, type Suggestion } from "@/server/mboa-ai.functions";
+import { recommendDishes, type Suggestion } from "@/lib/mboa-ai.functions";
 
 const fallbackImgs = [dishPouletDg, dishPoisson, dishEru, dishSuya];
 

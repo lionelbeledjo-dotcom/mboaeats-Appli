@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Bike, Send, X, Sparkles, Loader2, Mail } from "lucide-react";
-import { recommendDishes, type Suggestion } from "@/server/mboa-ai.functions";
+import { recommendDishes, type Suggestion } from "@/lib/mboa-ai.functions";
 import { useSessionUser } from "@/hooks/useSessionUser";
 
 type Msg = {

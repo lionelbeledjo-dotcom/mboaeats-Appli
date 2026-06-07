@@ -6,7 +6,7 @@ import { Percent, Save, ArrowLeft, Info } from "lucide-react";
 import {
   getCommissionOverview,
   updateDefaultCommission,
-} from "@/server/commissions.functions";
+} from "@/lib/commissions.functions";
 
 export const Route = createFileRoute("/superadmin/commissions")({
   component: SuperAdminCommissions,

@@ -26,7 +26,7 @@ import {
   ChefHat,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { createMyRestaurant, getMyRestaurant } from "@/server/restaurant.functions";
+import { createMyRestaurant, getMyRestaurant } from "@/lib/restaurant.functions";
 
 /**
  * Devenir Restaurateur — Parcours d'inscription complet (Étape 2 — Pack 2).

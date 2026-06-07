@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Star, Clock, Search, MapPin, Flame, UtensilsCrossed } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { listRestaurants } from "@/server/marketplace.functions";
+import { listRestaurants } from "@/lib/marketplace.functions";
 import { CardSkeleton, EmptyState } from "@/components/ui/feedback";
 
 export const Route = createFileRoute("/decouvrir")({
