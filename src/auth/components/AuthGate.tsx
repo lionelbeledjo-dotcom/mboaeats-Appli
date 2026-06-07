@@ -19,9 +19,8 @@ import { useSession } from "@/auth/hooks/useSession";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Mode OUVERT : les pages de découverte sont publiques (comme Uber Eats).
- * Seuls le checkout, les commandes, le profil et le suivi sont protégés.
- * Le panier est public mais le checkout redirige via GuestCheckoutGate.
+ * Mode FERMÉ : l'utilisateur DOIT être connecté pour accéder à l'app.
+ * Seules les pages d'auth, d'info légale et la landing sont publiques.
  */
 const PUBLIC_ROUTES: ReadonlyArray<string> = [
   "/",
@@ -36,24 +35,13 @@ const PUBLIC_ROUTES: ReadonlyArray<string> = [
   "/admin/unauthorized",
   "/superadmin/login",
   "/healthcheck",
-  "/recherche",
-  "/explorer",
-  "/panier",
-  "/cuisines",
-  "/proximite",
-  "/populaire",
-  "/decouvrir",
   "/aide",
   "/contact",
   "/cgu",
   "/confidentialite",
-  "/mboapass",
-  "/parrainage",
-  "/favoris",
-  "/mboa-ai",
 ];
 
-const PUBLIC_PREFIXES: ReadonlyArray<string> = ["/admin", "/superadmin", "/r/", "/restaurants/", "/categorie/", "/aide/"];
+const PUBLIC_PREFIXES: ReadonlyArray<string> = ["/aide/"];
 
 function isPublicPath(path: string): boolean {
   if (PUBLIC_ROUTES.includes(path)) return true;
