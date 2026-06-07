@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { listMyAddresses, upsertMyAddress, deleteMyAddress } from "@/server/account.functions";
+import { listMyAddresses, upsertMyAddress, deleteMyAddress } from "@/lib/account.functions";
 
 export const Route = createFileRoute("/adresses")({
   head: () => ({

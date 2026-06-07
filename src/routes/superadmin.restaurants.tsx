@@ -16,11 +16,11 @@ import {
 import {
   getRestaurantsForModeration,
   moderateRestaurant,
-} from "@/server/restaurant.functions";
+} from "@/lib/restaurant.functions";
 import {
   getCommissionOverview,
   setRestaurantCommission,
-} from "@/server/commissions.functions";
+} from "@/lib/commissions.functions";
 import { Percent } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

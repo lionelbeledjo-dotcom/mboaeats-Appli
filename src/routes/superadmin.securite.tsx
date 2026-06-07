@@ -5,7 +5,7 @@ import { ShieldAlert, Lock, Unlock, Activity, RefreshCw, Loader2 } from "lucide-
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { listLoginAttempts, unlockAccount } from "@/server/security.functions";
+import { listLoginAttempts, unlockAccount } from "@/lib/security.functions";
 
 export const Route = createFileRoute("/superadmin/securite")({
   component: SecurityPage,

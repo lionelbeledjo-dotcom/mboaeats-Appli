@@ -6,11 +6,11 @@ import {
   Loader2, Plus, Pencil, Trash2, Search, Save, Image as ImageIcon, Upload,
   Star, ToggleLeft, ToggleRight, FolderTree, Utensils, Store as StoreIcon,
 } from "lucide-react";
-import { listAllRestaurants } from "@/server/admin.functions";
+import { listAllRestaurants } from "@/lib/admin.functions";
 import {
   listMenuCategories, createMenuCategory, updateMenuCategory, deleteMenuCategory,
   listDishes, createDish, updateDish, deleteDish, uploadDishImage,
-} from "@/server/admin-menus.functions";
+} from "@/lib/admin-menus.functions";
 import { Modal, Field, inputCls } from "@/components/admin/Modal";
 import { ErrorState } from "@/components/admin/ErrorState";
 import { supabase } from "@/integrations/supabase/client";

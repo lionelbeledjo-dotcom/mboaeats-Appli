@@ -4,7 +4,7 @@ import { Bike, Phone, MapPin, Loader2, Power, PowerOff, Search, CheckCircle2, Ci
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { listAllDrivers, setDriverStatus, setDriverActive, getDriverDetails, updateDriverProfile, deleteDriver } from "@/server/admin.functions";
+import { listAllDrivers, setDriverStatus, setDriverActive, getDriverDetails, updateDriverProfile, deleteDriver } from "@/lib/admin.functions";
 import { ErrorState } from "@/components/admin/ErrorState";
 import { Modal, Field, inputCls } from "@/components/admin/Modal";
 

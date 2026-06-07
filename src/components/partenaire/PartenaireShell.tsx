@@ -160,7 +160,7 @@ function OpenToggle() {
   const toggle = async () => {
     setBusy(true);
     try {
-      const { updateRestaurant } = await import("@/server/restaurant.functions");
+      const { updateRestaurant } = await import("@/lib/restaurant.functions");
       await updateRestaurant({ data: { restaurant_id: active.id, is_open: !active.is_open } });
       await reload();
     } finally {

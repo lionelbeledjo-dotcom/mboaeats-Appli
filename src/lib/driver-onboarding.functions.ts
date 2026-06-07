@@ -91,7 +91,7 @@ export const approveDriverApplication = createServerFn({ method: "POST" })
       .upsert({ user_id: data.user_id, role: "livreur" as never }, { onConflict: "user_id,role" });
     // Email — awaited inline.
     try {
-      const { sendEmail, getUserEmail } = await import("@/server/email.functions");
+      const { sendEmail, getUserEmail } = await import("@/lib/email.functions");
       const email = await getUserEmail(data.user_id);
       if (email) {
         const { data: prof } = await supabaseAdmin
@@ -126,7 +126,7 @@ export const rejectDriverApplication = createServerFn({ method: "POST" })
       .eq("role", "livreur" as never);
     // Email — awaited inline.
     try {
-      const { sendEmail, getUserEmail } = await import("@/server/email.functions");
+      const { sendEmail, getUserEmail } = await import("@/lib/email.functions");
       const email = await getUserEmail(data.user_id);
       if (email) {
         const { data: prof } = await supabaseAdmin

@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Check, X, ChefHat, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { listRestaurantOrders, updateOrderStatus } from "@/server/restaurant.functions";
+import { listRestaurantOrders, updateOrderStatus } from "@/lib/restaurant.functions";
 import { usePartenaire } from "@/components/partenaire/PartenaireContext";
 
 export const Route = createFileRoute("/partenaire/commandes")({

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, ShoppingBag, Coins, TrendingUp, Percent } from "lucide-react";
-import { getRestaurantRevenue } from "@/server/commissions.functions";
+import { getRestaurantRevenue } from "@/lib/commissions.functions";
 import { usePartenaire } from "@/components/partenaire/PartenaireContext";
 
 export const Route = createFileRoute("/partenaire/revenus")({

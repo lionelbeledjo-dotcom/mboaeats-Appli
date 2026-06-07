@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Search, RefreshCw } from "lucide-react";
-import { listAuditLogs } from "@/server/admin.functions";
+import { listAuditLogs } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin/logs")({
   head: () => ({

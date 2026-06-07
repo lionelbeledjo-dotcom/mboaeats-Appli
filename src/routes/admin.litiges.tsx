@@ -4,7 +4,7 @@ import { AlertTriangle, MessageCircle, Check, X, Clock, Loader2, Eye, Pencil, Tr
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { listAllDisputes, resolveDispute, getDisputeDetails, updateDispute, deleteDispute } from "@/server/admin.functions";
+import { listAllDisputes, resolveDispute, getDisputeDetails, updateDispute, deleteDispute } from "@/lib/admin.functions";
 import { ErrorState } from "@/components/admin/ErrorState";
 import { Modal, Field, inputCls } from "@/components/admin/Modal";
 

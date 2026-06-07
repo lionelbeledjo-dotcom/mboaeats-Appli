@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Mail, RefreshCw, Search, CheckCircle2, XCircle, Clock, AlertTriangle } from "lucide-react";
-import { listEmailSendLogs } from "@/server/admin.functions";
+import { listEmailSendLogs } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin/emails")({
   head: () => ({

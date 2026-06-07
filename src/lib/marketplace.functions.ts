@@ -417,7 +417,7 @@ export const createOrder = createServerFn({ method: "POST" })
     // Emails — awaited inline (Workers tue les promesses détachées).
     // Le try/catch garantit qu'un échec d'email n'interrompt jamais le flow.
     try {
-      const { sendEmail, getUserEmail, getRestaurantOwnerEmail } = await import("@/server/email.functions");
+      const { sendEmail, getUserEmail, getRestaurantOwnerEmail } = await import("@/lib/email.functions");
       const { data: restoRow } = await supabaseAdmin
         .from("restaurants").select("name").eq("id", data.restaurant_id).maybeSingle();
       const restaurant_name = (restoRow as { name?: string } | null)?.name ?? "le restaurant";

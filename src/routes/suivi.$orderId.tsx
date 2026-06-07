@@ -8,8 +8,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { getOrder } from "@/server/marketplace.functions";
-import { reportOrderIssue } from "@/server/tracking.functions";
+import { getOrder } from "@/lib/marketplace.functions";
+import { reportOrderIssue } from "@/lib/tracking.functions";
 import { useRealtimeOrder } from "@/hooks/use-realtime-order";
 import { useDriverLocation } from "@/hooks/use-driver-location";
 import { ReviewModal } from "@/components/ReviewModal";
@@ -17,7 +17,7 @@ import { OrderChat } from "@/components/OrderChat";
 import { OrderModifyModal } from "@/components/OrderModifyModal";
 import { RefundRequestModal } from "@/components/RefundRequestModal";
 import { TipModal } from "@/components/TipModal";
-import { getOrderReview } from "@/server/social.functions";
+import { getOrderReview } from "@/lib/social.functions";
 
 export const Route = createFileRoute("/suivi/$orderId")({
   beforeLoad: async ({ params }) => {

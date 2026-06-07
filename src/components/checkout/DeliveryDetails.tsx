@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { MapPin, Clock, Bike, Plus, Check, Home, Briefcase, ChevronRight, LocateFixed, Loader2 } from "lucide-react";
-import { listMyAddresses, upsertMyAddress } from "@/server/account.functions";
+import { listMyAddresses, upsertMyAddress } from "@/lib/account.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 

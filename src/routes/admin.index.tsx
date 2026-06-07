@@ -8,7 +8,7 @@ import {
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
 } from "recharts";
-import { getAdminOverview } from "@/server/admin.functions";
+import { getAdminOverview } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin/")({
   head: () => ({ meta: [{ title: "Vue d'ensemble · Admin MboaEats" }, { name: "robots", content: "noindex,nofollow" }] }),
