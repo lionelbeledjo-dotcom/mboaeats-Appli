@@ -7,7 +7,7 @@ type Msg = {
   id: string;
   order_id: string;
   sender_id: string;
-  sender_role: "client" | "driver";
+  sender_role: "client" | "driver" | "restaurant";
   body: string;
   created_at: string;
   read_at: string | null;
@@ -16,7 +16,7 @@ type Msg = {
 type Props = {
   orderId: string;
   meId: string;
-  meRole: "client" | "driver";
+  meRole: "client" | "driver" | "restaurant";
   peerName?: string;
 };
 

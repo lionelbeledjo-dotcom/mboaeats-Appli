@@ -38,8 +38,21 @@ const SORT_LABELS: Record<SortKey, string> = {
   distance: "Plus proches",
 };
 
+const HISTORY_KEY = "mboaeats_search_history";
+const MAX_HISTORY = 10;
+
+function getSearchHistory(): string[] {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); } catch { return []; }
+}
+function saveToHistory(term: string) {
+  if (!term.trim()) return;
+  const history = getSearchHistory().filter((h) => h !== term);
+  history.unshift(term);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, MAX_HISTORY)));
+}
+function clearHistory() { localStorage.removeItem(HISTORY_KEY); }
+
 function RecherchePage() {
-  // Saisie immédiate (UI) vs requête appliquée (filtrage) — debouncée + transition
   const [q, setQ] = useState("");
   const [appliedQ, setAppliedQ] = useState("");
   const deferredQ = useDeferredValue(appliedQ);
@@ -49,14 +62,25 @@ function RecherchePage() {
   const [promosOnly, setPromosOnly] = useState(false);
   const [maxEta, setMaxEta] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [history, setHistory] = useState<string[]>([]);
+  const [showHistory, setShowHistory] = useState(true);
 
-  // Debounce 180 ms : ne déclenche le recalcul qu'à la pause de frappe.
+  useEffect(() => { setHistory(getSearchHistory()); }, []);
+
+  // Debounce 180 ms
   useEffect(() => {
     const t = window.setTimeout(() => {
       startTransition(() => setAppliedQ(q));
     }, 180);
     return () => window.clearTimeout(t);
   }, [q]);
+
+  const commitSearch = (term: string) => {
+    setQ(term);
+    saveToHistory(term);
+    setHistory(getSearchHistory());
+    setShowHistory(false);
+  };
 
   const { data: dbRestos } = useDbRestaurants();
 
@@ -105,7 +129,9 @@ function RecherchePage() {
             <input
               autoFocus
               value={q}
-              onChange={(e) => setQ(e.target.value)}
+              onChange={(e) => { setQ(e.target.value); setShowHistory(!e.target.value); }}
+              onFocus={() => { if (!q) setShowHistory(true); }}
+              onKeyDown={(e) => { if (e.key === "Enter" && q.trim()) commitSearch(q.trim()); }}
               placeholder="Cherche un plat, restaurant ou cuisine…"
               className="flex-1 bg-transparent text-sm outline-none"
               type="search"
@@ -190,6 +216,37 @@ function RecherchePage() {
       </header>
 
       <main className="mx-auto w-full max-w-md px-4 py-4 overflow-x-hidden">
+        {/* Historique de recherche */}
+        {showHistory && !q && history.length > 0 && (
+          <div className="mb-4 rounded-2xl bg-white p-4" style={{ border: "1px solid #E5E5E5" }}>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[11px] font-bold uppercase tracking-wide" style={{ color: "#6B6B6B" }}>Recherches recentes</p>
+              <button onClick={() => { clearHistory(); setHistory([]); }} className="text-[11px] font-semibold" style={{ color: "#06C167" }}>Effacer</button>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {history.map((h) => (
+                <button key={h} onClick={() => commitSearch(h)} className="flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-medium" style={{ backgroundColor: "#F5F0E8", color: "#1A1A1A", border: "1px solid #E5E5E5" }}>
+                  <Clock className="h-3 w-3" style={{ color: "#6B6B6B" }} /> {h}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Suggestions populaires quand pas de recherche */}
+        {!q && history.length === 0 && (
+          <div className="mb-4 rounded-2xl bg-white p-4" style={{ border: "1px solid #E5E5E5" }}>
+            <p className="text-[11px] font-bold uppercase tracking-wide mb-2" style={{ color: "#6B6B6B" }}>Suggestions populaires</p>
+            <div className="flex flex-wrap gap-1.5">
+              {["Ndole", "Poulet DG", "Poisson braise", "Eru", "Soya", "Pizza", "Burger"].map((s) => (
+                <button key={s} onClick={() => commitSearch(s)} className="rounded-full px-3 py-1.5 text-[12px] font-medium" style={{ backgroundColor: "#06C167", color: "#FFFFFF" }}>
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <p className="text-xs" style={{ color: "#6B6B6B" }}>
           {results.length} résultat{results.length > 1 ? "s" : ""}
           {appliedQ && <> pour « {appliedQ} »</>}

@@ -547,12 +547,23 @@ function SuiviPage() {
       </div>
 
       {showChat && meId && (
-        <div className="fixed bottom-5 right-5 z-40">
+        <div className="fixed bottom-5 right-5 z-40 flex flex-col gap-3 items-end">
           <OrderChat
             orderId={order.id}
             meId={meId}
             meRole={meRole}
             peerName={meRole === "client" ? driver?.name ?? "Livreur" : "Client"}
+          />
+        </div>
+      )}
+
+      {meId && meRole === "client" && (
+        <div className="fixed bottom-5 right-20 z-40">
+          <OrderChat
+            orderId={`${order.id}-resto`}
+            meId={meId}
+            meRole="client"
+            peerName={(order as any).restaurant_name ?? "Restaurant"}
           />
         </div>
       )}
