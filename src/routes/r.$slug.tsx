@@ -5,21 +5,9 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { getRestaurantPageData as getRestaurantBySlug } from "@/lib/catalog.fast.functions";
-import { getRestaurant } from "@/data/restaurants";
-import { supabase } from "@/integrations/supabase/client";
-import { addToCart, useCart, clearCart, restoreCartItems } from "@/hooks/use-cart";
+import { addToCart, useCart } from "@/hooks/use-cart";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { AddToCartFab } from "@/components/AddToCartFab";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/r/$slug")({
   component: RestoLivePage,
@@ -175,34 +163,6 @@ function RestoLivePage() {
   const restoSubtotal = restoCartItems.reduce((s, i) => s + i.qty * i.price, 0);
   const restoCount = restoCartItems.reduce((s, i) => s + i.qty, 0);
 
-  // Mono-resto guard
-  const otherRestoItem = items.find((i) => resto?.id && i.restoId && i.restoId !== resto.id);
-  const [pendingDish, setPendingDish] = useState<Dish | null>(null);
-  const [otherRestoName, setOtherRestoName] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!otherRestoItem?.restoId) {
-      setOtherRestoName(null);
-      return;
-    }
-    const local = getRestaurant(otherRestoItem.restoId)?.name;
-    if (local) {
-      setOtherRestoName(local);
-      return;
-    }
-    let cancelled = false;
-    supabase
-      .from("restaurants")
-      .select("name")
-      .eq("id", otherRestoItem.restoId)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!cancelled) setOtherRestoName(data?.name ?? null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [otherRestoItem?.restoId]);
 
 
   const doAdd = (dish: Dish, opts?: { silent?: boolean }) => {
@@ -224,10 +184,6 @@ function RestoLivePage() {
   };
 
   const handleAdd = (dish: Dish) => {
-    if (otherRestoItem) {
-      setPendingDish(dish);
-      return;
-    }
     doAdd(dish);
   };
 
@@ -398,57 +354,6 @@ function RestoLivePage() {
       {/* Floating Add-to-cart FAB (uses items for THIS restaurant) */}
       <AddToCartFab count={restoCount || count} total={restoSubtotal || subtotal} restoId={resto.id} />
 
-      <AlertDialog open={!!pendingDish} onOpenChange={(o) => { if (!o) setPendingDish(null); }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Changer de restaurant ?</AlertDialogTitle>
-            <AlertDialogDescription asChild>
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <p>
-                  Votre panier contient déjà des plats de{" "}
-                  <strong className="font-semibold text-foreground">
-                    {otherRestoName ?? "un autre restaurant"}
-                  </strong>.
-                </p>
-                <p>
-                  Vous ne pouvez commander que dans un seul restaurant à la fois. Voulez-vous vider le panier et ajouter{" "}
-                  <strong className="font-semibold text-foreground">{pendingDish?.name ?? "ce plat"}</strong>{" "}
-                  de{" "}
-                  <strong className="font-semibold text-foreground">{resto.name}</strong> ?
-                </p>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setPendingDish(null)}>Annuler</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                const d = pendingDish;
-                const prevName = otherRestoName ?? "le restaurant précédent";
-                const snapshot = items.map((i) => ({ ...i, options: i.options ? { ...i.options } : undefined }));
-                clearCart();
-                setPendingDish(null);
-                if (d) {
-                  doAdd(d, { silent: true });
-                  toast.success("Panier mis à jour", {
-                    description: `Panier de ${prevName} vidé · 1 × ${d.name} ajouté depuis ${resto.name}`,
-                    duration: 8000,
-                    action: {
-                      label: "Annuler",
-                      onClick: () => {
-                        restoreCartItems(snapshot);
-                        toast.success(`Panier de ${prevName} restauré`);
-                      },
-                    },
-                  });
-                }
-              }}
-            >
-              Vider et ajouter
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
