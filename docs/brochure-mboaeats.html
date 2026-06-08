@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MboaEats — Brochure Partenaires</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --green: #06C167;
+      --green-dark: #048A4A;
+      --black: #142D22;
+      --dark: #1A1A1A;
+      --gray: #6B6B6B;
+      --light-gray: #F6F6F6;
+      --gold: #D4AF37;
+      --white: #FFFFFF;
+    }
+
+    body {
+      font-family: 'Poppins', -apple-system, sans-serif;
+      color: var(--dark);
+      line-height: 1.6;
+      background: var(--white);
+    }
+
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .page-break { page-break-before: always; }
+      .no-print { display: none; }
+    }
+
+    /* ===== COVER PAGE ===== */
+    .cover {
+      min-height: 100vh;
+      background: linear-gradient(160deg, #0A1F17 0%, #142D22 40%, #1A3D2E 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 60px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cover::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -30%;
+      width: 80%;
+      height: 150%;
+      background: radial-gradient(ellipse, rgba(6, 193, 103, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .cover-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 100px;
+      padding: 8px 20px;
+      margin-bottom: 40px;
+      backdrop-filter: blur(10px);
+    }
+
+    .cover-badge span {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.8);
+    }
+
+    .cover h1 {
+      font-size: 64px;
+      font-weight: 900;
+      color: var(--white);
+      letter-spacing: -2px;
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+
+    .cover h1 .accent { color: var(--green); }
+
+    .cover .subtitle {
+      font-size: 20px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 50px;
+      max-width: 500px;
+    }
+
+    .cover-stats {
+      display: flex;
+      gap: 40px;
+      margin-top: 60px;
+    }
+
+    .cover-stat {
+      text-align: center;
+    }
+
+    .cover-stat .number {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--green);
+    }
+
+    .cover-stat .label {
+      font-size: 12px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .cover-footer {
+      position: absolute;
+      bottom: 30px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.05em;
+    }
+
+    /* ===== SECTIONS ===== */
+    .section {
+      padding: 80px 40px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .section-dark {
+      background: var(--black);
+      color: var(--white);
+      max-width: 100%;
+      padding: 80px 40px;
+    }
+
+    .section-dark .inner {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .section-green {
+      background: var(--green);
+      color: var(--white);
+      max-width: 100%;
+      padding: 80px 40px;
+    }
+
+    .section-green .inner {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .section-light {
+      background: var(--light-gray);
+      max-width: 100%;
+      padding: 80px 40px;
+    }
+
+    .section-light .inner {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 12px;
+    }
+
+    .tag-white { color: rgba(255,255,255,0.7); }
+
+    h2 {
+      font-size: 38px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.2;
+      margin-bottom: 20px;
+    }
+
+    h3 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    p {
+      font-size: 15px;
+      color: var(--gray);
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+
+    .text-white p { color: rgba(255,255,255,0.75); }
+
+    /* ===== GRID CARDS ===== */
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 40px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      margin-top: 40px;
+    }
+
+    .card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 32px 24px;
+      border: 1px solid #E8E8E8;
+    }
+
+    .card-dark {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 32px 24px;
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: rgba(6, 193, 103, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      font-size: 22px;
+    }
+
+    .card-icon-dark {
+      background: rgba(6, 193, 103, 0.15);
+    }
+
+    .card h3 { font-size: 18px; margin-bottom: 8px; }
+    .card p, .card-dark p { font-size: 14px; margin-bottom: 0; }
+    .card-dark h3 { color: var(--white); }
+    .card-dark p { color: rgba(255,255,255,0.6); }
+
+    /* ===== STEPS ===== */
+    .steps {
+      margin-top: 40px;
+      counter-reset: step;
+    }
+
+    .step {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      padding: 24px 0;
+      border-bottom: 1px solid #E8E8E8;
+    }
+
+    .step:last-child { border-bottom: none; }
+
+    .step-number {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--green);
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .step-content h3 { font-size: 17px; margin-bottom: 4px; }
+    .step-content p { font-size: 14px; margin-bottom: 0; }
+
+    /* ===== TABLE ===== */
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .comparison-table th {
+      background: rgba(6, 193, 103, 0.15);
+      padding: 14px 20px;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .comparison-table td {
+      padding: 14px 20px;
+      font-size: 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.8);
+    }
+
+    .comparison-table tr:last-child td { border-bottom: none; }
+
+    .check { color: var(--green); font-weight: 700; }
+    .cross { color: #888; }
+
+    /* ===== CTA ===== */
+    .cta-box {
+      background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+      border-radius: 24px;
+      padding: 48px;
+      text-align: center;
+      margin-top: 50px;
+    }
+
+    .cta-box h3 {
+      font-size: 28px;
+      color: var(--white);
+      margin-bottom: 12px;
+    }
+
+    .cta-box p {
+      color: rgba(255,255,255,0.85);
+      font-size: 15px;
+      margin-bottom: 24px;
+    }
+
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--white);
+      color: var(--black);
+      padding: 14px 32px;
+      border-radius: 100px;
+      font-size: 15px;
+      font-weight: 700;
+      text-decoration: none;
+      border: none;
+    }
+
+    /* ===== HIGHLIGHT BOX ===== */
+    .highlight {
+      background: linear-gradient(135deg, rgba(6,193,103,0.08) 0%, rgba(6,193,103,0.02) 100%);
+      border: 1px solid rgba(6,193,103,0.2);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin: 30px 0;
+    }
+
+    .highlight p { color: var(--dark); font-size: 15px; margin: 0; }
+    .highlight strong { color: var(--green-dark); }
+
+    /* ===== TESTIMONIAL ===== */
+    .testimonial {
+      border-left: 4px solid var(--green);
+      padding-left: 24px;
+      margin: 30px 0;
+      font-style: italic;
+    }
+
+    .testimonial p { font-size: 16px; color: var(--dark); }
+    .testimonial .author { font-size: 13px; font-style: normal; font-weight: 600; color: var(--gray); margin-top: 8px; }
+
+    /* ===== FOOTER ===== */
+    .doc-footer {
+      text-align: center;
+      padding: 40px;
+      border-top: 1px solid #E8E8E8;
+    }
+
+    .doc-footer p { font-size: 12px; color: #999; }
+
+    @media (max-width: 700px) {
+      .grid-3 { grid-template-columns: 1fr; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .cover h1 { font-size: 42px; }
+      .cover-stats { flex-direction: column; gap: 20px; }
+      h2 { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== COVER ==================== -->
+  <div class="cover">
+    <div class="cover-badge">
+      <span>Brochure Partenaires 2025</span>
+    </div>
+    <h1>Mboa<span class="accent">Eats</span></h1>
+    <p class="subtitle">La plateforme de livraison de repas #1 au Cameroun. Rejoignez un ecosysteme qui grandit chaque jour.</p>
+
+    <div class="cover-stats">
+      <div class="cover-stat">
+        <div class="number">3</div>
+        <div class="label">Villes couvertes</div>
+      </div>
+      <div class="cover-stat">
+        <div class="number">24/7</div>
+        <div class="label">Service continu</div>
+      </div>
+      <div class="cover-stat">
+        <div class="number">0%</div>
+        <div class="label">Commission 1er mois</div>
+      </div>
+    </div>
+
+    <div class="cover-footer">Douala &bull; Yaounde &bull; Bafoussam &mdash; mboaeats.com</div>
+  </div>
+
+  <!-- ==================== INTRO ==================== -->
+  <div class="section page-break">
+    <div class="tag">A propos</div>
+    <h2>Pourquoi MboaEats ?</h2>
+    <p>MboaEats est ne d'un constat simple : les Camerounais meritent une plateforme de livraison pensee pour eux &mdash; rapide, fiable, et adaptee aux realites locales.</p>
+    <p>Nous ne sommes pas une copie d'Uber Eats ou Glovo. Nous sommes <strong>la reponse camerounaise</strong> aux besoins de livraison de proximite, avec des paiements Mobile Money, du cash a la livraison, et un accompagnement humain pour chaque partenaire.</p>
+
+    <div class="highlight">
+      <p><strong>Notre mission :</strong> Connecter les meilleurs restaurants du Cameroun a leurs clients, tout en offrant aux livreurs une source de revenus stable et dignifiee.</p>
+    </div>
+
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-icon">&#127467;&#127474;</div>
+        <h3>100% Camerounais</h3>
+        <p>Concu a Douala, pour le Cameroun. Nous comprenons vos clients parce que nous en sommes.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#128241;</div>
+        <h3>Tech de pointe</h3>
+        <p>Application moderne avec suivi GPS en direct, chat integre, notifications push et paiements instantanes.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#129309;</div>
+        <h3>Partenariat humain</h3>
+        <p>Un interlocuteur dedie pour chaque restaurant. Pas de robot, pas de formulaire sans fin.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== RESTAURANTS ==================== -->
+  <div class="section-dark page-break">
+    <div class="inner text-white">
+      <div class="tag tag-white">Restaurateurs</div>
+      <h2 style="color: white;">Developpez votre activite sans investissement</h2>
+      <p>Vous cuisinez, nous livrons. MboaEats vous donne acces a des milliers de clients sans avoir a ouvrir une nouvelle salle, embaucher des livreurs ou gerer la logistique.</p>
+
+      <div class="grid-3">
+        <div class="card-dark">
+          <div class="card-icon card-icon-dark">&#128200;</div>
+          <h3>+40% de CA en moyenne</h3>
+          <p>Nos restaurants partenaires constatent une augmentation significative de leur chiffre d'affaires des le premier mois.</p>
+        </div>
+        <div class="card-dark">
+          <div class="card-icon card-icon-dark">&#9201;</div>
+          <h3>0 minute d'attente</h3>
+          <p>Les commandes arrivent directement dans votre tableau de bord. Un clic pour accepter, un son pour ne rien rater.</p>
+        </div>
+        <div class="card-dark">
+          <div class="card-icon card-icon-dark">&#128176;</div>
+          <h3>Paiement sous 48h</h3>
+          <p>Vos revenus sont verses automatiquement. Pas d'attente de fin de mois. Transparence totale.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMENT CA MARCHE - RESTAURANTS -->
+  <div class="section page-break">
+    <div class="tag">Restaurateurs</div>
+    <h2>Comment ca marche ?</h2>
+    <p>L'inscription est gratuite et ne prend que 10 minutes. Voici les etapes :</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h3>Inscrivez-vous en ligne</h3>
+          <p>Remplissez le formulaire sur mboaeats.com/devenir-resto avec vos informations : nom du restaurant, adresse, type de cuisine, horaires d'ouverture.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h3>Creez votre menu</h3>
+          <p>Ajoutez vos plats avec photos, prix et descriptions depuis votre Espace Restaurant. Organisez par categories (entrees, plats, boissons, desserts).</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h3>Recevez des commandes</h3>
+          <p>Des que votre profil est valide, vous apparaissez dans l'app. Les commandes arrivent en temps reel avec notification sonore. Acceptez en un clic.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <h3>Preparez et remettez au livreur</h3>
+          <p>Cuisinez comme d'habitude. Quand c'est pret, marquez "Pret" dans l'app. Un livreur MboaEats arrive en quelques minutes pour recuperer la commande.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number">5</div>
+        <div class="step-content">
+          <h3>Encaissez vos revenus</h3>
+          <p>Suivez vos ventes en temps reel depuis le tableau de bord. Vos revenus sont verses automatiquement sous 48h sur votre compte Mobile Money ou bancaire.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight">
+      <p><strong>Offre de lancement :</strong> 0% de commission pendant votre premier mois ! Ensuite, une commission competitive de 15% par commande (contre 25-35% chez les concurrents internationaux).</p>
+    </div>
+  </div>
+
+  <!-- AVANTAGES RESTAURANTS -->
+  <div class="section-light page-break">
+    <div class="inner">
+      <div class="tag">Restaurateurs</div>
+      <h2>Vos outils inclus</h2>
+      <p>Tout ce dont vous avez besoin pour gerer votre activite en ligne, sans cout supplementaire.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>&#128202; Tableau de bord en direct</h3>
+          <p>Statistiques de ventes, plats populaires, avis clients, heures de pointe... Tout en un coup d'oeil pour optimiser votre offre.</p>
+        </div>
+        <div class="card">
+          <h3>&#128172; Chat avec les clients</h3>
+          <p>Communiquez directement avec vos clients si une question se pose sur la commande. Pas d'intermediaire.</p>
+        </div>
+        <div class="card">
+          <h3>&#128276; Notifications instantanees</h3>
+          <p>Alerte sonore et push pour chaque nouvelle commande. Vous ne ratez jamais une vente, meme en cuisine.</p>
+        </div>
+        <div class="card">
+          <h3>&#127860; Gestion du menu en autonomie</h3>
+          <p>Ajoutez, modifiez ou desactivez un plat en 2 secondes. Rupture de stock ? Un toggle suffit.</p>
+        </div>
+        <div class="card">
+          <h3>&#11088; Avis et reputation</h3>
+          <p>Les clients notent chaque commande. Vos meilleures notes vous font remonter dans les resultats de recherche.</p>
+        </div>
+        <div class="card">
+          <h3>&#128640; Visibilite boostee</h3>
+          <p>Apparaissez dans "Populaires", "A proximite", et les recommendations personnalisees de nos utilisateurs.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== LIVREURS ==================== -->
+  <div class="section-green page-break">
+    <div class="inner text-white">
+      <div class="tag tag-white">Livreurs</div>
+      <h2 style="color: white;">Roulez libre. Gagnez bien.</h2>
+      <p style="color: rgba(255,255,255,0.85);">Vous avez un scooter, un velo ou meme un bon sens de la marche rapide ? Devenez livreur MboaEats et transformez votre temps libre en revenus. Vous choisissez quand, ou et combien vous travaillez.</p>
+
+      <div class="grid-3">
+        <div class="card-dark" style="border-color: rgba(255,255,255,0.2);">
+          <div class="card-icon" style="background: rgba(255,255,255,0.15);">&#128181;</div>
+          <h3 style="color: white;">Revenus quotidiens</h3>
+          <p style="color: rgba(255,255,255,0.7);">Retirez vos gains chaque jour sur votre Mobile Money. Pas de salaire fixe bloqu&eacute; &mdash; vous gagnez a chaque course.</p>
+        </div>
+        <div class="card-dark" style="border-color: rgba(255,255,255,0.2);">
+          <div class="card-icon" style="background: rgba(255,255,255,0.15);">&#128340;</div>
+          <h3 style="color: white;">Horaires flexibles</h3>
+          <p style="color: rgba(255,255,255,0.7);">Connectez-vous quand vous voulez : 2h le matin, toute la journee, ou juste les weekends. Vous etes votre patron.</p>
+        </div>
+        <div class="card-dark" style="border-color: rgba(255,255,255,0.2);">
+          <div class="card-icon" style="background: rgba(255,255,255,0.15);">&#128149;</div>
+          <h3 style="color: white;">Pourboires directs</h3>
+          <p style="color: rgba(255,255,255,0.7);">Les clients peuvent vous laisser un pourboire depuis l'app. 100% pour vous, directement sur votre compte.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMENT CA MARCHE - LIVREURS -->
+  <div class="section page-break">
+    <div class="tag">Livreurs</div>
+    <h2>Rejoignez l'equipe en 3 etapes</h2>
+    <p>Pas de paperasse interminable. Inscription rapide, validation sous 24h, et vous etes en route.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h3>Inscrivez-vous sur l'app</h3>
+          <p>Telechargez MboaEats et allez sur "Devenir livreur". Renseignez : nom complet, numero de telephone, ville, type de vehicule (moto, velo, a pied) et une photo de votre CNI.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h3>Validation de votre profil</h3>
+          <p>Notre equipe verifie vos informations sous 24h. Vous recevez un SMS de confirmation des que votre compte est active.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h3>Commencez a livrer et gagner</h3>
+          <p>Activez votre disponibilite dans l'app. Vous recevez les commandes a proximite. Acceptez, recuperez au restaurant, livrez au client. C'est aussi simple que ca.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight">
+      <p><strong>Combien peut-on gagner ?</strong> Un livreur actif a Douala gagne en moyenne <strong>5 000 a 15 000 FCFA par jour</strong> selon sa disponibilite. Les meilleurs livreurs depassent 300 000 FCFA/mois.</p>
+    </div>
+  </div>
+
+  <!-- REMUNERATION LIVREURS -->
+  <div class="section-light">
+    <div class="inner">
+      <div class="tag">Livreurs</div>
+      <h2>Votre remuneration, en detail</h2>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>&#128178; Frais de livraison</h3>
+          <p>Vous touchez 100% des frais de livraison de chaque course. Le montant depend de la distance (minimum 500 FCFA par course).</p>
+        </div>
+        <div class="card">
+          <h3>&#127873; Pourboires clients</h3>
+          <p>Les clients choisissent de vous laisser un pourboire apres livraison. Montant 100% pour vous, credit&eacute; instantanement.</p>
+        </div>
+        <div class="card">
+          <h3>&#127942; Bonus de performance</h3>
+          <p>Completez 10 livraisons dans la journee ? Bonus de 2 000 FCFA. Weekend charge ? Bonus x1.5 sur les frais de livraison.</p>
+        </div>
+        <div class="card">
+          <h3>&#128179; Retrait instantane</h3>
+          <p>Demandez un retrait a tout moment depuis l'app. L'argent arrive sur votre MTN MoMo ou Orange Money en moins de 5 minutes.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== CE QUI NOUS DIFFERENCIE ==================== -->
+  <div class="section-dark page-break">
+    <div class="inner text-white">
+      <div class="tag tag-white">Notre difference</div>
+      <h2 style="color: white;">MboaEats vs la concurrence</h2>
+      <p>Pourquoi choisir MboaEats plutot qu'une autre plateforme ? Voici ce qui fait la difference.</p>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Fonctionnalite</th>
+            <th>MboaEats</th>
+            <th>Autres</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Paiement Mobile Money (MTN, Orange)</td>
+            <td class="check">&#10003; Natif</td>
+            <td class="cross">&#10007; Limite</td>
+          </tr>
+          <tr>
+            <td>Cash a la livraison</td>
+            <td class="check">&#10003; Oui</td>
+            <td class="cross">&#10007; Non</td>
+          </tr>
+          <tr>
+            <td>Commission restaurants</td>
+            <td class="check">15%</td>
+            <td class="cross">25-35%</td>
+          </tr>
+          <tr>
+            <td>Versement des gains</td>
+            <td class="check">Sous 48h</td>
+            <td class="cross">7-14 jours</td>
+          </tr>
+          <tr>
+            <td>Support en francais local</td>
+            <td class="check">&#10003; Douala</td>
+            <td class="cross">&#10007; Etranger</td>
+          </tr>
+          <tr>
+            <td>Chat client-restaurant-livreur</td>
+            <td class="check">&#10003; Integre</td>
+            <td class="cross">Partiel</td>
+          </tr>
+          <tr>
+            <td>Suivi GPS en direct</td>
+            <td class="check">&#10003; Temps reel</td>
+            <td class="check">&#10003;</td>
+          </tr>
+          <tr>
+            <td>Programme de fidelite</td>
+            <td class="check">&#10003; Points + cadeaux</td>
+            <td class="cross">&#10007; Basique</td>
+          </tr>
+          <tr>
+            <td>Retrait quotidien livreurs</td>
+            <td class="check">&#10003; Instantane</td>
+            <td class="cross">Hebdomadaire</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ==================== VALEURS ==================== -->
+  <div class="section page-break">
+    <div class="tag">Nos valeurs</div>
+    <h2>Plus qu'une app. Un ecosysteme.</h2>
+    <p>MboaEats n'est pas juste une plateforme technologique. C'est un engagement envers l'economie locale camerounaise.</p>
+
+    <div class="grid-2" style="margin-top: 30px;">
+      <div class="card">
+        <h3>&#127758; Impact local</h3>
+        <p>Chaque commande sur MboaEats fait vivre un restaurant camerounais et un livreur de votre quartier. Nous reinvestissons localement.</p>
+      </div>
+      <div class="card">
+        <h3>&#128170; Autonomisation</h3>
+        <p>Nos livreurs ne sont pas des "gig workers" anonymes. Ils ont un profil, des avis, une reputation. Ils construisent une carriere.</p>
+      </div>
+      <div class="card">
+        <h3>&#128161; Innovation adaptee</h3>
+        <p>Nous ne copions pas les modeles occidentaux. Nous innovons pour le contexte camerounais : debit variable, routes non cartographiees, quartiers populaires.</p>
+      </div>
+      <div class="card">
+        <h3>&#129504; Transparence totale</h3>
+        <p>Pas de frais caches, pas de commissions surprises. Vous savez exactement ce que vous gagnez et ce que nous prelevons.</p>
+      </div>
+    </div>
+
+    <div class="testimonial">
+      <p>"Depuis que je suis sur MboaEats, mes ventes ont augmente de 60%. Je n'ai meme pas eu besoin d'agrandir mon local. L'equipe est toujours disponible quand j'ai une question."</p>
+      <div class="author">&mdash; Maman Rose, Restaurant Le Terroir, Douala-Bonaberi</div>
+    </div>
+
+    <div class="testimonial">
+      <p>"Je fais mes courses entre les cours. En 3h le soir, je gagne assez pour payer mon transport de la semaine. Et les pourboires font vraiment la difference."</p>
+      <div class="author">&mdash; Kevin M., Livreur MboaEats, Douala-Akwa</div>
+    </div>
+  </div>
+
+  <!-- ==================== CTA FINAL ==================== -->
+  <div class="section page-break">
+    <div class="tag">Rejoignez-nous</div>
+    <h2>Pret a commencer ?</h2>
+    <p>L'inscription est gratuite et ne prend que quelques minutes. Rejoignez des centaines de partenaires qui font deja confiance a MboaEats.</p>
+
+    <div class="cta-box">
+      <h3>&#127860; Restaurants</h3>
+      <p>Inscrivez votre restaurant et commencez a recevoir des commandes demain.</p>
+      <a href="https://mboaeats.com/devenir-resto" class="cta-btn">S'inscrire comme restaurant &rarr;</a>
+    </div>
+
+    <div class="cta-box" style="background: linear-gradient(135deg, #1A1A1A 0%, #333 100%); margin-top: 24px;">
+      <h3>&#128690; Livreurs</h3>
+      <p>Transformez votre temps libre en revenus. Commencez a livrer cette semaine.</p>
+      <a href="https://mboaeats.com/devenir-livreur" class="cta-btn">Devenir livreur &rarr;</a>
+    </div>
+
+    <div style="text-align: center; margin-top: 50px;">
+      <p style="font-size: 14px; color: var(--gray);">Des questions ? Contactez-nous directement :</p>
+      <p style="font-size: 18px; font-weight: 700; color: var(--dark); margin-top: 8px;">
+        &#128222; +237 6XX XXX XXX
+      </p>
+      <p style="font-size: 14px; color: var(--gray);">
+        &#128231; partenaires@mboaeats.com
+      </p>
+      <p style="font-size: 14px; color: var(--gray); margin-top: 4px;">
+        &#127760; mboaeats.com
+      </p>
+    </div>
+  </div>
+
+  <!-- ==================== FOOTER ==================== -->
+  <div class="doc-footer">
+    <p><strong>MboaEats</strong> &mdash; La livraison qui a le gout du Cameroun.</p>
+    <p style="margin-top: 8px;">Douala &bull; Yaounde &bull; Bafoussam &mdash; &copy; 2025 MboaEats. Tous droits reserves.</p>
+  </div>
+
+</body>
+</html>
