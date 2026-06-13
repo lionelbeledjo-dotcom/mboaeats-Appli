@@ -1,0 +1,180 @@
+{
+  "common": {
+    "back": "Back",
+    "home": "Home",
+    "search": "Search",
+    "filter": "Filters",
+    "sort": "Sort",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "seeAll": "See all",
+    "noResults": "No results",
+    "add": "Add",
+    "added": "Added",
+    "continue": "Continue",
+    "next": "Next",
+    "previous": "Previous",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "nav": {
+    "home": "Home",
+    "discover": "Discover",
+    "orders": "Orders",
+    "favorites": "Favorites",
+    "addresses": "Addresses",
+    "payment": "Payment methods",
+    "profile": "Profile & security",
+    "settings": "Settings",
+    "notifications": "Notifications",
+    "help": "Help & support",
+    "privacy": "Privacy",
+    "logout": "Log out",
+    "cart": "Cart"
+  },
+  "home": {
+    "welcome": "Welcome to MboaEats",
+    "subtitle": "The best of Cameroonian cuisine, delivered to you.",
+    "searchPlaceholder": "Search for a dish or restaurant",
+    "fastDelivery": "Fast delivery < 30 min",
+    "newRestaurants": "New",
+    "popular": "Popular restaurants",
+    "resultsFor": "{{count}} result(s) for \"{{query}}\""
+  },
+  "restaurant": {
+    "menu": "Menu",
+    "reviews": "Reviews",
+    "info": "Information",
+    "closed": "Closed",
+    "open": "Open",
+    "deliveryFee": "Delivery fee",
+    "minOrder": "Minimum order",
+    "freeDelivery": "Free delivery",
+    "notFound": "Restaurant not found.",
+    "dishNotFound": "Dish not found."
+  },
+  "cart": {
+    "title": "Cart",
+    "empty": "Your cart is empty",
+    "emptySubtitle": "Browse restaurants and add dishes.",
+    "checkout": "Proceed to checkout",
+    "total": "Total",
+    "subtotal": "Subtotal",
+    "deliveryFee": "Delivery fee",
+    "serviceFee": "Service fee",
+    "clear": "Clear cart",
+    "itemAdded": "Added: {{name}}",
+    "itemRemoved": "Removed from cart"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "deliveryAddress": "Delivery address",
+    "phone": "Phone",
+    "instructions": "Instructions",
+    "payWith": "Pay with",
+    "momo": "MTN Mobile Money",
+    "orange": "Orange Money",
+    "processing": "Processing...",
+    "success": "Order confirmed!",
+    "failed": "Payment failed"
+  },
+  "orders": {
+    "title": "My orders",
+    "empty": "No orders",
+    "emptySubtitle": "Your orders will appear here.",
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "preparing": "Preparing",
+      "ready": "Ready",
+      "delivering": "Delivering",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    },
+    "trackOrder": "Track order",
+    "reorder": "Reorder",
+    "details": "Order details"
+  },
+  "auth": {
+    "login": "Log in",
+    "signup": "Sign up",
+    "logout": "Log out",
+    "phone": "Phone number",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "otpSent": "Code sent",
+    "otpPlaceholder": "Enter the code received",
+    "loginSuccess": "Logged in successfully",
+    "logoutSuccess": "Logged out successfully"
+  },
+  "categories": {
+    "title": "Cuisines",
+    "subtitle": "Explore by specialty",
+    "ndole": "Ndolé",
+    "pouletDg": "Poulet DG",
+    "poisson": "Grilled fish",
+    "suya": "Suya / Soya",
+    "eru": "Eru",
+    "beignets": "Fritters & Accras",
+    "jus": "Natural juices",
+    "dishes_one": "{{count}} dish",
+    "dishes_other": "{{count}} dishes"
+  },
+  "search": {
+    "placeholder": "Search for a dish, restaurant or cuisine…",
+    "recentSearches": "Recent searches",
+    "clearHistory": "Clear",
+    "popularSuggestions": "Popular suggestions",
+    "results": "{{count}} result(s)",
+    "noResults": "No results. Try broadening your filters.",
+    "sortBy": "Sort by",
+    "relevance": "Relevance",
+    "bestRated": "Best rated",
+    "fastest": "Fastest",
+    "cheapest": "Cheapest",
+    "closest": "Closest",
+    "cuisine": "Cuisine",
+    "all": "All",
+    "maxTime": "Max time",
+    "promosOnly": "Active promotions only"
+  },
+  "nearby": {
+    "title": "Nearby",
+    "subtitle": "{{count}} restaurants"
+  },
+  "popular": {
+    "title": "Popular",
+    "subtitle": "{{count}} favorite dishes"
+  },
+  "loyalty": {
+    "title": "Mboa Points",
+    "mboapass": "MboaPass Premium",
+    "referral": "Referral"
+  },
+  "pros": {
+    "becomeDriver": "Become a driver",
+    "becomeRestaurant": "Become a restaurant partner"
+  },
+  "error": {
+    "title": "An error occurred",
+    "subtitle": "Try again or go back to home.",
+    "retry": "Retry",
+    "goHome": "Home",
+    "notFound": "Page not found",
+    "notFoundSubtitle": "This page doesn't exist or has been moved.",
+    "updating": "Updating the app…"
+  },
+  "support": {
+    "title": "MboaEats Support",
+    "contact": "Contact us"
+  }
+}

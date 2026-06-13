@@ -5,29 +5,8 @@ import dishPoisson from "@/assets/dish-poisson.webp";
 import dishPouletDg from "@/assets/dish-poulet-dg.webp";
 import dishSuya from "@/assets/dish-suya.webp";
 
-export type Dish = {
-  id: string;
-  name: string;
-  description: string;
-  price: number; // FCFA
-  image: string;
-  spicy?: boolean;
-  popular?: boolean;
-  options?: { label: string; choices: { name: string; extra?: number }[] }[];
-};
-
-export type Restaurant = {
-  id: string;
-  name: string;
-  tagline: string;
-  city: string;
-  neighborhood: string;
-  rating: number;
-  eta: string;
-  cover: string;
-  badge?: string;
-  categories: { id: string; label: string; dishes: Dish[] }[];
-};
+export type { Dish, Restaurant } from "@/types/restaurant";
+import type { Dish, Restaurant } from "@/types/restaurant";
 
 const tailleOptions = {
   label: "Taille",

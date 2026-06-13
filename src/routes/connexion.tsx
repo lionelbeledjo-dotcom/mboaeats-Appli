@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { loginWithPassword, accountExists } from "@/lib/auth.functions";
 import { sendOtp, verifyOtp } from "@/lib/otp.functions";
-import { useAuth } from "@/hooks/useAuth";
+import { useSession } from "@/auth/hooks/useSession";
 import { invalidateSessionCache } from "@/hooks/useSessionUser";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -194,7 +194,7 @@ function Connexion() {
   const navigate = useNavigate();
   const search = Route.useSearch();
   const explicitRedirect = search.redirect || search.next;
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useSession();
 
   const loginFn = useServerFn(loginWithPassword);
   const existsFn = useServerFn(accountExists);

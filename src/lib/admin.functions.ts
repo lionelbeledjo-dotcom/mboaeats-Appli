@@ -16,6 +16,7 @@ import {
   requirePlatformSuperadmin,
 } from "@/auth/middlewares/requirePlatformAdmin";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { logAudit } from "@/shared/server/audit";
 
 const PENDING_STATUSES = [
   "pending_payment",
@@ -177,18 +178,37 @@ export const getAdminOverview = createServerFn({ method: "GET" })
 // -----------------------------------------------------------------------------
 // Restaurants
 // -----------------------------------------------------------------------------
+const ListAllRestaurantsSchema = z.object({
+  cursor: z.string().datetime().optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+});
+
 export const listAllRestaurants = createServerFn({ method: "GET" })
   .middleware([requirePlatformAdmin])
-  .handler(async () => {
-    const { data, error } = await supabaseAdmin
+  .inputValidator((d) => ListAllRestaurantsSchema.parse(d ?? {}))
+  .handler(async ({ data }) => {
+    const pageSize = data.limit ?? 50;
+    let query = supabaseAdmin
       .from("restaurants")
       .select(
         "id, name, city, neighborhood, cuisine, rating, reviews_count, " +
           "is_active, is_open, created_at, deleted_at",
       )
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit(pageSize);
+
+    if (data.cursor) {
+      query = query.lt("created_at", data.cursor);
+    }
+
+    const { data: restaurants, error } = await query;
     if (error) throw new Error(error.message);
-    return { restaurants: data ?? [] };
+
+    const items = restaurants ?? [];
+    const lastItem = items.length === pageSize ? items[items.length - 1] : null;
+    const nextCursor = lastItem ? (lastItem as any).created_at as string | null : null;
+
+    return { restaurants: items, nextCursor };
   });
 
 export const getRestaurantDetails = createServerFn({ method: "GET" })
@@ -258,12 +278,18 @@ export const setRestaurantActive = createServerFn({ method: "POST" })
   .inputValidator((d) =>
     z.object({ id: z.string().uuid(), is_active: z.boolean() }).parse(d),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const { error } = await supabaseAdmin
       .from("restaurants")
       .update({ is_active: data.is_active })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
+    logAudit({
+      actorId: context.userId,
+      action: data.is_active ? "restaurant_activated" : "restaurant_deactivated",
+      entityType: "restaurant",
+      entityId: data.id,
+    });
     return { ok: true as const };
   });
 
@@ -299,11 +325,17 @@ export const updateRestaurant = createServerFn({ method: "POST" })
 export const softDeleteRestaurant = createServerFn({ method: "POST" })
   .middleware([requirePlatformAdmin])
   .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const { error } = await supabaseAdmin.rpc("soft_delete_restaurant", {
       _id: data.id,
     });
     if (error) throw new Error(error.message);
+    logAudit({
+      actorId: context.userId,
+      action: "restaurant_soft_deleted",
+      entityType: "restaurant",
+      entityId: data.id,
+    });
     return { ok: true as const };
   });
 
@@ -674,7 +706,7 @@ export const cancelOrderAsAdmin = createServerFn({ method: "POST" })
   .inputValidator((d) =>
     z.object({ order_id: z.string().uuid(), reason: z.string().max(500).optional() }).parse(d),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const { error } = await supabaseAdmin
       .from("orders")
       .update({ status: "cancelled", cancelled_at: new Date().toISOString() })
@@ -684,6 +716,13 @@ export const cancelOrderAsAdmin = createServerFn({ method: "POST" })
       order_id: data.order_id,
       event_type: "admin_cancelled",
       payload: { reason: data.reason ?? null },
+    });
+    logAudit({
+      actorId: context.userId,
+      action: "order_cancelled_by_admin",
+      entityType: "order",
+      entityId: data.order_id,
+      details: { reason: data.reason ?? null },
     });
     return { ok: true as const };
   });

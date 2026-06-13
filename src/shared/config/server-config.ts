@@ -5,6 +5,18 @@
  * server functions. Évite la duplication entre OTP, 2FA, rate-limit, etc.
  */
 
+export const PLATFORM_CONFIG = {
+  support: {
+    email: "support@mboaeats.com",
+    whatsapp: "+237 6 96 00 00 00",
+    phone: "+237 6 96 00 00 00",
+  },
+  brand: {
+    name: "MboaEats",
+    domain: "mboaeats.com",
+  },
+} as const;
+
 export const SERVER_CONFIG = {
   otp: {
     /** Durée de validité d'un code OTP (5 min). */

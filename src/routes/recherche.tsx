@@ -2,8 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { Search, SlidersHorizontal, X, Star, Clock, Bike } from "lucide-react";
-import { restaurants } from "@/data/restaurants";
-import { useDbRestaurants } from "@/hooks/useDbRestaurants";
+import { useAllRestaurants } from "@/hooks/useAllRestaurants";
 import { SmartImage } from "@/components/SmartImage";
 import {
   CUISINE_KEYS,
@@ -82,12 +81,11 @@ function RecherchePage() {
     setShowHistory(false);
   };
 
-  const { data: dbRestos } = useDbRestaurants();
+  const { data: allRestos } = useAllRestaurants();
 
   const results = useMemo(() => {
     const needle = deferredQ.trim().toLowerCase();
-    // Fusion : DB-approved (visibles dès validation) + dataset statique.
-    const merged = [...(dbRestos ?? []), ...restaurants];
+    const merged = allRestos;
     let list = merged.filter((r) => {
       if (needle) {
         const inResto =
@@ -113,7 +111,7 @@ function RecherchePage() {
       sorted.sort((a, b) => min(a) - min(b));
     }
     return sorted;
-  }, [deferredQ, sort, cuisine, promosOnly, maxEta, dbRestos]);
+  }, [deferredQ, sort, cuisine, promosOnly, maxEta, allRestos]);
 
   const isStale = isPending || deferredQ !== appliedQ || appliedQ !== q;
 
@@ -274,7 +272,7 @@ function VirtualResults({
   results,
   isStale,
 }: {
-  results: typeof restaurants;
+  results: import("@/types/restaurant").Restaurant[];
   isStale: boolean;
 }) {
   const listRef = useRef<HTMLDivElement | null>(null);

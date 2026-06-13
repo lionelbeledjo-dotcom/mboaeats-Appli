@@ -7,8 +7,8 @@ import { PromoBanner } from "@/components/home/PromoBanner";
 import { CategoriesRow } from "@/components/home/CategoriesRow";
 import { RestaurantListCard } from "@/components/home/RestaurantListCard";
 import { SmartImage } from "@/components/SmartImage";
-import { restaurants as realRestaurants, getRestaurant, type Restaurant } from "@/data/restaurants";
-import { useDbRestaurants } from "@/hooks/useDbRestaurants";
+import { getRestaurant, type Restaurant } from "@/data/restaurants";
+import { useAllRestaurants } from "@/hooks/useAllRestaurants";
 import { addToCart } from "@/hooks/use-cart";
 import { etaMinAvg, isFastDelivery, isNew } from "@/lib/restaurant-meta";
 import { toast } from "sonner";
@@ -35,8 +35,10 @@ export const Route = createFileRoute("/")({
     ],
   }),
   beforeLoad: async () => {
-    // Mode invité : l'accueil est accessible sans compte (comme Uber Eats).
-    // Le checkout est protégé via GuestCheckoutGate.
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) {
+      throw redirect({ to: "/connexion", replace: true });
+    }
   },
   component: Index,
 });
@@ -53,12 +55,7 @@ function firstDishOf(r: Restaurant) {
 
 function Index() {
   const [query, setQuery] = useState("");
-  const { data: dbRestos } = useDbRestaurants();
-
-  const allRestos = useMemo(
-    () => [...(dbRestos ?? []), ...realRestaurants],
-    [dbRestos],
-  );
+  const { data: allRestos, dbRestos } = useAllRestaurants();
 
   const searchResults = useMemo(() => {
     if (!query.trim()) return null;
@@ -81,8 +78,8 @@ function Index() {
     [allRestos],
   );
   const news = useMemo(
-    () => [...(dbRestos ?? []), ...realRestaurants.filter(isNew)].slice(0, 8),
-    [dbRestos],
+    () => allRestos.filter(isNew).slice(0, 8),
+    [allRestos],
   );
 
   const handleAdd = (r: Restaurant) => {

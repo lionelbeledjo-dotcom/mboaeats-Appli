@@ -30,7 +30,7 @@ export const SECTIONS: Record<string, HelpSection> = {
       },
       {
         q: "Comment contacter le support ?",
-        a: "Cliquez sur le bouton « ? » sur n'importe quelle page. En bas du panneau, cliquez sur « Contacter sur WhatsApp » pour ouvrir directement notre WhatsApp : +33 6 66 52 41 01.",
+        a: "Cliquez sur le bouton « ? » sur n'importe quelle page. En bas du panneau, cliquez sur « Contacter sur WhatsApp » pour ouvrir directement notre WhatsApp : +237 6 96 00 00 00.",
       },
     ],
   },
@@ -41,7 +41,7 @@ export const SECTIONS: Record<string, HelpSection> = {
     faqs: [
       {
         q: "Je ne reçois pas le code SMS, que faire ?",
-        a: "Si vous ne recevez pas le SMS, cliquez sur le bouton « Recevoir par WhatsApp » ou essayez la connexion par Email. Si le problème persiste, contactez-nous sur WhatsApp : +33 6 66 52 41 01.",
+        a: "Si vous ne recevez pas le SMS, cliquez sur le bouton « Recevoir par WhatsApp » ou essayez la connexion par Email. Si le problème persiste, contactez-nous sur WhatsApp : +237 6 96 00 00 00.",
       },
       {
         q: "Je ne reçois pas le lien email, que faire ?",
@@ -411,7 +411,7 @@ export const SECTIONS: Record<string, HelpSection> = {
       },
       {
         q: "Comment contacter le support ?",
-        a: "Utilisez les boutons en bas de ce panneau : WhatsApp pour une réponse rapide (+33 6 66 52 41 01), ou email pour un dossier détaillé.",
+        a: "Utilisez les boutons en bas de ce panneau : WhatsApp pour une réponse rapide (+237 6 96 00 00 00), ou email pour un dossier détaillé.",
       },
     ],
   },

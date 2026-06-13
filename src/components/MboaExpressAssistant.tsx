@@ -83,7 +83,7 @@ export default function MboaExpressAssistant() {
         ...m,
         {
           role: "assistant",
-          text: `Aïe, petit souci côté IA. Tu peux écrire au support : lionelbrown2728@yahoo.fr`,
+          text: `Aïe, petit souci côté IA. Tu peux écrire au support : support@mboaeats.com`,
         },
       ]);
     } finally {

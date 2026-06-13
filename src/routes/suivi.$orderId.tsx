@@ -18,6 +18,7 @@ import { OrderModifyModal } from "@/components/OrderModifyModal";
 import { RefundRequestModal } from "@/components/RefundRequestModal";
 import { TipModal } from "@/components/TipModal";
 import { getOrderReview } from "@/lib/social.functions";
+import { DeliveryMap } from "@/components/DeliveryMap";
 
 export const Route = createFileRoute("/suivi/$orderId")({
   beforeLoad: async ({ params }) => {
@@ -256,17 +257,6 @@ function SuiviPage() {
     return () => clearTimeout(t);
   }, [checkReview, data.reviewExists, order.id, order.status]);
 
-  // Position relative livreur sur la carte (0..1)
-  const mapProgress = useMemo(() => {
-    const dest = order.delivery_address;
-    const resto = order.restaurant;
-    if (driverLoc && dest?.lat != null && dest?.lng != null && resto?.lat != null && resto?.lng != null) {
-      const total = distanceKm({ lat: resto.lat, lng: resto.lng }, { lat: dest.lat, lng: dest.lng });
-      const remaining = distanceKm({ lat: driverLoc.lat, lng: driverLoc.lng }, { lat: dest.lat, lng: dest.lng });
-      if (total > 0) return Math.max(0, Math.min(1, 1 - remaining / total));
-    }
-    return Math.min(1, (stepIdx + 1) / STEPS.length);
-  }, [driverLoc, order.delivery_address, order.restaurant, stepIdx]);
 
   const [issueOpen, setIssueOpen] = useState(false);
   const canReportIssue = stepIdx >= 1 && !order.delivered_at && !isFailedStatus;
@@ -313,7 +303,11 @@ function SuiviPage() {
     <div className="min-h-screen pb-32" style={{ backgroundColor: "#F5F0E8" }}>
       {/* Map area */}
       <div className="relative h-[42vh] min-h-[280px] overflow-hidden">
-        <FauxMap progress={mapProgress} live={!!driverLoc} />
+        <DeliveryMap
+          restaurant={order.restaurant?.lat != null && order.restaurant?.lng != null ? { lat: order.restaurant.lat, lng: order.restaurant.lng } : null}
+          destination={order.delivery_address?.lat != null && order.delivery_address?.lng != null ? { lat: order.delivery_address.lat, lng: order.delivery_address.lng } : null}
+          driver={driverLoc ? { lat: driverLoc.lat, lng: driverLoc.lng } : null}
+        />
 
         <div className="absolute inset-x-0 top-0 z-20 px-4 pt-4">
           <div className="mx-auto flex max-w-md items-center justify-between">
@@ -797,85 +791,6 @@ function DeliveryCelebration() {
   );
 }
 
-function FauxMap({ progress, live }: { progress: number; live: boolean }) {
-  return (
-    <div className="absolute inset-0" style={{ backgroundColor: "#EBE3D5" }}>
-      <svg viewBox="0 0 400 320" className="h-full w-full" preserveAspectRatio="xMidYMid slice">
-        <defs>
-          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#CFE0CC" strokeWidth="1" />
-          </pattern>
-          <linearGradient id="route" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#06C167" />
-            <stop offset="100%" stopColor="#06C167" stopOpacity="0.4" />
-          </linearGradient>
-        </defs>
-        <rect width="400" height="320" fill="url(#grid)" />
-
-        <path d="M 0 220 Q 80 200 160 210 T 320 180 T 400 160" stroke="#FFFFFF" strokeWidth="22" fill="none" strokeLinecap="round" />
-        <path d="M 60 0 L 80 80 L 120 140 L 200 180 L 280 200 L 360 320" stroke="#FFFFFF" strokeWidth="14" fill="none" strokeLinecap="round" opacity="0.85" />
-
-        <g fill="#CFE0CC">
-          <rect x="20" y="60" width="40" height="50" rx="4" />
-          <rect x="240" y="40" width="60" height="70" rx="4" />
-          <rect x="320" y="220" width="50" height="60" rx="4" />
-          <rect x="40" y="250" width="70" height="50" rx="4" />
-        </g>
-
-        <path
-          d="M 50 80 C 120 100, 160 180, 240 200 S 340 240, 360 270"
-          stroke="url(#route)"
-          strokeWidth="5"
-          fill="none"
-          strokeLinecap="round"
-          strokeDasharray="10 8"
-        >
-          {live && (
-            <animate attributeName="stroke-dashoffset" from="0" to="-36" dur="1.5s" repeatCount="indefinite" />
-          )}
-        </path>
-
-        <g transform="translate(50,80)">
-          <circle r="14" fill="#FFFFFF" />
-          <circle r="9" fill="#1A1A1A" />
-          <text textAnchor="middle" y="4" fontSize="11" fill="#FFFFFF">🍴</text>
-        </g>
-
-        <g transform="translate(360,270)">
-          <circle r="16" fill="#06C167" />
-          <circle r="6" fill="#FFFFFF" />
-        </g>
-
-        <DriverMarker progress={progress} />
-      </svg>
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/15 to-transparent" />
-    </div>
-  );
-}
-
-function DriverMarker({ progress }: { progress: number }) {
-  const t = Math.max(0, Math.min(1, progress));
-  const pts = [
-    { x: 50, y: 80 }, { x: 120, y: 100 }, { x: 160, y: 180 },
-    { x: 240, y: 200 }, { x: 340, y: 240 }, { x: 360, y: 270 },
-  ];
-  const segIdx = Math.min(pts.length - 2, Math.floor(t * (pts.length - 1)));
-  const segT = t * (pts.length - 1) - segIdx;
-  const a = pts[segIdx];
-  const b = pts[segIdx + 1];
-  const x = a.x + (b.x - a.x) * segT;
-  const y = a.y + (b.y - a.y) * segT;
-  return (
-    <g transform={`translate(${x},${y})`} style={{ transition: "transform 1s linear" }}>
-      <circle r="18" fill="#06C167" opacity="0.2">
-        <animate attributeName="r" from="18" to="28" dur="1.5s" repeatCount="indefinite" />
-        <animate attributeName="opacity" from="0.4" to="0" dur="1.5s" repeatCount="indefinite" />
-      </circle>
-      <circle r="12" fill="#FFFFFF" stroke="#06C167" strokeWidth="3" />
-      <text textAnchor="middle" y="4" fontSize="12">🛵</text>
-    </g>
-  );
-}
 
 const REASON_LABELS: Record<string, string> = {
   livreur_introuvable: "Livreur introuvable",

@@ -23,25 +23,20 @@ import { supabase } from "@/integrations/supabase/client";
  * Seules les pages d'auth, d'info légale et la landing sont publiques.
  */
 const PUBLIC_ROUTES: ReadonlyArray<string> = [
-  "/",
   "/connexion",
   "/inscription",
   "/reset-password",
-  "/devenir-resto",
   "/restaurant/connexion",
-  "/devenir-livreur",
   "/livreur/connexion",
   "/admin/login",
   "/admin/unauthorized",
   "/superadmin/login",
   "/healthcheck",
-  "/aide",
-  "/contact",
   "/cgu",
   "/confidentialite",
 ];
 
-const PUBLIC_PREFIXES: ReadonlyArray<string> = ["/aide/"];
+const PUBLIC_PREFIXES: ReadonlyArray<string> = [];
 
 function isPublicPath(path: string): boolean {
   if (PUBLIC_ROUTES.includes(path)) return true;

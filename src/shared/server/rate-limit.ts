@@ -70,8 +70,12 @@ export async function enforceRateLimit(
     .gte("occurred_at", sinceIso);
 
   if (countErr) {
-    // En cas d'erreur DB : fail-open mais log. Ne pas bloquer le user si
-    // notre infra rate-limit elle-même est down.
+    // Fail-closed pour buckets critiques (auth, 2FA, OTP, payment)
+    const criticalBuckets = ["login_pwd", "otp_request", "2fa_verify", "payment_initiate"];
+    if (criticalBuckets.includes(bucket)) {
+      console.error("[rate-limit] FAIL-CLOSED on critical bucket:", bucket, countErr.message);
+      tooMany(60);
+    }
     console.warn("[rate-limit] count failed, allowing:", countErr.message);
     return;
   }

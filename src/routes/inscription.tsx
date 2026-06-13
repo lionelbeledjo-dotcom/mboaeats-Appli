@@ -13,6 +13,7 @@ import {
   EyeOff,
   AlertCircle,
   ChevronDown,
+  CheckCircle2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
@@ -81,6 +82,7 @@ function InscriptionPage() {
   const [showPwd, setShowPwd] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [signUpSuccess, setSignUpSuccess] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   const country = useMemo(
@@ -128,11 +130,46 @@ function InscriptionPage() {
       );
       return;
     }
-    toast.success("Un e-mail de confirmation a été envoyé.", {
-      description: "Veuillez vérifier votre boîte de réception (et vos spams).",
-      duration: 6000,
-    });
-    navigate({ to: "/connexion" });
+    setSignUpSuccess(true);
+  }
+
+  if (signUpSuccess) {
+    return (
+      <div className="min-h-screen bg-white">
+        <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-5 py-8">
+          <div className="w-full rounded-2xl border border-neutral-100 bg-white p-6 sm:p-8 shadow-sm text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#06C167]/10">
+              <CheckCircle2 className="h-9 w-9 text-[#06C167]" strokeWidth={2} />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-black">Compte créé avec succès !</h2>
+            <p className="mt-2 text-sm text-neutral-600">
+              Un email de confirmation a été envoyé à :
+            </p>
+            <p className="mt-1 font-semibold text-black">{email}</p>
+
+            <div className="mt-5 rounded-xl bg-blue-50 p-4 text-left">
+              <div className="flex items-start gap-2.5">
+                <Mail className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
+                <div className="text-xs text-blue-800">
+                  <p className="font-semibold">Vérifiez votre boîte de réception</p>
+                  <p className="mt-1">
+                    Cliquez sur le lien dans l'email pour activer votre compte.
+                    Pensez à vérifier vos spams si vous ne le trouvez pas.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <Link
+              to="/connexion"
+              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#06C167] px-4 py-3.5 text-sm font-bold uppercase tracking-wide text-white shadow-[0_8px_24px_-12px_rgba(6,193,103,0.7)] transition-all hover:bg-[#05A659] active:scale-[0.99]"
+            >
+              Retour à la connexion
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

@@ -86,6 +86,7 @@ import { Route as AdminCommandesRouteImport } from './routes/admin.commandes'
 import { Route as AdminClientsRouteImport } from './routes/admin.clients'
 import { Route as RestaurantsRestoIdMenuRouteImport } from './routes/restaurants.$restoId.menu'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
+import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as ApiPublicCampayWebhookRouteImport } from './routes/api/public/campay-webhook'
 import { Route as RestaurantsRestoIdPlatsPlatIdRouteImport } from './routes/restaurants.$restoId_.plats.$platId'
 import { Route as RSlugPlatsDishIdRouteImport } from './routes/r.$slug_.plats.$dishId'
@@ -480,6 +481,11 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
+  id: '/api/public/health',
+  path: '/api/public/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCampayWebhookRoute = ApiPublicCampayWebhookRouteImport.update({
   id: '/api/public/campay-webhook',
   path: '/api/public/campay-webhook',
@@ -602,6 +608,7 @@ export interface FileRoutesByFullPath {
   '/partenaire/': typeof PartenaireIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
   '/api/public/campay-webhook': typeof ApiPublicCampayWebhookRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/restaurants/$restoId/menu': typeof RestaurantsRestoIdMenuRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -686,6 +693,7 @@ export interface FileRoutesByTo {
   '/partenaire': typeof PartenaireIndexRoute
   '/superadmin': typeof SuperadminIndexRoute
   '/api/public/campay-webhook': typeof ApiPublicCampayWebhookRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/restaurants/$restoId/menu': typeof RestaurantsRestoIdMenuRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -774,6 +782,7 @@ export interface FileRoutesById {
   '/partenaire/': typeof PartenaireIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
   '/api/public/campay-webhook': typeof ApiPublicCampayWebhookRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/restaurants/$restoId/menu': typeof RestaurantsRestoIdMenuRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -863,6 +872,7 @@ export interface FileRouteTypes {
     | '/partenaire/'
     | '/superadmin/'
     | '/api/public/campay-webhook'
+    | '/api/public/health'
     | '/lovable/email/suppression'
     | '/restaurants/$restoId/menu'
     | '/lovable/email/auth/preview'
@@ -947,6 +957,7 @@ export interface FileRouteTypes {
     | '/partenaire'
     | '/superadmin'
     | '/api/public/campay-webhook'
+    | '/api/public/health'
     | '/lovable/email/suppression'
     | '/restaurants/$restoId/menu'
     | '/lovable/email/auth/preview'
@@ -1034,6 +1045,7 @@ export interface FileRouteTypes {
     | '/partenaire/'
     | '/superadmin/'
     | '/api/public/campay-webhook'
+    | '/api/public/health'
     | '/lovable/email/suppression'
     | '/restaurants/$restoId/menu'
     | '/lovable/email/auth/preview'
@@ -1097,6 +1109,7 @@ export interface RootRouteChildren {
   SuperadminLoginRoute: typeof SuperadminLoginRoute
   SuperadminSetup2faRoute: typeof SuperadminSetup2faRoute
   ApiPublicCampayWebhookRoute: typeof ApiPublicCampayWebhookRoute
+  ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -1648,6 +1661,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/health': {
+      id: '/api/public/health'
+      path: '/api/public/health'
+      fullPath: '/api/public/health'
+      preLoaderRoute: typeof ApiPublicHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/campay-webhook': {
       id: '/api/public/campay-webhook'
       path: '/api/public/campay-webhook'
@@ -1873,6 +1893,7 @@ const rootRouteChildren: RootRouteChildren = {
   SuperadminLoginRoute: SuperadminLoginRoute,
   SuperadminSetup2faRoute: SuperadminSetup2faRoute,
   ApiPublicCampayWebhookRoute: ApiPublicCampayWebhookRoute,
+  ApiPublicHealthRoute: ApiPublicHealthRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,

@@ -21,6 +21,10 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { useKeyboardViewport } from "@/hooks/useKeyboardViewport";
 import { usePrefetchOnIdle } from "@/auth/hooks/usePrefetch";
 import { getHostMode } from "@/hooks/useHostMode";
+import { initSentry } from "@/lib/sentry";
+import "@/lib/i18n";
+
+initSentry();
 
 
 // Routes publiques gérées dans AuthGate (@/auth/components/AuthGate.tsx)

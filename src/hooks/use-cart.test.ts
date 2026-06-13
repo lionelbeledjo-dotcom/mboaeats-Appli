@@ -1,11 +1,12 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import {
-  addToCart,
-  removeFromCart,
-  getCartItems,
-  clearCart,
-  type CartItem,
-} from "./use-cart";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+
+// Mock zustand persist to be a no-op passthrough
+vi.mock("zustand/middleware", () => ({
+  persist: (config: any) => config,
+  createJSONStorage: () => ({}),
+}));
+
+import { addToCart, removeFromCart, getCartItems, clearCart, type CartItem } from "./use-cart";
 
 // Mute the cart sound (no AudioContext in happy-dom).
 // @ts-expect-error - test stub

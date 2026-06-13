@@ -8,26 +8,40 @@ export default defineConfig({
   timeout: 60_000,
   expect: { timeout: 10_000 },
   fullyParallel: false,
-  retries: 0,
-  reporter: [["list"]],
+  retries: process.env.CI ? 2 : 0,
+  reporter: process.env.CI ? "github" : [["list"]],
   use: {
     baseURL: BASE_URL,
     headless: true,
     viewport: { width: 1280, height: 700 },
     trace: "retain-on-failure",
-    storageState: "e2e/.auth/admin.json",
+    screenshot: "only-on-failure",
   },
   globalSetup: "./e2e/globalSetup.ts",
   projects: [
     {
+      name: "admin",
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: "e2e/.auth/admin.json",
+      },
+      testMatch: /admin.*\.spec\.ts/,
+    },
+    {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
+      testIgnore: /admin.*\.spec\.ts/,
+    },
+    {
+      name: "mobile",
+      use: { ...devices["iPhone 14"] },
+      testIgnore: /admin.*\.spec\.ts/,
     },
   ],
   webServer: process.env.E2E_BASE_URL
     ? undefined
     : {
-        command: "bun run dev",
+        command: "npm run dev",
         port: PORT,
         reuseExistingServer: true,
         timeout: 120_000,

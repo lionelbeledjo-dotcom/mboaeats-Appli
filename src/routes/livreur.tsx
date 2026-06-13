@@ -8,6 +8,7 @@ import {
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { DeliveryMap } from "@/components/DeliveryMap";
 import {
   listAvailableMissions,
   listMyMissions,
@@ -20,9 +21,17 @@ import {
   requestPayout,
   getPayoutBalance,
 } from "@/lib/driver.functions";
+import { TabErrorFallback } from "@/components/TabErrorBoundary";
 
 export const Route = createFileRoute("/livreur")({
   component: LivreurGuarded,
+  errorComponent: () => (
+    <TabErrorFallback
+      title="Espace livreur indisponible"
+      description="Une erreur est survenue. Rechargez la page."
+      onRetry={() => window.location.reload()}
+    />
+  ),
   head: () => ({
     meta: [
       { title: "Espace Livreur · MboaEats" },
@@ -859,7 +868,11 @@ function NavigationView({
   return (
     <div className="space-y-4 py-4">
       <div className="relative overflow-hidden rounded-3xl border border-border shadow-card aspect-[4/3]">
-        <MapboxMock />
+        <DeliveryMap
+          restaurant={mission.restaurants?.lat != null && mission.restaurants?.lng != null ? { lat: mission.restaurants.lat, lng: mission.restaurants.lng } : null}
+          destination={mission.delivery_address?.lat != null && mission.delivery_address?.lng != null ? { lat: mission.delivery_address.lat, lng: mission.delivery_address.lng } : null}
+          dark
+        />
         <div className="absolute left-4 right-4 top-4 rounded-2xl glass p-3">
           <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
             {beforePickup ? "Aller au restaurant" : "Livrer au client"}
@@ -932,37 +945,122 @@ function NavStat({ label, value, tone }: { label: string; value: string; tone?: 
   );
 }
 
-function MapboxMock() {
+function PayoutModal({ method, onClose }: { method: "mtn_momo" | "orange_money"; onClose: () => void }) {
+  const doRequestPayout = useServerFn(requestPayout);
+  const doGetBalance = useServerFn(getPayoutBalance);
+  const [amount, setAmount] = useState("");
+  const [phone, setPhone] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [available, setAvailable] = useState<number | null>(null);
+
+  useEffect(() => {
+    doGetBalance().then((res) => setAvailable(res.available)).catch(() => {});
+  }, [doGetBalance]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    const amountNum = parseInt(amount, 10);
+    if (!amountNum || amountNum < 500) { setError("Montant minimum : 500 FCFA"); return; }
+    if (!phone.match(/^6\d{8}$/)) { setError("Numéro invalide (ex: 6XXXXXXXX)"); return; }
+    if (available !== null && amountNum > available) { setError(`Solde insuffisant. Disponible : ${available.toLocaleString("fr-FR")} FCFA`); return; }
+    setBusy(true);
+    try {
+      const msisdn = `+237${phone}`;
+      const res = await doRequestPayout({ data: { amount_fcfa: amountNum, method, msisdn } });
+      setSuccess(`Demande envoyée ! Réf: ${res.reference}. Vous recevrez le virement sous 24h.`);
+    } catch (err: any) {
+      setError(err.message || "Erreur lors de la demande");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const methodLabel = method === "mtn_momo" ? "MTN MoMo" : "Orange Money";
+  const methodColor = method === "mtn_momo" ? "hsl(var(--primary))" : "#FF6600";
+
   return (
-    <svg viewBox="0 0 400 300" className="h-full w-full bg-[#0e1428]">
-      <defs>
-        <pattern id="g" width="28" height="28" patternUnits="userSpaceOnUse">
-          <path d="M28 0H0V28" fill="none" stroke="hsl(var(--border))" strokeOpacity="0.3" strokeWidth="0.5" />
-        </pattern>
-      </defs>
-      <rect width="400" height="300" fill="url(#g)" />
-      <path d="M0 220 L 400 180" stroke="hsl(var(--muted-foreground) / 0.25)" strokeWidth="18" strokeLinecap="round" />
-      <path d="M120 0 L 180 300" stroke="hsl(var(--muted-foreground) / 0.25)" strokeWidth="14" strokeLinecap="round" />
-      <path d="M60 250 Q 140 220 170 180 T 320 80" stroke="hsl(var(--primary))" strokeWidth="5" strokeLinecap="round" fill="none" />
-      <g transform="translate(140, 215)">
-        <circle r="22" fill="hsl(var(--primary) / 0.3)">
-          <animate attributeName="r" values="18;28;18" dur="1.5s" repeatCount="indefinite" />
-        </circle>
-        <circle r="13" fill="hsl(var(--primary))" stroke="white" strokeWidth="2" />
-        <text textAnchor="middle" dy="5" fontSize="13">🛵</text>
-      </g>
-    </svg>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 sm:items-center" onClick={onClose}>
+      <div className="w-full max-w-md rounded-3xl border border-border bg-card p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-display text-lg font-bold">Retrait {methodLabel}</h3>
+          <button onClick={onClose} className="rounded-full p-2 hover:bg-surface"><X className="h-4 w-4" /></button>
+        </div>
+
+        {available !== null && (
+          <div className="mb-4 rounded-xl bg-surface/60 p-3 text-center">
+            <p className="text-xs text-muted-foreground">Solde disponible</p>
+            <p className="font-display text-2xl font-bold" style={{ color: methodColor }}>
+              {available.toLocaleString("fr-FR")} FCFA
+            </p>
+          </div>
+        )}
+
+        {success ? (
+          <div className="text-center py-4">
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15">
+              <Check className="h-7 w-7 text-emerald-400" />
+            </div>
+            <p className="text-sm font-semibold text-emerald-400">{success}</p>
+            <button onClick={onClose} className="mt-4 rounded-2xl bg-surface/60 px-6 py-2.5 text-sm font-semibold">Fermer</button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div>
+              <label className="text-xs text-muted-foreground">Montant (FCFA)</label>
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Ex: 5000"
+                min="500"
+                className="mt-1 w-full rounded-xl border border-border bg-surface/60 px-4 py-3 text-base font-semibold outline-none focus:border-primary"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Numéro {methodLabel} (Cameroun)</label>
+              <div className="mt-1 flex items-center gap-2 rounded-xl border border-border bg-surface/60 px-4 py-3">
+                <span className="text-sm font-semibold text-muted-foreground">+237</span>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
+                  placeholder="6XXXXXXXX"
+                  className="flex-1 bg-transparent text-base font-semibold outline-none"
+                />
+              </div>
+            </div>
+            {error && <p className="rounded-xl bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-400">{error}</p>}
+            <button
+              type="submit"
+              disabled={busy}
+              className="w-full rounded-2xl py-3.5 text-sm font-bold text-white shadow-glow disabled:opacity-50"
+              style={{ background: methodColor }}
+            >
+              {busy ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : `Retirer via ${methodLabel}`}
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
   );
 }
+
 
 function Portefeuille({ earnings, mine }: { earnings: Earnings | null; mine: MissionRow[] }) {
   const week = earnings?.week ?? [];
   const max = Math.max(1, ...week.map((d) => d.v));
   const balance = earnings?.earningsWeek ?? 0;
   const recent = mine.filter((m) => m.status === "delivered").slice(0, 6);
+  const [payoutMethod, setPayoutMethod] = useState<"mtn_momo" | "orange_money" | null>(null);
 
   return (
     <div className="space-y-5 py-4">
+      {payoutMethod && (
+        <PayoutModal method={payoutMethod} onClose={() => setPayoutMethod(null)} />
+      )}
       <div className="relative overflow-hidden rounded-3xl border border-gold/40 bg-gradient-to-br from-surface via-background to-surface p-6 shadow-card">
         <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-gold/30 blur-3xl" />
         <div className="relative">
@@ -972,10 +1070,16 @@ function Portefeuille({ earnings, mine }: { earnings: Earnings | null; mine: Mis
             <span className="text-base font-semibold text-muted-foreground"> FCFA</span>
           </p>
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <button className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3 text-sm font-bold text-primary-foreground shadow-glow">
+            <button
+              onClick={() => setPayoutMethod("mtn_momo")}
+              className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3 text-sm font-bold text-primary-foreground shadow-glow"
+            >
               <Wallet className="h-4 w-4" /> Retirer MTN MoMo
             </button>
-            <button className="flex items-center justify-center gap-2 rounded-2xl border border-gold/40 bg-gold/10 py-3 text-sm font-bold text-gold hover:bg-gold/20">
+            <button
+              onClick={() => setPayoutMethod("orange_money")}
+              className="flex items-center justify-center gap-2 rounded-2xl border border-gold/40 bg-gold/10 py-3 text-sm font-bold text-gold hover:bg-gold/20"
+            >
               Orange Money
             </button>
           </div>

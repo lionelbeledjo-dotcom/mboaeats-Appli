@@ -96,6 +96,7 @@ export function DeliveryContactRows({
               <button
                 type="button"
                 onClick={() => open(r.key)}
+                aria-label={`Éditer ${r.key === "address" ? "l'adresse" : r.key === "phone" ? "le téléphone" : "les instructions"}`}
                 className="flex w-full items-start gap-3 px-4 py-4 text-left active:bg-gray-50 transition-colors"
               >
                 <span className={`mt-0.5 ${err ? "text-red-500" : "text-black"}`}>{r.icon}</span>

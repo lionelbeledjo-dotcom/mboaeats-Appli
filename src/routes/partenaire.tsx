@@ -6,9 +6,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { listMyRestaurants } from "@/lib/restaurant.functions";
 import { PartenaireCtx, type PartenaireResto } from "@/components/partenaire/PartenaireContext";
 import { PartenaireShell } from "@/components/partenaire/PartenaireShell";
+import { TabErrorFallback } from "@/components/TabErrorBoundary";
 
 export const Route = createFileRoute("/partenaire")({
   component: PartenaireLayout,
+  errorComponent: () => (
+    <TabErrorFallback
+      title="Espace partenaire indisponible"
+      description="Une erreur est survenue. Réessayez sans recharger."
+      onRetry={() => window.location.reload()}
+    />
+  ),
   head: () => ({
     meta: [
       { title: "Espace Partenaire · MboaEats" },

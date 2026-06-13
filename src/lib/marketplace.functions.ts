@@ -496,12 +496,13 @@ export const getOrder = createServerFn({ method: "GET" })
 
     const orderAny = order as any;
     const [itemsRes, eventsRes, reviewRes, driverRes] = await Promise.all([
-      supabaseAdmin.from("order_items").select("*").eq("order_id", data.id),
+      supabaseAdmin.from("order_items").select("*").eq("order_id", data.id).limit(100),
       supabaseAdmin
         .from("order_events")
         .select("*")
         .eq("order_id", data.id)
-        .order("created_at", { ascending: true }),
+        .order("created_at", { ascending: true })
+        .limit(200),
       supabaseAdmin.from("reviews").select("id").eq("order_id", data.id).maybeSingle(),
       orderAny.driver_id
         ? supabaseAdmin

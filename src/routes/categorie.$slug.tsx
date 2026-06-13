@@ -161,11 +161,11 @@ function CategoryPage() {
         <footer className="mt-8 rounded-2xl border border-border/60 bg-surface/40 p-4 text-center">
           <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Support MboaEats</p>
           <a
-            href="mailto:lionelbrown2728@yahoo.fr"
+            href="mailto:support@mboaeats.com"
             className="mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
           >
             <Mail className="h-3.5 w-3.5" />
-            lionelbrown2728@yahoo.fr
+            support@mboaeats.com
           </a>
         </footer>
       </main>
