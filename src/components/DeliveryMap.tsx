@@ -5,12 +5,15 @@ type LatLng = { lat: number; lng: number } | null | undefined;
 export function DeliveryMap({
   restaurant,
   destination,
+  driver,
   dark = false,
 }: {
   restaurant?: LatLng;
   destination?: LatLng;
+  driver?: LatLng;
   dark?: boolean;
 }) {
+  void driver;
   // Lightweight static map placeholder. Real tile map can be wired later.
   return (
     <div
